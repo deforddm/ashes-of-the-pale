@@ -1,16 +1,10 @@
-const CACHE = 'ashes-pale-v1.0.0';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
-self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); });
-self.addEventListener('message', e => { if (e.data === 'SKIP_WAITING') self.skipWaiting(); });
-self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('ashes-pale-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
+const CACHE = 'ashes-v2.0.0';
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))); });
+self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
+self.addEventListener('message', e => { if (e.data === 'skip') self.skipWaiting(); });
 self.addEventListener('fetch', e => {
-  const req = e.request; if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  if (url.hostname.includes('fonts.g')) {
-    e.respondWith(caches.open(CACHE).then(c => c.match(req).then(hit => { const net = fetch(req).then(r => { c.put(req, r.clone()); return r; }).catch(() => hit); return hit || net; })));
-    return;
-  }
-  if (url.origin !== location.origin) return;
-  if (req.mode === 'navigate') { e.respondWith(caches.match('index.html').then(hit => hit || fetch(req))); return; }
-  e.respondWith(caches.match(req).then(hit => hit || fetch(req)));
+  const url = new URL(e.request.url);
+  if (url.origin !== location.origin) { e.respondWith(fetch(e.request).catch(() => new Response('', {status:504}))); return; }
+  e.respondWith(caches.match(e.request, {ignoreSearch:true}).then(r => { const net = fetch(e.request).then(res => { if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone())); return res; }).catch(() => r); return r || net; }));
 });
