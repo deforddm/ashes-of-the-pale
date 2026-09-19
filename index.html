@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1c1815">
+<meta name="description" content="A Malazan fan RPG: the Fourth Squad in the aftermath of the Pale.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Ashes of the Pale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+Sans+SC:wght@500;700&display=swap">
+<style>
+:root{
+  --ground:#1c1815; --panel:#28221d; --panel2:#342c25; --line:#4b4036;
+  --ink:#ece2cd; --mute:#a99a88; --brass:#d6a24a; --warren:#a08de0;
+  --blood:#c9584a; --moss:#7fb394;
+  --display:'IM Fell English SC', 'Times New Roman', serif;
+  --prose:'IM Fell English', Georgia, serif;
+  --body:'Alegreya Sans', 'Segoe UI', system-ui, sans-serif;
+  --label:'Alegreya Sans SC', 'Segoe UI', system-ui, sans-serif;
+  color-scheme: dark;
+}
+html,body{height:100%}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+#app{max-width:520px;margin:0 auto;padding-inline:16px;padding-block:10px 24px;display:flex;flex-direction:column;gap:10px;min-height:100%;box-sizing:border-box}
+button{font:inherit;color:inherit}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:9px 14px;border-radius:3px;min-height:42px;cursor:pointer;font-family:var(--label);font-weight:500;letter-spacing:.04em}
+.btn:hover{border-color:var(--brass)}
+.btn:focus-visible,.choice:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.btn:disabled{opacity:.4;cursor:default;border-color:var(--line)}
+.btn.primary{background:var(--brass);color:#1c1510;border-color:var(--brass);font-weight:700}
+.btn.on{border-color:var(--warren);box-shadow:inset 0 0 0 1px var(--warren);color:#fff}
+.hud{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.loc{font-family:var(--display);font-size:1.35rem;line-height:1.1;text-wrap:balance}
+.sub{font-family:var(--label);font-size:.8rem;color:var(--mute);letter-spacing:.06em}
+.sub.warren{color:var(--warren)}
+.hudr{display:flex;align-items:center;gap:10px;font-family:var(--label);font-size:.85rem;color:var(--brass);white-space:nowrap}
+.cvwrap{width:100%;line-height:0;border:1px solid var(--line);background:#120f0d}
+canvas{display:block;touch-action:manipulation;max-width:100%}
+.hint{margin:0;font-family:var(--label);font-size:.78rem;color:var(--mute);letter-spacing:.05em}
+.log{font-size:.9rem;color:var(--mute);display:flex;flex-direction:column;gap:3px;min-height:4.2em}
+.log div:first-child{color:var(--ink)}
+.log em{color:var(--ink);font-style:normal}
+/* title */
+.title{padding-block:9vh 4vh;display:flex;flex-direction:column;gap:18px}
+.title h1{font-family:var(--display);font-weight:400;font-size:clamp(2.6rem,11vw,3.6rem);line-height:.95;margin:0;letter-spacing:.01em}
+.title h1 span{display:block;color:var(--brass)}
+.title .tag{font-family:var(--prose);font-style:italic;color:var(--mute);font-size:1.1rem;margin:0;max-width:32ch}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-family:var(--label);font-size:.8rem;color:var(--mute);letter-spacing:.08em}
+input[type=text],textarea{background:var(--panel);border:1px solid var(--line);color:var(--ink);font:inherit;padding:10px 12px;border-radius:3px}
+textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem;min-height:90px;resize:vertical;word-break:break-all}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.fine{font-size:.8rem;color:var(--mute);margin:0;max-width:60ch}
+/* narration */
+.narr{font-family:var(--prose);font-size:1.13rem;line-height:1.6;max-width:62ch}
+.narr p{margin:0 0 .9em}
+.narr p:first-child::first-letter{font-family:var(--display);font-size:2.6em;float:left;line-height:.8;padding:6px 8px 0 0;color:var(--brass)}
+/* sheet */
+#sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(520px,100%);box-sizing:border-box;max-height:74%;overflow:auto;background:var(--panel);border-top:2px solid var(--brass);padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 40px rgba(0,0,0,.6);z-index:20}
+.sp{font-family:var(--display);font-size:1.15rem;color:var(--brass);margin-bottom:6px}
+.txt{font-family:var(--prose);font-size:1.06rem;line-height:1.55}
+.txt p{margin:0 0 .75em}
+.note{font-family:var(--label);font-size:.8rem;letter-spacing:.04em;padding:6px 10px;margin-bottom:10px;border-left:2px solid var(--warren);background:rgba(160,141,224,.08);color:#d9d0f5}
+.note.good{border-color:var(--moss);background:rgba(127,179,148,.08);color:#cfe8d8}
+.note.bad{border-color:var(--blood);background:rgba(201,88,74,.08);color:#f0c9c2}
+.choices{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.choice{text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:11px 12px;cursor:pointer;font-family:var(--body);font-size:1rem;line-height:1.35}
+.choice:hover{border-color:var(--brass)}
+.tagk{display:inline-block;font-family:var(--label);font-size:.72rem;letter-spacing:.07em;color:var(--brass);border:1px solid rgba(214,162,74,.45);padding:0 6px;border-radius:2px;margin-right:6px;vertical-align:1px}
+.card{border:1px solid var(--brass);padding:12px 14px;margin:6px 0 12px;background:linear-gradient(180deg,#2f261d,#211b16);text-align:center}
+.card .cn{font-family:var(--display);font-size:1.3rem;color:var(--brass)}
+.card .cf{font-family:var(--label);font-size:.82rem;color:var(--ink);margin-top:4px;letter-spacing:.03em}
+/* battle */
+.order{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px}
+.chip{flex:0 0 auto;font-family:var(--label);font-size:.75rem;padding:3px 8px;border:1px solid var(--line);border-radius:2px;color:var(--mute);white-space:nowrap}
+.chip.p{color:var(--ink)}
+.chip.e{color:#e7b0a7}
+.chip.now{border-color:var(--brass);color:var(--brass)}
+.chip.dead{text-decoration:line-through;opacity:.4}
+.ubar{background:var(--panel);border:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.uhead{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.uhead b{font-family:var(--display);font-weight:400;font-size:1.15rem}
+.stat{font-family:var(--label);font-size:.8rem;color:var(--mute);font-variant-numeric:tabular-nums}
+.stat.hp{color:var(--moss)} .stat.st{color:var(--warren)}
+.abil{display:flex;flex-wrap:wrap;gap:6px}
+.abil .btn{min-height:38px;padding:6px 10px;font-size:.85rem}
+.bhint{font-size:.88rem;color:var(--mute)}
+/* modal */
+#modal{position:fixed;inset:0;background:rgba(12,10,8,.82);z-index:30;overflow:auto;padding:max(16px,env(safe-area-inset-top,0px)) 16px 24px}
+.mbox{max-width:520px;margin:0 auto;background:var(--panel);border:1px solid var(--line);padding:14px 16px 18px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:12px;flex-wrap:wrap}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:8px 10px;font-family:var(--label);letter-spacing:.06em;color:var(--mute);cursor:pointer}
+.tab.on{color:var(--brass);border-color:var(--brass)}
+.mem{display:grid;grid-template-columns:40px 1fr;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mem:last-child{border-bottom:0}
+.sig{width:34px;height:34px;border-radius:50%;border:2px solid;display:grid;place-items:center;font-family:var(--label);font-weight:700;background:#1f1a16}
+.mem h3{margin:0;font-family:var(--display);font-weight:400;font-size:1.1rem}
+.mem .r{font-family:var(--label);font-size:.78rem;color:var(--mute);letter-spacing:.05em}
+.mem p{margin:4px 0 0;font-size:.92rem}
+.mem .q{color:var(--warren);font-style:italic}
+.pips{font-family:var(--label);font-size:.78rem;color:var(--brass);letter-spacing:.05em}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 16px;font-variant-numeric:tabular-nums}
+.kv span:nth-child(odd){color:var(--mute)}
+h2.m{font-family:var(--display);font-weight:400;font-size:1.3rem;margin:0}
+.jl{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px;font-size:.95rem}
+.end h2{font-family:var(--display);font-weight:400;font-size:2rem;margin:.4em 0 .1em;color:var(--brass)}
+.end ul{padding-left:1.1em;display:flex;flex-direction:column;gap:6px}
+.scene{border:1px solid var(--line);height:220px;background:radial-gradient(ellipse at 50% 60%,#2a2238 0%,#15110f 70%);display:grid;place-items:center;font-family:var(--prose);font-style:italic;color:var(--mute);text-align:center;padding:16px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+
+<div id="app"></div>
+<div id="sheet" hidden></div>
+<div id="modal" hidden></div>
+
+<script>
+const VERSION = '1.0.0';
+/* ============ utilities ============ */
+const $ = s => document.querySelector(s);
+const R = n => Math.floor(Math.random() * n);
+const roll = (n, s, p = 0) => { let t = p; for (let i = 0; i < n; i++) t += 1 + R(s); return t; };
+const d20 = () => 1 + R(20);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const K = (x, y) => x + ',' + y;
+function hash(x, y, s = 0) { let h = (x * 374761393 + y * 668265263 + s * 982451653) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ============ data ============ */
+const TPL = {
+  sgt:{name:'',role:'Sergeant',sig:'S',col:'#d6a24a',hp:22,ac:14,atk:4,dmg:[1,8,2],rng:1,mv:4,init:1,st:{might:2,wits:2,guile:1},ab:['rally','salve'],
+    bio:`Eleven years in the marines. Knows which orders to follow slowly.`},
+  brisk:{name:'Brisk',role:'Corporal',sig:'B',col:'#cfc6b4',hp:26,ac:16,atk:4,dmg:[1,8,2],rng:1,mv:3,init:0,st:{might:3,wits:0,guile:0},ab:['bash','salve'],
+    bio:`Heavy infantry turned marine. Believes in shields, rations, and very little else.`,
+    quest:`Her brother marched with the Second Army. He isn't on any list yet, living or dead.`},
+  kettle:{name:'Kettle',role:'Sapper',sig:'K',col:'#e07a45',hp:16,ac:13,atk:3,dmg:[1,8,0],rng:5,mv:4,init:2,st:{might:1,wits:2,guile:2},ab:['sharper','burner','cusser','salve'],
+    bio:`Falari, soot to the elbows. Counts munitions the way priests count prayers. Crossbow for everything else.`,
+    quest:`Owes a Moranth quartermaster something she won't name. The Moranth remember debts.`},
+  tuft:{name:'Tuft',role:'Squad mage · Meanas',sig:'T',col:'#a08de0',hp:14,ac:12,atk:4,dmg:[1,6,1],rng:4,mv:4,init:1,st:{might:0,wits:2,guile:3},ab:['veil','phantom','salve'],magic:true,
+    bio:`Quiet, and too young for her eyes. Shadow-lash at range, illusions up close.`,
+    quest:`Goes very still whenever someone says "High Mage." Nobody has asked her why.`},
+  ohl:{name:'Ohl',role:'Healer · Denul',sig:'O',col:'#7fb394',hp:16,ac:13,atk:2,dmg:[1,6,0],rng:1,mv:4,init:0,st:{might:1,wits:3,guile:0},ab:['mend','salve'],magic:true,
+    bio:`Old and patient, out of Seven Cities. Says Denul is less a warren than a standing argument with Hood.`,
+    quest:`Keeps a list of every soldier he couldn't save. The list is long. He reads it at night.`},
+};
+const PORDER = ['sgt','brisk','kettle','tuft','ohl'];
+const VERB = {sgt:'cuts at',brisk:'drives her spear at',kettle:'looses a quarrel at',tuft:'lashes shadow at',ohl:'cracks a cudgel at'};
+const FOES = {
+  deserter:{name:'Deserter',sig:'D',hp:11,ac:12,atk:3,dmg:[1,6,1],rng:1,mv:4,init:1,verb:'hacks at'},
+  xbow:{name:'Deserter crossbow',sig:'X',hp:8,ac:11,atk:3,dmg:[1,8,0],rng:5,mv:3,init:2,verb:'shoots at'},
+  stone:{name:'The Stonebound',sig:'Ω',hp:48,ac:14,atk:5,dmg:[2,6,2],rng:1,mv:3,init:0,boss:true,verb:'hammers'},
+  shade:{name:'Shade',sig:'s',hp:7,ac:13,atk:3,dmg:[1,6,0],rng:1,mv:5,init:3,verb:'claws at'},
+};
+const CARDS = {
+  oponn:{name:'Oponn, the Twins',txt:`The jesters of chance, back to back. "The Lady's pulling," Tuft says. "For now."`,fx:'+1 to every d20 your squad rolls this chapter.'},
+  obelisk:{name:'Obelisk',txt:`A standing stone, unaligned and older than anyone's gods. "Something endures," Tuft says, as if that were good news.`,fx:'+4 maximum health for every squadmate this chapter.'},
+  knight:{name:'Knight of High House Dark',txt:`A tall figure with a black sword, turned away. Tuft puts the card back fast. "He's watching the city. Not us. Probably."`,fx:'Enemies take −1 to hit this chapter.'},
+  assassin:{name:'Assassin of High House Shadow',txt:`A figure half in shadow, rope and knives. Tuft grins for the first time in days.`,fx:'Your squad lands critical hits on 19–20.'},
+};
+const LEVELS = [0,100,250,450,700];
+const STR_MAX = 6;
+
+/* explore map: # rubble  . ground  , ash  R ruin  ~ crater  = tents  T tunnel  P burial pit */
+const PALE = [
+  "################",
+  "#.T..,..RR...,.#",
+  "#....,..RR.....#",
+  "#.RR...........#",
+  "#.RR..,,....R..#",
+  "#PP....~~~~..,.#",
+  "#PP,...~~~~....#",
+  "#......,,,..RR.#",
+  "#.R.,.......RR.#",
+  "#.R...===......#",
+  "#.....===..,...#",
+  "################"];
+const NPCS = [
+  {id:'tat',name:'Tattersail',sig:'✦',col:'#a08de0',x:7,y:8,node:()=>'tat_map'},
+  {id:'pell',name:'Quartermaster Pell',sig:'Q',col:'#d6a24a',x:12,y:9,node:()=>'pell'},
+  {id:'garrow',name:'Garrow',sig:'G',col:'#b9ad98',x:3,y:6,node:()=>S.f.garrow?'garrow_again':'garrow'},
+  {id:'claw',name:'Grey cloak',sig:'?',col:'#8d8a86',x:11,y:5,node:()=>S.f.clawMet?'claw_again':'claw',show:()=>!S.f.clawFooled},
+];
+
+const BATTLES = {
+  deserters:{title:'North sapper tunnel',warrenText:'Warrens steady down here.',warren:{meanas:1,denul:1},
+    map:["..#..#..","........",".##....#","........","...##...","........","#.......","..#..##.","........","........"],
+    party:[[3,8],[4,8],[2,9],[5,9],[3,9]],
+    foes:[['deserter',1,1],['deserter',4,1],['deserter',6,1],['xbow',3,0]],xp:100,after:'deep1'},
+  stone:{title:'Collapsed junction',warrenText:'Kurald Galain seeps in · Meanas surges · Denul falters',warren:{meanas:1.5,denul:0.6},dark:true,
+    map:["#......#","..#..#..","........","........",".#....#.","........","...##...","........","........","#......#"],
+    party:[[3,8],[4,8],[2,9],[5,9],[3,9]],
+    foes:[['stone',3,2],['shade',1,3],['shade',6,3]],xp:150,after:'journal'},
+};
+
+/* ============ state ============ */
+const KEY = 'ashes-of-the-pale-v1';
+let S = null;          // saved game state
+let B = null;          // live battle
+let view = 'title';
+let G = {ctx:null, T:32, cv:null, cols:16, rows:12};
+let notes = [];
+let walking = false;
+
+function newState(name){
+  return {v:1, name:name||'Hask', scene:'intro', node:null, bg:null, silver:15, xp:0, lvl:1, card:null,
+    inv:{sharper:2, burner:1, cusser:1, salve:2},
+    loy:{brisk:0,kettle:0,tuft:0,ohl:0}, f:{}, pos:{x:5,y:8},
+    trail:[{x:4,y:8},{x:6,y:8},{x:4,y:9},{x:5,y:9}], log:[], ending:null, battle:null, bopt:null};
+}
+const NAME = id => id === 'sgt' ? S.name : TPL[id].name;
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
+function loadSave(){ try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch(e) { return null; } }
+function elog(m){ S.log.unshift(m); S.log = S.log.slice(0, 6); if (view === 'explore') updExplore(); }
+function loy(id, n){ S.loy[id] = Math.max(-3, Math.min(3, S.loy[id] + n)); notes.push({t:`${NAME(id)} ${n > 0 ? 'approves' : 'disapproves'}.`, c:n > 0 ? 'good' : 'bad'}); }
+function note(t, c=''){ notes.push({t, c}); }
+function gainXP(n){
+  S.xp += n; const before = S.lvl; let l = 1; while (l < LEVELS.length && S.xp >= LEVELS[l]) l++; S.lvl = l;
+  return S.lvl > before;
+}
+
+/* ============ skill checks ============ */
+function check(stat, dc, who){
+  const ids = who ? [who] : PORDER;
+  let best = ids[0]; ids.forEach(id => { if (TPL[id].st[stat] > TPL[best].st[stat]) best = id; });
+  const nat = d20(), mod = TPL[best].st[stat] + (S.card === 'oponn' ? 1 : 0), tot = nat + mod, ok = tot >= dc;
+  const label = stat[0].toUpperCase() + stat.slice(1);
+  note(`${label} check (DC ${dc}): ${NAME(best)} rolls ${nat} + ${mod} = ${tot} · ${ok ? 'success' : 'failure'}`, ok ? 'good' : 'bad');
+  return ok;
+}
+
+/* ============ dialogue ============ */
+const fmt = t => t.replace(/\{sgt\}/g, esc(S.name)).split(/\n\n/).map(p => `<p>${p.replace(/\*(.+?)\*/g,'<em>$1</em>')}</p>`).join('');
+function tatRest(){
+  const c = [{t:`"We'll bring it back."`, go:'tat_end'}];
+  if (!S.f.askedJ) c.push({t:`"What's actually in the journal?"`, check:['wits',12], fx:()=>S.f.askedJ=1, go:'tat_wits_ok', fail:'tat_wits_fail'});
+  if (!S.f.paid) c.push({t:`"Tunnels under a fallen city. That's the kind of job that fills pits."`, fx:()=>S.f.paid=1, go:'tat_pay'});
+  return c;
+}
+const DLG = {
+  intro_tat:()=>({sp:'Tattersail · cadre mage', txt:
+`The tent smells of candle smoke and wet canvas. The mage doesn't look up from the cards laid out across her camp table.
+
+"Sergeant {sgt}. Not a Bridgeburner. Good. The Bridgeburners have enough people watching them."
+
+"Varrow was cadre. He went into the sapper tunnels under the north quarter the night before the assault, and when the sky came down, the tunnels came down with it. Nobody has gone back for him." She turns a card and doesn't like it. "He carried a satchel. His journal is in it. I want it brought to me. To *me*, Sergeant, and to no one who asks nicely along the way."`,
+    ch:tatRest()}),
+  tat_wits_ok:()=>({sp:'Tattersail', txt:
+`She studies you for long enough that the candle gutters.
+
+"Timing. Who ordered what, and when, the night the Second died. Varrow was a careful man. He wrote things down."
+
+Behind you, Tuft has gone very still.`, ch:tatRest(), fx:()=>{S.f.knowStakes=1;}}),
+  tat_wits_fail:()=>({sp:'Tattersail', txt:`"Paper, Sergeant. It's full of paper." The cards offer you nothing more, and neither does she.`, ch:tatRest()}),
+  tat_pay:()=>({sp:'Tattersail', txt:
+`"It is exactly that kind of job." A purse lands on the table beside the cards. "Which is why you're being paid for it, and why I asked for a squad with a sapper."`,
+    fx:()=>{S.silver += 10; note('+10 silver','good'); loy('brisk',1);}, ch:tatRest()}),
+  tat_end:()=>({sp:'Tattersail', txt:
+`"The tunnel mouth is by the north wall. There are grey cloaks near the crater. If one of them talks to you, you're on grave detail."
+
+She's back to her cards before you reach the flap. "Go."`,
+    ch:[{t:'Leave the tent', go:()=>{ S.f.quest = 1; startExplore();
+      elog(`<em>Ohl:</em> "Nobody's good at tunnels. Some of us just come out of them."`);
+      elog(`<em>Kettle:</em> "Tunnels. Finally, something I'm good at."`); }}]}),
+  tat_map:()=>({sp:'Tattersail', txt:`"North wall, Sergeant. The cards aren't getting any better while you stand there."`, ch:[{t:'Leave'}]}),
+
+  pell:()=>({sp:'Quartermaster Pell', txt:
+`Pell has a wagon, a ledger, and the face of a man who has been asked for things all week. "Moranth don't give these away, and neither do I."
+
+You carry ${S.silver} silver.`,
+    ch:[
+      {t:'Sharper, 6 silver', tag:`have ${S.inv.sharper}`, req:()=>S.silver>=6, fx:()=>{S.silver-=6;S.inv.sharper++;note('Bought a sharper.','good');}, go:'pell'},
+      {t:'Burner, 5 silver', tag:`have ${S.inv.burner}`, req:()=>S.silver>=5, fx:()=>{S.silver-=5;S.inv.burner++;note('Bought a burner.','good');}, go:'pell'},
+      {t:'Healing salve, 3 silver', tag:`have ${S.inv.salve}`, req:()=>S.silver>=3, fx:()=>{S.silver-=3;S.inv.salve++;note('Bought a salve.','good');}, go:'pell'},
+      {t:'"Got any cussers?"', req:()=>!S.f.askedCusser, fx:()=>S.f.askedCusser=1, go:'pell_cusser'},
+      {t:'Leave'}]}),
+  pell_cusser:()=>({sp:'Quartermaster Pell', txt:`"Cussers." He laughs without moving his face. "Your sapper's already got one, and I'd take it off her if I thought I'd live through the conversation."`, ch:[{t:'Back', go:'pell'}]}),
+
+  garrow:()=>({sp:'Garrow · Second Army', fx:()=>S.f.garrow=1, txt:
+`A soldier of the Second sits by the burial pits with his helmet in his lap. His armour is scorched in a pattern that looks almost like handprints.`,
+    ch:[{t:'Share your water with him.', fx:()=>loy('ohl',1), go:'garrow_saw'},
+        {t:'"What did you see that night?"', go:'garrow_saw'},
+        {t:'Leave him be.'}]}),
+  garrow_saw:()=>({sp:'Garrow', fx:()=>S.f.knowDeserters=1, txt:
+`"The sky opened. Not the Spawn. *Ours.* I watched the cadre tents light up like lanterns, one after another." He turns the helmet over. "Some of my lot went down the north tunnels last night. Moreau's section. They're after dead officers' purses. If you run into them, tell them Garrow says the Fist is still counting heads. They might think twice."`,
+    ch:[{t:'"We will."'}]}),
+  garrow_again:()=>({sp:'Garrow', txt:`He's still counting the pits. He's lost his place twice since you last passed.`, ch:[{t:'Leave'}]}),
+
+  claw:()=>({sp:'A grey cloak', fx:()=>S.f.clawMet=1, txt:
+`A man in a grey cloak stands at the crater's lip, watching the violet shimmer at the bottom where the ground still hasn't decided whether to be ground. His boots are clean. Nobody's boots are clean.
+
+"Fine night for a walk, Sergeant. Business in the north quarter?"`,
+    ch:[{t:'"Grave detail."', check:['guile',13], go:'claw_fooled', fail:'claw_doubt'},
+        {t:'"Who\'s asking?"', go:'claw_noone'},
+        {t:'Say nothing and keep walking.', fx:()=>loy('brisk',1), go:'claw_silent'}]}),
+  claw_fooled:()=>({sp:'A grey cloak', fx:()=>S.f.clawFooled=1, txt:`"Grim work. Hood keeps a long ledger." He looks back into the crater. When you glance over again, he isn't there.`, ch:[{t:'Move on'}]}),
+  claw_doubt:()=>({sp:'A grey cloak', txt:`"Of course." He smiles like a man writing something down. "Carry on."`, ch:[{t:'Move on'}]}),
+  claw_noone:()=>({sp:'A grey cloak', txt:`"No one, Sergeant. It's a worthy ambition. You should try it."`, ch:[{t:'Move on'}]}),
+  claw_silent:()=>({sp:'A grey cloak', txt:`You walk past. You can feel him not watching you all the way to the rubble line.`, ch:[{t:'Move on'}]}),
+  claw_again:()=>({sp:'A grey cloak', txt:`He's still at the crater. He doesn't look at you, which is worse.`, ch:[{t:'Leave'}]}),
+
+  mouth:()=>({sp:'North wall · tunnel mouth', txt: S.card || S.f.noCard ?
+`The shoring beams creak in a wind that isn't blowing. Kettle has her lantern lit. Brisk has her shield up.` :
+`The tunnel mouth is a black slot in the rubble, shored with scavenged beams. Tuft crouches beside it and slides a battered Deck of Dragons out of her sleeve.
+
+"For luck," she says, which is not what a Deck is for.`,
+    ch: S.card || S.f.noCard ? [{t:'Descend', go:'approach'},{t:'Not yet'}] :
+      [{t:'Let her draw a card.', go:'card'},
+       {t:'"No readings. We go."', fx:()=>{S.f.noCard=1; loy('brisk',1); loy('tuft',-1);}, go:'approach'},
+       {t:'Not yet'}]}),
+  card:()=>{ if (!S.card) S.card = Object.keys(CARDS)[R(4)]; const c = CARDS[S.card];
+    return {sp:'The Deck of Dragons', txt:`Tuft turns one card face-up on the rubble.`,
+      html:`<div class="card"><div class="cn">${c.name}</div><div class="cf">${c.fx}</div></div>`,
+      after:c.txt, ch:[{t:'Descend', go:'approach'}]}; },
+  approach:()=>({sp:'North sapper tunnel', fx:()=>{S.bg='tunnel';}, txt:
+`Forty paces in, lamplight. Voices. Four figures crouch around a collapsed timber, prying at something with a spear-butt: Malazan kit, company badges cut off. Deserters.
+
+Nobody has seen you yet.`,
+    ch:[
+      {t:`"Moreau! Garrow says the Fist is still counting heads."`, req:()=>S.f.knowDeserters, check:['guile',10], go:'desert_flee', fail:'desert_fight'},
+      {t:'Talk them down.', check:['guile',14], go:'desert_half', fail:'desert_fight'},
+      {t:'Hit them before they know you\'re here.', go:()=>startBattle('deserters',{surprise:'p'})},
+      {t:'Kettle rolls a sharper in first.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0,
+        fx:()=>{S.inv.sharper--; S.f.noisy=1;}, go:()=>startBattle('deserters',{pre:true})}]}),
+  desert_flee:()=>({sp:'North sapper tunnel', txt:
+`The lamp swings round. A long silence, then a thin voice: "Garrow's alive?" Then boots, running, the other way. One of them leaves the lamp behind.
+
+Brisk watches them go. "Malazans running from Malazans. Hood's laughing somewhere."`,
+    fx:()=>{ const up = gainXP(100); note('+100 experience. Talking them down is soldiering too.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); },
+    ch:[{t:'Press on', go:'deep1'}]}),
+  desert_half:()=>({sp:'North sapper tunnel', txt:
+`You step into the light with empty hands and a sergeant's voice. Two of them look at each other, then at your sapper's satchel, and back away into the dark. The other two have come too far to go back.`,
+    ch:[{t:'Fight', go:()=>startBattle('deserters',{drop:[0,2]})}]}),
+  desert_fight:()=>({sp:'North sapper tunnel', txt:`The lamp swings round. Someone swears. Someone cocks a crossbow.`, ch:[{t:'Fight', go:()=>startBattle('deserters',{})}]}),
+  deep1:()=>({sp:'Collapsed junction', txt:
+`The sapper tunnel ends in a chamber where three passages met before the ceiling came down. Varrow is here, or what's left of him, pinned under a beam with one hand still wrapped in a satchel strap.
+
+The air is wrong: cold, and too dark, as if the lantern light has to push through water. "Kurald Galain," Tuft whispers. "The Spawn's warren leaked down here. Meanas will love it. Denul won't."
+
+Something in the dark shifts its weight. Something big.`,
+    ch:[{t:'Reach for the satchel.', go:()=>startBattle('stone',{surprise:'e'})},
+        {t:'"Form up. Shields front."', go:()=>startBattle('stone',{surprise:'p'})}]}),
+  journal:()=>({sp:'Collapsed junction', txt:
+`Varrow's satchel is heavy with oilcloth-wrapped pages. The top sheet is dated the night of the assault.`,
+    ch:[{t:'Read it by lantern light.', check:['wits',13], go:'journal_read', fail:'journal_blur'},
+        {t:'"Leave it closed. Not our business."', fx:()=>{loy('brisk',1); loy('tuft',-1);}, go:'journal_closed'}]}),
+  journal_read:()=>({sp:'Varrow\'s journal', fx:()=>{S.f.knowTruth=1; loy('tuft',1);}, txt:
+`Varrow's hand is small and careful. Times. Positions. An order relayed through the High Mage's staff that moved the cadre forward, and a line underlined twice:
+
+*Moved before the Spawn attacked. Not after.*
+
+Behind you, Tuft stops breathing. Then she starts again.`,
+    ch:[{t:'Close it. Head for the surface.', go:()=>talk(S.f.clawFooled ? 'final' : 'claw2')}]}),
+  journal_blur:()=>({sp:'Varrow\'s journal', fx:()=>S.f.partial=1, txt:
+`The ink has run. Pages of it, too wet to read, except for one name that keeps surfacing like a drowned man: *Tayschrenn.*`,
+    ch:[{t:'Head for the surface.', go:()=>talk(S.f.clawFooled ? 'final' : 'claw2')}]}),
+  journal_closed:()=>({sp:'Collapsed junction', txt:`You buckle the satchel shut. Brisk grunts her approval. Tuft looks at the satchel the whole way up.`,
+    ch:[{t:'Head for the surface.', go:()=>talk(S.f.clawFooled ? 'final' : 'claw2')}]}),
+  claw2:()=>({sp:'A grey cloak', txt:
+`The grey cloak is waiting at the tunnel mouth, leaning on the shoring as if he's been part of it since the siege. His boots are still clean.
+
+"Grave detail," he says pleasantly. "Find anything heavy? I'd be glad to carry it."`,
+    ch:[{t:'Hand it over.', go:'claw_took'},
+        {t:'"It\'s for the cadre." The squad closes ranks.', check:['might',14], go:'claw_withdraw', fail:'claw_marked'},
+        {t:'Let Kettle hand him "the satchel."', check:['guile',13,'kettle'], go:'claw_decoy', fail:'claw_decoy_fail'}]}),
+  claw_took:()=>({sp:'A grey cloak', fx:()=>{S.f.gaveClaw=1; loy('tuft',-2);}, txt:
+`He takes the satchel without looking inside. "The Empress thanks you, Sergeant." He's gone before you can decide whether that was a joke. Tuft won't look at you.`,
+    ch:[{t:'Report to Tattersail', go:'final'}]}),
+  claw_withdraw:()=>({sp:'A grey cloak', fx:()=>loy('brisk',1), txt:
+`Five marines. One Claw. A narrow place full of beams that might come down. He does the arithmetic out loud: "Another time, then."
+
+When he's gone, Brisk lowers her shield about an inch.`, ch:[{t:'Report to Tattersail', go:'final'}]}),
+  claw_marked:()=>({sp:'A grey cloak', fx:()=>S.f.marked=1, txt:
+`"Of course it is." He steps aside with a little bow. You have the distinct feeling of having been entered into a ledger, in a very neat hand.`, ch:[{t:'Report to Tattersail', go:'final'}]}),
+  claw_decoy:()=>({sp:'A grey cloak', fx:()=>{S.f.decoy=1; loy('kettle',1);}, txt:
+`Kettle hands over a satchel, *a* satchel anyway, with the sullen reluctance of a woman surrendering her life's work. He walks off with it under his arm.
+
+It's her munitions ledger. "He can have it," she says. "I know where every cusser is anyway."`, ch:[{t:'Report to Tattersail', go:'final'}]}),
+  claw_decoy_fail:()=>({sp:'A grey cloak', txt:
+`He opens it on the spot. "Munitions counts," he says. "Charming." His eyes don't smile. "The real one, Sergeant."`,
+    ch:[{t:'Hand it over.', go:'claw_took'},
+        {t:'"No."', check:['might',15], go:'claw_withdraw', fail:'claw_marked'}]}),
+  final:()=> S.f.gaveClaw ? {sp:'Tattersail', txt:
+`Tattersail hears you out without looking up. When you finish she turns a single card: the Herald of High House Death.
+
+"Then the High Mage will have it by morning," she says. "Go and get some sleep, Sergeant. Somebody should."`,
+    ch:[{t:'Leave the tent', go:()=>finish('claw')}]} : {sp:'Tattersail', txt:
+`Back in the tent, the cards are exactly where she left them. Tattersail takes the satchel in both hands, the way you'd take something out of a fire.
+
+"You came back with all five," she says. "That's a nice touch."`,
+    ch:[{t:'"It\'s yours. We never saw it."', go:()=>finish('given')},
+        {t:'"We read it. Moved before the Spawn attacked, not after."', req:()=>S.f.knowTruth, go:'final_told'},
+        {t:'"Burn it. Knowing things gets soldiers killed."', go:'final_burn'}]},
+  final_told:()=>({sp:'Tattersail', fx:()=>loy('tuft',1), txt:
+`She's quiet for long enough that the candle gutters.
+
+"Then you understand why it came to me and not to him." She lays a card face-down on the satchel. "Forget the underlined part, Sergeant, for your squad's sake. I'll remember it for all of us."`,
+    ch:[{t:'Leave the tent', go:()=>finish('told')}]}),
+  final_burn:()=>({sp:'Tattersail', fx:()=>{loy('ohl',1); loy('tuft',-1);}, txt:
+`Ohl nods. Tuft doesn't. Tattersail looks at you like a woman revising an estimate.
+
+"That's a soldier's answer," she says, and holds the first page to the candle herself. "It's not a wrong one. It just isn't the one Varrow died for."`,
+    ch:[{t:'Leave the tent', go:()=>finish('burned')}]}),
+};
+
+let curCh = [];
+function talk(id){
+  const n = DLG[id]();
+  S.node = id; save();
+  if (n.fx) { S.fxd = S.fxd || {}; if (!S.fxd[id]) { S.fxd[id] = 1; n.fx(); } }
+  const sh = $('#sheet'); sh.hidden = false;
+  const noteHtml = notes.map(x => `<div class="note ${x.c}">${esc(x.t)}</div>`).join(''); notes = [];
+  curCh = n.ch.filter(c => !c.req || c.req());
+  sh.innerHTML = `<div class="sp">${esc(n.sp || '')}</div>${noteHtml}<div class="txt">${fmt(n.txt)}</div>${n.html || ''}${n.after ? `<div class="txt">${fmt(n.after)}</div>` : ''}
+    <div class="choices">${curCh.map((c,i) => {
+      const tag = c.check ? `<span class="tagk">${c.check[0]} ${c.check[1]}${c.check[2] ? ' · ' + NAME(c.check[2]) : ''}</span>` : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
+      return `<button class="choice" id="ch${i}" data-i="${i}">${tag}${esc(c.t)}</button>`; }).join('')}</div>`;
+  sh.scrollTop = 0;
+  sh.querySelectorAll('.choice').forEach(b => b.onclick = () => choose(curCh[+b.dataset.i]));
+  const first = sh.querySelector('.choice'); if (first && !('ontouchstart' in window)) first.focus({preventScroll:true});
+}
+function choose(c){
+  if (c.fx) c.fx();
+  let tgt = c.go;
+  if (c.check) tgt = check(c.check[0], c.check[1], c.check[2]) ? c.go : c.fail;
+  if (!tgt) { closeSheet(); return; }
+  if (typeof tgt === 'function') { closeSheet(); tgt(); return; }
+  talk(tgt);
+}
+function closeSheet(){
+  $('#sheet').hidden = true; S.node = null;
+  if (notes.length && view === 'explore') { notes.forEach(n => elog(n.t)); notes = []; }
+  if (view === 'explore') updExplore();
+  save();
+}
+
+/* ============ canvas setup ============ */
+function fitCanvas(cols, rows){
+  const cv = $('#cv'); if (!cv) return;
+  const w = cv.parentElement.clientWidth - 2;
+  const T = Math.max(16, Math.floor(w / cols));
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = cols * T * dpr; cv.height = rows * T * dpr;
+  cv.style.width = cols * T + 'px'; cv.style.height = rows * T + 'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  G = {ctx, T, cv, cols, rows};
+  cv.onpointerdown = e => {
+    const r = cv.getBoundingClientRect();
+    const x = Math.floor((e.clientX - r.left) / T), y = Math.floor((e.clientY - r.top) / T);
+    if (x < 0 || y < 0 || x >= cols || y >= rows) return;
+    if (view === 'explore') exploreTap(x, y); else if (view === 'battle') battleTap(x, y);
+  };
+}
+window.addEventListener('resize', () => { if (view === 'explore') fitCanvas(16,12); else if (view === 'battle') fitCanvas(8,10); });
+
+function drawTile(ctx, ch, x, y, T, t, dark){
+  const px = x*T, py = y*T, h = hash(x,y);
+  const fill = c => { ctx.fillStyle = c; ctx.fillRect(px,py,T,T); };
+  const speck = (c, n, s=1) => { ctx.fillStyle = c; for (let i=0;i<n;i++){ const a = hash(x,y,i+s), b = hash(y,x,i+s+9); ctx.fillRect(px+a*T, py+b*T, Math.max(1,T*.06), Math.max(1,T*.06)); } };
+  if (ch === '#') { fill(dark ? '#141110' : '#1f1a16'); ctx.fillStyle = dark ? '#221d19' : '#2e2721';
+    for (let i=0;i<3;i++){ const a=hash(x,y,i), b=hash(x,y,i+5); ctx.beginPath(); ctx.ellipse(px+(.2+a*.6)*T, py+(.2+b*.6)*T, T*.2, T*.14, a*3, 0, 7); ctx.fill(); } return; }
+  const base = ch === ',' ? '#48423c' : ch === 'P' ? '#1b1613' : '#393027';
+  fill(dark ? shade(base, -.35) : shade(base, (h - .5) * .12));
+  speck(ch === ',' ? '#6a635a' : '#4a4036', 3);
+  if (ch === 'R') { ctx.fillStyle = '#2a231e'; ctx.fillRect(px+1,py+1,T-2,T-2); ctx.fillStyle = '#4a3f35'; ctx.fillRect(px+1,py+1,T-2,T*.22);
+    ctx.strokeStyle = '#1b1613'; ctx.lineWidth = 1; for (let r=1;r<4;r++){ ctx.beginPath(); ctx.moveTo(px+1, py+r*T/4); ctx.lineTo(px+T-1, py+r*T/4); ctx.stroke(); } }
+  if (ch === 'P') { speck('#cfc4b0', 4, 3); ctx.strokeStyle = '#2c241e'; ctx.strokeRect(px+2,py+2,T-4,T-4); }
+  if (ch === '~') { fill('#1f1a2b'); const g = ctx.createRadialGradient(px+T/2,py+T/2,1,px+T/2,py+T/2,T*.8);
+    const a = .22 + (REDUCE ? 0 : Math.sin(t/700 + x*.9 + y*.7) * .1); g.addColorStop(0, `rgba(160,141,224,${a})`); g.addColorStop(1, 'rgba(160,141,224,0)');
+    ctx.fillStyle = g; ctx.fillRect(px,py,T,T); }
+  if (ch === '=') { ctx.fillStyle = '#7a6448'; ctx.beginPath(); ctx.moveTo(px, py+T); ctx.lineTo(px+T/2, py+T*.12); ctx.lineTo(px+T, py+T); ctx.fill();
+    ctx.fillStyle = '#5c4a35'; ctx.beginPath(); ctx.moveTo(px+T/2, py+T*.12); ctx.lineTo(px+T, py+T); ctx.lineTo(px+T*.62, py+T); ctx.fill(); }
+  if (ch === 'T') { ctx.fillStyle = '#060504'; ctx.fillRect(px+T*.15, py+T*.2, T*.7, T*.72); ctx.fillStyle = '#6b5236';
+    ctx.fillRect(px+T*.08, py+T*.12, T*.84, T*.12); ctx.fillRect(px+T*.1, py+T*.12, T*.1, T*.8); ctx.fillRect(px+T*.8, py+T*.12, T*.1, T*.8); }
+}
+function shade(hex, amt){ const n = parseInt(hex.slice(1),16); let r=n>>16, g=(n>>8)&255, b=n&255;
+  const f = v => Math.max(0, Math.min(255, Math.round(v + (amt < 0 ? v*amt : (255-v)*amt)))); return `rgb(${f(r)},${f(g)},${f(b)})`; }
+
+function token(ctx, x, y, T, col, sig, o={}){
+  const cx = x*T + T/2, cy = y*T + T/2, r = T*.36*(o.scale||1);
+  ctx.globalAlpha = o.alpha ?? 1;
+  ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(cx, cy + r*.85, r*.9, r*.3, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = o.enemy ? '#3a1a17' : '#1d1814'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+  ctx.lineWidth = Math.max(1.5, T*.07); ctx.strokeStyle = col; ctx.stroke();
+  ctx.fillStyle = col; ctx.font = `700 ${Math.round(r*1.05)}px 'Alegreya Sans SC', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(sig, cx, cy + 1);
+  if (o.active) { const p = REDUCE ? 0 : (Math.sin(performance.now()/260)+1)*.5; ctx.strokeStyle = `rgba(214,162,74,${.5+p*.5})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, r + 3 + p*2, 0, 7); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+}
+
+/* ============ pathfinding ============ */
+function reachMap(sx, sy, pass, maxD){
+  const m = new Map([[K(sx,sy), {d:0, p:null, x:sx, y:sy}]]); const q = [[sx,sy]];
+  while (q.length) { const [x,y] = q.shift(); const cur = m.get(K(x,y)); if (cur.d >= maxD) continue;
+    for (const [dx,dy] of DIRS) { const nx = x+dx, ny = y+dy; if (m.has(K(nx,ny)) || !pass(nx,ny)) continue;
+      m.set(K(nx,ny), {d:cur.d+1, p:K(x,y), x:nx, y:ny}); q.push([nx,ny]); } }
+  return m;
+}
+function pathFrom(m, x, y){ const out = []; let k = K(x,y); while (k && m.get(k).p !== null) { const n = m.get(k); out.unshift({x:n.x, y:n.y}); k = n.p; } return out; }
+function findPath(sx, sy, pass, goal){
+  const m = new Map([[K(sx,sy), {d:0,p:null,x:sx,y:sy}]]); const q = [[sx,sy]];
+  while (q.length) { const [x,y] = q.shift(); if (goal(x,y)) return pathFrom(m, x, y);
+    for (const [dx,dy] of DIRS) { const nx=x+dx, ny=y+dy; if (m.has(K(nx,ny)) || !pass(nx,ny)) continue; m.set(K(nx,ny), {d:0,p:K(x,y),x:nx,y:ny}); q.push([nx,ny]); } }
+  return null;
+}
+
+/* ============ title / intro ============ */
+function showTitle(){
+  view = 'title'; const has = loadSave();
+  $('#app').innerHTML = `<div class="title">
+    <h1>Ashes<span>of the Pale</span></h1>
+    <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them.</p>
+    <div class="field"><label for="nm">Your sergeant's name</label><input type="text" id="nm" maxlength="18" value="${esc(has?.name || 'Hask')}" autocomplete="off"></div>
+    <div class="row"><button class="btn primary" id="bNew">Begin</button>${has ? '<button class="btn" id="bCont">Continue</button>' : ''}<button class="btn" id="bImp">Load a save code</button></div>
+    <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Vertical slice: one area, two fights, one choice that matters. · v${VERSION}</p></div>`;
+  $('#bNew').onclick = () => { S = newState($('#nm').value.trim()); save(); showIntro(); };
+  if (has) $('#bCont').onclick = () => { S = has; resume(); };
+  $('#bImp').onclick = () => openModal('save');
+}
+function showIntro(){
+  view = 'intro'; S.scene = 'intro'; save();
+  $('#app').innerHTML = `<header class="hud"><div><div class="loc">The Pale</div><div class="sub">Genabackis · three days after</div></div></header>
+  <div class="narr">
+    <p>Three days ago the Moon's Spawn drifted away from the Pale, leaving behind a city that had surrendered and an army that hadn't survived the surrender. What's left of the Second Army lies in pits on the hillside. The cadre of mages is down to a handful. Onearm's Host holds the ruins, counts its dead, and doesn't talk about whose sorcery fell on whom.</p>
+    <p>You are Sergeant ${esc(S.name)}, Fourth Squad, Seventh Company marines. Your squad came through the siege with all five of you still breathing, which in this army makes you either lucky or suspicious.</p>
+    <p>This morning a runner found you with a message from the cadre. It said: <em>my tent, now.</em></p>
+  </div>
+  <div class="row"><button class="btn primary" id="bGo">Answer the summons</button><button class="btn" id="bSq">Meet the squad</button></div>`;
+  $('#bGo').onclick = () => { $('#bGo').disabled = true; talk('intro_tat'); };
+  $('#bSq').onclick = () => openModal('squad');
+}
+
+/* ============ explore ============ */
+let ash = [];
+function startExplore(){
+  view = 'explore'; S.scene = 'explore'; S.bg = 'explore'; B = null; save();
+  $('#app').innerHTML = `<header class="hud"><div><div class="loc">The Pale · north quarter</div><div class="sub" id="quest"></div></div>
+    <div class="hudr"><span id="silver"></span><button class="btn" id="bSquad">Squad</button></div></header>
+    <div class="cvwrap"><canvas id="cv" aria-label="Map of the Pale ruins"></canvas></div>
+    <p class="hint">Tap ground to move · tap a figure to talk · the tunnel mouth is top left</p>
+    <div class="log" id="elog"></div>`;
+  $('#bSquad').onclick = () => openModal('squad');
+  fitCanvas(16, 12);
+  ash = Array.from({length:REDUCE ? 0 : 36}, () => ({x:Math.random(), y:Math.random(), v:.00015 + Math.random()*.0003, w:Math.random()*6}));
+  updExplore();
+}
+function updExplore(){
+  if (!$('#quest')) return;
+  $('#quest').textContent = S.f.quest ? `Recover Varrow's satchel from the north tunnels` : '';
+  $('#silver').textContent = `${S.silver} silver`;
+  $('#elog').innerHTML = S.log.map(l => `<div>${l}</div>`).join('');
+}
+const npcAt = (x,y) => NPCS.find(n => n.x === x && n.y === y && (!n.show || n.show()));
+const palePass = (x,y) => x>=0 && y>=0 && x<16 && y<12 && '.,T'.includes(PALE[y][x]) && !npcAt(x,y);
+function exploreTap(x, y){
+  if (walking || !$('#sheet').hidden) return;
+  const npc = npcAt(x,y);
+  if (npc) {
+    const path = cheb(S.pos, npc) <= 1 ? [] : findPath(S.pos.x, S.pos.y, palePass, (a,b) => cheb({x:a,y:b}, npc) <= 1);
+    if (path) walk(path, () => talk(npc.node()));
+    return;
+  }
+  if (!palePass(x,y)) return;
+  const m = reachMap(S.pos.x, S.pos.y, palePass, 99); if (!m.has(K(x,y))) return;
+  walk(pathFrom(m, x, y), () => { if (PALE[y][x] === 'T') talk('mouth'); });
+}
+async function walk(path, done){
+  walking = true;
+  for (const st of path) { S.trail.unshift({x:S.pos.x, y:S.pos.y}); S.trail = S.trail.slice(0,4); S.pos = {x:st.x, y:st.y}; await wait(105); }
+  walking = false; save(); if (done) done();
+}
+function drawExplore(t){
+  const {ctx, T} = G; if (!ctx) return;
+  for (let y=0;y<12;y++) for (let x=0;x<16;x++) drawTile(ctx, PALE[y][x], x, y, T, t);
+  // campfire glow by the tents
+  const g = ctx.createRadialGradient(9*T, 9.5*T, 2, 9*T, 9.5*T, T*3); const fl = REDUCE ? .2 : .18 + Math.sin(t/180)*.03 + Math.sin(t/77)*.02;
+  g.addColorStop(0, `rgba(230,150,60,${fl})`); g.addColorStop(1, 'rgba(230,150,60,0)'); ctx.fillStyle = g; ctx.fillRect(0,0,16*T,12*T);
+  ctx.fillStyle = '#e8923a'; ctx.beginPath(); ctx.arc(9*T, 9.55*T, T*.12, 0, 7); ctx.fill();
+  NPCS.forEach(n => { if (n.show && !n.show()) return; token(ctx, n.x, n.y, T, n.col, n.sig, {scale:.9});
+    const fresh = (n.id==='tat' && !S.f.quest) || (n.id==='garrow' && !S.f.garrow) || (n.id==='claw' && !S.f.clawMet);
+    if (fresh) { ctx.fillStyle = '#d6a24a'; const cx = n.x*T+T/2, cy = n.y*T - T*.05; ctx.beginPath(); ctx.moveTo(cx, cy-T*.14); ctx.lineTo(cx+T*.09, cy); ctx.lineTo(cx, cy+T*.1); ctx.lineTo(cx-T*.09, cy); ctx.fill(); } });
+  PORDER.slice(1).forEach((id,i) => { const p = S.trail[i]; if (p) token(ctx, p.x, p.y, T, TPL[id].col, TPL[id].sig, {scale:.62, alpha:.85}); });
+  token(ctx, S.pos.x, S.pos.y, T, TPL.sgt.col, 'S', {active:!walking});
+  // drifting ash
+  ctx.fillStyle = 'rgba(210,200,185,.35)';
+  ash.forEach(a => { a.y += a.v; if (a.y > 1) a.y = 0; const x = (a.x + Math.sin(t/1600 + a.w)*.01) * 16*T; ctx.fillRect(x, a.y*12*T, 1.6, 1.6); });
+}
+
+/* ============ battle ============ */
+const party = () => B.units.filter(u => u.side === 'p' && u.hp > 0);
+const foes = () => B.units.filter(u => u.side === 'e' && u.hp > 0);
+const unitAt = (x,y) => B.units.find(u => u.hp > 0 && u.x === x && u.y === y);
+const inB = (x,y) => x>=0 && y>=0 && x<8 && y<10;
+const wall = (x,y) => !inB(x,y) || B.def.map[y][x] === '#';
+const free = (x,y,self) => !wall(x,y) && !B.units.some(u => u !== self && u.hp > 0 && u.x === x && u.y === y);
+const veilPen = () => Math.round(5 * B.warren.meanas);
+const phantomDC = () => 13 + (B.warren.meanas > 1 ? 3 : 0);
+function blog(m){ B.log.unshift(m); B.log = B.log.slice(0,5); const el = $('#blog'); if (el) el.innerHTML = B.log.map(l => `<div>${l}</div>`).join(''); }
+function float(u, txt, col){ B.fx.push({kind:'txt', x:u.x, y:u.y, txt, col, t:performance.now()}); }
+function hurt(u, n){ u.hp = Math.max(0, u.hp - n); float(u, '−'+n, '#f08a7c'); if (u.hp === 0) blog(u.side === 'p' ? `<em>${u.name} goes down!</em>` : `${u.name} falls.`); }
+function heal(u, n){ const before = u.hp; u.hp = Math.min(u.maxhp, u.hp + n); float(u, '+'+(u.hp-before), '#9fe0b8'); }
+
+function mkParty(id, x, y){
+  const t = TPL[id], L = S.lvl - 1, mh = t.hp + L*4 + (S.card === 'obelisk' ? 4 : 0);
+  return {id, side:'p', name:NAME(id), sig:t.sig, col:t.col, maxhp:mh, hp:mh, ac:t.ac, atk:t.atk + L, dmg:t.dmg, rng:t.rng, mv:t.mv, init:t.init, ab:t.ab, magic:t.magic, strain:0, verb:VERB[id], x, y};
+}
+function mkFoe(k, x, y, extra=0){ const f = FOES[k]; return {id:k, side:'e', ...f, maxhp:f.hp+extra, hp:f.hp+extra, col:'#d9695a', x, y}; }
+
+function startBattle(id, opt={}){
+  S.scene = 'battle'; S.battle = id; S.bopt = opt; S.node = null; S.bg = 'tunnel'; save();
+  const snap = JSON.stringify(S);
+  const def = BATTLES[id];
+  view = 'battle';
+  B = {def, id, opt, snap, warren:def.warren, units:[], order:[], idx:-1, round:0, fires:[], fx:[], log:[], used:{}, cur:null, moved:false, acted:false, mode:null, aim:null, busy:true, over:false, turn:0};
+  PORDER.forEach((pid,i) => B.units.push(mkParty(pid, def.party[i][0], def.party[i][1])));
+  def.foes.forEach((f,i) => { if (opt.drop && opt.drop.includes(i)) return; B.units.push(mkFoe(f[0], f[1], f[2], f[0]==='stone' && S.f.noisy ? 10 : 0)); });
+  const initRoll = u => d20() + u.init;
+  B.units.forEach(u => u.ini = initRoll(u));
+  B.initOrder = [...B.units].sort((a,b) => b.ini - a.ini);
+  B.surprise = opt.surprise || null;
+  $('#app').innerHTML = `<header class="hud"><div><div class="loc">${def.title}</div><div class="sub warren">${def.warrenText}</div></div><div class="hudr" id="bRound"></div></header>
+    <div class="order" id="order"></div>
+    <div class="cvwrap"><canvas id="cv" aria-label="Battle map"></canvas></div>
+    <div class="ubar" id="ubar"></div>
+    <div class="log" id="blog"></div>`;
+  fitCanvas(8, 10);
+  if (opt.pre) { foes().forEach(f => hurt(f, roll(1,10))); blog(`Kettle's sharper skips across the floor and goes off in the middle of them. The whole tunnel hears it.`); }
+  if (B.surprise === 'p') blog(`Surprise: your squad moves first.`);
+  if (B.surprise === 'e') blog(`<em>Something moves before you do.</em>`);
+  setTimeout(nextTurn, 500);
+}
+function newRound(){
+  B.round++; B.idx = 0;
+  if (B.surprise) { B.order = B.initOrder.filter(u => u.side === B.surprise); B.surprise = null; B.surpriseRound = true; }
+  else { B.order = B.initOrder; B.surpriseRound = false; }
+  B.fires = B.fires.filter(f => f.until >= B.round);
+}
+function nextTurn(){
+  if (checkEnd()) return;
+  B.idx++;
+  if (B.idx >= B.order.length) newRound();
+  const u = B.order[B.idx];
+  if (!u || u.hp <= 0) return nextTurn();
+  B.cur = u; B.moved = false; B.acted = false; B.mode = null; B.aim = null; B.turn++;
+  if (u.strain) u.strain = Math.max(0, u.strain - 1);
+  if (B.fires.some(f => f.x === u.x && f.y === u.y)) { blog(`${u.name} is caught in burner fire.`); hurt(u, roll(1,6)); }
+  if (u.hp <= 0) { updBattleUI(); if (checkEnd()) return; return setTimeout(nextTurn, 600); }
+  if (u.stun) { u.stun = false; blog(`${u.name} is dazed and loses the turn.`); updBattleUI(); return setTimeout(nextTurn, 800); }
+  if (u.side === 'p') { B.busy = false; B.mode = 'act'; updBattleUI(); }
+  else { B.busy = true; updBattleUI(); setTimeout(() => ai(u, B.turn), 550); }
+}
+function endTurn(){ if (!B || B.over) return; B.busy = true; B.mode = null; B.aim = null; setTimeout(nextTurn, 250); }
+function checkEnd(){
+  if (!B || B.over) return true;
+  if (!foes().length) { B.over = true; setTimeout(win, 700); return true; }
+  if (!party().length) { B.over = true; setTimeout(lose, 900); return true; }
+  return false;
+}
+function win(){
+  const up = gainXP(B.def.xp);
+  S.scene = 'talk'; save();
+  note(`Victory. +${B.def.xp} experience. Ohl patches up the squad; everyone is back on their feet.`, 'good');
+  if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good');
+  updBattleUI();
+  talk(B.def.after);
+}
+function lose(){
+  const sh = $('#sheet'); sh.hidden = false;
+  sh.innerHTML = `<div class="sp">The squad goes down in the dark</div><div class="txt"><p>Hood's gate is a long walk, and no one in the Fourth is in a hurry to make it. Try it again.</p></div>
+    <div class="choices"><button class="choice" id="bRetry">Retry the fight</button></div>`;
+  $('#bRetry').onclick = () => { sh.hidden = true; S = JSON.parse(B.snap); startBattle(S.battle, S.bopt || {}); };
+}
+
+/* abilities */
+const AB = {
+  rally:{name:'Rally', self:true, desc:()=>'Squadmates within 3 heal 4 and get +2 to hit through next round. Once per fight.', ok:()=>!B.used.rally,
+    run(u){ B.used.rally = 1; party().forEach(p => { if (cheb(u,p) <= 3) { heal(p,4); p.rallyUntil = B.round + 1; } }); blog(`${u.name}: "On me, you sorry lot!" The squad steadies.`); }},
+  bash:{name:'Shield bash', desc:()=>'Adjacent enemy: 1d6+3 damage, and it loses its next turn on a hit. Recharges after 2 rounds.', ok:u=>!(u.cdBash >= B.round),
+    tiles:u=>foes().filter(f => cheb(u,f) === 1),
+    run(u,x,y){ const t = unitAt(x,y); u.cdBash = B.round + 2; const r = attack(u, t, {dmg:[1,6,3], verb:'shield-bashes'}); if (r.hit && t.hp > 0) { t.stun = true; blog(`${t.name} reels, dazed.`); } }},
+  sharper:{name:'Sharper', item:'sharper', aoe:1, range:4, desc:()=>'Throw, range 4. 1d10+2 where it lands and 1d6 to everything next to it, squad included. A natural 1 scatters it.',
+    run(u,x,y){ const pt = scatter(u,x,y,1,1); blast(pt, [[1,10,2],[1,6,0]], '#f2c46b'); blog(`${u.name} lobs a sharper.`); }},
+  burner:{name:'Burner', item:'burner', aoe:1, range:4, desc:()=>'Throw, range 4. 1d6 to everything in a 3×3 and leaves it burning for 2 rounds. A natural 1 scatters it.',
+    run(u,x,y){ const pt = scatter(u,x,y,1,1); blast(pt, [[1,6,0],[1,6,0]], '#ff7a3a');
+      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(pt.x+dx, pt.y+dy)) B.fires.push({x:pt.x+dx, y:pt.y+dy, until:B.round+2});
+      blog(`${u.name} throws a burner. The tunnel fills with orange light.`); }},
+  cusser:{name:'Cusser', item:'cusser', aoe:2, range:3, desc:()=>'Throw, range 3. 3d8 to the centre and everything next to it, 1d8 one step further. Scatters on a 1–2. It\'s a cusser.',
+    run(u,x,y){ const pt = scatter(u,x,y,2,R(2)+1); blast(pt, [[3,8,0],[3,8,0],[1,8,0]], '#fff1c2'); blog(`${u.name} throws a cusser. The ceiling thinks about it.`); }},
+  veil:{name:'Veil', strain:2, desc:()=>`Meanas illusion on a squadmate within 4: enemies take −${veilPen()} to hit them for 2 rounds. Strain 2.`,
+    tiles:u=>party().filter(p => cheb(u,p) <= 4),
+    run(u,x,y){ const t = unitAt(x,y); t.veilUntil = B.round + 2; blog(`${u.name} folds shadow around ${t.name}. They blur at the edges.`); float(t,'veiled','#c9bbff'); }},
+  phantom:{name:'Phantom', strain:3, desc:()=>`An enemy within 5 chases a Meanas phantom and loses its next turn unless it resists (DC ${phantomDC()}). Strain 3.`,
+    tiles:u=>foes().filter(f => cheb(u,f) <= 5),
+    run(u,x,y){ const t = unitAt(x,y); const r = d20() + (t.boss ? 4 : 2);
+      if (r >= phantomDC()) { blog(`${t.name} sees through the phantom (${r} vs ${phantomDC()}).`); float(t,'resists','#a99a88'); }
+      else { t.stun = true; blog(`${t.name} lunges after a phantom that isn't there (${r} vs ${phantomDC()}).`); float(t,'fooled','#c9bbff'); } }},
+  mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within 3: 2d6+3${B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
+    tiles:u=>party().filter(p => cheb(u,p) <= 3),
+    run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,3) * B.warren.denul)); heal(t, n); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
+  salve:{name:'Salve', item:'salve', desc:()=>'Heal 8, yourself or an adjacent squadmate.', tiles:u=>party().filter(p => cheb(u,p) <= 1),
+    run(u,x,y){ const t = unitAt(x,y); heal(t, 8); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
+};
+function abOk(u, k){ const a = AB[k]; if (a.item && S.inv[a.item] <= 0) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
+function scatter(u, x, y, failOn, dist){
+  const nat = d20() + (S.card === 'oponn' ? 1 : 0);
+  if (nat <= failOn) { const [dx,dy] = DIRS[R(8)]; let nx = x, ny = y;
+    for (let i=0;i<dist;i++) if (!wall(nx+dx, ny+dy)) { nx += dx; ny += dy; }
+    blog(`<em>The throw goes wide!</em>`); return {x:nx, y:ny}; }
+  return {x, y};
+}
+function blast(pt, dice, col){
+  B.fx.push({kind:'boom', x:pt.x, y:pt.y, r:dice.length - 1, col, t:performance.now()});
+  B.units.filter(u => u.hp > 0).forEach(u => { const d = cheb(u, pt); if (d < dice.length) { const [n,s,p] = dice[d]; hurt(u, roll(n,s,p)); if (u.side === 'p') blog(`${u.name} is caught in the blast.`); } });
+}
+function attack(a, t, o={}){
+  const nat = d20(), mine = a.side === 'p';
+  const bonus = a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0);
+  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0);
+  const crit = nat >= (mine && S.card === 'assassin' ? 19 : 20);
+  const hit = crit || (nat !== 1 && nat + bonus >= ac);
+  const verb = o.verb || a.verb;
+  if (!hit) { blog(`${a.name} ${verb} ${t.name} and misses <span class="stat">(${nat}+${bonus} vs ${ac})</span>.`); float(t, 'miss', '#a99a88'); return {hit:false}; }
+  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]);
+  blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage <span class="stat">(${nat}+${bonus} vs ${ac})</span>.`);
+  hurt(t, dmg); return {hit:true, dmg};
+}
+function castStrain(u, cost){
+  if (!cost) return; u.strain += cost;
+  if (u.strain > STR_MAX) { const over = u.strain - STR_MAX, dmg = over * 3; u.strain = STR_MAX; blog(`<em>${u.name} overdraws the warren.</em> Blood from the nose, ${dmg} damage.`); hurt(u, dmg); }
+}
+
+/* player input */
+function battleTap(x, y){
+  if (!B || B.busy || B.over || !B.cur || B.cur.side !== 'p' || !$('#sheet').hidden) return;
+  const u = B.cur, t = unitAt(x,y);
+  if (B.mode && B.mode !== 'act') {
+    const a = AB[B.mode];
+    if (a.aoe) {
+      if (cheb(u,{x,y}) > a.range || wall(x,y)) { B.mode = 'act'; B.aim = null; return updBattleUI(); }
+      if (B.aim && B.aim.x === x && B.aim.y === y) return useAb(B.mode, x, y);
+      B.aim = {x,y}; return updBattleUI();
+    }
+    if (t && a.tiles(u).includes(t)) return useAb(B.mode, x, y);
+    B.mode = 'act'; return updBattleUI();
+  }
+  if (t && t.side === 'e' && !B.acted && cheb(u,t) <= u.rng) { B.acted = true; attack(u, t); return afterAct(); }
+  if (t) { blog(`${t.name}: ${t.hp}/${t.maxhp} health, armour ${t.ac}.`); return; }
+  if (!B.moved && B.reach && B.reach.has(K(x,y)) && !(x === u.x && y === u.y)) moveCur(x, y);
+}
+async function moveCur(x, y){
+  const u = B.cur, path = pathFrom(B.reach, x, y); B.busy = true;
+  for (const st of path) { u.x = st.x; u.y = st.y; await wait(110); }
+  B.busy = false; B.moved = true; afterAct();
+}
+function useAb(k, x, y){
+  const u = B.cur, a = AB[k];
+  if (a.item) S.inv[a.item]--;
+  a.run(u, x, y); castStrain(u, a.strain);
+  B.acted = true; B.mode = 'act'; B.aim = null; afterAct();
+}
+function afterAct(){
+  if (checkEnd()) { updBattleUI(); return; }
+  if (B.cur.hp <= 0) { updBattleUI(); return endTurn(); }
+  if (B.moved && B.acted) { updBattleUI(); B.busy = true; return setTimeout(endTurn, 450); }
+  updBattleUI();
+}
+
+/* enemy AI */
+async function ai(u, turnId){
+  if (!B || B.over || B.turn !== turnId) return;
+  const inRange = () => party().filter(p => cheb(u,p) <= u.rng);
+  if (u.boss) { u.tc = (u.tc || 0) + 1; const adj = party().filter(p => cheb(u,p) === 1);
+    if (u.tc % 3 === 0 && adj.length) { blog(`<em>The Stonebound slams the floor.</em> Stone and grief in every direction.`);
+      B.fx.push({kind:'boom', x:u.x, y:u.y, r:1, col:'#a08de0', t:performance.now()}); adj.forEach(p => hurt(p, roll(2,6)));
+      await wait(800); if (!checkEnd()) endTurn(); else updBattleUI(); return; } }
+  if (!inRange().length && party().length) {
+    const path = findPath(u.x, u.y, (x,y) => free(x,y,u), (x,y) => party().some(p => cheb({x,y}, p) <= u.rng));
+    if (path) for (const st of path.slice(0, u.mv)) { u.x = st.x; u.y = st.y; await wait(140); }
+  }
+  const tg = inRange().sort((a,b) => a.hp - b.hp)[0];
+  if (tg) { attack(u, tg); await wait(600); }
+  updBattleUI();
+  if (!checkEnd()) endTurn();
+}
+
+/* battle UI */
+function updBattleUI(){
+  if (!B || view !== 'battle') return;
+  $('#bRound').textContent = B.surpriseRound ? 'Surprise round' : `Round ${Math.max(1, B.round)}`;
+  $('#order').innerHTML = (B.order.length ? B.order : B.initOrder).map(u => `<span class="chip ${u.side} ${u === B.cur ? 'now' : ''} ${u.hp <= 0 ? 'dead' : ''}">${esc(u.name)}</span>`).join('');
+  $('#blog').innerHTML = B.log.map(l => `<div>${l}</div>`).join('');
+  const u = B.cur, ub = $('#ubar');
+  B.reach = null; B.hl = {atk:new Set(), tgt:new Set()};
+  if (!u || B.over) { ub.innerHTML = `<div class="bhint">${B.over ? 'The fighting stops.' : 'Rolling initiative…'}</div>`; return; }
+  if (u.side === 'e') { ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="stat hp">${u.hp}/${u.maxhp} health</span></div><div class="bhint">Enemy turn.</div>`; return; }
+  if (!B.moved && !B.busy) B.reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), u.mv);
+  if (!B.acted) foes().forEach(f => { if (cheb(u,f) <= u.rng) B.hl.atk.add(K(f.x,f.y)); });
+  let hint = !B.moved && !B.acted ? 'Tap a gold tile to move, or a ringed enemy to attack.' : !B.moved ? 'You can still move.' : !B.acted ? 'You can still act.' : '';
+  if (B.mode && B.mode !== 'act') { const a = AB[B.mode]; hint = a.desc() + (a.aoe ? ' Tap a tile to aim, then tap it again to throw.' : ' Tap a highlighted target.');
+    if (!a.aoe) a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y)));
+    else for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= a.range) B.hl.tgt.add(K(x,y)); }
+  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : ''].filter(Boolean).join(' · ');
+  ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="stat">${TPL[u.id].role}</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
+    <div class="bhint">${hint}</div>
+    <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? ` ×${S.inv[a.item]}` : ''; const dis = B.acted || !abOk(u,k);
+      return `<button class="btn ${B.mode === k ? 'on' : ''}" id="ab_${k}" data-k="${k}" ${dis ? 'disabled' : ''}>${a.name}${cnt}</button>`; }).join('')}
+      <button class="btn" id="bEnd">End turn</button></div>`;
+  ub.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
+    if (B.busy) return; const k = b.dataset.k;
+    if (B.mode === k) { B.mode = 'act'; B.aim = null; return updBattleUI(); }
+    if (AB[k].self) return useAb(k, u.x, u.y);
+    B.mode = k; B.aim = null; updBattleUI(); });
+  $('#bEnd').onclick = () => { if (!B.busy) endTurn(); };
+}
+function drawBattle(t){
+  const {ctx, T} = G; if (!ctx || !B) return; const def = B.def;
+  for (let y=0;y<10;y++) for (let x=0;x<8;x++) drawTile(ctx, def.map[y][x] === '#' ? '#' : (hash(x,y,4) > .8 ? ',' : '.'), x, y, T, t, def.dark);
+  B.fires.forEach(f => { const a = .28 + (REDUCE ? 0 : Math.sin(t/90 + f.x*3 + f.y)*.08); ctx.fillStyle = `rgba(255,120,40,${a})`; ctx.fillRect(f.x*T, f.y*T, T, T); });
+  if (B.reach) B.reach.forEach(n => { if (n.d === 0) return; ctx.fillStyle = 'rgba(214,162,74,.16)'; ctx.fillRect(n.x*T+1, n.y*T+1, T-2, T-2); ctx.strokeStyle = 'rgba(214,162,74,.45)'; ctx.lineWidth = 1; ctx.strokeRect(n.x*T+1.5, n.y*T+1.5, T-3, T-3); });
+  if (B.hl) B.hl.tgt.forEach(k => { const [x,y] = k.split(',').map(Number); ctx.fillStyle = 'rgba(160,141,224,.2)'; ctx.fillRect(x*T+1, y*T+1, T-2, T-2); });
+  if (B.aim) { const a = AB[B.mode]; const r = a ? a.aoe : 1; ctx.fillStyle = 'rgba(240,120,90,.28)'; ctx.fillRect((B.aim.x-r)*T, (B.aim.y-r)*T, (2*r+1)*T, (2*r+1)*T);
+    ctx.strokeStyle = '#f08a7c'; ctx.lineWidth = 2; ctx.strokeRect(B.aim.x*T+2, B.aim.y*T+2, T-4, T-4); }
+  if (def.dark) { const g = ctx.createRadialGradient(4*T, 5*T, T, 4*T, 5*T, 6.5*T); g.addColorStop(0,'rgba(20,14,34,0)'); g.addColorStop(1,'rgba(20,14,34,.55)'); ctx.fillStyle = g; ctx.fillRect(0,0,8*T,10*T); }
+  B.units.forEach(u => {
+    if (u.hp <= 0) { if (u.side === 'p') token(ctx, u.x, u.y, T, '#6a5f55', u.sig, {alpha:.45}); return; }
+    token(ctx, u.x, u.y, T, u.col, u.sig, {enemy:u.side === 'e', active:u === B.cur, scale:u.boss ? 1.18 : 1});
+    if (u.veilUntil >= B.round) { ctx.strokeStyle = 'rgba(201,187,255,.55)'; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.arc(u.x*T+T/2, u.y*T+T/2, T*.46, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
+    if (B.hl && B.hl.atk.has(K(u.x,u.y))) { ctx.strokeStyle = '#f08a7c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(u.x*T+T/2, u.y*T+T/2, T*.46, 0, 7); ctx.stroke(); }
+    const w = T*.7, px = u.x*T + (T-w)/2, py = u.y*T + T*.86; ctx.fillStyle = '#0d0b09'; ctx.fillRect(px, py, w, Math.max(3, T*.08));
+    ctx.fillStyle = u.side === 'p' ? '#7fb394' : '#d9695a'; ctx.fillRect(px, py, w * u.hp / u.maxhp, Math.max(3, T*.08));
+    if (u.stun) { ctx.fillStyle = '#e9dfc9'; ctx.font = `${Math.round(T*.3)}px sans-serif`; ctx.fillText('z', u.x*T + T*.85, u.y*T + T*.18); }
+  });
+  const now = performance.now();
+  B.fx = B.fx.filter(f => now - f.t < 950);
+  B.fx.forEach(f => { const k = (now - f.t) / 950;
+    if (f.kind === 'boom') { ctx.globalAlpha = 1 - k; ctx.fillStyle = f.col; const s = (f.r + .5) * T * (0.5 + k*.6);
+      ctx.beginPath(); ctx.arc(f.x*T + T/2, f.y*T + T/2, s, 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
+    else { ctx.globalAlpha = 1 - k*k; ctx.fillStyle = f.col; ctx.font = `700 ${Math.round(T*.34)}px 'Alegreya Sans', sans-serif`; ctx.textAlign = 'center';
+      ctx.fillText(f.txt, f.x*T + T/2, f.y*T + T*.2 - k*T*.5); ctx.globalAlpha = 1; } });
+}
+
+/* ============ ending ============ */
+function finish(kind){
+  S.ending = kind; S.scene = 'end'; S.node = null; save(); showEnd();
+}
+function showEnd(){
+  view = 'end'; $('#sheet').hidden = true;
+  const E = {
+    given:['Delivered','Varrow\'s journal is in the cadre\'s hands, unread by you. Tattersail owes your squad, and she is the kind who pays.'],
+    told:['Delivered, and known','Tattersail has the journal. You and Tuft both know what the underlined line says. That kind of knowledge has a weight, and a price.'],
+    burned:['Ashes','Varrow\'s account went up in a candle flame. Your squad is safer. The truth about the night the Second died is not.'],
+    claw:['Taken','The journal went to the Claw. Tayschrenn will know by morning who carried it up out of the dark.'],
+  }[S.ending] || ['The end',''];
+  const extra = [];
+  if (S.f.decoy) extra.push('A Claw is walking around with Kettle\'s munitions ledger. He\'ll notice eventually.');
+  if (S.f.marked) extra.push('A Claw has your name in a neat hand.');
+  if (S.f.noisy) extra.push('Your sharper woke the Stonebound early. It remembered.');
+  if (S.f.knowDeserters && !S.f.noisy) extra.push('Garrow\'s word reached Moreau\'s section.');
+  $('#app').innerHTML = `<div class="end">
+    <div class="sub">End of the vertical slice</div>
+    <h2>${E[0]}</h2>
+    <p class="narr" style="margin:0">${E[1]}</p>
+    ${extra.length ? `<ul>${extra.map(e => `<li>${e}</li>`).join('')}</ul>` : ''}
+    <div class="kv" style="margin:16px 0">${['brisk','kettle','tuft','ohl'].map(id => `<span>${TPL[id].name}</span><span class="pips">${loyLabel(S.loy[id])}</span>`).join('')}
+      <span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.card ? `<span>Card drawn</span><span>${CARDS[S.card].name}</span>` : ''}</div>
+    <p class="fine">In the full act: Captain Paran arrives at the Pale, the Hounds of Shadow come hunting, and the Fourth is sent the long way round to Darujhistan.</p>
+    <div class="row" style="margin-top:14px"><button class="btn" id="bSq">Squad</button><button class="btn primary" id="bAgain">Play again</button></div></div>`;
+  $('#bSq').onclick = () => openModal('squad');
+  $('#bAgain').onclick = () => showTitle();
+}
+const loyLabel = n => (['Resentful','Wary','Uneasy','Steady','Warm','Loyal','Devoted'][n+3]);
+
+/* ============ squad modal ============ */
+function openModal(tab){
+  const m = $('#modal'); m.hidden = false;
+  const tabs = S ? ['squad','pack','journal','save'] : ['save'];
+  const body = {
+    squad:()=>PORDER.map(id => { const t = TPL[id], L = S.lvl - 1;
+      return `<div class="mem"><div class="sig" style="border-color:${t.col};color:${t.col}">${t.sig}</div><div>
+        <h3>${esc(NAME(id))}</h3><div class="r">${t.role} · ${t.hp + L*4 + (S.card === 'obelisk' ? 4 : 0)} health · armour ${t.ac} · +${t.atk + L} to hit · might ${t.st.might} · wits ${t.st.wits} · guile ${t.st.guile}</div>
+        <p>${t.bio}</p>${t.quest ? `<p class="q">${t.quest}</p>` : ''}${id !== 'sgt' ? `<div class="pips">${loyLabel(S.loy[id])}</div>` : ''}</div></div>`; }).join(''),
+    pack:()=>`<div class="kv"><span>Silver</span><span>${S.silver}</span><span>Sharpers</span><span>${S.inv.sharper}</span><span>Burners</span><span>${S.inv.burner}</span><span>Cussers</span><span>${S.inv.cusser}</span><span>Healing salves</span><span>${S.inv.salve}</span>
+      <span>Squad level</span><span>${S.lvl} (${S.xp}/${LEVELS[S.lvl] ?? '—'} xp)</span>${S.card ? `<span>Deck reading</span><span>${CARDS[S.card].name}</span>` : ''}</div>
+      ${S.card ? `<p class="fine" style="margin-top:10px">${CARDS[S.card].fx}</p>` : ''}
+      <p class="fine" style="margin-top:10px">Moranth munitions hit everything in the blast, your own squad included. Warren magic builds strain; past ${STR_MAX}, the caster pays in blood.</p>`,
+    journal:()=>`<ul class="jl">${[
+      S.f.quest ? `Recover Varrow's satchel from the north sapper tunnels and bring it to Tattersail. ${S.ending ? '(Done.)' : ''}` : `Answer the cadre's summons.`,
+      S.f.knowStakes ? `Tattersail says the journal records who ordered what the night the Second Army died.` : '',
+      S.f.knowDeserters ? `Garrow: Moreau's section deserted into the north tunnels. "The Fist is still counting heads."` : '',
+      S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak at the crater is paying attention to your squad.`) : '',
+      S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
+      `Brisk's brother, Second Army: not yet found.`, `Tuft and the High Mage: unasked.`].filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>`,
+    save:()=>`<p class="fine">The game saves itself on this device as you play. To move it to another device, or protect it from a cleared browser, copy this code somewhere safe.</p>
+      ${S ? `<textarea id="exp" readonly aria-label="Save code">${saveCode()}</textarea><div class="row" style="margin:8px 0 16px"><button class="btn" id="bCopy">Copy code</button></div>` : ''}
+      <label class="fine" for="imp">Paste a save code to load it</label><textarea id="imp" placeholder="Paste code here"></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="bLoad">Load code</button></div><p class="fine" id="impMsg"></p>`,
+  };
+  m.innerHTML = `<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
+    <div class="tabs">${tabs.map(k => `<button class="tab ${k === tab ? 'on' : ''}" data-t="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
+    <div>${body[tab]()}</div></div>`;
+  m.querySelectorAll('.tab').forEach(b => b.onclick = () => openModal(b.dataset.t));
+  $('#bClose').onclick = () => { m.hidden = true; };
+  if (tab === 'save') {
+    if ($('#bCopy')) $('#bCopy').onclick = () => { const ta = $('#exp'); ta.select(); try { navigator.clipboard.writeText(ta.value); $('#bCopy').textContent = 'Copied'; } catch(e) { $('#bCopy').textContent = 'Select and copy'; } };
+    $('#bLoad').onclick = () => { try { const s = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim())))); if (!s || s.v !== 1) throw 0; S = s; save(); m.hidden = true; resume(); }
+      catch(e) { $('#impMsg').textContent = 'That code didn\'t load. Check that it was copied in full.'; } };
+  }
+}
+function saveCode(){ return btoa(unescape(encodeURIComponent(JSON.stringify(S)))); }
+
+/* ============ resume & boot ============ */
+function resume(){
+  $('#sheet').hidden = true; $('#modal').hidden = true; notes = [];
+  if (S.scene === 'end') return showEnd();
+  if (S.scene === 'intro') { showIntro(); if (S.node) talk(S.node); return; }
+  if (S.scene === 'battle') return startBattle(S.battle, S.bopt || {});
+  if (S.bg === 'tunnel') {
+    view = 'scene';
+    $('#app').innerHTML = `<header class="hud"><div><div class="loc">Under the Pale</div><div class="sub">North sapper tunnels</div></div><div class="hudr"><button class="btn" id="bSquad">Squad</button></div></header><div class="scene">Lantern light, cold air, and the smell of old stone.</div>`;
+    $('#bSquad').onclick = () => openModal('squad');
+    if (S.node) talk(S.node); return;
+  }
+  startExplore(); if (S.node) talk(S.node);
+}
+function loop(t){ if (view === 'explore') drawExplore(t); else if (view === 'battle') drawBattle(t); requestAnimationFrame(loop); }
+function start(data){
+  if (data && data.S) { S = data.S; resume(); } else showTitle();
+  requestAnimationFrame(loop);
+}
+window.claude?.hot?.snapshot?.(() => (S ? {S: JSON.parse(JSON.stringify(S))} : {}));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+
+<button id="updBtn" hidden style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;background:#d6a24a;color:#1c1510;border:0;border-radius:3px;padding:12px 18px;font:700 15px 'Alegreya Sans SC',sans-serif;letter-spacing:.05em;box-shadow:0 6px 24px rgba(0,0,0,.5)">Update ready · tap to reload</button>
+<script>
+if ('serviceWorker' in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (refreshing) return; refreshing = true; location.reload(); });
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    const offer = w => { const b = document.getElementById('updBtn'); b.hidden = false; b.onclick = () => { b.textContent = 'Updating…'; w.postMessage('SKIP_WAITING'); }; };
+    if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
+    reg.addEventListener('updatefound', () => { const w = reg.installing; w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) offer(w); }); });
+    setInterval(() => reg.update(), 30 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update(); });
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>
