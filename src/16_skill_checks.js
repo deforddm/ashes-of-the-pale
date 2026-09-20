@@ -1,12 +1,26 @@
 /* ============ skill checks ============ */
+function roller(stat, who){ const ids = who ? [who] : SQUAD(); let best = ids[0]; ids.forEach(id => { if (statOf(id, stat) > statOf(best, stat)) best = id; }); return best; }
 function check(stat, dc, who){
-  const ids = who ? [who] : SQUAD();
-  let best = ids[0]; ids.forEach(id => { if (statOf(id, stat) > statOf(best, stat)) best = id; });
+  const best = roller(stat, who);
   const nat = d20(), mod = statOf(best, stat) + (S.card === 'oponn' ? 1 : 0), tot = nat + mod, ok = tot >= dc;
   const label = stat[0].toUpperCase() + stat.slice(1);
-  AUDIO.play('dice', ok);
   note(SET.dice ? `${label} check (DC ${dc}): ${NAME(best)} rolls ${nat} + ${mod} = ${tot} · ${ok ? 'success' : 'failure'}` : `${label} check: ${NAME(best)} · ${ok ? 'success' : 'failure'}`, ok ? 'good' : 'bad');
-  return ok;
+  return {ok, nat, mod, tot, dc, who:best, label};
+}
+/* the die: a d20 tumbles in the sheet, settles on the roll, then the story goes on. Tap to hurry it. */
+function rollDice(r, done){
+  const sh = $('#sheet'); const old = $('#dice'); if (old) old.remove();
+  const el = document.createElement('div'); el.id = 'dice'; el.className = 'dice';
+  el.innerHTML = `<div class="dwho">${esc(NAME(r.who))} · ${r.label} ${r.dc}</div><div class="d20"><svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,4 92,28 92,72 50,96 8,72 8,28" fill="#1a1613" stroke="#c9973f" stroke-width="2"/><polygon points="50,4 92,28 50,40 8,28" fill="rgba(201,151,63,.12)"/><polygon points="50,40 92,28 92,72 50,96 8,72 8,28" fill="none" stroke="rgba(201,151,63,.5)" stroke-width="1"/><line x1="50" y1="40" x2="50" y2="96" stroke="rgba(201,151,63,.5)"/></svg><span class="dn">20</span></div><div class="dres"></div>`;
+  sh.appendChild(el); el.scrollIntoView({block:'nearest'});
+  const n = el.querySelector('.dn'), res = el.querySelector('.dres'), die = el.querySelector('.d20');
+  const t0 = performance.now(), dur = REDUCE() ? 200 : 950; let fin = false;
+  AUDIO.play('shuffle');
+  const settle = () => { if (fin) return; fin = true; n.textContent = r.nat; die.classList.add(r.nat === 20 ? 'crit' : r.nat === 1 ? 'fumble' : 'set'); el.classList.add(r.ok ? 'ok' : 'bad');
+    res.innerHTML = `${r.nat} <span class="dm">${r.mod >= 0 ? '+' : '−'} ${Math.abs(r.mod)}</span> = <b>${r.tot}</b> <span class="dv">${r.ok ? 'success' : 'failure'}</span>`; AUDIO.play('dice', r.ok);
+    setTimeout(() => { if (el.isConnected) el.remove(); done(); }, REDUCE() ? 300 : 1100); };
+  const tick = () => { if (fin) return; const k = (performance.now() - t0) / dur; if (k >= 1) return settle(); n.textContent = 1 + R(20); die.style.transform = `rotate(${Math.sin(k*40)*18}deg) scale(${1 + Math.sin(k*Math.PI)*.15})`; setTimeout(tick, 45 + k*90); };
+  el.onclick = settle; tick();
 }
 const fmt = t => t.replace(/\{sgt\}/g, esc(S.name)).split(/\n\n/).map(p => `<p>${p.replace(/\*(.+?)\*/g,'<em>$1</em>')}</p>`).join('');
 function tatRest(){
@@ -194,7 +208,7 @@ function talk(id){
   curCh = n.ch.filter(c => !c.req || c.req());
   sh.innerHTML = `<div class="sp">${esc(n.sp || '')}</div>${noteHtml}<div class="txt">${fmt(n.txt)}</div>${n.html || ''}${n.after ? `<div class="txt">${fmt(n.after)}</div>` : ''}
     <div class="choices">${curCh.map((c,i) => {
-      const tag = c.check ? `<span class="tagk">${c.check[0]} ${c.check[1]}${c.check[2] ? ' · ' + NAME(c.check[2]) : ''}</span>` : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
+      const tag = c.check ? `<span class="tagk">${c.check[0]} ${c.check[1]} · ${esc(NAME(roller(c.check[0], c.check[2])))}</span>` : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
       return `<button class="choice" id="ch${i}" data-i="${i}">${tag}${esc(c.t)}</button>`; }).join('')}</div>`;
   sh.scrollTop = 0;
   if (n.oncard) inlineCard($('#icard'), n.oncard[0], n.oncard[1]);
@@ -203,11 +217,11 @@ function talk(id){
 }
 function choose(c){
   if (c.fx) c.fx();
-  let tgt = c.go;
-  if (c.check) tgt = check(c.check[0], c.check[1], c.check[2]) ? c.go : c.fail;
-  if (!tgt) { closeSheet(); return; }
-  if (typeof tgt === 'function') { closeSheet(); tgt(); return; }
-  talk(tgt);
+  const go = tgt => { if (!tgt) { closeSheet(); return; } if (typeof tgt === 'function') { closeSheet(); tgt(); return; } talk(tgt); };
+  if (!c.check) return go(c.go);
+  const r = check(c.check[0], c.check[1], c.check[2]);
+  $('#sheet').querySelectorAll('.choice').forEach(b => b.disabled = true);
+  rollDice(r, () => go(r.ok ? c.go : c.fail));
 }
 function closeSheet(){
   $('#sheet').hidden = true; S.node = null;
