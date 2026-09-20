@@ -188,9 +188,14 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .red.hurt{box-shadow:inset 0 0 140px rgba(168,51,42,.55)}
 .reduce *{animation:none!important;transition:none!important}
 @media (prefers-reduced-motion: reduce){.auto-motion *{animation:none!important;transition:none!important}}
+.objective{font-family:var(--prose);font-size:.85rem;color:#f2c46b;text-align:center;padding:4px 10px;border-bottom:1px solid rgba(232,192,115,.2);letter-spacing:.02em}
+.picks{display:grid;gap:10px}.picks .pk{border:1px solid rgba(232,192,115,.2);padding:8px 10px;border-radius:6px}.picks .pk h4{margin:0 0 6px}.picks .opt2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.picks .opt2 button{text-align:left;white-space:normal;line-height:1.3;padding:8px}.picks .opt2 button b{display:block;font-family:var(--display)}.picks .opt2 button.on{outline:2px solid var(--brass)}
+.kit .row{gap:6px;flex-wrap:wrap}.kit .it{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}.kit .it small{display:block;opacity:.7}
+.chcard{text-align:center;padding:40px 16px 20px}.chcard .num{font-family:var(--display);letter-spacing:.3em;text-transform:uppercase;color:var(--brass);font-size:.9rem}.chcard h1{font-family:var(--display);font-size:2.6rem;margin:6px 0 0;font-weight:400}.chcard .rule{width:80px;height:1px;background:var(--brass);margin:14px auto;opacity:.6}
 </style>
 <style>[hidden]{display:none!important}body{margin:0}</style>
 </head><body>
+
 
 <div id="app"></div>
 <div id="sheet" hidden></div>
@@ -201,7 +206,8 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '2.0.2';
+const VERSION = '3.0.0';
+
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
 const R = n => Math.floor(Math.random() * n);
@@ -219,6 +225,7 @@ function hash(x, y, s = 0) { let h = (x * 374761393 + y * 668265263 + s * 982451
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const GEAR = `<svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/><path d="M19.4 13.5a7.9 7.9 0 0 0 0-3l2-1.5-2-3.4-2.4.9a8 8 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5a8 8 0 0 0-2.6 1.5l-2.4-.9-2 3.4 2 1.5a7.9 7.9 0 0 0 0 3l-2 1.5 2 3.4 2.4-.9a8 8 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a8 8 0 0 0 2.6-1.5l2.4.9 2-3.4-2-1.5z"/></svg>`;
 
+
 /* ============ settings ============ */
 const SKEY = 'ashes-of-the-pale-settings';
 const SET = Object.assign({master:.8, music:.6, sfx:.8, amb:.6, shake:true, motion:'auto', fs:1, speed:1, dice:true, blood:true},
@@ -231,6 +238,7 @@ function applySet(){
   AUDIO.applyVolumes();
 }
 const REDUCE = () => SET.motion === 'off' || (SET.motion === 'auto' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
 
 /* ============ audio engine (all procedural) ============ */
 const AUDIO = (() => {
@@ -355,6 +363,7 @@ const AUDIO = (() => {
   return {unlock, play, setScene, applyVolumes, get ready(){ return !!ac && ac.state === 'running'; }};
 })();
 ['pointerdown','keydown'].forEach(ev => window.addEventListener(ev, () => AUDIO.unlock(), {passive:true}));
+
 /* ============ data ============ */
 const TPL = {
   sgt:{name:'',role:'Sergeant',sig:'S',col:'#d6a24a',hp:22,ac:14,atk:4,dmg:[1,8,2],rng:1,mv:4,init:1,st:{might:2,wits:2,guile:1},ab:['rally','salve'],
@@ -422,7 +431,7 @@ const CARDS = {
   herald:{name:'Herald of High House Death',house:'High House Death',hue:'#8fa38a',txt:'',fx:''},
   crown:{name:'Crown',house:'Unaligned',hue:'#bdb3a3'}, sceptre:{name:'Sceptre',house:'Unaligned',hue:'#bdb3a3'}, orb:{name:'Orb',house:'Unaligned',hue:'#bdb3a3'},
 };
-const LEVELS = [0,100,250,450,700];
+const LEVELS = [0,100,250,450,700,1000,1400,1900]; // levels 1..8
 const STR_MAX = 6;
 
 /* explore map: # rubble  . ground  , ash  R ruin  ~ crater  = tents  T tunnel  P burial pit */
@@ -440,11 +449,36 @@ const PALE = [
   "#.....===..,...#",
   "################"];
 const NPCS = [
-  {id:'tat',name:'Tattersail',kind:'tat',col:'#a08de0',x:7,y:8,node:()=>'tat_map'},
+  {id:'tat',name:'Tattersail',kind:'tat',col:'#a08de0',x:7,y:8,node:()=>'tat_map',fresh:()=>!S.f.quest},
   {id:'pell',name:'Quartermaster Pell',kind:'pell',col:'#d6a24a',x:12,y:9,node:()=>'pell'},
-  {id:'garrow',name:'Garrow',kind:'garrow',col:'#b9ad98',x:3,y:6,node:()=>S.f.garrow?'garrow_again':'garrow'},
-  {id:'claw',name:'Grey cloak',kind:'claw',col:'#8d8a86',x:11,y:5,node:()=>S.f.clawMet?'claw_again':'claw',show:()=>!S.f.clawFooled},
+  {id:'garrow',name:'Garrow',kind:'garrow',col:'#b9ad98',x:3,y:6,node:()=>S.f.garrow?'garrow_again':'garrow',fresh:()=>!S.f.garrow,still:true},
+  {id:'claw',name:'Grey cloak',kind:'claw',col:'#8d8a86',x:11,y:5,node:()=>S.f.clawMet?'claw_again':'claw',show:()=>!S.f.clawFooled,fresh:()=>!S.f.clawMet},
 ];
+/* explore areas. walk = tile chars you can stand on; triggers = tile char -> dialogue node when stepped on; decor = which drawExplore dressing to use */
+const AREAS = {
+  pale:{id:'pale', title:'The Pale · north quarter', sub:'', hint:'Tap ground to move · tap a figure to talk · the tunnel mouth is top left', map:PALE, walk:'.,T', triggers:{T:'mouth'}, npcs:NPCS, start:{x:5,y:8}, decor:'pale',
+    quest:()=>S.f.quest ? `Recover Varrow's satchel from the north tunnels` : ''},
+};
+const CHAPTERS = {}; // n -> chapter module (CH1, CH2, ...), registered at boot
+const ITEMS = {};     // gear items, merged from chapters
+/* ability picks: level 3 = a named talent per squadmate; levels 5 and 7 = veteran picks shared by all */
+const PICKS = {
+  3:{ sgt:[['discipline','Marine Discipline','Every squadmate wears +1 armour. Eleven years of telling people where to stand.'],['sappers_eye','Sapper\'s Eye','The squad rolls +2 initiative, and the sergeant\'s free swings hit +2.']],
+      brisk:[['shieldwall','Shield Wall','Squadmates standing next to Brisk get +2 armour.'],['holdline','Hold the Line','Brisk\'s free swings are unlimited and hit +2.']],
+      kettle:[['longfuse','Long Fuse','Munitions never scatter, and throw one tile further.'],['quorl','Quorl Signal','Once a fight: a Moranth drop. A sharper from the sky, not from the satchel.']],
+      tuft:[['shadowstep','Shadow Step','Step through Meanas to any free tile within 4. No free swings. Strain 1.'],['mockra','Mockra Whisper','An enemy within 4 loses its next turn. Bosses may resist. Strain 2.']],
+      ohl:[['triage','Field Triage','Mend heals +3 and reaches 4 tiles.'],['argument','Argument with Hood','Once a fight: a downed squadmate within 2 stands up at 6 health. Strain 3.']] },
+  vet:[['iron','Iron','+6 health.'],['keen','Keen','+1 to hit.'],['fleet','Fleet','+1 move.'],['nerve','Nerve','+1 initiative and +1 to every skill check.']],
+};
+function registerChapter(n, CH){
+  CHAPTERS[n] = CH;
+  if (CH.area) AREAS[CH.area.id] = Object.assign({decor:CH.area.decor || 'camp_night'}, CH.area);
+  if (CH.battles) Object.assign(BATTLES, CH.battles);
+  if (CH.foes) Object.assign(FOES, CH.foes);
+  if (CH.gear) Object.assign(ITEMS, CH.gear);
+  if (CH.card) CARDS[CH.card.id] = CH.card;
+  if (CH.dlg) Object.assign(DLG, CH.dlg);
+}
 
 const BATTLES = {
   deserters:{title:'North sapper tunnel',warrenText:'Warrens steady down here.',warren:{meanas:1,denul:1},music:'battle',
@@ -457,6 +491,7 @@ const BATTLES = {
     foes:[['stone',3,2],['shade',1,3],['shade',6,3]],xp:150,after:'journal'},
 };
 
+
 /* ============ state ============ */
 const KEY = 'ashes-of-the-pale-v1';
 let S = null;          // saved game state
@@ -467,11 +502,27 @@ let notes = [];
 let walking = false;
 
 function newState(name){
-  return {v:1, name:name||'Hask', scene:'intro', node:null, bg:null, silver:15, xp:0, lvl:1, card:null,
+  return migrate({v:1, name:name||'Hask', scene:'intro', node:null, bg:null, silver:15, xp:0, lvl:1, card:null,
     inv:{sharper:2, burner:1, cusser:1, salve:2},
     loy:{brisk:0,kettle:0,tuft:0,ohl:0}, f:{}, pos:{x:5,y:8},
-    trail:[{x:4,y:8},{x:6,y:8},{x:4,y:9},{x:5,y:9}], log:[], ending:null, battle:null, bopt:null};
+    trail:[{x:4,y:8},{x:6,y:8},{x:4,y:9},{x:5,y:9}], log:[], ending:null, battle:null, bopt:null});
 }
+/* fill in fields added after v1 saves, so old saves keep working */
+function migrate(s){
+  s.chapter ??= 0; s.area ??= 'pale'; s.squad ??= [...PORDER]; s.kit ??= []; s.picksDue ??= []; s.chapters ??= {};
+  s.gear ??= {}; s.picks ??= {}; PORDER.forEach(id => { s.gear[id] ??= {}; s.picks[id] ??= []; });
+  if (s.ending && !(0 in s.chapters)) s.chapters[0] = s.ending;
+  return s;
+}
+const SQUAD = () => S.squad;
+const has = (id, k) => (S.picks[id] || []).includes(k);
+/* stat with gear and veteran picks folded in */
+function statOf(id, stat){ let v = TPL[id].st[stat]; Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (it && it.stat && it.stat[stat]) v += it.stat[stat]; }); if (has(id,'nerve')) v += 1; return v; }
+function gain(id){ const it = ITEMS[id]; if (!it || S.kit.includes(id)) return; S.kit.push(id); note(`Found: ${it.name}.`, 'good'); AUDIO.play('coin');
+  // auto-equip into an empty slot on the first squadmate who can wear it
+  const who = (it.who || SQUAD()).find(w => SQUAD().includes(w) && !S.gear[w][it.slot]); if (who) S.gear[who][it.slot] = id; }
+function equip(who, id){ const it = ITEMS[id]; if (!it) return; SQUAD().forEach(w => { if (S.gear[w][it.slot] === id) delete S.gear[w][it.slot]; }); S.gear[who][it.slot] = id; save(); }
+function unequip(who, slot){ delete S.gear[who][slot]; save(); }
 const NAME = id => id === 'sgt' ? S.name : TPL[id].name;
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
 function loadSave(){ try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch(e) { return null; } }
@@ -480,15 +531,16 @@ function loy(id, n){ S.loy[id] = Math.max(-3, Math.min(3, S.loy[id] + n)); notes
 function note(t, c=''){ notes.push({t, c}); }
 function gainXP(n){
   S.xp += n; const before = S.lvl; let l = 1; while (l < LEVELS.length && S.xp >= LEVELS[l]) l++; S.lvl = l;
-  if (S.lvl > before) AUDIO.play('up');
+  if (S.lvl > before) { AUDIO.play('up'); for (let k = before + 1; k <= S.lvl; k++) if ([3,5,7].includes(k)) S.picksDue.push(k); }
   return S.lvl > before;
 }
 
+
 /* ============ skill checks ============ */
 function check(stat, dc, who){
-  const ids = who ? [who] : PORDER;
-  let best = ids[0]; ids.forEach(id => { if (TPL[id].st[stat] > TPL[best].st[stat]) best = id; });
-  const nat = d20(), mod = TPL[best].st[stat] + (S.card === 'oponn' ? 1 : 0), tot = nat + mod, ok = tot >= dc;
+  const ids = who ? [who] : SQUAD();
+  let best = ids[0]; ids.forEach(id => { if (statOf(id, stat) > statOf(best, stat)) best = id; });
+  const nat = d20(), mod = statOf(best, stat) + (S.card === 'oponn' ? 1 : 0), tot = nat + mod, ok = tot >= dc;
   const label = stat[0].toUpperCase() + stat.slice(1);
   AUDIO.play('dice', ok);
   note(SET.dice ? `${label} check (DC ${dc}): ${NAME(best)} rolls ${nat} + ${mod} = ${tot} · ${ok ? 'success' : 'failure'}` : `${label} check: ${NAME(best)} · ${ok ? 'success' : 'failure'}`, ok ? 'good' : 'bad');
@@ -670,6 +722,7 @@ It's her munitions ledger. "He can have it," she says. "I know where every cusse
 
 let curCh = [];
 function talk(id){
+  if (S.picksDue && S.picksDue.length) return openPicks(() => talk(id));
   const n = DLG[id]();
   S.node = id; save();
   if (n.fx) { S.fxd = S.fxd || {}; if (!S.fxd[id]) { S.fxd[id] = 1; n.fx(); } }
@@ -701,15 +754,23 @@ function closeSheet(){
   save();
 }
 /* a backdrop for talk nodes that happen away from the explore map */
+const SCENES = {
+  tunnel:{loc:'Under the Pale', sub:'North sapper tunnels', cap:'Lantern light, cold air, and the smell of old stone.', amb:'tunnel'},
+  dark:{loc:'Under the Pale', sub:'Kurald Galain leaks through the stone', warren:true, cap:'The lantern light has to push through the dark like water.', amb:'dark'},
+  camp_night:{loc:'The Pale', sub:'The camp at night', cap:'Tent lines under a bruised sky. The cadre row has one lamp lit.', amb:'explore'},
+  tent:{loc:'Tattersail\'s tent', sub:'The cadre row', cap:'Candle smoke, wet canvas, and cards that will not lie still.', amb:'explore'},
+  fire:{loc:'The Bridgeburners\' fire', sub:'East picket', cap:'Nine soldiers who do not look up when you arrive, which is how you know they saw you coming.', amb:'explore'},
+};
 function sceneShell(kind){
   if (kind === 'explore') { if (view !== 'explore') { startExplore(); } return; }
+  S.bg = kind;
   if (view === 'scene' && G.sceneKind === kind) return;
-  view = 'scene'; B = null; G.sceneKind = kind; AUDIO.setScene(kind);
-  const cap = kind === 'dark' ? 'The lantern light has to push through the dark like water.' : 'Lantern light, cold air, and the smell of old stone.';
-  $('#app').innerHTML = `<header class="hud"><div><div class="loc">Under the Pale</div><div class="sub ${kind === 'dark' ? 'warren' : ''}">${kind === 'dark' ? 'Kurald Galain leaks through the stone' : 'North sapper tunnels'}</div></div><div class="hudr">${hudButtons()}</div></header>
-    <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>`;
+  view = 'scene'; B = null; G.sceneKind = kind; const sc = SCENES[kind] || SCENES.tunnel; AUDIO.setScene(sc.amb || kind);
+  $('#app').innerHTML = `<header class="hud"><div><div class="loc">${sc.loc}</div><div class="sub ${sc.warren ? 'warren' : ''}">${sc.sub}</div></div><div class="hudr">${hudButtons()}</div></header>
+    <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${sc.cap}</div></div>`;
   bindHud();
 }
+
 /* ============ drawing helpers ============ */
 function shade(hex, amt){ const n = parseInt(hex.slice(1),16); let r=n>>16, g=(n>>8)&255, b=n&255;
   const f = v => Math.max(0, Math.min(255, Math.round(v + (amt < 0 ? v*amt : (255-v)*amt)))); return `rgb(${f(r)},${f(g)},${f(b)})`; }
@@ -717,6 +778,7 @@ function rgba(hex, a){ const n = parseInt(hex.slice(1),16); return `rgba(${n>>16
 function glow(ctx, x, y, r, col, a){ const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0)); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r*2, r*2); }
 function poly(ctx, pts, fill, stroke){ ctx.beginPath(); pts.forEach((p,i) => i ? ctx.lineTo(p[0],p[1]) : ctx.moveTo(p[0],p[1])); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); } }
 function ell(ctx, x, y, rx, ry, fill, rot = 0){ ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, 7); ctx.fillStyle = fill; ctx.fill(); }
+
 
 /* ============ figure sprites ============ */
 /* draws a ~32px-tall figure centred at (cx, baseline cy). s = scale, dir = facing */
@@ -758,10 +820,24 @@ function drawFigure(ctx, kind, cx, cy, s, t, o = {}){
       ctx.fillStyle = '#e6dac2'; ctx.save(); ctx.translate(7, 0); ctx.rotate(-.3); ctx.fillRect(-2, -3, 4, 6); ctx.restore(); ctx.fillStyle = '#9a86e0'; ctx.fillRect(-7, -6, 14, 1); break;
     case 'pell': legs('#2a2320'); poly(ctx, [[-7,-6],[7,-6],[7.5,9],[-7.5,9]], armor('#6b5a3c', '#3a2f1e')); head('#b08c76'); ctx.fillStyle = '#3a3230'; ctx.beginPath(); ctx.arc(0,-13,5,Math.PI,0); ctx.fill(); ctx.fillStyle = '#c9b89a'; ctx.fillRect(-9, -2, 5, 6); ctx.fillStyle = '#2a1e14'; ctx.fillRect(-9, -2, 5, 1); break;
     case 'garrow': ell(ctx, 0, 11, 10, 3, 'rgba(0,0,0,.5)'); poly(ctx, [[-7,-1],[7,-1],[8,10],[-8,10]], armor('#4a4440', '#1e1b19')); ctx.fillStyle = '#1a1614'; for (let i=0;i<4;i++) ctx.fillRect(-5+i*3, -1+hash(i,3)*8, 1.5, 3); head('#9a8270', 4.2, -6); ctx.fillStyle = '#3a3630'; ctx.beginPath(); ctx.arc(-6, 6, 4, Math.PI, 0); ctx.fill(); break;
+    case 'wj': legs('#2a2320'); torso('#4a4640', '#26231f', 6.8); ctx.fillStyle = '#8d8a86'; ctx.fillRect(-6.8, -6, 13.6, 1.2); head('#9a7a62'); ctx.fillStyle = '#5a5248'; ctx.fillRect(-4.8, -15.5, 9.6, 4.5); ctx.fillStyle = '#8a8478'; ctx.fillRect(-4.5, -9.2, 9, 2.4); /* grey beard */ sword('#b8b2a4'); break;
+    case 'qb': legs('#1e1c24'); poly(ctx, [[-6,-6],[6,-6],[8,12],[-8,12]], armor('#3a2e4a', '#17121f')); head('#5a3a2a', 4.2, -11.5); ctx.fillStyle = '#12100a'; ctx.beginPath(); ctx.arc(0, -13, 4.6, Math.PI, 0); ctx.fill();
+      for (let i=0;i<4;i++){ const a = t/700 + i*1.6; ctx.strokeStyle = `rgba(232,192,115,${.25 + Math.sin(a)*.15})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.cos(a)*7, 6 + Math.sin(a)*4); ctx.quadraticCurveTo(Math.cos(a+1.5)*11, -4, Math.cos(a+3)*6, -14); ctx.stroke(); } eyes('rgba(255,230,180,.7)'); break;
+    case 'kalam': legs('#1a1816'); torso('#2e2a26', '#141210', 7.5); head('#4a3020', 4.8, -11); ctx.fillStyle = '#1a1614'; ctx.beginPath(); ctx.arc(0, -12.5, 5, Math.PI, 0); ctx.fill(); ctx.strokeStyle = '#cfc8b8'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(7, 3); ctx.lineTo(10, -3); ctx.moveTo(-7, 3); ctx.lineTo(-10, -3); ctx.stroke(); break;
+    case 'paran': legs('#2a2320'); torso('#6b5636', '#3a2c1c'); ctx.fillStyle = '#c9a44a'; ctx.fillRect(-6.5, -6, 13, 1.4); ctx.fillRect(-1, -6, 2, 13); head('#c9a58a', 4.4); ctx.fillStyle = '#3a2a1a'; ctx.beginPath(); ctx.arc(0, -12.5, 4.8, Math.PI, 0); ctx.fill(); sword('#e8d8a8'); break;
+    case 'assassin': legs('#0e0d0c'); poly(ctx, [[-6.5,-6],[6.5,-6],[8,12],[-8,12]], armor('#2a2826', '#0d0c0b')); head('#1e1a18', 4); hood('#26231f', '#050404'); ctx.strokeStyle = '#a8a296'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(7, 2); ctx.lineTo(10, -4); ctx.moveTo(-7, 2); ctx.lineTo(-10, -4); ctx.stroke(); eyes('rgba(255,120,100,.5)'); break;
+    case 'hound': { ell(ctx, 0, 13, 15, 4, 'rgba(0,0,0,.6)'); const p = Math.sin(t/240 + (o.phase||0)) * (o.still ? 0 : 1.2);
+      poly(ctx, [[-14,2],[-10,-6],[2,-9],[10,-7],[14,-2],[12,6],[-12,7]], armor('#2a2622', '#0c0a09')); // body
+      ctx.fillStyle = '#1a1614'; ctx.fillRect(-11, 5, 3.2, 8 + p); ctx.fillRect(-5, 6, 3, 7 - p); ctx.fillRect(4, 6, 3, 7 + p); ctx.fillRect(9, 5, 3.2, 8 - p); // legs
+      poly(ctx, [[10,-7],[18,-12],[24,-8],[22,-2],[14,-2]], armor('#332d28', '#110f0d')); // head
+      ctx.fillStyle = '#0a0808'; ctx.fillRect(19, -5, 5, 2); ctx.fillStyle = '#f0e6d0'; ctx.fillRect(20, -3, 1.2, 2); ctx.fillRect(22.5, -3, 1.2, 2); // jaw, teeth
+      ctx.fillStyle = 'rgba(255,190,80,.9)'; ctx.fillRect(17, -10, 2, 1.6); glow(ctx, 18, -9.5, 6, '#ffb040', .35);
+      ctx.strokeStyle = 'rgba(154,134,224,.25)'; ctx.lineWidth = 1; for (let i=0;i<3;i++){ const a = t/500 + i*2; ctx.beginPath(); ctx.moveTo(-12 + Math.cos(a)*3, -2 + Math.sin(a)*4); ctx.quadraticCurveTo(-18, -10 + Math.sin(a+1)*4, -20 + Math.cos(a)*3, -4); ctx.stroke(); } break; }
     case 'claw': legs('#141414'); poly(ctx, [[-7,-6],[7,-6],[9,13],[-9,13]], armor('#5c5a56', '#242322')); head('#2a2624', 4); hood('#5a5854', '#0a0908'); break;
   }
   ctx.restore();
 }
+
 
 /* ============ portraits ============ */
 function drawPortrait(ctx, id, W, H, t){
@@ -813,6 +889,7 @@ function drawPortrait(ctx, id, W, H, t){
   const v = ctx.createRadialGradient(W/2, H*.5, H*.3, W/2, H*.5, H*.85); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.75)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
 }
 
+
 /* ============ Deck of Dragons card art ============ */
 function drawCard(ctx, id, W, H, face, t = 0){
   ctx.save();
@@ -854,6 +931,13 @@ function drawCard(ctx, id, W, H, face, t = 0){
       const hx = cx - pw*.05, top = py + ph*.18; poly(ctx, [[hx - pw*.16, gy],[hx - pw*.13, top + ph*.22],[hx - pw*.07, top + ph*.12],[hx, top],[hx + pw*.07, top + ph*.12],[hx + pw*.13, top + ph*.22],[hx + pw*.16, gy]], '#050407');
       ctx.strokeStyle = '#020203'; ctx.lineWidth = pw*.03; ctx.beginPath(); ctx.moveTo(hx + pw*.14, top + ph*.35); ctx.lineTo(hx + pw*.2, gy + ph*.1); ctx.stroke(); ctx.strokeStyle = 'rgba(125,127,201,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(hx + pw*.145, top + ph*.35); ctx.lineTo(hx + pw*.205, gy + ph*.1); ctx.stroke();
       ctx.fillStyle = 'rgba(125,127,201,.06)'; ctx.fillRect(px, gy - ph*.06, pw, ph*.06); break; }
+    case 'hounds': { // two hounds on a ridge under a shadowed moon, eyes lit
+      ell(ctx, cx + pw*.22, py + ph*.22, pw*.13, pw*.13, '#14121c'); ctx.strokeStyle = 'rgba(154,134,224,.35)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx + pw*.22, py + ph*.22, pw*.13, 0, 7); ctx.stroke();
+      poly(ctx, [[px, gy],[px + pw*.3, gy - ph*.12],[px + pw*.6, gy - ph*.06],[px + pw, gy - ph*.14],[px + pw, gy]], '#0d0b0a');
+      [[cx - pw*.22, gy - ph*.1, 1],[cx + pw*.2, gy - ph*.06, -1]].forEach(([hx,hy,d]) => { ctx.save(); ctx.translate(hx, hy); ctx.scale(d*pw/70, pw/70);
+        poly(ctx, [[-14,2],[-10,-6],[2,-9],[10,-7],[14,-2],[12,6],[-12,7]], '#0a0808'); poly(ctx, [[10,-7],[18,-12],[24,-8],[22,-2],[14,-2]], '#0d0a09'); ctx.fillStyle = '#1a1614'; ctx.fillRect(-11,5,3,9); ctx.fillRect(9,5,3,9);
+        ctx.fillStyle = `rgba(255,190,80,${.7 + Math.sin(t/300 + hx)*.3})`; ctx.fillRect(17,-10,2.2,1.8); ctx.restore(); glow(ctx, hx + d*pw*.25, hy - ph*.05, pw*.08, '#ffb040', .3); });
+      for (let i=0;i<4;i++){ const a = t/900 + i*1.7; ell(ctx, cx + Math.cos(a)*pw*.3, py + ph*.5 + Math.sin(a*.6)*ph*.1, pw*.16, ph*.05, 'rgba(154,134,224,.06)'); } break; }
     case 'assassin': { ctx.strokeStyle = '#6b6155'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(px, py + ph*.45); ctx.lineTo(px + pw, py + ph*.32); ctx.stroke();
       const fx = cx, fy = py + ph*.4; for (let i=0;i<5;i++){ const a = t/800 + i; ell(ctx, fx + Math.cos(a)*pw*.18, fy + Math.sin(a*.7)*ph*.1, pw*.12, ph*.06, 'rgba(154,134,224,.07)'); }
       poly(ctx, [[fx - pw*.16, fy + ph*.05],[fx - pw*.1, fy - ph*.16],[fx, fy - ph*.22],[fx + pw*.1, fy - ph*.16],[fx + pw*.17, fy + ph*.05],[fx + pw*.1, fy + ph*.02],[fx - pw*.1, fy + ph*.02]], '#08070b');
@@ -898,6 +982,7 @@ function inlineCard(cv, id, refuse){
   requestAnimationFrame(fr);
 }
 
+
 /* ============ the reading: full-screen card sequence ============ */
 let cardAnim = null;
 function cardSequence(done){
@@ -905,7 +990,7 @@ function cardSequence(done){
   const picks = ['crown','sceptre','orb'].sort(() => Math.random() - .5);
   if (!S.card) S.card = ['oponn','obelisk','knight','assassin'][R(4)];
   const c = CARDS[S.card];
-  el.innerHTML = `<canvas id="ccv"></canvas><div class="cf" id="cfText"><div class="cn">${esc(c.name)}</div><div class="cfx">${esc(c.fx)}</div><div class="ct">${esc(c.txt)}</div><button class="btn primary" id="cfGo">Descend</button></div>`;
+  el.innerHTML = `<canvas id="ccv"></canvas><div class="cf" id="cfText"><div class="cn">${esc(c.name)}</div><div class="cfx">${esc(c.fx)}</div><div class="ct">${esc(c.txt)}</div><button class="btn primary" id="cfGo">${S.chapter ? "Put the cards away" : "Descend"}</button></div>`;
   const cv = $('#ccv'), ctx = cv.getContext('2d'); const dpr = Math.min(2, window.devicePixelRatio || 1);
   const fit = () => { cv.width = el.clientWidth * dpr; cv.height = el.clientHeight * dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }; fit();
   const t0 = performance.now(); let finished = false, cues = {};
@@ -952,6 +1037,7 @@ function cardSequence(done){
   window.addEventListener('resize', fit, {once:false});
 }
 
+
 /* ============ title backdrop: Moon's Spawn over the Pale ============ */
 let titleAnim = null;
 function startTitleBackdrop(cv){
@@ -991,6 +1077,7 @@ function startTitleBackdrop(cv){
   };
 }
 
+
 /* ============ tunnel scene backdrop (talk nodes away from the map) ============ */
 function drawScene(cv, kind, t){
   const ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
@@ -1010,6 +1097,38 @@ function drawScene(cv, kind, t){
   ctx.fillStyle = 'rgba(200,190,175,.25)'; for (let i=0;i<20;i++) ctx.fillRect(hash(i,9)*W + Math.sin(t/1400 + i)*5, (hash(i,10)*H + t*.02) % H, 1.5, 1.5);
   const v = ctx.createRadialGradient(cx, cy, H*.2, cx, cy, W*.7); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.85)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
 }
+
+/* tent and fire interiors for Chapter 1 talk nodes */
+function drawInterior(cv, kind, t){
+  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, fl = .8 + Math.sin(t/110)*.08 + Math.sin(t/41)*.05;
+  ctx.fillStyle = '#060505'; ctx.fillRect(0,0,W,H);
+  if (kind === 'tent') {
+    // canvas walls lit from a candle on a table; cards on the table; a crate in the corner with something on it
+    const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#1a1410'); g.addColorStop(1,'#0c0907'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle = 'rgba(120,95,60,.25)'; ctx.lineWidth = 1; for (let i=0;i<7;i++){ ctx.beginPath(); ctx.moveTo(W*.5, 0); ctx.lineTo(i*W/6, H*.7); ctx.stroke(); }
+    ctx.fillStyle = '#3a2a1a'; ctx.fillRect(W*.25, H*.62, W*.5, H*.06); ctx.fillStyle = '#2a1e12'; ctx.fillRect(W*.28, H*.68, W*.03, H*.3); ctx.fillRect(W*.69, H*.68, W*.03, H*.3);
+    for (let i=0;i<5;i++){ ctx.save(); ctx.translate(W*.36 + i*W*.07, H*.6); ctx.rotate((hash(i,3)-.5)*.5); ctx.fillStyle = i === 2 ? '#7d7fc9' : '#bdb3a3'; ctx.fillRect(-9, -13, 18, 26); ctx.fillStyle = '#1a1410'; ctx.fillRect(-7, -11, 14, 22); ctx.restore(); }
+    ell(ctx, W*.62, H*.56, 3, 8, '#e8d8a8'); glow(ctx, W*.62, H*.5, W*.35, '#ffb060', .45*fl); poly(ctx, [[W*.62-3, H*.5],[W*.62+3, H*.5],[W*.62 + Math.sin(t/90)*2, H*.5 - 12*fl]], '#fff1c2');
+    ctx.fillStyle = '#2a2018'; ctx.fillRect(W*.8, H*.66, W*.14, H*.22); ctx.fillStyle = '#3a2c1c'; ctx.fillRect(W*.8, H*.66, W*.14, H*.04);
+    // the puppet
+    ctx.save(); ctx.translate(W*.87, H*.66); ctx.fillStyle = '#4a3a2c'; ctx.fillRect(-5, -16, 10, 14); ell(ctx, 0, -20, 5, 5, '#8a6a52'); ctx.fillStyle = '#0a0808'; ctx.fillRect(-2, -21, 1.5, 1.5); ctx.fillRect(1, -21, 1.5, 1.5); ctx.strokeStyle = 'rgba(200,180,220,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-4, -30); ctx.lineTo(-3, -16); ctx.moveTo(4, -30); ctx.lineTo(3, -16); ctx.stroke(); ctx.restore();
+    glow(ctx, W*.87, H*.6, W*.12, '#9a86e0', .1 + Math.sin(t/500)*.05);
+    drawFigure(ctx, 'tat', W*.15, H*.9, 2.6, t, {still:true, dir:1});
+    SQUAD().slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.4 + i*40, H*.98, 2.2, t, {phase:i, dir:-1}));
+  } else {
+    // the Bridgeburners' fire: a ring of figures, most of them not looking at you
+    const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#04040a'); g.addColorStop(1,'#0a0807'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = 'rgba(220,220,240,.4)'; for (let i=0;i<30;i++) ctx.fillRect(hash(i,31)*W, hash(i,32)*H*.45, 1, 1);
+    for (let i=0;i<4;i++){ const x = W*.05 + i*W*.3, y = H*.5; poly(ctx, [[x-30,y+16],[x,y-26],[x+30,y+16]], '#1c150f'); }
+    glow(ctx, W*.5, H*.72, W*.4, '#e8923a', .4*fl); ell(ctx, W*.5, H*.78, 22, 7, '#2a1a10');
+    poly(ctx, [[W*.5-12, H*.78],[W*.5+12, H*.78],[W*.5 + Math.sin(t/90)*5, H*.78 - 34*fl]], '#ffb35a'); poly(ctx, [[W*.5-6, H*.78],[W*.5+6, H*.78],[W*.5 + Math.sin(t/70)*3, H*.78 - 18*fl]], '#fff1c2');
+    for (let i=0;i<8;i++){ const yy = H*.7 - ((t/10 + i*30) % (H*.5)); ctx.fillStyle = `rgba(255,${140 + R(60)},40,${(1 - (H*.7 - yy)/(H*.5))*.8})`; ctx.fillRect(W*.5 + Math.sin(t/300 + i)*20, yy, 2, 2); }
+    [['wj', W*.62, H*.86, 1], ['qb', W*.75, H*.8, -1], ['kalam', W*.86, H*.9, -1], ['garrow', W*.3, H*.66, 1], ['pell', W*.68, H*.62, -1]].forEach(([k,x,y,d], i) => drawFigure(ctx, k, x, y, k === 'garrow' || k === 'pell' ? 1.8 : 2.4, t, {still:true, dir:d, phase:i}));
+    SQUAD().slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.96, 2.2, t, {phase:i, dir:1}));
+  }
+  const v = ctx.createRadialGradient(W/2, H*.6, H*.25, W/2, H*.6, W*.7); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.85)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
+}
+
 /* ============ canvas setup ============ */
 function fitCanvas(cols, rows){
   const cv = $('#cv'); if (!cv) return;
@@ -1028,11 +1147,12 @@ function fitCanvas(cols, rows){
     if (x < 0 || y < 0 || x >= cols || y >= rows) return;
     if (view === 'explore') exploreTap(x, y); else if (view === 'battle') battleTap(x, y);
   };
-  if (view === 'explore') prerender(PALE, 16, 12, false); else if (view === 'battle' && B) prerender(B.def.map.map(r => r.replace(/\./g, '.')), 8, 10, B.def.dark, true);
+  if (view === 'explore') { const a = AREA(); prerender(a.map, cols, rows, a.decor !== 'pale', false); } else if (view === 'battle' && B) prerender(B.def.map, 8, 10, B.def.dark, !B.def.open);
 }
-window.addEventListener('resize', () => { if (view === 'explore') fitCanvas(16,12); else if (view === 'battle') fitCanvas(8,10); });
+window.addEventListener('resize', () => { if (view === 'explore') fitCanvas(ACOLS(),AROWS()); else if (view === 'battle') fitCanvas(8,10); });
 function shakeMap(){ if (!SET.shake || REDUCE()) return; const w = $('.cvwrap'); if (!w) return; w.classList.remove('shake'); void w.offsetWidth; w.classList.add('shake'); }
 function redFlash(){ const r = $('#red'); r.classList.add('hurt'); setTimeout(() => r.classList.remove('hurt'), 250); }
+
 
 /* ============ tiles ============ */
 function drawTile(ctx, ch, x, y, T, dark, tunnel){
@@ -1051,6 +1171,10 @@ function drawTile(ctx, ch, x, y, T, dark, tunnel){
   if (ch === 'P') { speck('#cfc4b0', 5, 3); speck('#8a7a68', 3, 13, .05); ctx.strokeStyle = '#26201a'; ctx.strokeRect(px+2,py+2,T-4,T-4); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(px+2,py+2,T-4,T*.3); }
   if (ch === '~') { fill('#0b0910'); const cg = ctx.createRadialGradient(9*T, 6*T, T*.3, 9*T, 6*T, T*2.3); cg.addColorStop(0, '#1e1630'); cg.addColorStop(.7, '#0e0b14'); cg.addColorStop(1, '#221c18'); ctx.fillStyle = cg; ctx.fillRect(px,py,T,T); ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.lineWidth = 1; for (let i=0;i<3;i++){ ctx.beginPath(); ctx.moveTo(px + hash(x,y,i)*T, py + hash(x,y,i+9)*T); ctx.lineTo(px + hash(x,y,i+4)*T, py + hash(x,y,i+13)*T); ctx.stroke(); } speck('#3a2f4a', 3, 21, .05); }
   if (ch === '=') { ctx.fillStyle = '#5a4630'; ctx.beginPath(); ctx.moveTo(px, py+T); ctx.lineTo(px+T/2, py+T*.12); ctx.lineTo(px+T, py+T); ctx.fill(); ctx.fillStyle = '#3c2d1e'; ctx.beginPath(); ctx.moveTo(px+T/2, py+T*.12); ctx.lineTo(px+T, py+T); ctx.lineTo(px+T*.62, py+T); ctx.fill(); ctx.fillStyle = '#0a0806'; ctx.beginPath(); ctx.moveTo(px+T*.4, py+T); ctx.lineTo(px+T*.5, py+T*.6); ctx.lineTo(px+T*.6, py+T); ctx.fill(); }
+  if (ch === 'C') { ctx.fillStyle = '#4a3a26'; ctx.beginPath(); ctx.moveTo(px - T*.1, py+T); ctx.lineTo(px+T/2, py+T*.02); ctx.lineTo(px+T*1.1, py+T); ctx.fill(); ctx.fillStyle = '#2c2216'; ctx.beginPath(); ctx.moveTo(px+T/2, py+T*.02); ctx.lineTo(px+T*1.1, py+T); ctx.lineTo(px+T*.66, py+T); ctx.fill(); ctx.fillStyle = '#1a1208'; ctx.beginPath(); ctx.moveTo(px+T*.38, py+T); ctx.lineTo(px+T*.5, py+T*.55); ctx.lineTo(px+T*.62, py+T); ctx.fill(); ctx.fillStyle = 'rgba(255,190,110,.55)'; ctx.fillRect(px+T*.45, py+T*.7, T*.1, T*.3); }
+  if (ch === 'F' || ch === 'B') { for (let i=0;i<7;i++){ const a = i/7*6.28; ell(ctx, px+T/2 + Math.cos(a)*T*.32, py+T*.6 + Math.sin(a)*T*.2, T*.07, T*.05, '#3a3128'); } ell(ctx, px+T/2, py+T*.6, T*.16, T*.08, '#1a1008'); }
+  if (ch === 'W') { ctx.fillStyle = '#3c2d1e'; ctx.fillRect(px+T*.12, py+T*.3, T*.76, T*.4); ctx.fillStyle = '#5a4630'; ctx.fillRect(px+T*.12, py+T*.3, T*.76, T*.08); ctx.fillStyle = '#15100a'; ell(ctx, px+T*.28, py+T*.76, T*.11, T*.11, '#15100a'); ell(ctx, px+T*.72, py+T*.76, T*.11, T*.11, '#15100a'); ctx.fillStyle = '#8a7a5a'; ctx.fillRect(px+T*.2, py+T*.16, T*.6, T*.16); }
+  if (ch === 'x') { ctx.fillStyle = '#3a2a18'; ctx.fillRect(px+T*.44, py+T*.2, T*.12, T*.7); ctx.fillStyle = '#6b5a3c'; ctx.fillRect(px+T*.44, py+T*.2, T*.12, T*.1); ctx.strokeStyle = 'rgba(120,100,70,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, py+T*.35); ctx.lineTo(px+T, py+T*.35); ctx.stroke(); }
   if (ch === 'T') { ctx.fillStyle = '#030202'; ctx.fillRect(px+T*.15, py+T*.2, T*.7, T*.72); ctx.fillStyle = '#4a3a26'; ctx.fillRect(px+T*.08, py+T*.12, T*.84, T*.12); ctx.fillRect(px+T*.1, py+T*.12, T*.1, T*.8); ctx.fillRect(px+T*.8, py+T*.12, T*.1, T*.8); }
 }
 function prerender(map, cols, rows, dark, tunnel){
@@ -1066,8 +1190,10 @@ function bloodDecal(x, y, big){
   for (let i=0;i<n;i++){ const a = Math.random()*7, d = Math.random()*T*(big ? .4 : .25); ell(dctx, cx + Math.cos(a)*d, cy + Math.sin(a)*d*.5, T*(.04 + Math.random()*.1), T*(.025 + Math.random()*.05), `rgba(${48 + R(30)},${6 + R(6)},${6},${.45 + Math.random()*.3})`, a); }
 }
 
+
 /* ============ display interpolation ============ */
 function dispOf(key, x, y){ let d = G.disp[key]; if (!d) { d = G.disp[key] = {x, y}; } const k = REDUCE() ? 1 : .22; d.x = lerp(d.x, x, k); d.y = lerp(d.y, y, k); if (Math.abs(d.x-x) < .005) d.x = x; if (Math.abs(d.y-y) < .005) d.y = y; return d; }
+
 
 /* ============ pathfinding ============ */
 function reachMap(sx, sy, pass, maxD){
@@ -1085,19 +1211,21 @@ function findPath(sx, sy, pass, goal){
   return null;
 }
 
+
 /* ============ hud ============ */
 function hudButtons(){ return `<button class="btn" id="bSquad">Squad</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>`; }
 function bindHud(){ const a = $('#bSquad'), b = $('#bSet'); if (a) a.onclick = () => { AUDIO.play('click'); openChars(0); }; if (b) b.onclick = () => { AUDIO.play('click'); openSettings(); }; }
+
 
 /* ============ title / intro ============ */
 function showTitle(){
   view = 'title'; const has = loadSave(); B = null; AUDIO.setScene('title');
   $('#app').innerHTML = `<canvas id="titlecv" aria-hidden="true"></canvas><div id="title" class="title">
     <h1>Ashes<span>of the Pale</span></h1>
-    <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them.</p>
+    <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them, and then south.</p>
     <div class="field"><label for="nm">Your sergeant's name</label><input type="text" id="nm" maxlength="18" value="${esc(has?.name || 'Hask')}" autocomplete="off"></div>
     <div class="row"><button class="btn primary" id="bNew">Begin</button>${has ? '<button class="btn" id="bCont">Continue</button>' : ''}<button class="btn" id="bImp">Load a save code</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button></div>
-    <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Vertical slice: one area, two fights, one choice that matters. Sound on for the full effect. · v${VERSION}</p></div>`;
+    <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and Chapter One so far. Sound on for the full effect. · v${VERSION}</p></div>`;
   startTitleBackdrop($('#titlecv'));
   $('#bNew').onclick = () => { AUDIO.play('click'); S = newState($('#nm').value.trim()); save(); showIntro(); };
   if (has) $('#bCont').onclick = () => { AUDIO.play('click'); S = has; resume(); };
@@ -1119,10 +1247,11 @@ function showIntro(){
   $('#bSq').onclick = () => { AUDIO.play('click'); openChars(0); };
   bindHud();
 }
-function drawCamp(cv, t){ // intro backdrop: the pits and the camp under a bruised sky
+function drawCamp(cv, t, night){ // intro backdrop: the pits and the camp under a bruised sky
   const ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
-  const sky = ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#08070b'); sky.addColorStop(.6,'#1c1414'); sky.addColorStop(1,'#0a0807'); ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
-  glow(ctx, W*.8, H*.62, W*.5, '#e8923a', .22 + Math.sin(t/140)*.03);
+  const sky = ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0, night ? '#04040a' : '#08070b'); sky.addColorStop(.6, night ? '#0e0b12' : '#1c1414'); sky.addColorStop(1,'#0a0807'); ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
+  if (night) { ctx.fillStyle = 'rgba(220,220,240,.5)'; for (let i=0;i<40;i++) ctx.fillRect(hash(i,21)*W, hash(i,22)*H*.5, 1, 1); glow(ctx, W*.2, H*.25, W*.25, '#9a86e0', .08 + Math.sin(t/900)*.03); }
+  glow(ctx, W*.8, H*.62, W*.5, '#e8923a', (night ? .3 : .22) + Math.sin(t/140)*.03);
   ctx.fillStyle = '#0b0908'; ctx.fillRect(0, H*.62, W, H);
   for (let i=0;i<7;i++){ const x = W*.08 + i*W*.12, y = H*.66 + hash(i,2)*H*.2; ell(ctx, x, y, 30, 8, '#060504'); ctx.fillStyle = 'rgba(200,190,170,.35)'; for (let j=0;j<4;j++) ctx.fillRect(x - 20 + hash(i,j)*40, y - 3 + hash(j,i)*5, 2, 2); }
   for (let i=0;i<4;i++){ const x = W*.6 + i*W*.1, y = H*.6; poly(ctx, [[x-24,y+12],[x,y-24],[x+24,y+12]], i%2 ? '#2a2016' : '#3a2c1c'); poly(ctx, [[x,y-24],[x+24,y+12],[x+8,y+12]], '#1a1410'); }
@@ -1133,30 +1262,37 @@ function drawCamp(cv, t){ // intro backdrop: the pits and the camp under a bruis
   const v = ctx.createRadialGradient(W/2, H/2, H*.3, W/2, H/2, W*.7); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.8)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
 }
 
+
 /* ============ explore ============ */
 let ash = [], fog = [];
-function startExplore(){
-  view = 'explore'; S.scene = 'explore'; S.bg = 'explore'; B = null; save(); AUDIO.setScene('explore');
-  $('#app').innerHTML = `<header class="hud"><div><div class="loc">The Pale · north quarter</div><div class="sub" id="quest"></div></div>
+const AREA = () => AREAS[S.area] || AREAS.pale;
+const ACOLS = () => AREA().map[0].length, AROWS = () => AREA().map.length;
+function startExplore(areaId){
+  if (areaId && areaId !== S.area) { S.area = areaId; const a = AREAS[areaId]; S.pos = {...a.start}; S.trail = [{x:a.start.x-1,y:a.start.y},{x:a.start.x+1,y:a.start.y},{x:a.start.x-1,y:a.start.y+1},{x:a.start.x,y:a.start.y+1}]; }
+  const a = AREA();
+  view = 'explore'; S.scene = 'explore'; S.bg = 'explore'; B = null; save(); AUDIO.setScene(a.amb || 'explore');
+  $('#app').innerHTML = `<header class="hud"><div><div class="loc">${a.title}</div><div class="sub" id="quest"></div></div>
     <div class="hudr"><span id="silver"></span>${hudButtons()}</div></header>
-    <div class="cvwrap"><canvas id="cv" aria-label="Map of the Pale ruins"></canvas></div>
-    <p class="hint">Tap ground to move · tap a figure to talk · the tunnel mouth is top left</p>
+    <div class="cvwrap"><canvas id="cv" aria-label="Map"></canvas></div>
+    <p class="hint">${a.hint || 'Tap ground to move · tap a figure to talk'}</p>
     <div class="log" id="elog"></div>`;
   bindHud();
   G.disp = {};
-  fitCanvas(16, 12);
+  fitCanvas(ACOLS(), AROWS());
   ash = Array.from({length:REDUCE() ? 0 : 50}, () => ({x:Math.random(), y:Math.random(), v:.00012 + Math.random()*.0003, w:Math.random()*6, s:.8 + Math.random()*1.4}));
   fog = Array.from({length:7}, (_, i) => ({x:Math.random(), y:.3 + Math.random()*.6, w:.25 + Math.random()*.3, v:.00002 + Math.random()*.00004, a:.05 + Math.random()*.05}));
   updExplore();
 }
 function updExplore(){
   if (!$('#quest')) return;
-  $('#quest').textContent = S.f.quest ? `Recover Varrow's satchel from the north tunnels` : '';
+  const a = AREA();
+  $('#quest').textContent = a.quest ? a.quest() : (typeof QUESTS !== 'undefined' && QUESTS[a.id]) ? QUESTS[a.id]() : (a.sub || '');
   $('#silver').textContent = `${S.silver} silver`;
   $('#elog').innerHTML = S.log.map(l => `<div>${l}</div>`).join('');
 }
-const npcAt = (x,y) => NPCS.find(n => n.x === x && n.y === y && (!n.show || n.show()));
-const palePass = (x,y) => x>=0 && y>=0 && x<16 && y<12 && '.,T'.includes(PALE[y][x]) && !npcAt(x,y);
+const npcAt = (x,y) => AREA().npcs.find(n => n.x === x && n.y === y && (!n.show || n.show()));
+const tileAt = (x,y) => { const m = AREA().map; return (y >= 0 && y < m.length && x >= 0 && x < m[0].length) ? m[y][x] : '#'; };
+const palePass = (x,y) => { const a = AREA(), ch = tileAt(x,y); return ch !== '#' && (a.walk.includes(ch) || !!(a.triggers && a.triggers[ch])) && !npcAt(x,y); };
 function exploreTap(x, y){
   if (walking || !$('#sheet').hidden) return;
   const npc = npcAt(x,y);
@@ -1167,45 +1303,59 @@ function exploreTap(x, y){
   }
   if (!palePass(x,y)) return;
   const m = reachMap(S.pos.x, S.pos.y, palePass, 99); if (!m.has(K(x,y))) return;
-  walk(pathFrom(m, x, y), () => { if (PALE[y][x] === 'T') talk('mouth'); });
+  walk(pathFrom(m, x, y), () => { const tr = AREA().triggers, ch = tileAt(x,y); if (tr && tr[ch]) talk(tr[ch]); });
 }
 async function walk(path, done){
   walking = true;
-  for (const st of path) { S.trail.unshift({x:S.pos.x, y:S.pos.y}); S.trail = S.trail.slice(0,4); S.pos = {x:st.x, y:st.y}; AUDIO.play('step'); await wait(150); }
+  for (const st of path) { S.trail.unshift({x:S.pos.x, y:S.pos.y}); S.trail = S.trail.slice(0,6); S.pos = {x:st.x, y:st.y}; AUDIO.play('step'); await wait(150); }
   walking = false; save(); if (done) done();
 }
+function drawFireAt(ctx, T, fx, fy, t, scale = 1){
+  const fl = .8 + Math.sin(t/160 + fx)*.12 + Math.sin(t/67 + fy)*.06; glow(ctx, fx, fy, T*3.4*scale, '#e8923a', .28*fl);
+  ell(ctx, fx, fy + T*.1, T*.16, T*.09, '#3a2a1a'); poly(ctx, [[fx - T*.1, fy + T*.1],[fx + T*.1, fy + T*.1],[fx + Math.sin(t/90)*T*.05, fy + T*.1 - T*.35*fl]], '#ffb35a'); poly(ctx, [[fx - T*.05, fy + T*.1],[fx + T*.05, fy + T*.1],[fx + Math.sin(t/70)*T*.03, fy + T*.1 - T*.2*fl]], '#fff1c2');
+  for (let i=0;i<5;i++){ const yy = fy - ((t/12 + i*23) % (T*2.2)); ctx.fillStyle = `rgba(255,${140 + R(60)},40,${(1 - (fy - yy)/(T*2.2))*.8})`; ctx.fillRect(fx + Math.sin(t/300 + i)*T*.25, yy, 2, 2); }
+}
 function drawExplore(t){
-  const {ctx, T} = G; if (!ctx) return;
-  ctx.drawImage(G.bgc, 0, 0, 16*T, 12*T);
-  // crater: Kurald Galain shimmer with the occasional pulse
-  const pulse = (Math.sin(t/900) + 1) / 2, flick = hash(Math.floor(t/120), 1) > .93 ? .5 : 0;
-  glow(ctx, 9*T, 6*T, T*3.2, '#9a86e0', .18 + pulse*.12 + flick);
-  for (let i=0;i<6;i++){ const a = t/1400 + i; ctx.strokeStyle = `rgba(201,187,255,${.12 + Math.sin(a*2)*.08})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(8*T + Math.cos(a)*T*1.3, 6*T + Math.sin(a)*T*.8); ctx.quadraticCurveTo(9*T, 5.2*T + Math.sin(a*1.7)*T*.6, 10*T + Math.cos(a+2)*T*1.4, 6*T + Math.sin(a+1)*T*.7); ctx.stroke(); }
-  // campfire
-  const fl = .8 + Math.sin(t/160)*.12 + Math.sin(t/67)*.06; glow(ctx, 9*T, 9.5*T, T*3.4, '#e8923a', .28*fl);
-  ell(ctx, 9*T, 9.6*T, T*.16, T*.09, '#3a2a1a'); poly(ctx, [[9*T - T*.1, 9.6*T],[9*T + T*.1, 9.6*T],[9*T + Math.sin(t/90)*T*.05, 9.6*T - T*.35*fl]], '#ffb35a'); poly(ctx, [[9*T - T*.05, 9.6*T],[9*T + T*.05, 9.6*T],[9*T + Math.sin(t/70)*T*.03, 9.6*T - T*.2*fl]], '#fff1c2');
-  for (let i=0;i<5;i++){ const yy = 9.4*T - ((t/12 + i*23) % (T*2.2)); ctx.fillStyle = `rgba(255,${140 + R(60)},40,${(1 - (9.4*T - yy)/(T*2.2))*.8})`; ctx.fillRect(9*T + Math.sin(t/300 + i)*T*.25, yy, 2, 2); }
+  const {ctx, T} = G; if (!ctx) return; const a = AREA(), cols = ACOLS(), rows = AROWS();
+  ctx.drawImage(G.bgc, 0, 0, cols*T, rows*T);
+  if (a.decor === 'pale') {
+    // crater: Kurald Galain shimmer with the occasional pulse
+    const pulse = (Math.sin(t/900) + 1) / 2, flick = hash(Math.floor(t/120), 1) > .93 ? .5 : 0;
+    glow(ctx, 9*T, 6*T, T*3.2, '#9a86e0', .18 + pulse*.12 + flick);
+    for (let i=0;i<6;i++){ const aa = t/1400 + i; ctx.strokeStyle = `rgba(201,187,255,${.12 + Math.sin(aa*2)*.08})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(8*T + Math.cos(aa)*T*1.3, 6*T + Math.sin(aa)*T*.8); ctx.quadraticCurveTo(9*T, 5.2*T + Math.sin(aa*1.7)*T*.6, 10*T + Math.cos(aa+2)*T*1.4, 6*T + Math.sin(aa+1)*T*.7); ctx.stroke(); }
+    drawFireAt(ctx, T, 9*T, 9.5*T, t);
+  } else {
+    // night camp: every fire tile burns, every tent glows faintly, the cadre tent has its lamp
+    a.map.forEach((row, y) => [...row].forEach((ch, x) => {
+      if (ch === 'F' || ch === 'B') drawFireAt(ctx, T, x*T + T/2, y*T + T*.55, t, ch === 'B' ? 1.3 : 1);
+      if (ch === '=') glow(ctx, x*T + T/2, y*T + T*.6, T*.9, '#c98a3a', .05 + Math.sin(t/900 + x)*.02);
+      if (ch === 'C') glow(ctx, x*T + T/2, y*T + T*.7, T*2.4, '#9a86e0', .16 + Math.sin(t/700)*.05);
+    }));
+  }
   // NPCs
-  NPCS.forEach(n => { if (n.show && !n.show()) return; drawFigure(ctx, n.kind, n.x*T + T/2, n.y*T + T*.8, T/32, t, {phase:n.x, still:n.kind === 'garrow'});
-    const fresh = (n.id==='tat' && !S.f.quest) || (n.id==='garrow' && !S.f.garrow) || (n.id==='claw' && !S.f.clawMet);
-    if (fresh) { const by = Math.sin(t/300)*2; ctx.fillStyle = '#e8c073'; const cx = n.x*T+T/2, cy = n.y*T - T*.15 + by; ctx.beginPath(); ctx.moveTo(cx, cy-T*.16); ctx.lineTo(cx+T*.1, cy); ctx.lineTo(cx, cy+T*.12); ctx.lineTo(cx-T*.1, cy); ctx.fill(); } });
+  a.npcs.forEach(n => { if (n.show && !n.show()) return; drawFigure(ctx, n.kind, n.x*T + T/2, n.y*T + T*.8, T/32, t, {phase:n.x, still:!!n.still});
+    if (n.fresh && n.fresh()) { const by = Math.sin(t/300)*2; ctx.fillStyle = '#e8c073'; const cx = n.x*T+T/2, cy = n.y*T - T*.15 + by; ctx.beginPath(); ctx.moveTo(cx, cy-T*.16); ctx.lineTo(cx+T*.1, cy); ctx.lineTo(cx, cy+T*.12); ctx.lineTo(cx-T*.1, cy); ctx.fill(); } });
   // party: sergeant + trail, interpolated
-  PORDER.slice(1).forEach((id,i) => { const p = S.trail[i]; if (!p) return; const d = dispOf(id, p.x, p.y); drawFigure(ctx, id, d.x*T + T/2, d.y*T + T*.8, T/32*.85, t, {phase:i+1, dir: d.x <= S.pos.x ? 1 : -1, still:!walking}); });
+  SQUAD().slice(1).forEach((id,i) => { const p = S.trail[i]; if (!p) return; const d = dispOf(id, p.x, p.y); drawFigure(ctx, id, d.x*T + T/2, d.y*T + T*.8, T/32*.85, t, {phase:i+1, dir: d.x <= S.pos.x ? 1 : -1, still:!walking}); });
   const d = dispOf('sgt', S.pos.x, S.pos.y);
   if (!walking) { const p = REDUCE() ? 0 : (Math.sin(t/260)+1)*.5; ctx.strokeStyle = `rgba(201,151,63,${.35+p*.4})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(d.x*T + T/2, d.y*T + T*.8, T*.4 + p*2, T*.16 + p, 0, 0, 7); ctx.stroke(); }
   drawFigure(ctx, 'sgt', d.x*T + T/2, d.y*T + T*.8, T/32, t, {phase:0, still:!walking});
   // lantern warmth around the party
-  glow(ctx, d.x*T + T/2, d.y*T + T/2, T*2.6, '#e8b060', .09);
+  glow(ctx, d.x*T + T/2, d.y*T + T/2, T*2.6, '#e8b060', a.decor === 'pale' ? .09 : .14);
   // fog banks
-  fog.forEach(f => { f.x += f.v; if (f.x > 1.3) f.x = -.3; ell(ctx, f.x*16*T, f.y*12*T, f.w*16*T, T*.9, `rgba(70,62,58,${f.a})`); });
+  fog.forEach(f => { f.x += f.v; if (f.x > 1.3) f.x = -.3; ell(ctx, f.x*cols*T, f.y*rows*T, f.w*cols*T, T*.9, `rgba(70,62,58,${f.a})`); });
   // drifting ash
-  ash.forEach(a => { a.y += a.v; if (a.y > 1) a.y = 0; const x = (a.x + Math.sin(t/1600 + a.w)*.01) * 16*T; ctx.fillStyle = 'rgba(200,190,175,.4)'; ctx.fillRect(x, a.y*12*T, a.s, a.s); });
-  // darkness at the edges
-  const v = ctx.createRadialGradient(8*T, 6*T, T*4, 8*T, 6*T, T*10); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.6)'); ctx.fillStyle = v; ctx.fillRect(0,0,16*T,12*T);
+  ash.forEach(s => { s.y += s.v; if (s.y > 1) s.y = 0; const x = (s.x + Math.sin(t/1600 + s.w)*.01) * cols*T; ctx.fillStyle = 'rgba(200,190,175,.4)'; ctx.fillRect(x, s.y*rows*T, s.s, s.s); });
+  // darkness at the edges (deeper at night)
+  const v = ctx.createRadialGradient(cols*T/2, rows*T/2, T*4, cols*T/2, rows*T/2, T*10); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${a.decor === 'pale' ? .6 : .7})`); ctx.fillStyle = v; ctx.fillRect(0,0,cols*T,rows*T);
 }
 
 /* ============ battle ============ */
 const party = () => B.units.filter(u => u.side === 'p' && u.hp > 0);
+const squadUnits = () => B.units.filter(u => u.side === 'p' && !u.ally && u.hp > 0);
+const foesOf = u => B.units.filter(x => x.hp > 0 && x.side !== u.side);
+const friendsOf = u => B.units.filter(x => x.hp > 0 && x.side === u.side && x !== u);
+const abRange = (u, a) => (a.range || 0) + (a.item && has(u.id, 'longfuse') ? 1 : 0);
 const foes = () => B.units.filter(u => u.side === 'e' && u.hp > 0);
 const unitAt = (x,y) => B.units.find(u => u.hp > 0 && u.x === x && u.y === y);
 const inB = (x,y) => x>=0 && y>=0 && x<8 && y<10;
@@ -1222,10 +1372,18 @@ function heal(u, n){ const before = u.hp; u.hp = Math.min(u.maxhp, u.hp + n); fl
 function sparks(x, y, n, col, spd = 1){ if (REDUCE()) return; for (let i=0;i<n;i++){ const a = Math.random()*7, s = (Math.random()*.6 + .3)*spd; B.parts.push({x:x + .5, y:y + .5, vx:Math.cos(a)*s, vy:Math.sin(a)*s - .3, life:1, decay:.02 + Math.random()*.03, col, size:1 + Math.random()*2}); } }
 
 function mkParty(id, x, y){
-  const t = TPL[id], L = S.lvl - 1, mh = t.hp + L*4 + (S.card === 'obelisk' ? 4 : 0);
-  return {id, side:'p', name:NAME(id), sig:t.sig, col:t.col, maxhp:mh, hp:mh, ac:t.ac, atk:t.atk + L, dmg:t.dmg, rng:t.rng, mv:t.mv, init:t.init, ab:t.ab, magic:t.magic, strain:0, verb:VERB[id], x, y, kind:id};
+  const t = TPL[id], L = S.lvl - 1;
+  const u = {id, side:'p', name:NAME(id), sig:t.sig, col:t.col, maxhp:t.hp + L*4 + (S.card === 'obelisk' ? 4 : 0), ac:t.ac, atk:t.atk + L, dmg:t.dmg, rng:t.rng, mv:t.mv + (S.card === 'hounds' ? 1 : 0), init:t.init, ab:[...t.ab], magic:t.magic, strain:0, verb:VERB[id], x, y, kind:id};
+  // gear
+  Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (!it) return; u.ac += it.ac || 0; u.atk += it.atk || 0; u.maxhp += it.hp || 0; u.mv += it.mv || 0; u.rng += it.rng || 0; if (it.dmg) u.dmg = it.dmg; });
+  // veteran picks and talents
+  if (has(id,'iron')) u.maxhp += 6; if (has(id,'keen')) u.atk += 1; if (has(id,'fleet')) u.mv += 1; if (has(id,'nerve')) u.init += 1;
+  ['quorl','shadowstep','mockra','argument'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
+  u.hp = u.maxhp; return u;
 }
 function mkFoe(k, x, y, extra=0){ const f = FOES[k]; return {id:k, kind:k, side:'e', ...f, maxhp:f.hp+extra, hp:f.hp+extra, col:'#d9695a', x, y}; }
+function mkAlly(k, x, y){ const f = FOES[k]; return {id:'ally_' + k, kind:k, side:'p', ally:true, ...f, name:f.name + ' (ally)', maxhp:f.hp, hp:f.hp, col:'#9fb3d9', x, y, ab:[]}; }
+function freeNear(x, y, self){ if (free(x,y,self)) return {x,y}; for (let r=1;r<4;r++) for (const [dx,dy] of DIRS) { const nx = x+dx*r, ny = y+dy*r; if (free(nx,ny,self)) return {x:nx,y:ny}; } return null; }
 
 function startBattle(id, opt={}){
   S.scene = 'battle'; S.battle = id; S.bopt = opt; S.node = null; S.bg = 'tunnel'; save();
@@ -1233,13 +1391,16 @@ function startBattle(id, opt={}){
   const def = BATTLES[id];
   view = 'battle'; AUDIO.setScene(def.music || 'battle');
   B = {def, id, opt, snap, warren:def.warren, units:[], order:[], idx:-1, round:0, fires:[], fx:[], parts:[], log:[], used:{}, cur:null, moved:false, acted:false, mode:null, aim:null, busy:true, over:false, turn:0, anim:null};
-  PORDER.forEach((pid,i) => B.units.push(mkParty(pid, def.party[i][0], def.party[i][1])));
+  SQUAD().forEach((pid,i) => { const p = def.party[i] || def.party[def.party.length - 1]; const at = freeNear(p[0], p[1]) || {x:p[0], y:p[1]}; B.units.push(mkParty(pid, at.x, at.y)); });
+  (def.allies || []).forEach(a => { const at = freeNear(a[1], a[2]); if (at) B.units.push(mkAlly(a[0], at.x, at.y)); });
   def.foes.forEach((f,i) => { if (opt.drop && opt.drop.includes(i)) return; B.units.push(mkFoe(f[0], f[1], f[2], f[0]==='stone' && S.f.noisy ? 10 : 0)); });
-  const initRoll = u => d20() + u.init;
+  const squadInit = SQUAD().some(id => has(id,'sappers_eye')) ? 2 : 0;
+  const initRoll = u => d20() + u.init + (u.side === 'p' ? squadInit : 0);
   B.units.forEach(u => u.ini = initRoll(u));
   B.initOrder = [...B.units].sort((a,b) => b.ini - a.ini);
   B.surprise = opt.surprise || null;
   $('#app').innerHTML = `<header class="hud"><div><div class="loc">${def.title}</div><div class="sub warren">${def.warrenText}</div></div><div class="hudr"><span id="bRound"></span>${hudButtons()}</div></header>
+    ${def.objective ? `<div class="objective" id="objective"></div>` : ''}
     <div class="order" id="order"></div>
     <div class="cvwrap"><canvas id="cv" aria-label="Battle map"></canvas></div>
     <div class="ubar" id="ubar"></div>
@@ -1248,12 +1409,20 @@ function startBattle(id, opt={}){
   G.disp = {};
   fitCanvas(8, 10);
   if (opt.pre) { AUDIO.play('boom', .8); B.fx.push({kind:'boom', x:3.5, y:1, r:1, col:'#f2c46b', t:performance.now()}); sparks(3.5, 1, 30, '#f2c46b'); shakeMap(); foes().forEach(f => hurt(f, roll(1,10))); blog(`Kettle's sharper skips across the floor and goes off in the middle of them. The whole tunnel hears it.`); }
+  if (def.objective) blog(`<em>${def.objective.text}</em>`);
+  if (def.allies && def.allies.length) blog(`Others fight beside you tonight. They are not yours.`);
   if (B.surprise === 'p') blog(`Surprise: your squad moves first.`);
-  if (B.surprise === 'e') { blog(`<em>Something moves before you do.</em>`); if (id === 'stone') AUDIO.play('growl'); }
+  if (B.surprise === 'e') { blog(`<em>Something moves before you do.</em>`); if (id === 'stone' || def.foes.some(f => f[0] === 'hound')) AUDIO.play('growl'); }
   setTimeout(nextTurn, 500);
 }
 function newRound(){
   B.round++; B.idx = 0;
+  const ob = B.def.objective;
+  if (ob && ob.type === 'survive' && B.round > ob.rounds && !B.over) { B.over = true; blog(`<em>Held.</em>`); setTimeout(win, 700); return; }
+  // reinforcements
+  (B.def.waves || []).filter(w => w.round === B.round).forEach(w => {
+    w.foes.forEach(f => { const at = freeNear(f[1], f[2]); if (!at) return; const u = mkFoe(f[0], at.x, at.y); u.ini = d20() + u.init; B.units.push(u); B.initOrder.push(u); sparks(at.x, at.y, 24, '#9a86e0', .8); });
+    if (w.text) blog(`<em>${w.text}</em>`); AUDIO.play('growl'); shakeMap(); });
   if (B.surprise) { B.order = B.initOrder.filter(u => u.side === B.surprise); B.surprise = null; B.surpriseRound = true; }
   else { B.order = B.initOrder; B.surpriseRound = false; }
   B.fires = B.fires.filter(f => f.until >= B.round);
@@ -1269,20 +1438,21 @@ function nextTurn(){
   if (B.fires.some(f => f.x === u.x && f.y === u.y)) { blog(`${u.name} is caught in burner fire.`); hurt(u, roll(1,6)); }
   if (u.hp <= 0) { updBattleUI(); if (checkEnd()) return; return setTimeout(nextTurn, 600); }
   if (u.stun) { u.stun = false; blog(`${u.name} is dazed and loses the turn.`); updBattleUI(); return setTimeout(nextTurn, 800); }
-  if (u.side === 'p') { B.busy = false; B.mode = 'act'; updBattleUI(); }
+  if (u.side === 'p' && !u.ally) { B.busy = false; B.mode = 'act'; updBattleUI(); }
   else { B.busy = true; updBattleUI(); setTimeout(() => ai(u, B.turn), 550 * SET.speed); }
 }
 function endTurn(){ if (!B || B.over) return; B.busy = true; B.mode = null; B.aim = null; setTimeout(nextTurn, 250); }
 function checkEnd(){
   if (!B || B.over) return true;
-  if (!foes().length) { B.over = true; setTimeout(win, 900); return true; }
-  if (!party().length) { B.over = true; setTimeout(lose, 1100); return true; }
+  const ob = B.def.objective;
+  if (!foes().length && !(ob && ob.type === 'survive' && (B.def.waves || []).some(w => w.round > B.round))) { B.over = true; setTimeout(win, 900); return true; }
+  if (!squadUnits().length) { B.over = true; setTimeout(lose, 1100); return true; }
   return false;
 }
 function win(){
   const up = gainXP(B.def.xp);
   S.scene = 'talk'; save(); AUDIO.play('win');
-  note(`Victory. +${B.def.xp} experience. Ohl patches up the squad; everyone is back on their feet.`, 'good');
+  note(`${B.def.objective ? 'Held' : 'Victory'}. +${B.def.xp} experience. Ohl patches up the squad; everyone is back on their feet.`, 'good');
   if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good');
   updBattleUI();
   talk(B.def.after);
@@ -1318,16 +1488,27 @@ const AB = {
     run(u,x,y){ const t = unitAt(x,y); const r = d20() + (t.boss ? 4 : 2); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#9a86e0', t:performance.now(), dur:400, wob:true});
       if (r >= phantomDC()) { blog(`${t.name} sees through the phantom${SET.dice ? ` (${r} vs ${phantomDC()})` : ''}.`); float(t,'resists','#a99a88'); }
       else { t.stun = true; blog(`${t.name} lunges after a phantom that isn't there${SET.dice ? ` (${r} vs ${phantomDC()})` : ''}.`); float(t,'fooled','#c9bbff'); sparks(t.x, t.y, 12, '#c9bbff', .4); } }},
-  mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within 3: 2d6+3${B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
-    tiles:u=>party().filter(p => cheb(u,p) <= 3),
-    run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,3) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
+  mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${has('ohl','triage') ? 6 : 3}${B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
+    tiles:u=>party().filter(p => cheb(u,p) <= (has(u.id,'triage') ? 4 : 3)),
+    run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,has(u.id,'triage') ? 6 : 3) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
   salve:{name:'Salve', item:'salve', desc:()=>'Heal 8, yourself or an adjacent squadmate.', tiles:u=>party().filter(p => cheb(u,p) <= 1),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, 8); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
+  /* talents (level 3 picks) */
+  quorl:{name:'Quorl Signal', aoe:1, range:5, desc:()=>'Once a fight: a Moranth drop. A sharper from the sky, range 5, not from the satchel.', ok:()=>!B.used.quorl,
+    run(u,x,y){ B.used.quorl = 1; const pt = {x,y}; AUDIO.play('bow'); setTimeout(() => { blast(pt, [[1,10,2],[1,6,0]], '#f2c46b'); AUDIO.play('boom', .8); sparks(pt.x, pt.y, 26, '#f2c46b'); }, 500 * SET.speed); blog(`${u.name} shows a lamp to the sky. Something with wings answers.`); }},
+  shadowstep:{name:'Shadow Step', strain:1, desc:()=>'Step through Meanas to any free tile within 4. No free swings. Strain 1.', tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 4 && free(x,y,u) && !(x === u.x && y === u.y)) out.push({x,y,step:true}); return out; },
+    run(u,x,y){ AUDIO.play('shadow'); sparks(u.x, u.y, 12, '#c9bbff', .4); u.x = x; u.y = y; sparks(x, y, 12, '#c9bbff', .4); blog(`${u.name} is somewhere else.`); }},
+  mockra:{name:'Mockra Whisper', strain:2, desc:()=>'An enemy within 4 hears something it believes and loses its next turn. Bosses resist on 12+. Strain 2.', tiles:u=>foes().filter(f => cheb(u,f) <= 4),
+    run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#c9bbff', t:performance.now(), dur:400, wob:true});
+      if (t.boss && d20() >= 12) { blog(`${t.name} shakes the whisper off.`); float(t,'resists','#a99a88'); } else { t.stun = true; blog(`${t.name} stops to listen to something that is not there.`); float(t,'dazed','#c9bbff'); } }},
+  argument:{name:'Argument with Hood', strain:3, desc:()=>'Once a fight: a downed squadmate within 2 stands up at 6 health. Strain 3.', ok:()=>!B.used.argument,
+    tiles:u=>B.units.filter(p => p.side === 'p' && !p.ally && p.hp <= 0 && cheb(u,p) <= 2),
+    run(u,x,y){ const t = B.units.find(p => p.side === 'p' && p.hp <= 0 && p.x === x && p.y === y); if (!t) return; B.used.argument = 1; AUDIO.play('heal'); t.hp = 6; t.deadAt = null; t.healed = performance.now(); sparks(t.x, t.y, 20, '#9fe0b8', .5); blog(`${u.name} argues with Hood in Ehrlii. ${t.name} gets up, which settles it for now.`); }},
 };
 function abOk(u, k){ const a = AB[k]; if (a.item && S.inv[a.item] <= 0) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
 function scatter(u, x, y, failOn, dist){
   const nat = d20() + (S.card === 'oponn' ? 1 : 0);
-  if (nat <= failOn) { const [dx,dy] = DIRS[R(8)]; let nx = x, ny = y;
+  if (nat <= failOn && !has(u.id,'longfuse')) { const [dx,dy] = DIRS[R(8)]; let nx = x, ny = y;
     for (let i=0;i<dist;i++) if (!wall(nx+dx, ny+dy)) { nx += dx; ny += dy; }
     blog(`<em>The throw goes wide!</em>`); return {x:nx, y:ny}; }
   return {x, y};
@@ -1346,12 +1527,15 @@ function flankers(a, t, from){
 function flanked(a, t, from){ return flankers(a, t, from).length > 0; }
 /* attacks of opportunity: leaving a tile next to an enemy gives that enemy one free melee swing per turn */
 function threatsAt(u, x, y){ return B.units.filter(e => e.side !== u.side && e.hp > 0 && !e.stun && cheb(e, {x,y}) === 1); }
-function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => e.aooTurn !== B.turn); }
+function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => e.aooTurn !== B.turn || (e.side === 'p' && !e.ally && has(e.id,'holdline'))); }
 function attack(a, t, o={}){
   const nat = d20(), mine = a.side === 'p';
   const fl = !o.aoo && flanked(a, t);
-  const bonus = a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0);
-  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0);
+  const wallBonus = t.side === 'p' && friendsOf(t).some(f => !f.ally && has(f.id,'shieldwall') && cheb(f,t) === 1) ? 2 : 0;
+  const discipline = t.side === 'p' && !t.ally && SQUAD().some(id => has(id,'discipline')) ? 1 : 0;
+  const aooBonus = o.aoo && !a.ally && a.side === 'p' && (has(a.id,'holdline') || has(a.id,'sappers_eye')) ? 2 : 0;
+  const bonus = a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus;
+  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline;
   const crit = nat >= (mine && S.card === 'assassin' ? 19 : 20);
   const hit = crit || (nat !== 1 && nat + bonus >= ac);
   const verb = o.verb || a.verb;
@@ -1382,11 +1566,11 @@ function battleTap(x, y){
   if (B.mode && B.mode !== 'act') {
     const a = AB[B.mode];
     if (a.aoe) {
-      if (cheb(u,{x,y}) > a.range || wall(x,y)) { B.mode = 'act'; B.aim = null; return updBattleUI(); }
+      if (cheb(u,{x,y}) > abRange(u,a) || wall(x,y)) { B.mode = 'act'; B.aim = null; return updBattleUI(); }
       if (B.aim && B.aim.x === x && B.aim.y === y) return useAb(B.mode, x, y);
       AUDIO.play('click'); B.aim = {x,y}; return updBattleUI();
     }
-    if (t && a.tiles(u).includes(t)) return useAb(B.mode, x, y);
+    if (a.tiles(u).some(q => q === t || (q.x === x && q.y === y))) return useAb(B.mode, x, y);
     B.mode = 'act'; return updBattleUI();
   }
   if (t && t.side === 'e' && !B.acted && cheb(u,t) <= u.rng) { B.acted = true; B.busy = true; attack(u, t); setTimeout(() => { B.busy = false; afterAct(); }, 380 * SET.speed); updBattleUI(); return; }
@@ -1432,21 +1616,21 @@ function afterAct(){
 /* enemy AI */
 async function ai(u, turnId){
   if (!B || B.over || B.turn !== turnId) return;
-  const inRange = () => party().filter(p => cheb(u,p) <= u.rng);
-  if (u.boss) { u.tc = (u.tc || 0) + 1; const adj = party().filter(p => cheb(u,p) === 1);
+  const inRange = () => foesOf(u).filter(p => cheb(u,p) <= u.rng);
+  if (u.boss && u.kind === 'stone') { u.tc = (u.tc || 0) + 1; const adj = party().filter(p => cheb(u,p) === 1);
     if (u.tc % 3 === 0 && adj.length) { blog(`<em>The Stonebound slams the floor.</em> Stone and grief in every direction.`); AUDIO.play('slam'); shakeMap();
       B.fx.push({kind:'boom', x:u.x, y:u.y, r:1, col:'#a08de0', t:performance.now()}); sparks(u.x, u.y, 40, '#9a86e0'); adj.forEach(p => hurt(p, roll(2,6)));
       await wait(900); if (!checkEnd()) endTurn(); else updBattleUI(); return; } }
-  if (party().length) {
+  if (foesOf(u).length) {
     // score every reachable tile: flank a target > stay out of free-attack range > be in range at all > closer
     const reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), u.mv);
     const stepsProvoke = n => { let k = K(n.x,n.y), c = 0; while (k) { const m = reach.get(k); if (m.p) { const pr = reach.get(m.p); if (threatsAt(u, pr.x, pr.y).length) c++; } k = m.p; } return c; };
     let best = null, bestS = -Infinity;
     reach.forEach(n => {
-      const here = {x:n.x, y:n.y}; const tg = party().filter(p => cheb(here, p) <= u.rng);
+      const here = {x:n.x, y:n.y}; const tg = foesOf(u).filter(p => cheb(here, p) <= u.rng);
       let s = 0;
       if (tg.length) { s += 100; if (tg.some(p => flanked(u, p, here))) s += 60; }
-      else { const nearest = Math.min(...party().map(p => cheb(here, p))); s -= nearest * 5; }
+      else { const nearest = Math.min(...foesOf(u).map(p => cheb(here, p))); s -= nearest * 5; }
       s -= stepsProvoke(n) * 70; s -= n.d; // a free hit isn't worth a flank; fewer steps when otherwise equal
       if (s > bestS) { bestS = s; best = n; }
     });
@@ -1456,7 +1640,7 @@ async function ai(u, turnId){
       if (u.hp <= 0) { updBattleUI(); if (!checkEnd()) endTurn(); return; }
     } else if (!inRange().length) {
       // nothing reachable in range this turn: close the distance along the shortest path
-      const path = findPath(u.x, u.y, (x,y) => free(x,y,u), (x,y) => party().some(p => cheb({x,y}, p) <= u.rng));
+      const path = findPath(u.x, u.y, (x,y) => free(x,y,u), (x,y) => foesOf(u).some(p => cheb({x,y}, p) <= u.rng));
       if (path) for (const st of path.slice(0, u.mv)) { if (await opportunity(u, st)) break; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); }
       if (u.hp <= 0) { updBattleUI(); if (!checkEnd()) endTurn(); return; }
     }
@@ -1473,10 +1657,11 @@ function updBattleUI(){
   $('#bRound').textContent = B.surpriseRound ? 'Surprise round' : `Round ${Math.max(1, B.round)}`;
   $('#order').innerHTML = (B.order.length ? B.order : B.initOrder).map(u => `<span class="chip ${u.side} ${u === B.cur ? 'now' : ''} ${u.hp <= 0 ? 'dead' : ''}">${esc(u.name)}</span>`).join('');
   $('#blog').innerHTML = B.log.map(l => `<div>${l}</div>`).join('');
+  if ($('#objective') && B.def.objective) $('#objective').textContent = `${B.def.objective.text} · round ${Math.max(1,B.round)} of ${B.def.objective.rounds}`;
   const u = B.cur, ub = $('#ubar');
   B.reach = null; B.hl = {atk:new Set(), tgt:new Set()};
   if (!u || B.over) { ub.innerHTML = `<div class="bhint">${B.over ? 'The fighting stops.' : 'Rolling initiative…'}</div>`; return; }
-  if (u.side === 'e') { ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="stat hp">${u.hp}/${u.maxhp} health</span></div><div class="bhint">Enemy turn.</div>`; return; }
+  if (u.side === 'e' || u.ally) { ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="stat hp">${u.hp}/${u.maxhp} health</span></div><div class="bhint">${u.ally ? 'They fight for themselves. It happens to help.' : 'Enemy turn.'}</div>`; return; }
   const mvLeft = B.mvLeft ?? u.mv;
   if (!B.moved && !B.busy) B.reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), mvLeft);
   if (!B.acted) foes().forEach(f => { if (cheb(u,f) <= u.rng) B.hl.atk.add(K(f.x,f.y)); });
@@ -1490,7 +1675,7 @@ function updBattleUI(){
   if (threatened && !B.moved && hint) hint += ' <span class="warn">Red-edged tiles mean an enemy gets a free swing as you leave.</span>';
   if (B.mode && B.mode !== 'act') { const a = AB[B.mode]; hint = a.desc() + (a.aoe ? ' Tap a tile to aim, then tap it again to throw.' : ' Tap a highlighted target.');
     if (!a.aoe) a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y)));
-    else for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= a.range) B.hl.tgt.add(K(x,y)); }
+    else for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= abRange(u,a)) B.hl.tgt.add(K(x,y)); }
   const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : ''].filter(Boolean).join(' · ');
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="stat">${TPL[u.id].role}</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="hpbar"><i style="width:${u.hp/u.maxhp*100}%"></i></div>
@@ -1584,38 +1769,8 @@ function drawBattle(t){
   // vignette
   const v = ctx.createRadialGradient(4*T, 5*T, T*3, 4*T, 5*T, T*7); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)'); ctx.fillStyle = v; ctx.fillRect(0,0,8*T,10*T);
 }
-/* ============ ending ============ */
-function finish(kind){
-  S.ending = kind; S.scene = 'end'; S.node = null; save(); showEnd();
-}
-function showEnd(){
-  view = 'end'; $('#sheet').hidden = true; B = null; AUDIO.setScene('end');
-  const E = {
-    given:['Delivered','Varrow\'s journal is in the cadre\'s hands, unread by you. Tattersail owes your squad, and she is the kind who pays.'],
-    told:['Delivered, and known','Tattersail has the journal. You and Tuft both know what the underlined line says. That kind of knowledge has a weight, and a price.'],
-    burned:['Ashes','Varrow\'s account went up in a candle flame. Your squad is safer. The truth about the night the Second died is not.'],
-    claw:['Taken','The journal went to the Claw. Tayschrenn will know by morning who carried it up out of the dark.'],
-  }[S.ending] || ['The end',''];
-  const extra = [];
-  if (S.f.decoy) extra.push('A Claw is walking around with Kettle\'s munitions ledger. He\'ll notice eventually.');
-  if (S.f.marked) extra.push('A Claw has your name in a neat hand.');
-  if (S.f.noisy) extra.push('Your sharper woke the Stonebound early. It remembered.');
-  if (S.f.knowDeserters && !S.f.noisy) extra.push('Garrow\'s word reached Moreau\'s section.');
-  $('#app').innerHTML = `<div class="end">
-    <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">The Fourth comes up out of the dark. All five.</div></div>
-    <div class="sub" style="margin-top:12px">End of the vertical slice</div>
-    <h2>${E[0]}</h2>
-    <p class="narr" style="margin:0">${E[1]}</p>
-    ${extra.length ? `<ul>${extra.map(e => `<li>${e}</li>`).join('')}</ul>` : ''}
-    <div class="kv" style="margin:16px 0">${['brisk','kettle','tuft','ohl'].map(id => `<span>${TPL[id].name}</span><span class="pips">${loyLabel(S.loy[id])}</span>`).join('')}
-      <span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.card ? `<span>Card drawn</span><span>${CARDS[S.card].name}</span>` : ''}</div>
-    <p class="fine">In the full act: Captain Paran arrives at the Pale, the Hounds of Shadow come hunting, and the Fourth is sent the long way round to Darujhistan.</p>
-    <div class="row" style="margin-top:14px"><button class="btn" id="bSq">Squad</button><button class="btn" id="bSet2">Settings</button><button class="btn primary" id="bAgain">Play again</button></div></div>`;
-  G.sceneKind = 'camp';
-  $('#bSq').onclick = () => { AUDIO.play('click'); openChars(0); };
-  $('#bSet2').onclick = () => { AUDIO.play('click'); openSettings(); };
-  $('#bAgain').onclick = () => { AUDIO.play('click'); showTitle(); };
-}
+
+/* ============ ending helpers ============ */
 const loyLabel = n => (['Resentful','Wary','Uneasy','Steady','Warm','Loyal','Devoted'][n+3]);
 
 /* ============ character sheets, one at a time ============ */
@@ -1624,18 +1779,28 @@ function openChars(i, tab){
   if (!S) { S = newState('Hask'); S._preview = true; }
   charIdx = ((i % PORDER.length) + PORDER.length) % PORDER.length; if (tab) charTab = tab;
   const id = PORDER[charIdx], c = TPL[id], L = S.lvl - 1, m = $('#chars'); m.hidden = false;
-  const hp = c.hp + L*4 + (S.card === 'obelisk' ? 4 : 0), atk = c.atk + L;
+  const gearOf = Object.values(S.gear[id] || {}).map(g => ITEMS[g]).filter(Boolean);
+  const sum = k => gearOf.reduce((a,it) => a + (it[k] || 0), 0);
+  const hp = c.hp + L*4 + (S.card === 'obelisk' ? 4 : 0) + sum('hp') + (has(id,'iron') ? 6 : 0), atk = c.atk + L + sum('atk') + (has(id,'keen') ? 1 : 0), ac = c.ac + sum('ac'), mv = c.mv + sum('mv') + (has(id,'fleet') ? 1 : 0), rng = c.rng + sum('rng'), init = c.init + (has(id,'nerve') ? 1 : 0);
+  const allPicks = [...(PICKS[3][id] || []), ...PICKS.vet];
+  const talents = (S.picks[id] || []).map(k => allPicks.find(o => o[0] === k)).filter(Boolean);
+  const kitItems = S.kit.map(g => ITEMS[g] && {id:g, ...ITEMS[g]}).filter(it => it && (!it.who || it.who.includes(id)));
+  const wearer = g => SQUAD().find(w => Object.values(S.gear[w] || {}).includes(g));
+  const kit = kitItems.length ? kitItems.map(it => { const w = wearer(it.id); return `<div class="it"><div><b>${it.name}</b> <span class="stat">${it.slot}${[it.ac && `armour +${it.ac}`, it.atk && `hit +${it.atk}`, it.hp && `health +${it.hp}`, it.mv && `move +${it.mv}`, it.rng && `reach +${it.rng}`, it.stat && Object.entries(it.stat).map(([k,v]) => `${k} +${v}`).join(' ')].filter(Boolean).map(x => ' · ' + x).join('')}</span><small>${it.line}</small></div>
+    ${w === id ? `<button class="btn" data-uneq="${it.slot}">Remove</button>` : `<button class="btn" data-eq="${it.id}">${w ? `Take from ${NAME(w)}` : 'Equip'}</button>`}</div>`; }).join('') : `<p class="fine">Nothing found yet that ${id === 'sgt' ? 'you' : c.name} could use.</p>`;
   const loyN = id === 'sgt' ? null : S.loy[id];
   const bar = (k, v, cls='') => `<div class="stbar"><span>${k}</span><div class="bar ${cls}"><i style="width:${v/4*100}%"></i></div><span>${v}</span></div>`;
   const abil = c.ab.map(k => { const a = AB[k]; let d; try { d = B ? a.desc() : a.desc(); } catch(e) { d = {rally:'Squadmates within 3 heal 4 and get +2 to hit through next round. Once per fight.', bash:'Adjacent enemy: 1d6+3 and it loses its next turn on a hit. Recharges after 2 rounds.', sharper:'Thrown, range 4. 1d10+2 at the centre, 1d6 around it. Scatters on a natural 1.', burner:'Thrown, range 4. 1d6 to a 3×3 and leaves it burning for 2 rounds.', cusser:'Thrown, range 3. 3d8 centre and adjacent, 1d8 one step further. Scatters on 1–2.', veil:'Meanas illusion: enemies take −5 to hit the target for 2 rounds (more where Meanas is strong). Strain 2.', phantom:'An enemy chases a phantom and loses its turn unless it resists. Strain 3.', mend:'Denul healing, 2d6+3, weaker where Denul falters. Strain 3.', salve:'Heal 8, self or adjacent.'}[k]; }
     return `<div><b>${a.name}${a.item ? ` <span class="stat">×${S.inv[a.item]}</span>` : ''}</b><span>${d}</span></div>`; }).join('');
   const banter = c.banter ? c.banter[loyN <= -1 ? 0 : loyN >= 2 ? 2 : 1] : null;
   const rel = c.rel ? Object.entries(c.rel).map(([k,v]) => `<li><b>${TPL[k].name}.</b> ${v}</li>`).join('') : PORDER.slice(1).map(k => `<li><b>${TPL[k].name}.</b> ${loyLabel(S.loy[k])}.</li>`).join('');
-  const soldier = `<div class="sec"><h4>Measure</h4><div class="grid2">${bar('Might', c.st.might)}${bar('Wits', c.st.wits, 'w')}${bar('Guile', c.st.guile, 'g')}<div class="stbar"><span>Level</span><div class="bar"><i style="width:${S.lvl/4*100}%"></i></div><span>${S.lvl}</span></div></div></div>
-    <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${hp}</span><span>Armour</span><span>${c.ac}</span><span>To hit</span><span>+${atk}</span><span>Damage</span><span>${c.dmg[0]}d${c.dmg[1]}${c.dmg[2] ? '+' + c.dmg[2] : ''}</span><span>Reach</span><span>${c.rng > 1 ? c.rng + ' tiles' : 'adjacent'}</span><span>Move</span><span>${c.mv}</span><span>Initiative</span><span>+${c.init}</span>${c.magic ? `<span>Strain limit</span><span>${STR_MAX}</span>` : ''}</div></div>
+  const soldier = `<div class="sec"><h4>Measure</h4><div class="grid2">${bar('Might', c.st.might)}${bar('Wits', c.st.wits, 'w')}${bar('Guile', c.st.guile, 'g')}<div class="stbar"><span>Level</span><div class="bar"><i style="width:${S.lvl/8*100}%"></i></div><span>${S.lvl}</span></div></div></div>
+    <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${hp}</span><span>Armour</span><span>${ac}</span><span>To hit</span><span>+${atk}</span><span>Damage</span><span>${c.dmg[0]}d${c.dmg[1]}${c.dmg[2] ? '+' + c.dmg[2] : ''}</span><span>Reach</span><span>${rng > 1 ? rng + ' tiles' : 'adjacent'}</span><span>Move</span><span>${mv}</span><span>Initiative</span><span>+${init}</span>${c.magic ? `<span>Strain limit</span><span>${STR_MAX}</span>` : ''}</div></div>
     <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of a tile next to an enemy gives that enemy one free swing a turn. The deserters know both tricks.</p></div>
     <div class="sec"><h4>Abilities</h4><div class="abl">${abil}</div></div>
-    <div class="sec"><h4>Arms</h4><p>${c.weapon}.</p><p>${c.armour}.</p></div>
+    ${talents.length ? `<div class="sec"><h4>Learned</h4><div class="abl">${talents.map(o => `<div><b>${o[1]}</b><span>${o[2]}</span></div>`).join('')}</div></div>` : ''}
+    <div class="sec"><h4>Arms</h4><p>${c.weapon}.</p><p>${c.armour}.</p>${gearOf.map(it => `<p>${it.line}</p>`).join('')}</div>
+    <div class="sec kit"><h4>Kit</h4>${kit}</div>
     <div class="sec"><h4>Carries</h4><ul>${c.gear.map(g => `<li>${g}</li>`).join('')}</ul></div>`;
   const story = `<div class="sec"><h4>Record</h4><div class="kv"><span>Origin</span><span>${c.origin}</span><span>Age</span><span>${c.age}</span><span>Service</span><span>${c.service}</span><span>Bearing</span><span>${c.height}</span></div></div>
     <div class="sec"><h4>Who they are</h4><p>${c.bio}</p><p>${c.bio2}</p></div>
@@ -1654,11 +1819,14 @@ function openChars(i, tab){
   $('#cPrev').onclick = () => { AUDIO.play('flip'); openChars(charIdx - 1); };
   $('#cNext').onclick = () => { AUDIO.play('flip'); openChars(charIdx + 1); };
   $('#cClose').onclick = closeChars;
+  m.querySelectorAll('[data-eq]').forEach(b => b.onclick = () => { AUDIO.play('coin'); equip(id, b.dataset.eq); openChars(charIdx); });
+  m.querySelectorAll('[data-uneq]').forEach(b => b.onclick = () => { AUDIO.play('click'); unequip(id, b.dataset.uneq); openChars(charIdx); });
   m.querySelectorAll('.tab').forEach(b => b.onclick = () => { AUDIO.play('click'); const tb = b.dataset.t; if (tb === 'soldier' || tb === 'story') openChars(charIdx, tb); else { closeChars(); openModal(tb); } });
   let sx = null; m.ontouchstart = e => { sx = e.touches[0].clientX; }; m.ontouchend = e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 70) { AUDIO.play('flip'); openChars(charIdx + (dx < 0 ? 1 : -1)); } };
   m.onclick = e => { if (e.target === m) closeChars(); };
 }
 function closeChars(){ const m = $('#chars'); m.hidden = true; m.innerHTML = ''; charAnim = null; if (S && S._preview) S = null; }
+
 
 /* ============ settings ============ */
 function openSettings(){
@@ -1683,6 +1851,7 @@ function openSettings(){
   m.onclick = e => { if (e.target === m) { m.hidden = true; m.innerHTML = ''; } };
 }
 
+
 /* ============ pack / journal / save ============ */
 function openModal(tab){
   const m = $('#modal'); m.hidden = false;
@@ -1692,13 +1861,21 @@ function openModal(tab){
       <span>Squad level</span><span>${S.lvl} (${S.xp}/${LEVELS[S.lvl] ?? '—'} xp)</span>${S.card ? `<span>Deck reading</span><span>${CARDS[S.card].name}</span>` : ''}</div>
       ${S.card ? `<div class="cardinline" style="margin-top:12px"><canvas id="icard" width="240" height="360"></canvas></div><p class="fine" style="text-align:center">${CARDS[S.card].fx}</p>` : ''}
       <p class="fine" style="margin-top:10px">Moranth munitions hit everything in the blast, your own squad included. Warren magic builds strain; past ${STR_MAX}, the caster pays in blood.</p>`,
-    journal:()=>`<ul class="jl">${[
+    journal:()=>`<p class="fine">${S.chapter === 0 ? 'Prologue' : `Chapter ${CHAPTERS[S.chapter] ? CHAPTERS[S.chapter].number : S.chapter}`}${Object.keys(S.chapters).length ? ` · done: ${Object.keys(S.chapters).map(n => n === '0' ? 'prologue' : 'chapter ' + n).join(', ')}` : ''}</p><ul class="jl">${[
+      S.chapter >= 1 ? [
+        S.f.c1_reported ? `Whiskeyjack: the Fourth rides south overland with the baggage. Darujhistan.` : `Report to Whiskeyjack at the Bridgeburners' fire.`,
+        S.f.c1_paran ? `Captain Paran walked the lines. Noble-born. Trying.` : '',
+        S.f.c1_sawHairlock ? `Tattersail's puppet turned its head.` : '',
+        S.f.c1_plant ? `Tattersail knows about Tuft's badge. So, now, do you.` : '',
+        S.f.c1_hounds ? `The Hounds of Shadow came through the tent lines. ${S.f.c1_key === 'claw' ? 'You held the crate.' : 'You held the line.'}` : '',
+        S.f.c1_accounting ? `The Claw came to settle accounts at the picket line.` : '',
+      ] : [],
       S.f.quest ? `Recover Varrow's satchel from the north sapper tunnels and bring it to Tattersail. ${S.ending ? '(Done.)' : ''}` : `Answer the cadre's summons.`,
       S.f.knowStakes ? `Tattersail says the journal records who ordered what the night the Second Army died.` : '',
       S.f.knowDeserters ? `Garrow: Moreau's section deserted into the north tunnels. "The Fist is still counting heads."` : '',
       S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak at the crater is paying attention to your squad.`) : '',
       S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
-      `Brisk's brother, Second Army: not yet found.`, `Tuft and the High Mage: unasked.`].filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>`,
+      `Brisk's brother, Second Army: not yet found.`, S.f.c1_plant ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>`,
     save:()=>`<p class="fine">The game saves itself on this device as you play. To move it to another device, or protect it from a cleared browser, copy this code somewhere safe.</p>
       ${S ? `<textarea id="exp" readonly aria-label="Save code">${saveCode()}</textarea><div class="row" style="margin:8px 0 16px"><button class="btn" id="bCopy">Copy code</button></div>` : ''}
       <label class="fine" for="imp">Paste a save code to load it</label><textarea id="imp" placeholder="Paste code here"></textarea>
@@ -1712,33 +1889,719 @@ function openModal(tab){
   if (tab === 'pack' && S.card) inlineCard($('#icard'), S.card, false);
   if (tab === 'save') {
     if ($('#bCopy')) $('#bCopy').onclick = () => { const ta = $('#exp'); ta.select(); try { navigator.clipboard.writeText(ta.value); $('#bCopy').textContent = 'Copied'; } catch(e) { $('#bCopy').textContent = 'Select and copy'; } };
-    $('#bLoad').onclick = () => { try { const s = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim())))); if (!s || s.v !== 1) throw 0; S = s; save(); m.hidden = true; resume(); }
+    $('#bLoad').onclick = () => { try { const s = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim())))); if (!s || s.v !== 1) throw 0; S = migrate(s); save(); m.hidden = true; resume(); }
       catch(e) { $('#impMsg').textContent = 'That code didn\'t load. Check that it was copied in full.'; } };
   }
   m.onclick = e => { if (e.target === m) m.hidden = true; };
 }
 function saveCode(){ return btoa(unescape(encodeURIComponent(JSON.stringify(S)))); }
 
+
+/* ============ chapters: cards, intros, endings, ability picks ============ */
+const CHEND = {
+  0:{ // the prologue's four endings (text kept from the slice)
+    given:['Delivered','Varrow\'s journal is in the cadre\'s hands, unread by you. Tattersail owes your squad, and she is the kind who pays.'],
+    told:['Delivered, and known','Tattersail has the journal. You and Tuft both know what the underlined line says. That kind of knowledge has a weight, and a price.'],
+    burned:['Ashes','Varrow\'s account went up in a candle flame. Your squad is safer. The truth about the night the Second died is not.'],
+    claw:['Taken','The journal went to the Claw. Tayschrenn will know by morning who carried it up out of the dark.'] },
+  1:{
+    line:['The line held','When the tents burned the Fourth went where Tattersail pointed, and stood there until the Hounds decided the cadre row was not worth the price. The cadre will remember which squad that was. So will a man with clean boots.'],
+    claw:['The crate held','When the tents burned the Fourth sealed the cadre tent on a grey cloak\'s word and let the mage shout. The Hounds broke on Claw knives instead of marine shields. Tuft has not spoken since. The Empire, in the person of a man with clean boots, is pleased.'] },
+};
+const CHTEASE = {
+  0:'Next: Captain Paran arrives at the Pale, the Hounds of Shadow come hunting, and the Fourth is told where it is going.',
+  1:'Next: the Black Moranth will not carry a sixth squad. The Fourth rides south across the Rhivi Plain, and something is riding the same way.',
+};
+function chapterEnd(n, key){
+  S.chapters[n] = key; S.chapter = n; S.scene = 'chend'; S.node = null; S.bg = null; save(); showChapterEnd();
+}
+function finish(kind){ S.ending = kind; chapterEnd(0, kind); } // prologue endings
+function showChapterEnd(){
+  view = 'end'; $('#sheet').hidden = true; B = null; AUDIO.setScene('end');
+  const n = S.chapter, key = S.chapters[n]; const E = (CHEND[n] || {})[key] || ['The end',''];
+  const extra = [];
+  if (n === 0) {
+    if (S.f.decoy) extra.push('A Claw is walking around with Kettle\'s munitions ledger. He\'ll notice eventually.');
+    if (S.f.marked) extra.push('A Claw has your name in a neat hand.');
+    if (S.f.noisy) extra.push('Your sharper woke the Stonebound early. It remembered.');
+    if (S.f.knowDeserters && !S.f.noisy) extra.push('Garrow\'s word reached Moreau\'s section.');
+  }
+  if (n === 1) {
+    if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
+    if (S.f.c1_accFought) extra.push('Three of the Claw\'s people did not walk away from the picket line.');
+    if (S.f.c1_accBluffed) extra.push('Kettle has a cusser named after a Claw now.');
+    if (S.f.cadreTrust) extra.push('Tattersail knows what the Fourth is for.'); if (S.f.clawFavour) extra.push('The Claw remembers a favour. That is not the same as owing one.');
+    if (S.f.c1_refusedKnife) extra.push('You turned down a Claw\'s knife. Brisk noticed.');
+  }
+  const next = CHAPTERS[n + 1];
+  const title = n === 0 ? 'End of the prologue' : `End of Chapter ${CHAPTERS[n].number}`;
+  $('#app').innerHTML = `<div class="end">
+    <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${n === 0 ? 'The Fourth comes up out of the dark. All five.' : 'Morning finds the Fourth still standing, which is the whole of the job.'}</div></div>
+    <div class="sub" style="margin-top:12px">${title}</div>
+    <h2>${E[0]}</h2>
+    <p class="narr" style="margin:0">${E[1]}</p>
+    ${extra.length ? `<ul>${extra.map(e => `<li>${e}</li>`).join('')}</ul>` : ''}
+    <div class="kv" style="margin:16px 0">${SQUAD().slice(1).map(id => `<span>${TPL[id].name}</span><span class="pips">${loyLabel(S.loy[id])}</span>`).join('')}
+      <span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.card ? `<span>Card drawn</span><span>${CARDS[S.card].name}</span>` : ''}</div>
+    <p class="fine">${CHTEASE[n] || ''}</p>
+    <div class="row" style="margin-top:14px">${next ? `<button class="btn primary" id="bNext">Chapter ${next.number}: ${next.title}</button>` : ''}<button class="btn" id="bSq">Squad</button><button class="btn" id="bSet2">Settings</button><button class="btn" id="bAgain">Title</button></div></div>`;
+  G.sceneKind = 'camp';
+  if (next) $('#bNext').onclick = () => { AUDIO.play('click'); startChapter(n + 1); };
+  $('#bSq').onclick = () => { AUDIO.play('click'); openChars(0); };
+  $('#bSet2').onclick = () => { AUDIO.play('click'); openSettings(); };
+  $('#bAgain').onclick = () => { AUDIO.play('click'); showTitle(); };
+}
+const showEnd = showChapterEnd;
+function startChapter(n){
+  const CH = CHAPTERS[n]; if (!CH) return showTitle();
+  S.chapter = n; S.card = null; S.scene = 'chintro'; S.node = null; S.bg = null; S.battle = null; S.bopt = null;
+  S.area = CH.area.id; S.pos = {...CH.area.start}; S.trail = [{x:S.pos.x-1,y:S.pos.y},{x:S.pos.x+1,y:S.pos.y},{x:S.pos.x-1,y:S.pos.y+1},{x:S.pos.x,y:S.pos.y+1}]; S.log = [];
+  save(); showChapterIntro();
+}
+function showChapterIntro(){
+  const CH = CHAPTERS[S.chapter]; if (!CH) return showTitle();
+  view = 'intro'; $('#sheet').hidden = true; B = null; titleAnim = null; AUDIO.setScene('explore');
+  const I = CH.intro;
+  $('#app').innerHTML = `<div class="chcard"><div class="num">Chapter ${CH.number}</div><h1>${CH.title}</h1><div class="rule"></div></div>
+  <header class="hud"><div><div class="loc">${I.loc}</div><div class="sub">${I.sub}</div></div><div class="hudr">${hudButtons()}</div></header>
+  <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${I.cap}</div></div>
+  <div class="narr">${I.paras.map(p => fmt(p)).join('')}</div>
+  <div class="row"><button class="btn primary" id="bGo">${I.go}</button><button class="btn" id="bSq">The squad</button></div>`;
+  G.sceneKind = CH.area.decor === 'pale' ? 'camp' : 'camp_night';
+  $('#bGo').onclick = () => { AUDIO.play('click'); $('#bGo').disabled = true; startExplore(CH.area.id); if (I.node) talk(I.node); };
+  $('#bSq').onclick = () => { AUDIO.play('click'); openChars(0); };
+  bindHud();
+}
+/* quest lines per area (chapter content sets flags; the engine reads them) */
+const QUESTS = {
+  pale_night:()=> S.f.c1_done ? 'Get some sleep. Somebody should.' : S.f.c1_hounds ? 'Hounds in the tent lines' : !S.f.c1_reported ? 'Report to Whiskeyjack at the Bridgeburners\' fire (east)' : !S.f.c1_tent ? 'Tattersail\'s tent, cadre row (north)' : 'Walk the lines. Something is coming.',
+};
+/* ability picks: shown before the next conversation after a level 3/5/7 */
+function openPicks(done){
+  const lvl = S.picksDue[0]; if (!lvl) return done && done();
+  const m = $('#modal'); m.hidden = false;
+  const chosen = {};
+  const optsFor = id => lvl === 3 ? PICKS[3][id] || [] : PICKS.vet.filter(v => !has(id, v[0]));
+  m.innerHTML = `<div class="mbox"><h2 class="m">Level ${lvl}</h2><p class="fine">${lvl === 3 ? 'The squad has been through enough to have habits. Pick one per soldier.' : 'Veterans. One pick each; the rest stays as it was.'}</p>
+    <div class="picks">${SQUAD().map(id => `<div class="pk"><h4>${esc(NAME(id))} <span class="stat">${TPL[id].role}</span></h4><div class="opt2">${optsFor(id).map(o => `<button class="btn" data-id="${id}" data-k="${o[0]}"><b>${o[1]}</b>${o[2]}</button>`).join('')}</div></div>`).join('')}</div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" id="bPick" disabled>Confirm</button></div></div>`;
+  const need = SQUAD().filter(id => optsFor(id).length).length;
+  m.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { AUDIO.play('click'); chosen[b.dataset.id] = b.dataset.k; m.querySelectorAll(`[data-id="${b.dataset.id}"]`).forEach(x => x.classList.toggle('on', x === b)); $('#bPick').disabled = Object.keys(chosen).length < need; });
+  $('#bPick').onclick = () => { AUDIO.play('up'); Object.entries(chosen).forEach(([id,k]) => S.picks[id].push(k)); S.picksDue.shift(); save(); m.hidden = true; if (S.picksDue.length) openPicks(done); else done && done(); };
+  m.onclick = null;
+}
+
+/* ============ chapter 1: Pale ============ */
+const CH1 = {
+  title:'Pale', number:'One',
+  intro:{loc:'The Pale', sub:'Genabackis · two nights later', cap:'The tent lines under a bruised sky. Somewhere north, the cadre row has one lamp lit.',
+    paras:[
+`Two nights since the tunnels. The Host has stopped counting its dead and started counting its living, which is a shorter job and a worse one. A new captain arrived this afternoon with a noble's seat on a horse and a commission for the Bridgeburners, and the Bridgeburners have been very quiet about it, which is how the Bridgeburners are loud.`,
+`You are Sergeant {sgt}, Fourth Squad, Seventh Company marines. The Fourth has been attached to Whiskeyjack for whatever comes next. Nobody has told you what comes next. Kettle has counted the munitions twice since supper. Tuft has not slept.`,
+`The runner said: *the Bridgeburners' fire, when you're ready.* Then he looked at your squad, all five, and added, "Sergeant," as if it were a question.`],
+    go:'Walk the lines', node:'c1_start'},
+
+  area:{ id:'pale_night', title:'The Pale · the camp at night', sub:'Bridgeburners\' fire to the east · cadre row north',
+    hint:'Tap ground to move · tap a figure to talk',
+    // 16 columns x 12 rows. # rubble  . ground  , ash  = tent  C cadre tent (Tattersail's; walking onto it = talk)  F fire  W wagon (Pell)  P burial pit  x picket stake  B Bridgeburners' fire (walk onto = Whiskeyjack)
+    map:[ "################",
+          "#..C..=..=....P#",
+          "#.....=..=...PP#",
+          "#,,..........P.#",
+          "#..=...x.x.x...#",
+          "#..=......,....#",
+          "#....W.....,...#",
+          "#..=.......=..,#",
+          "#..=...,...=B..#",
+          "#.....,....,F..#",
+          "#..,......,....#",
+          "################" ],
+    walk:'.,P', triggers:{C:'c1_tent', B:'c1_wj', W:'c1_pell', P:'c1_pits'},
+    start:{x:8,y:9},
+    npcs:[
+      {id:'paran', name:'Captain Paran', kind:'paran', x:6, y:5, node:()=>S.f.c1_paran?'c1_paran_again':'c1_paran', show:()=>!S.f.c1_hounds, fresh:()=>!S.f.c1_paran},
+      {id:'wj', name:'Whiskeyjack', kind:'wj', x:12, y:8, node:()=>S.f.c1_wj?'c1_wj_again':'c1_wj', fresh:()=>!S.f.c1_wj},
+      {id:'qb', name:'Quick Ben', kind:'qb', x:13, y:8, node:()=>S.f.c1_wj?'c1_wj_again':'c1_wj'},
+      {id:'kalam', name:'Kalam', kind:'kalam', x:13, y:9, node:()=>S.f.c1_wj?'c1_wj_again':'c1_wj'},
+      {id:'tat', name:'Tattersail', kind:'tat', x:4, y:1, node:()=>S.f.c1_tent?'c1_tent_again':'c1_tent', show:()=>!S.f.c1_hounds, fresh:()=>!S.f.c1_tent},
+      {id:'pell', name:'Quartermaster Pell', kind:'pell', x:6, y:6, node:()=>'c1_pell'},
+      {id:'claw', name:'Grey cloak', kind:'claw', x:9, y:3, node:()=>S.f.c1_claw?'c1_claw_again':'c1_claw', show:()=>!S.f.c1_hounds && !!S.f.c1_wj, fresh:()=>!S.f.c1_claw} ] },
+
+  battles:{
+    hounds_line:{title:'The cadre row', warrenText:'Shadow bleeds through the tent lines · Meanas howls', warren:{meanas:1.4,denul:0.8}, dark:true, music:'dark',
+      map:["#......#","..#..#..","........","#......#","........",".#....#.","........","........","#......#","........"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9]],
+      foes:[['hound',3,1]], xp:180, after:'c1_after_line',
+      objective:{type:'survive', rounds:4, text:'Hold the cadre row for four rounds.'},
+      waves:[{round:2, foes:[['hound',6,0]], text:'A second Hound comes over the tents. Rood.'}] },
+    hounds_claw:{title:'The cadre tent', warrenText:'Shadow bleeds through the tent lines · Meanas howls', warren:{meanas:1.4,denul:0.8}, dark:true, music:'dark',
+      map:["#......#","........","..#..#..","........","........","#......#","........",".#....#.","........","........"],
+      party:[[3,7],[4,7],[2,8],[5,8],[3,8]],
+      foes:[['hound',3,1]], xp:150, after:'c1_after_claw',
+      objective:{type:'survive', rounds:3, text:'Seal the cadre tent. Hold the crate for three rounds.'},
+      allies:[['assassin',1,9],['assassin',6,9]],
+      waves:[{round:2, foes:[['hound',6,0]], text:'A second Hound comes over the tents. Rood. The grey cloaks do not look up.'}] },
+    accounting:{title:'The picket line', warrenText:'Warrens quiet · the stakes cast two shadows each', warren:{meanas:1.1,denul:1}, music:'battle',
+      map:["........","..#..#..","........","#......#","........","........",".#....#.","........","........","........"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9]],
+      foes:[['assassin',1,1],['assassin',4,0],['assassin',6,2]], xp:120, after:'c1_after_accounting'} },
+
+  foes:{ hound:{name:'Hound of Shadow', sig:'H', hp:44, ac:15, atk:6, dmg:[2,6,2], rng:1, mv:6, init:4, boss:true, verb:'tears at'},
+         assassin:{name:'Claw', sig:'C', hp:14, ac:14, atk:5, dmg:[1,8,2], rng:1, mv:5, init:4, verb:'knifes'} },
+
+  gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
+    heater:{name:'Second Army heater shield', slot:'armour', who:['brisk','sgt'], ac:1, line:'A heater shield with the Second\'s sigil burned off. Brisk did not ask whose.'},
+    houndtooth:{name:'Hound\'s tooth', slot:'trinket', who:null, atk:1, line:'A tooth the length of a finger, snapped off in a tent pole. It is warm. It stays warm.'},
+    cadretoken:{name:'Cadre token', slot:'trinket', who:['tuft','ohl'], hp:2, line:'A bone disc on a cord, the kind the cadre give to people they intend to remember. Tattersail did not say whose it had been.'},
+    clawknife:{name:'Grey cloak\'s knife', slot:'weapon', who:['sgt','kettle'], atk:1, line:'A short blade with no maker\'s mark and no blood on it, which is not the same as never having had any.'} },
+
+  card:{ id:'hounds', name:'Hounds of Shadow', house:'High House Shadow', hue:'#7a6a9a',
+    txt:`Seven shapes running under a moon that isn't there. Tuft looks at it for a long time. "They're not coming for us," she says, and then, quieter, "I don't think."`,
+    fx:'Your squad moves +1 tile this chapter.' },
+
+  dlg:{
+    /* ---- opening ---- */
+    c1_start:()=>({sp:'The Fourth\'s fire', scene:'camp_night', fx:()=>{S.f.c1_started=1;}, txt:
+`The Fourth's fire is small and Brisk is standing over it as if it might try something. Kettle is on her third count of the munitions. Ohl has his oilcloth open on his knee and is not reading it, which is a thing he does when the list is long enough already.
+
+Tuft is at the edge of the light with her back to the tent lines. She has been there since dark.
+
+"Sergeant." Brisk, not looking up. "Bridgeburners want you. Runner said *when you're ready*, which means now."
+
+Kettle snaps the ledger shut. "Two sharpers, one burner, one cusser. Same as this morning. Same as two nights ago. The cusser's called Maud, if anyone's asking." Nobody is.`,
+      ch:[{t:'Walk the lines.', go:()=>startExplore()},
+          {t:'"Tuft. You sleeping?"', go:'c1_start_tuft'},
+          {t:'"Ohl. How long is it tonight?"', go:'c1_start_ohl'}]}),
+    c1_start_tuft:()=>({sp:'Tuft', txt:
+`She doesn't turn round. "There's a lamp in the cadre row that's been lit three nights. Same tent. Nobody goes in and nobody comes out."
+
+${S.loy.tuft >= 2 ? `"I'd tell you if it mattered, Sergeant. I'm telling you now. It matters, and I don't know why yet."` : `"It's not our business." She says it the way people say things they've decided, not things they believe.`}`,
+      ch:[{t:'Walk the lines.', go:()=>startExplore()}]}),
+    c1_start_ohl:()=>({sp:'Ohl', txt:
+`He folds the oilcloth along its old creases. "Two hundred and eleven. I counted again by the fire. It doesn't get shorter when you count it, but I keep hoping."
+
+${S.loy.ohl >= 2 ? `"None of ours, Sergeant. I mention it because you'd never ask."` : `"Go on. The Bridgeburners don't like waiting, and they're worse at it than we are."`}`,
+      ch:[{t:'Walk the lines.', go:()=>startExplore()}]}),
+
+    /* ---- the Bridgeburners' fire ---- */
+    c1_wj:()=>({sp:'Whiskeyjack · Bridgeburners', scene:'fire', txt:
+`The Bridgeburners' fire is bigger than yours and has fewer people around it. Whiskeyjack sits on a saddle with his boots to the coals and his sword across his knees, not for show; he is oiling it. The one beside him, dark and long-fingered and smiling at something, would be Quick Ben. The big one standing just outside the light, not leaning on anything, would be Kalam.
+
+"Sergeant {sgt}." Whiskeyjack doesn't stand. "Fourth Squad. You were in the north tunnels two nights ago. Tell me how that went."
+
+Kalam's eyes go to Kettle's satchel and stay there. Quick Ben's go to Tuft, and don't.`,
+      ch:[{t:'"All five up. Varrow\'s satchel went where it was sent. Deserters in the first hundred paces, something older at the end."', go:'c1_wj_honest'},
+          {t:'"Grave detail, sir. Nothing to report."', go:'c1_wj_evasive'},
+          {t:'"Tunnels, sir. Nothing your Bridgeburners couldn\'t have done faster."', go:'c1_wj_boast'}]}),
+    c1_wj_honest:()=>({sp:'Whiskeyjack', fx:()=>{S.f.wjRegard=1; S.f.c1_reported=1;}, txt:
+`He nods once, as if a figure in a ledger had come out even.
+
+"That's a report." He goes back to the sword. "Something older. Quick?"
+
+"Kurald Galain, leaked down from the Spawn." The mage says it the way other men say *rain*. "It'll be gone in a month. The thing that was living in it won't." He is still not looking at Tuft.`,
+      ch:[{t:'Wait for the rest.', go:'c1_brief'}]}),
+    c1_wj_evasive:()=>({sp:'Whiskeyjack', fx:()=>{S.f.wjRegard=0; S.f.c1_reported=1;}, txt:
+`"Grave detail." He says it back to you flat, the way you'd hand a man back a coin that's been clipped. "That's a grey cloak's phrase, Sergeant. You've been talking to grey cloaks."
+
+Quick Ben laughs, once, softly. Kalam doesn't.
+
+"I don't need to know what was in the tunnels. I need to know if you'll tell me what's in the next one. We'll find out."`,
+      ch:[{t:'Wait for the rest.', go:'c1_brief'}]}),
+    c1_wj_boast:()=>({sp:'Whiskeyjack', fx:()=>{S.f.wjRegard=-1; S.f.c1_reported=1; loy('brisk',-1);}, txt:
+`He stops oiling the sword.
+
+"Don't do that." Not loud. "I've got thirty-eight Bridgeburners left out of fourteen hundred and I'm not going to spend the evening being told how good they are by a marine who came out of a hole with all five of his squad. That's a better thing than fast. Try saying that next time."
+
+Behind you Brisk shifts her weight, which is as close as she comes to a comment.`,
+      ch:[{t:'"Sir."', go:'c1_brief'}]}),
+    c1_brief:()=>({sp:'Whiskeyjack', txt:
+`"Darujhistan." He lets the word sit in the fire a moment. "The last free city. Dujek's orders are to take it from the inside, and the Empress's orders are for the Bridgeburners to do it, and the new captain's orders are to command the Bridgeburners while they do it. You'll have seen the captain. Tall. Polite. Wearing his commission like a coat that hasn't been rained on yet."
+
+"The Black Moranth fly us south. Five squads. Their quorls carry five squads, and I've asked, and the answer was a noise I've decided was a no. So the Fourth goes overland with the baggage train and a Rhivi guide and whatever the Host can spare, which is nothing. You'll be a week behind us. You'll come into the city from the plain, and you'll be the only Malazans in it that nobody's watching for."
+
+${S.ending === 'claw' ? `Quick Ben, mildly: "A grey cloak walked out of the north quarter two nights ago with a satchel under his arm. Half the camp saw it. The other half was paid not to." He is smiling. It isn't at you.` :
+  S.ending === 'burned' ? `Quick Ben, mildly: "Tattersail burned a candle for an hour that night. Not for reading by." He is smiling. It isn't at you.` :
+  S.ending === 'told' ? `Quick Ben, mildly: "Tattersail's sleeping less than usual, which was none. Whatever you carried up, Sergeant, it didn't get lighter when she read it." He is smiling. It isn't at you.` :
+  `Quick Ben, mildly: "The cadre tent smelled of oilcloth this morning. Somebody delivered something and didn't stay to read it. That's rarer than you'd think." He is smiling. It isn't at you.`}`,
+      ch:[{t:'Watch the mage. He\'s watching someone.', check:['wits',12], req:()=>!S.f.c1_qb, fx:()=>S.f.c1_qb=1, go:'c1_qb_tuft', fail:'c1_qb_miss'},
+          {t:'"And the captain? Off the record."', check:['guile',13], req:()=>!S.f.c1_kal, fx:()=>S.f.c1_kal=1, go:'c1_kalam_ok', fail:'c1_kalam_no'},
+          {t:'Tuft has the Deck out. She\'s looking at you.', req:()=>!S.f.c1_drawn, go:'c1_deck'},
+          {t:'"Understood, sir."', go:'c1_wj_end'}]}),
+    c1_qb_tuft:()=>({sp:'Quick Ben', txt:
+`You've been in enough tents to know when a man is not looking at something on purpose. Quick Ben has not looked at Tuft since you walked into the light, and it is costing him.
+
+When he catches you noticing, he lets it go, all at once, like a held breath. He looks at her properly. Tuft looks at the fire.
+
+"Meanas," he says, to you, pleasantly. "Nice warren. Quiet. You can carry a lot in it without anyone hearing it rattle." Then, to her: "How's the High Mage's staff these days?"
+
+Tuft says nothing. The fire pops. Quick Ben nods as if that had been an answer, and a good one.`,
+      fx:()=>{S.f.c1_qbTuft=1; loy('tuft',1);},
+      ch:[{t:'Back to the briefing.', go:'c1_brief'}]}),
+    c1_qb_miss:()=>({sp:'Quick Ben', txt:
+`The mage is looking at the fire, and then at Kalam, and then at you, with the mild interest of a man counting something. When you try to follow his eyes they've already moved.
+
+"Sergeant," he says. "You're staring."`,
+      ch:[{t:'Back to the briefing.', go:'c1_brief'}]}),
+    c1_kalam_ok:()=>({sp:'Kalam', fx:()=>{S.f.c1_kalamTalk=1;}, txt:
+`Kalam doesn't move from the edge of the light. For a moment you think he hasn't heard.
+
+"He sits a horse like a noble and walks like a man who's been told that's a problem." The voice is low and unhurried. "He read the roster twice. Out loud. Every name. Nobody told him to."
+
+A pause you could fit a knife into.
+
+"Somebody sent him to us. Somebody who sends people. I'll know which somebody by the end of the week, and the captain won't, and that's the whole of what I think about the captain."`,
+      ch:[{t:'Back to the briefing.', go:'c1_brief'}]}),
+    c1_kalam_no:()=>({sp:'Kalam', txt:
+`"He's the captain," Kalam says.
+
+Whiskeyjack doesn't look up from the sword. "That's Kalam's whole opinion, Sergeant. It took him a day to reach it. Don't spend yours."`,
+      ch:[{t:'Back to the briefing.', go:'c1_brief'}]}),
+    c1_deck:()=>({sp:'Tuft', txt:
+`Tuft has the Deck out of her sleeve, which she doesn't do in front of strangers. Quick Ben has gone very interested in the coals.
+
+"One card, Sergeant. For the road. I'm not reading for them." Her eyes go to the Bridgeburners and back. "I'm reading for us."`,
+      ch:[{t:'Let her draw.', fx:()=>{ S.f.c1_drawn=1; S.card = ['hounds','hounds','hounds','oponn','knight','assassin'][R(6)]; }, go:()=>cardSequence(()=>talk('c1_card'))},
+          {t:'"Not here. Not in front of them."', fx:()=>{S.f.c1_drawn=1; S.f.c1_noCard=1; loy('tuft',-1); loy('brisk',1);}, go:'c1_brief'}]}),
+    c1_card:()=>{ const c = (CARDS[S.card] || CH1.card); return {sp:'The Deck of Dragons', scene:'fire', txt:
+`Tuft lays the reading out on Whiskeyjack's saddle-blanket without asking. Two cards refuse her. The third does not.`,
+      html:`<div class="cardinline"><canvas id="icard" width="240" height="360"></canvas></div><div class="note">${esc(c.name)} · ${esc(c.fx)}</div>`, oncard:[S.card,false],
+      after:`${c.txt}
+
+Quick Ben has looked up from the coals. "Interesting deck," he says, and means the hand holding it.`,
+      ch:[{t:'Back to the briefing.', go:'c1_brief'}]}; },
+    c1_wj_end:()=>({sp:'Whiskeyjack', fx:()=>{S.f.c1_wj=1;}, txt:
+`He sheathes the sword.
+
+"Sleep if you can. Report to the quartermaster in the morning for the wagon. If the captain walks your lines tonight, be a marine at him; he's new, and he's trying, and the ones who try are the ones you get to keep." He looks at the cadre row, where the one lamp is still lit. "And if Tattersail asks for you, go. She doesn't ask twice. She just stops asking."
+
+${S.f.wjRegard > 0 ? `"Sergeant." As you turn. "All five. Keep doing that."` : S.f.wjRegard < 0 ? `He doesn't say anything as you turn. Kalam does, to nobody: "Fourth Squad."` : `Quick Ben lifts two fingers from his knee, which might be a farewell and might be a ward.`}`,
+      ch:[{t:'Walk the lines.', go:()=>{ if (S.f.c1_tent) talk('c1_night'); else startExplore(); }}]}),
+    c1_wj_again:()=>({sp:'Whiskeyjack', txt:
+`"Sergeant." He doesn't look up from the fire. "You've got your orders. They don't get better with repeating."
+
+${S.f.c1_qbTuft ? `Quick Ben, to the coals: "Tell your mage she can stop pretending I'm not here. I'm very good at being here."` : `Kalam has moved. You didn't see him do it.`}`,
+      ch:[{t:'Leave', go:()=>startExplore()}]}),
+
+    /* ---- Captain Paran walks the lines ---- */
+    c1_paran:()=>({sp:'Captain Paran', fx:()=>{S.f.c1_paran=1;}, txt:
+`A tall man in a clean cloak is walking the tent lines with no lantern, which is either courage or a noble's assumption that the ground will be where he left it. His sword is old, older than he is, and worn on the wrong side for a man who's used it much.
+
+He stops when he sees your squad. He looks at each of you in turn, counting, and you watch him arrive at five and check it.
+
+"Sergeant. Fourth Squad." Not a question; he's read the roster. "Captain Paran. I'm told you're attached to Whiskeyjack for the south. I'm told a number of things. I'm trying to find out which ones are true before someone asks me to act on them."
+
+He says it stiffly, like a man reading aloud from something he wrote out earlier and is no longer sure of.`,
+      ch:[{t:'Salute. Properly, the whole thing.', go:'c1_paran_salute'},
+          {t:'"Five, sir. Same five that went down. You can stop counting."', check:['might',11], go:'c1_paran_count', fail:'c1_paran_count_fail'},
+          {t:'Ohl holds out a cup of tea.', go:'c1_paran_tea'}]}),
+    c1_paran_salute:()=>({sp:'Captain Paran', txt:
+`You give him the salute the Untan garrison gave to Fists, the one with the shield-arm, and hold it.
+
+He returns it correctly, which surprises you, and a beat late, which doesn't. Something in his face unclenches by a hair.
+
+"Thank you, Sergeant," he says, and you think he means it, and you think he knows it's a strange thing for a captain to say. "I had a tutor who said sergeants were the spine of an army. I begin to see he'd never met one."`,
+      ch:[{t:'"Sir."', go:'c1_paran_go'}]}),
+    c1_paran_count:()=>({sp:'Captain Paran', fx:()=>{loy('brisk',1); S.f.c1_paranStare=1;}, txt:
+`He holds your stare. You hold his. It is a longer contest than it should be, and he is the one who ends it, with a small nod that is not a concession and is not quite an order.
+
+"Five," he says. "I'll remember the number. I've been given a great many numbers today, Sergeant, and yours is the first one that came with a face attached."
+
+Brisk, behind you, makes a sound that in another woman would be approval.`,
+      ch:[{t:'"Sir."', go:'c1_paran_go'}]}),
+    c1_paran_count_fail:()=>({sp:'Captain Paran', txt:
+`He holds your stare, and you find, to your irritation, that you have looked away first. He doesn't press it. He looks as if he has done that to people before and not enjoyed it.
+
+"Five," he says quietly. "Good." And then, as if it cost him: "I'm sorry. I'm not yet sure how to talk to marines. I'll learn it or I won't."`,
+      ch:[{t:'"Sir."', go:'c1_paran_go'}]}),
+    c1_paran_tea:()=>({sp:'Captain Paran', fx:()=>{loy('ohl',1); S.f.c1_paranTea=1;}, txt:
+`Ohl has a cup in his hand before anyone sees him make it. He holds it out to the captain the way he holds it out to everyone, as if refusal is a medical question.
+
+Paran takes it. Drinks. His face does the thing every face does.
+
+"Hood's breath," he says, and then, appalled at himself, "Forgive me. Is that medicine?"
+
+"Technically," says Ohl.
+
+The captain finishes the cup. That is the first thing he has done tonight that looks like a decision.`,
+      ch:[{t:'"Sir."', go:'c1_paran_go'}]}),
+    c1_paran_go:()=>({sp:'Captain Paran', txt:
+`He looks toward the cadre row, where the one lamp is still lit.
+
+"I'm to see the cadre mage before I sleep. Whiskeyjack calls it a courtesy. I think it's an inspection, and I'm not certain which of us is being inspected." A pause. "Good night, Sergeant. I expect I'll have a great deal to say to you in the morning, and I expect you'll have heard most of it before."
+
+He walks off toward the tent lines with no lantern. Once, at the edge of the light, he looks back at the camp the way a man looks at a street whose name he has just been told, memorising it.
+
+${S.loy.kettle >= 2 ? `Kettle, quietly: "He walks like a man who doesn't know there's a hole in front of him." Then, quieter: "I like him. That's a bad sign for him."` : `Tuft watches him go longer than anyone else does.`}`,
+      ch:[{t:'Walk the lines.', go:()=>startExplore()}]}),
+    c1_paran_again:()=>({sp:'Captain Paran', txt:`He's gone north along the tent lines, toward the cadre row. You can still see the pale cloak, and then you can't.`, ch:[{t:'Leave'}]}),
+
+    /* ---- Tattersail's tent ---- */
+    c1_tent:()=>({sp:'Tattersail · cadre mage', scene:'tent', fx:()=>{S.f.c1_tentIn=1;}, txt:
+`The tent smells of candle smoke and something under it, dry and sweet, like a cellar where fruit has been left too long. Tattersail is at her table with the cards out and a cup she isn't drinking from. She looks older than two nights ago. Everyone does, but she has managed it faster.
+
+${S.ending === 'claw' ? `"Sergeant {sgt}. Sit, since you're here." She doesn't offer a stool. "The High Mage has Varrow's hand by now, and what I have is a squad that carried it up out of the dark and then carried it somewhere else. Don't explain. I've had the explanation from the cards. It was a short reading."` :
+  S.ending === 'burned' ? `"Sergeant. I've been thinking about your candle." She turns a card face-down without looking at it. "I'm not finished thinking. Sit."` :
+  S.ending === 'told' ? `"You know what I know. That makes two of us, and Tayschrenn, and Varrow, and Varrow isn't talking." Her voice is the same warm thing it was, and something under it isn't. "Sit, Sergeant. I don't say it to many people. Most of them are dead."` :
+  `"Sergeant. You brought me a thing and didn't read it." She almost smiles. "I've been trying to decide whether that makes you the most trustworthy soldier in this camp or the least curious. Sit. I'll let you know."`}
+
+On a crate against the far wall, where the light doesn't quite reach, something sits with its legs out in front of it. A doll. A puppet. Its head is a carved wooden thing, and there is a smell of resin and old bandage about it, and the cellar sweetness is coming from there.`,
+      ch:[{t:'Look at the puppet.', check:['wits',12], go:'c1_hairlock', fail:'c1_hairlock_miss'},
+          {t:'"The new captain\'s coming to see you tonight."', go:'c1_tent_captain'},
+          {t:'"Ma\'am."', go:'c1_tuft_still'}]}),
+    c1_tent_captain:()=>({sp:'Tattersail', fx:()=>{S.f.c1_tentCaptain=1;}, txt:
+`"He is." She doesn't look up. "Whiskeyjack asked me to look at him. I've looked. He's got the Deck all over him and doesn't know it, which is the worst way to have it."
+
+"Somebody's put a piece on the board, Sergeant. It's him. I'd like to know who, and I'd like the answer not to be the one I think it is."`,
+      ch:[{t:'Look at the puppet.', check:['wits',12], go:'c1_hairlock', fail:'c1_hairlock_miss'},
+          {t:'"Ma\'am."', go:'c1_tuft_still'}]}),
+    c1_hairlock:()=>({sp:'Tattersail\'s tent', fx:()=>{S.f.c1_sawHairlock=1;}, txt:
+`It's a puppet. Jointed wood, a painted face with the paint gone at the mouth, a soldier's tunic cut down to fit. Somebody has stitched it with a great deal of care and no affection at all.
+
+When you came in, its head was facing the tent flap.
+
+It is now facing you.
+
+Nobody in the tent moved. The candle didn't gutter. Tattersail's hand has stopped on the cards. "Hairlock," she says, without turning round. "Luggage. Don't talk to it. It talks back."`,
+      ch:[{t:'Say nothing. Keep your hand near the knife.', go:'c1_tuft_still'},
+          {t:'"That was cadre. Wasn\'t it. That was a man."', fx:()=>{S.f.c1_namedHairlock=1;}, go:'c1_tuft_still'}]}),
+    c1_hairlock_miss:()=>({sp:'Tattersail\'s tent', txt:
+`It's a puppet. A grotesque one, the kind a bored soldier makes out of a broken tent pole and a bandage, and there is a great deal of both in this camp. Its head is turned toward the far wall.
+
+It doesn't do anything. You are not sure why you thought it would.`,
+      ch:[{t:'"Ma\'am."', go:'c1_tuft_still'}]}),
+    c1_tuft_still:()=>({sp:'Tattersail', txt:
+`Tattersail looks past you, at the tent flap, where Tuft is standing exactly as far inside as she has to be to count as present.
+
+Tuft has gone still. Not the stillness of a soldier waiting; the stillness of a small animal that has heard the hawk. Her grey cloak is doing the thing it does, where it is there and then not quite.
+
+Tattersail's face changes. It's a small change, and it's not unkind, and it's the face of a woman who has just recognised a badge on a collar that isn't wearing one.
+
+"Sergeant," she says. "Step outside with me. Bring the cold. Leave the girl."`,
+      ch:[{t:'Step outside.', go:'c1_tuft_plant'}]}),
+    c1_tuft_plant:()=>({sp:'Tattersail', scene:'camp_night', fx:()=>{S.f.c1_plant=1;}, txt:
+`Outside, the cold is the real thing. Tattersail pulls her shawl round and doesn't look at you; she looks at the cadre row, the way you'd look at a line of graves you knew the names on.
+
+"Your mage carries a cadre badge she doesn't wear. I know the badge. I sewed one like it onto a girl's collar sixteen months ago, on the High Mage's staff, and I watched her take it off four months later and ask for a marine squad with a letter that said nothing."
+
+${S.f.knowTruth ? `"She stopped breathing at the underlined line. You saw her. *Moved before the Spawn attacked, not after.* Somebody on his staff relayed that order, Sergeant. Somebody carried it. She was on his staff."` :
+  S.f.partial ? `"You've heard the name now. Tayschrenn. She hears it and she stops moving. I've seen soldiers do that at the name of a place. I've never seen one do it at the name of a man."` :
+  `"She goes still when someone says *High Mage*. You'll have noticed. She'll go stiller. There are things a person carries out of that staff that don't fit in a satchel."`}
+
+"He doesn't let people leave, Sergeant. He let her. I'd like to know what he thinks he still has of hers." She finally looks at you. "I'm not asking you to find out. I'm telling you what I'd want to know, if I were her sergeant, before somebody else found out for me."`,
+      ch:[{t:'"What badge? I\'ve never seen a badge."', go:'c1_plant_badge'},
+          {t:'"She\'s a marine now. Whatever she was."', fx:()=>{loy('tuft',1); S.f.c1_plantMarine=1;}, go:'c1_plant_marine'},
+          {t:'"What do you want me to do about it?"', go:'c1_plant_ask'}]}),
+    c1_plant_badge:()=>({sp:'Tattersail', fx:()=>{S.f.c1_plantDeny=1;}, txt:
+`"No," she says. "You haven't." She almost smiles. "Keep not seeing it. It's the kindest thing anyone's done for that girl since Malaz City, and I include myself."
+
+"But when she does something you don't understand, in a fight, or after one, don't ask her why. Ask her who taught her."`,
+      ch:[{t:'Go back in.', go:'c1_tent_done'}]}),
+    c1_plant_marine:()=>({sp:'Tattersail', txt:
+`"Good," she says, and it comes out rougher than she meant it. "Good. Then she's yours and not his, and that's the first time I've been able to say that about anyone who came off that staff."
+
+"Hold onto it. He'll test it. Not tonight. But he's patient, and you're going to Darujhistan, and there's a card in her deck she's never drawn for herself. When she does, be standing next to her."`,
+      ch:[{t:'Go back in.', go:'c1_tent_done'}]}),
+    c1_plant_ask:()=>({sp:'Tattersail', txt:
+`"Nothing." She says it fast, as if she'd been waiting to. "That's the whole of my advice. When it comes, and it will, it'll come looking like a favour or an order, and it'll come from someone who outranks both of us. Do nothing until you've asked her. Then do what she says, if you can stand to."
+
+"That's not an answer, Sergeant. I'm aware. I've been a cadre mage for twenty years and I've never had one."`,
+      ch:[{t:'Go back in.', go:'c1_tent_done'}]}),
+    c1_tent_done:()=>({sp:'Tattersail\'s tent', scene:'tent', fx:()=>{S.f.c1_tent=1; if (S.ending === 'told' || S.ending === 'given') { gain('cadretoken'); }}, txt:
+`Inside, Tuft is exactly where you left her. The puppet is exactly where you left it, which you check.
+
+${S.ending === 'told' || S.ending === 'given' ? `Tattersail puts something in your hand on the way past: a bone disc on a cord. "Cadre token. Give it to whichever of them you think needs to be remembered. I've stopped being able to tell."` :
+  S.ending === 'burned' ? `Tattersail sits. "Pell's restocked, if you have coin. Buy the sapper something that goes off. I have a feeling about tonight and the cards won't tell me what it's a feeling of."` :
+  `Tattersail sits. "Pell's restocked," she says, which is a dismissal. "Buy the sapper something that goes off. Somebody should have something tonight that does what it's told."`}
+
+She's back to her cards before you reach the flap. "Sergeant. If you hear dogs tonight, they aren't."`,
+      ch:[{t:'Leave the tent', go:()=>{ if (S.f.c1_wj) talk('c1_night'); else startExplore(); }}]}),
+    c1_tent_again:()=>({sp:'Tattersail', txt:
+`"Sergeant." She doesn't look up. "The cards haven't got better. Neither has the puppet. Go and sleep, or go and pretend to."`,
+      ch:[{t:'Leave', go:()=>startExplore()}]}),
+
+    /* ---- Pell's wagon ---- */
+    c1_pell:()=>({sp:'Quartermaster Pell', txt:
+`Pell has a wagon, a ledger, and the face of a man who has been asked for things all week and has started saying no before the question. The Moranth crates have new seals on them. "Restocked. Don't ask from where. Moranth don't give these away and neither do I."
+
+You carry ${S.silver} silver.`,
+      ch:[
+        {t:'Sharper, 6 silver', tag:`have ${S.inv.sharper}`, req:()=>S.silver>=6, fx:()=>{S.silver-=6;S.inv.sharper++;note('Bought a sharper.','good');AUDIO.play('coin');}, go:'c1_pell'},
+        {t:'Burner, 5 silver', tag:`have ${S.inv.burner}`, req:()=>S.silver>=5, fx:()=>{S.silver-=5;S.inv.burner++;note('Bought a burner.','good');AUDIO.play('coin');}, go:'c1_pell'},
+        {t:'Healing salve, 3 silver', tag:`have ${S.inv.salve}`, req:()=>S.silver>=3, fx:()=>{S.silver-=3;S.inv.salve++;note('Bought a salve.','good');AUDIO.play('coin');}, go:'c1_pell'},
+        {t:'Cusser, 14 silver', tag:`have ${S.inv.cusser}`, req:()=>S.silver>=14 && !S.f.c1_cusserSold, fx:()=>{S.silver-=14;S.inv.cusser++;S.f.c1_cusserSold=1;note('Bought a cusser. Pell looks at Kettle the way a man looks at weather.','good');AUDIO.play('coin');}, go:'c1_pell_cusser'},
+        {t:'"You\'ve got a cusser."', req:()=>S.silver<14 && !S.f.c1_cusserSold && !S.f.c1_askedCusser, fx:()=>S.f.c1_askedCusser=1, go:'c1_pell_broke'},
+        {t:'Leave'}]}),
+    c1_pell_cusser:()=>({sp:'Quartermaster Pell', txt:
+`Kettle takes it in both hands like an infant she has been told is hers. She turns it once to the light.
+
+"This one's Gerrun," she says. "After a sapper. He's dead. It's a compliment."
+
+Pell writes something in the ledger and underlines it. "Sergeant, if she stands near my wagon again I'm charging you for the wagon."`,
+      ch:[{t:'Back', go:'c1_pell'}]}),
+    c1_pell_broke:()=>({sp:'Quartermaster Pell', txt:
+`"One. Fourteen silver, and I'm losing money at that." He doesn't look at your purse. He doesn't have to. "Come back when the Empress pays you, Sergeant. I'll still have it. Nobody else in this camp is mad enough."
+
+Kettle has not stopped looking at the crate.`,
+      ch:[{t:'Back', go:'c1_pell'}]}),
+
+    /* ---- the burial field ---- */
+    c1_pits:()=> S.f.c1_pits ? {sp:'The Second\'s burial field', txt:
+`The pits are where they were. Brisk doesn't come this way twice in a night, and doesn't ask why you did.`,
+      ch:[{t:'Leave'}]} : {sp:'The Second\'s burial field', fx:()=>{S.f.c1_pits=1;}, txt:
+`The pits run up the hillside in the dark, long and shallow and half-filled, with lime over them that glows a little where the moon should be. Somebody has put helmets along the edge of the nearest one, upright, in a row, like men waiting for a wagon.
+
+Brisk has stopped. She does this. You've learned not to notice, and she's learned that you're not noticing.
+
+She crouches at the lip of the pit and puts her hand on something half under the lime. A heater shield, the Second's sigil burned off the face. She turns it over. She turns it back. She doesn't ask whose.
+
+"Sergeant." That's all. Then, after a while: "Tav wrote a letter. Three years ago. I never opened it. I thought I'd open it when I found him." She sets the shield upright against the helmets. "If I open it now it means something."`,
+      ch:[{t:'"Take the shield. It\'s a good shield."', fx:()=>{gain('heater'); loy('brisk',1);}, go:'c1_pits_take'},
+          {t:'"Leave it with them."', fx:()=>{loy('ohl',1); loy('brisk',-1); S.f.c1_leftShield=1;}, go:'c1_pits_leave'},
+          {t:'Say nothing. Wait for her.', fx:()=>{loy('brisk',1); S.f.c1_waitedBrisk=1;}, go:'c1_pits_wait'}]},
+    c1_pits_take:()=>({sp:'Brisk', txt:
+`She picks it up. She fits it to her arm and it fits, which is not the same as it being hers.
+
+"Not his," she says. "His had a notch top left. This one's clean." She doesn't put it down. "It's a good shield."
+
+Ohl, from behind you, very quietly, in Ehrlii: something to Hood, and not polite.`,
+      ch:[{t:'Walk the lines.', go:()=>startExplore()}]}),
+    c1_pits_leave:()=>({sp:'Brisk', txt:
+`She leaves it. She stands up slowly, the way she does when her knees are talking, and looks along the row of helmets one more time as if a name might be written on one.
+
+"Fine," she says. She walks. She doesn't look back, and you notice that she doesn't, and she notices that you notice.`,
+      ch:[{t:'Walk the lines.', go:()=>startExplore()}]}),
+    c1_pits_wait:()=>({sp:'Brisk', txt:
+`You wait. Kettle, for once, is quiet. Tuft has gone to the far end of the row and is standing there with her hood up, which could be respect and could be the other thing.
+
+After a while Brisk stands. She leaves the shield against the helmets.
+
+"He's not in this one." She says it to the pit, not to you. "I'd know."
+
+Then: "Sergeant." And the conversation, such as it was, is over, and something in it has been put down that she was carrying.`,
+      ch:[{t:'Walk the lines.', go:()=>startExplore()}]}),
+
+    /* ---- the grey cloak ---- */
+    c1_claw:()=>({sp:'A grey cloak', fx:()=>{S.f.c1_claw=1;}, txt:
+`He is standing between two tents where there isn't a fire, which means you saw him because he wanted you to. His boots are still clean. It's been raining ash for three days.
+
+"Sergeant. Fine night for a walk."
+
+${S.f.decoy ? `He holds out a satchel. Kettle's. "Your sapper's ledger. Every stick accounted for, one of them named, and a spoon listed under *equipment*. I've read the Imperial tax code, Sergeant. I've never been so thoroughly bored by a document." He lets Kettle take it. "Keep it. Lose it again and I'll know where to look."` :
+  S.f.gaveClaw ? `"The High Mage sends his regards." A beat. "He doesn't, in fact. But it's the form, and you were helpful, and I like to see helpful people rewarded with the form."` :
+  S.f.marked ? `"I know the name now. {sgt}. It's a good name." He lets that sit. "Try to keep it attached."` :
+  S.f.clawFooled ? `"Grave detail," he says, pleasantly. "You'd be surprised how much of the camp has been on grave detail this week. Whole squads of it. Nobody's dug anything."` :
+  `"You'll have heard we're flying south. Not you. You're the wagon. I find I approve. Wagons see the country."`}`,
+      ch:[{t:'"Who are you?"', go:'c1_claw_who'},
+          {t:'"What do you want with the cadre tent?"', check:['wits',13], go:'c1_claw_tent', fail:'c1_claw_tent_fail'},
+          {t:'Say nothing. Keep walking.', fx:()=>loy('brisk',1), go:'c1_claw_silent'}]}),
+    c1_claw_who:()=>({sp:'A grey cloak', txt:
+`"A concerned citizen of the Empire, Sergeant. There are more of us than you'd think, and fewer than the Empress would like."
+
+Kettle, not quietly: "He's a Claw."
+
+"Your sapper," he says to you, "is a credit to the marines and a hazard to everyone else. I mean that as a compliment. I'll be going."`,
+      ch:[{t:'Let him.', go:()=>startExplore()}]}),
+    c1_claw_tent:()=>({sp:'A grey cloak', fx:()=>{S.f.c1_clawTent=1;}, txt:
+`You've been watching his eyes and they've gone to the cadre row three times. Not to the lamp. To the crate-shaped dark beside it.
+
+"Nothing," he says, which is the first thing he's said that you're sure is a lie. "Cadre business. The cadre keep things they shouldn't, Sergeant, and then they keep them badly, and then someone has to tidy. I'm fond of tidy."
+
+"If it comes to tidying tonight, you'll want to be on the tidy side of it."`,
+      ch:[{t:'Let him go.', go:()=>startExplore()}]}),
+    c1_claw_tent_fail:()=>({sp:'A grey cloak', txt:
+`"The cadre tent?" He looks at it, mildly, as if you'd pointed out a hill. "I hadn't noticed it, Sergeant. I'll try to."
+
+He's gone between the tents before you've decided whether that was an answer.`,
+      ch:[{t:'Walk on.', go:()=>startExplore()}]}),
+    c1_claw_silent:()=>({sp:'A grey cloak', txt:
+`You walk past. Brisk walks past closer, so that her shield-rim is between him and you all the way. He allows it, which is the word for what he does.
+
+"Sergeant," he says to your back. "Good habit. Keep it."`,
+      ch:[{t:'Walk on.', go:()=>startExplore()}]}),
+    c1_claw_again:()=>({sp:'A grey cloak', txt:`He's where he was. He hasn't moved, and the ash hasn't landed on him, and you decide not to think about either.`, ch:[{t:'Leave'}]}),
+
+    /* ---- the Hounds ---- */
+    c1_night:()=>({sp:'The camp at night', scene:'camp_night', fx:()=>{S.f.c1_hounds=1;}, txt:
+`It starts as a scream from the cadre row. One voice, a man's, cut off in the middle as if a hand had closed on it. Then a mage's shout, Tattersail's, a word that isn't a word. Then the lamp in the cadre tent goes out and something else comes on, a light that is the wrong colour for fire and the right colour for nothing.
+
+Then the dogs.
+
+They aren't dogs. Brisk knows it before you do; her shield is up and her feet are set and she is saying "Sergeant" in a voice you have heard exactly once before, at Nathilog. Tuft has both hands out and her cloak is *gone*, not lifted, gone, and she is whispering the name of her warren the way you'd whisper the name of a friend who's just walked into a room full of enemies.
+
+Something the size of a horse goes over the picket line without touching it. Something else, further off, howls, and the howl has a shape, and the shape is Shadow.
+
+"Hounds," Tuft says. "Hounds of *Shadow*. Sergeant, they're hunting. That's a hunt."`,
+      ch:[{t:'"Form on me. Cadre row."', go:'c1_orders'}]}),
+    c1_orders:()=>({sp:'The cadre row', txt:
+`The cadre row is on fire, or the tents nearest it are. There is a shape in the flames that is all shoulders and teeth, and a smaller shape in front of it that is a man with a sword, and the man is Paran, and the sword is doing something a sword shouldn't.
+
+Two voices reach you at once.
+
+Tattersail, from her tent, through the canvas, hoarse: *"Sergeant! The line. Hold the line by the cadre row. Give me four rounds and I'll give you a way out."*
+
+And from the dark to your left, the grey cloak, unhurried, close enough to touch: "Leave the mage, Sergeant. She'll live or she won't. Seal the cadre tent and hold the crate. My people will hold with you. Three rounds. Then we're gone and so are you."
+
+${S.loy.tuft >= 2 ? `Tuft, at your shoulder, so quiet only you hear it: "Her. Please."` : `Tuft is looking at the grey cloak the way she looks at the deck when it's about to say something.`}
+${S.loy.brisk >= 2 ? `Brisk: "Your call, Sergeant. I'll tell you after if it was stupid."` : `Brisk is waiting. Brisk is always waiting.`}`,
+      ch:[{t:'"The line. On Tattersail. Hold the cadre row."', go:'c1_line_go'},
+          {t:'"The crate. Seal the tent. Grey cloak, your people had better be worth it."', go:'c1_claw_go'}]}),
+    c1_line_go:()=>({sp:'The cadre row', fx:()=>{S.f.c1_key='line'; loy('tuft',2); S.f.cadreTrust=1;}, txt:
+`"The line," you say, and the squad moves before the word's finished. Brisk to the front. Kettle behind the shield, already fusing. Ohl to the rear, his cudgel in one hand and Denul in the other. Tuft, for once, exactly where you can see her.
+
+The grey cloak says nothing. He's not there when you look again.
+
+The first Hound comes through the tents like a wave through a fence. It's the colour of a bruise. It has eyes. It's called Gear, though you won't know that till later, and it's looking past you at the captain, and you are in the way.`,
+      ch:[{t:'Hold the line.', go:()=>startBattle('hounds_line',{surprise:'e'})}]}),
+    c1_claw_go:()=>({sp:'The cadre tent', fx:()=>{S.f.c1_key='claw'; loy('tuft',-2); loy('brisk',-1); S.f.clawFavour=1;}, txt:
+`"The crate," you say. Tuft makes a sound. Brisk doesn't, which is worse.
+
+Two figures come out of the dark on your flanks, grey, quiet, with knives already out and faces you'll never be able to describe. They don't look at you. They look at the tent, and the crate in it, and the flames.
+
+The grey cloak, to nobody: "Three rounds, Sergeant. Then we tidy."
+
+The first Hound comes through the tents like a wave through a fence. It's the colour of a bruise. It's called Gear, though you won't know that till later, and it does not care whose people are holding what.`,
+      ch:[{t:'Seal the tent.', go:()=>startBattle('hounds_claw',{surprise:'e'})}]}),
+
+    /* ---- after: the line ---- */
+    c1_after_line:()=>({sp:'The cadre row', scene:'camp_night', fx:()=>{ const up = gainXP(180); note('+180 experience. You held. Nobody holds against Hounds. Nobody has to know that.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); gain('houndtooth'); }, txt:
+`It ends the way weather ends. The Hounds are there and then they are elsewhere, and the elsewhere is Shadow, and the tent lines are on fire and quiet.
+
+The big one, Gear, goes last. It goes slowly. There's a wound down its shoulder that steams, a sword-wound, and it looks back once, at the cadre tent, and the look is not an animal's. Then it limps into a dark that isn't the camp's dark and is gone.
+
+Brisk lowers the shield an inch. Kettle is laughing, which she does after, and it's not a good sound, and Ohl is already moving to her. Tuft is sitting down. She didn't decide to.
+
+There's a tooth the length of a finger snapped off in a tent pole beside you. It's warm.`,
+      ch:[{t:'The cadre tent.', go:'c1_after_line_tat'}]}),
+    c1_after_line_tat:()=>({sp:'Tattersail', scene:'tent', txt:
+`Tattersail's tent is standing, which is more than can be said for the row. Inside, the captain is on her cot with his shirt open and a wound in him that should have been the end of the conversation. Ohl looks at it, looks at her, and says something in Ehrlii that is not an argument for once.
+
+"He's alive," Tattersail says. She's grey. Her hands are shaking and she's letting them. "Somebody put a knife in him before the Hounds came. Not the Hounds. A knife, in the dark, a good one. He should have died an hour ago. Then he put a sword in a Hound of Shadow, and now he's not dead, and I don't know why, and I've stopped asking the cards because they laugh."
+
+${S.f.c1_sawHairlock ? `The puppet is where it was. Its head has turned to look at the captain. Nobody mentions it.` : `The puppet on the crate has fallen over. Nobody rights it.`}
+
+"You held the row, Sergeant. The cadre don't forget that. There aren't enough of us left to afford to." She looks at Tuft, once, and Tuft looks back, and something passes between them that you weren't invited to. "Go and find Whiskeyjack. He'll want it from you before he gets it from anyone else."`,
+      ch:[{t:'Find Whiskeyjack.', go:()=>talk(S.f.marked ? 'c1_accounting' : 'c1_wj_last')}]}),
+
+    /* ---- the Claw's accounting (marked + line only) ---- */
+    c1_accounting:()=>({sp:'The picket line', scene:'camp_night', fx:()=>{S.f.c1_accounting=1;}, txt:
+`Halfway to the Bridgeburners' fire, the picket line. The stakes cast two shadows each, which is wrong, and Tuft stops walking.
+
+"Three," she says. "No. Three I can see."
+
+They come out from between the stakes without hurrying: grey, hooded, knives low. Not the two who would have held with you. Different ones. The kind sent when a name has been written in a neat hand and the line under it is due.
+
+One of them speaks. It isn't the grey cloak's voice, but it's his phrasing. "Sergeant {sgt}. There's a ledger. You're in it. We'd like to close the entry."`,
+      ch:[{t:'"You\'ve got the wrong squad. The Fourth held for Tattersail tonight. Ask her whose ledger you\'re in."', check:['guile',14], go:'c1_acc_slip', fail:'c1_acc_fight'},
+          {t:'Kettle steps forward with the cusser in both hands.', req:()=>S.inv.cusser>0, go:'c1_acc_bluff'},
+          {t:'"Brisk. Shield."', go:'c1_acc_fight'}]}),
+    c1_acc_slip:()=>({sp:'The picket line', fx:()=>{S.f.c1_accAvoided=1; loy('tuft',1);}, txt:
+`It's a long silence. Somewhere behind them the cadre row is still burning.
+
+"Tattersail," the hooded one says, as if tasting it. Then, to the others, a small movement of the hand.
+
+They go back between the stakes the way they came, and the stakes go back to casting one shadow each.
+
+Tuft lets a breath out. "That won't work twice."
+
+"Didn't need to," says Brisk.`,
+      ch:[{t:'Find Whiskeyjack.', go:'c1_wj_last'}]}),
+    c1_acc_bluff:()=>({sp:'The picket line', fx:()=>{S.f.c1_accBluffed=1; loy('kettle',1); loy('brisk',-1);}, txt:
+`Kettle walks out in front of the shield with the cusser held in both hands, the way she'd carry a bowl too full. She stops at the distance where it would kill all of them and most of you.
+
+"This is ${S.f.c1_cusserSold ? 'Gerrun' : 'Maud'}," she says. "Say hello."
+
+Nobody says hello. The one who spoke looks at the cusser, and at Kettle's face, which is a bad liar's face and is not lying, and then he looks at the sky as if calculating a distance.
+
+"Another night," he says, and they are gone, and Kettle stands there a while longer holding it before she remembers to be frightened.
+
+Brisk, from very far behind the shield: "Never. Again."`,
+      ch:[{t:'Find Whiskeyjack.', go:'c1_wj_last'}]}),
+    c1_acc_fight:()=>({sp:'The picket line', txt:
+`"Shield," you say, and Brisk's is already up, and the first knife rings off it.`,
+      ch:[{t:'Fight', go:()=>startBattle('accounting',{})}]}),
+    c1_after_accounting:()=>({sp:'The picket line', scene:'camp_night', fx:()=>{ const up = gainXP(120); note('+120 experience. The ledger stays open. That is not nothing.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); S.f.c1_accFought=1; }, txt:
+`When it's done, none of them are there. Not dead there; not there. The ground where they fell is ground. Ohl stares at it a long time.
+
+"They don't leave their own," Tuft says. "Ever. It's the only rule they keep."
+
+There's blood on Brisk's spear. That much is real. She wipes it on the nearest stake and says nothing, and you know that she's keeping count, and that it isn't of them.`,
+      ch:[{t:'Find Whiskeyjack.', go:'c1_wj_last'}]}),
+
+    /* ---- after: the crate ---- */
+    c1_after_claw:()=>({sp:'The cadre tent', scene:'camp_night', fx:()=>{ const up = gainXP(150); note('+150 experience. You held the crate. Somebody else held the row.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
+`It ends the way weather ends. The Hounds are there and then they are elsewhere, and the two grey figures who held with you are elsewhere too, at the same moment, as if they'd all left by the same door.
+
+The big one, Gear, goes last. It goes slowly. There's a wound down its shoulder that steams, a sword-wound, and it looks back once at the cadre tent, and the look is not an animal's.
+
+The grey cloak is inside the tent. You didn't see him go in. He comes out with his hands in his cloak and something under his arm, and he's not hurrying.
+
+${S.ending === 'given' || S.ending === 'told' ? `It's a page. One page, oilcloth-wrapped, in a small careful hand you'd know from a lantern-lit junction under the north quarter. Varrow's. "A loose leaf," he says. "The cadre keep things badly. I said." He tucks it away.` :
+  `It's a crate lid. The crate lid. He holds it the way you'd hold a tray. Resin and old bandage and a smell like a cellar. "Luggage," he says. "Somebody should have declared it." He tucks it under his arm.`}
+
+"Three rounds, Sergeant. You held them. That's been noted, and by better people than me." He puts something in your hand: a short knife, no maker's mark. "For the road. The wagon's a long way round, and the plain's not friendly."`,
+      ch:[{t:'Take it.', fx:()=>{gain('clawknife');}, go:'c1_after_claw_tat'},
+          {t:'"Keep it."', fx:()=>{loy('brisk',1); S.f.c1_refusedKnife=1;}, go:'c1_after_claw_tat'}]}),
+    c1_after_claw_tat:()=>({sp:'Tattersail', scene:'tent', txt:
+`Tattersail is standing in the wreck of the cadre row with her shawl gone and her hands shaking, and she's letting them. The captain is behind her on a cot dragged out of the tent, shirt open, a wound in him that should have been the end of the conversation, and it isn't.
+
+"He's alive." She doesn't look at you. "Somebody put a knife in him before the Hounds came. Then he put a sword in one of them. He should have died twice tonight and he's done neither, and I've stopped asking the cards because they laugh."
+
+Then she does look at you. It isn't anger. It's an estimate, revised.
+
+"You held the crate, Sergeant. For him. I heard the order and I heard you take it." A pause. "The cadre will remember that too. There aren't many of us left, and we have long memories, and nothing else to do with them."
+
+${S.f.c1_sawHairlock ? `Behind her, in the open tent, the puppet sits on its crate with no lid. Its head is turned toward you. It stays turned.` : `Behind her, in the open tent, the puppet has fallen off its crate and lies with its face to the canvas. Nobody rights it.`}
+
+Tuft won't look at you. She's looking at the place between the tents where the grey figures stood, as if learning it.`,
+      ch:[{t:'Find Whiskeyjack.', go:'c1_wj_last'}]}),
+
+    /* ---- Whiskeyjack's last orders ---- */
+    c1_wj_last:()=>({sp:'Whiskeyjack', scene:'fire', txt:
+`The Bridgeburners' fire has more people round it now and none of them are talking. Whiskeyjack is standing, which you haven't seen him do. Quick Ben is sitting with his back to a saddle and his eyes shut, and his lips are moving, and Kalam is standing over him the way Brisk stands over a fire.
+
+"Sergeant." Whiskeyjack looks you over: five, and counts it. "Captain's alive. Tattersail says. Nobody's happy about how. Hounds of Shadow in an Imperial camp and the only thing in it that could put a sword in one was a noble-born captain who's been here half a day." He rubs his face. "I've stopped asking what that means. Quick's asking. Quick's welcome to it."
+
+${S.f.c1_key === 'line' ? `"You held the row. For the cadre. That's going to matter more than you think and less than you'd like. The Host doesn't love the cadre, Sergeant, and the Claw don't love anybody who does." ${S.f.wjRegard > 0 ? `"But I do. Noted."` : S.f.wjRegard < 0 ? `"It's a start."` : `"Noted."`}` :
+  `"You held the tent. For the grey cloaks." He says it without weight, and that's the weight. "I won't ask what they took. I'll know by morning anyway. But you'll want to remember that people who help the Claw once get asked twice, and the second time it isn't a request." ${S.f.wjRegard > 0 ? `"You came out of a hole with all five. Keep it five. That's the whole of my advice."` : S.f.wjRegard < 0 ? `"Fourth Squad." Nothing else.` : `"Go and sleep."`}`}
+
+"Wagon leaves at dawn. Baggage, Rhivi guide, the Fourth. South, then east, then Darujhistan. We'll be there a week before you. Try not to be interesting on the way."`,
+      ch:[{t:'"Sir."', go:'c1_close'}]}),
+    c1_close:()=>({sp:'The Fourth\'s fire', scene:'camp_night', fx:()=>{S.f.c1_done=1;}, txt:
+`Back at your own fire, which is smaller and still there. Brisk is standing over it. Kettle is counting. Ohl has the oilcloth open on his knee and has not added a name, and closes it, and you watch him decide not to say so.
+
+Tuft is at the edge of the light with her back to the cadre row.
+
+${S.f.c1_key === 'line' ? `"Sergeant." She doesn't turn round. "Thank you." It's the first time she's said it. She doesn't say for what, and you don't ask, and after a while she comes and sits down by the fire, on the side where you can see her.` :
+  `"Sergeant." She doesn't turn round. "The grey cloaks. When they held with us. One of them knew my name." A long silence. "Not the one you'd think. The other one." She doesn't come to the fire. She stays where she is, in the dark, where you can't see her cast.`}
+
+Somewhere north, the cadre row is still burning. Somewhere south, a long way, a city with blue fire in its streets that has never heard of you. The wagon leaves at dawn.`,
+      ch:[{t:'Dawn.', go:()=>chapterEnd(1, S.f.c1_key || 'line')}]}),
+  }
+};
+
 /* ============ resume & boot ============ */
 function resume(){
   $('#sheet').hidden = true; $('#modal').hidden = true; notes = []; titleAnim = null;
-  if (S.scene === 'end') return showEnd();
+  migrate(S);
+  if (S.scene === 'end' || S.scene === 'chend') return showChapterEnd();
+  if (S.scene === 'chintro') return showChapterIntro();
   if (S.scene === 'intro') { showIntro(); if (S.node) talk(S.node); return; }
   if (S.scene === 'battle') return startBattle(S.battle, S.bopt || {});
-  if (S.bg === 'tunnel') { sceneShell(S.node === 'deep1' ? 'dark' : 'tunnel'); if (S.node) talk(S.node); return; }
+  if (S.bg && S.bg !== 'explore' && SCENES[S.bg]) { sceneShell(S.bg); if (S.node) talk(S.node); return; }
   startExplore(); if (S.node) talk(S.node);
 }
 function loop(t){
   if (view === 'explore') drawExplore(t); else if (view === 'battle') drawBattle(t);
   else if (view === 'title' && titleAnim) titleAnim();
-  const scv = $('#scv'); if (scv && (view === 'scene' || view === 'intro' || view === 'end')) { if (G.sceneKind === 'camp') drawCamp(scv, t); else drawScene(scv, G.sceneKind, t); }
+  const scv = $('#scv'); if (scv && (view === 'scene' || view === 'intro' || view === 'end')) { if (G.sceneKind === 'camp' || G.sceneKind === 'camp_night') drawCamp(scv, t, G.sceneKind === 'camp_night'); else if (G.sceneKind === 'tent' || G.sceneKind === 'fire') drawInterior(scv, G.sceneKind, t); else drawScene(scv, G.sceneKind, t); }
   if (charAnim) charAnim(t);
   if (cardAnim) cardAnim();
   requestAnimationFrame(loop);
 }
 function start(data){
   applySet();
-  if (data && data.S) { S = data.S; resume(); } else showTitle();
+  if (typeof CH1 !== 'undefined') registerChapter(1, CH1);
+  if (data && data.S) { S = migrate(data.S); resume(); } else showTitle();
   requestAnimationFrame(loop);
 }
 window.claude?.hot?.snapshot?.(() => (S ? {S: JSON.parse(JSON.stringify(S))} : {}));
