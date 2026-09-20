@@ -192,6 +192,12 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .picks{display:grid;gap:10px}.picks .pk{border:1px solid rgba(232,192,115,.2);padding:8px 10px;border-radius:6px}.picks .pk h4{margin:0 0 6px}.picks .opt2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.picks .opt2 button{text-align:left;white-space:normal;line-height:1.3;padding:8px}.picks .opt2 button b{display:block;font-family:var(--display)}.picks .opt2 button.on{outline:2px solid var(--brass)}
 .kit .row{gap:6px;flex-wrap:wrap}.kit .it{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}.kit .it small{display:block;opacity:.7}
 .chcard{text-align:center;padding:40px 16px 20px}.chcard .num{font-family:var(--display);letter-spacing:.3em;text-transform:uppercase;color:var(--brass);font-size:.9rem}.chcard h1{font-family:var(--display);font-size:2.6rem;margin:6px 0 0;font-weight:400}.chcard .rule{width:80px;height:1px;background:var(--brass);margin:14px auto;opacity:.6}
+.dice{margin:10px 0 4px;padding:10px 12px;border:1px solid rgba(201,151,63,.35);border-radius:6px;background:rgba(0,0,0,.35);display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:2px 14px;align-items:center;cursor:pointer}
+.dice .d20{grid-row:1/3;width:64px;height:64px;position:relative;transition:transform .2s}.dice .d20 svg{width:64px;height:64px;display:block}.dice .dn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:1.6rem;color:var(--brass2);padding-top:6px}
+.dice .d20.crit .dn{color:#f2c46b;text-shadow:0 0 12px #f2c46b}.dice .d20.fumble .dn{color:#e0574a}
+.dice .dwho{font-family:var(--label);font-size:.72rem;letter-spacing:.07em;color:var(--mute)}
+.dice .dres{font-family:var(--prose);font-size:1.05rem;min-height:1.4em}.dice .dm{color:var(--mute)}.dice .dv{font-family:var(--label);font-size:.75rem;letter-spacing:.08em;margin-left:8px}
+.dice.ok .dv{color:#9fe0b8}.dice.bad .dv{color:#f08a7c}.dice.ok{border-color:rgba(159,224,184,.5)}.dice.bad{border-color:rgba(240,138,124,.5)}
 </style>
 <style>[hidden]{display:none!important}body{margin:0}</style>
 </head><body>
@@ -206,7 +212,7 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.0.2';
+const VERSION = '3.0.3';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -537,14 +543,28 @@ function gainXP(n){
 
 
 /* ============ skill checks ============ */
+function roller(stat, who){ const ids = who ? [who] : SQUAD(); let best = ids[0]; ids.forEach(id => { if (statOf(id, stat) > statOf(best, stat)) best = id; }); return best; }
 function check(stat, dc, who){
-  const ids = who ? [who] : SQUAD();
-  let best = ids[0]; ids.forEach(id => { if (statOf(id, stat) > statOf(best, stat)) best = id; });
+  const best = roller(stat, who);
   const nat = d20(), mod = statOf(best, stat) + (S.card === 'oponn' ? 1 : 0), tot = nat + mod, ok = tot >= dc;
   const label = stat[0].toUpperCase() + stat.slice(1);
-  AUDIO.play('dice', ok);
   note(SET.dice ? `${label} check (DC ${dc}): ${NAME(best)} rolls ${nat} + ${mod} = ${tot} · ${ok ? 'success' : 'failure'}` : `${label} check: ${NAME(best)} · ${ok ? 'success' : 'failure'}`, ok ? 'good' : 'bad');
-  return ok;
+  return {ok, nat, mod, tot, dc, who:best, label};
+}
+/* the die: a d20 tumbles in the sheet, settles on the roll, then the story goes on. Tap to hurry it. */
+function rollDice(r, done){
+  const sh = $('#sheet'); const old = $('#dice'); if (old) old.remove();
+  const el = document.createElement('div'); el.id = 'dice'; el.className = 'dice';
+  el.innerHTML = `<div class="dwho">${esc(NAME(r.who))} · ${r.label} ${r.dc}</div><div class="d20"><svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,4 92,28 92,72 50,96 8,72 8,28" fill="#1a1613" stroke="#c9973f" stroke-width="2"/><polygon points="50,4 92,28 50,40 8,28" fill="rgba(201,151,63,.12)"/><polygon points="50,40 92,28 92,72 50,96 8,72 8,28" fill="none" stroke="rgba(201,151,63,.5)" stroke-width="1"/><line x1="50" y1="40" x2="50" y2="96" stroke="rgba(201,151,63,.5)"/></svg><span class="dn">20</span></div><div class="dres"></div>`;
+  sh.appendChild(el); el.scrollIntoView({block:'nearest'});
+  const n = el.querySelector('.dn'), res = el.querySelector('.dres'), die = el.querySelector('.d20');
+  const t0 = performance.now(), dur = REDUCE() ? 200 : 950; let fin = false;
+  AUDIO.play('shuffle');
+  const settle = () => { if (fin) return; fin = true; n.textContent = r.nat; die.classList.add(r.nat === 20 ? 'crit' : r.nat === 1 ? 'fumble' : 'set'); el.classList.add(r.ok ? 'ok' : 'bad');
+    res.innerHTML = `${r.nat} <span class="dm">${r.mod >= 0 ? '+' : '−'} ${Math.abs(r.mod)}</span> = <b>${r.tot}</b> <span class="dv">${r.ok ? 'success' : 'failure'}</span>`; AUDIO.play('dice', r.ok);
+    setTimeout(() => { if (el.isConnected) el.remove(); done(); }, REDUCE() ? 300 : 1100); };
+  const tick = () => { if (fin) return; const k = (performance.now() - t0) / dur; if (k >= 1) return settle(); n.textContent = 1 + R(20); die.style.transform = `rotate(${Math.sin(k*40)*18}deg) scale(${1 + Math.sin(k*Math.PI)*.15})`; setTimeout(tick, 45 + k*90); };
+  el.onclick = settle; tick();
 }
 const fmt = t => t.replace(/\{sgt\}/g, esc(S.name)).split(/\n\n/).map(p => `<p>${p.replace(/\*(.+?)\*/g,'<em>$1</em>')}</p>`).join('');
 function tatRest(){
@@ -732,7 +752,7 @@ function talk(id){
   curCh = n.ch.filter(c => !c.req || c.req());
   sh.innerHTML = `<div class="sp">${esc(n.sp || '')}</div>${noteHtml}<div class="txt">${fmt(n.txt)}</div>${n.html || ''}${n.after ? `<div class="txt">${fmt(n.after)}</div>` : ''}
     <div class="choices">${curCh.map((c,i) => {
-      const tag = c.check ? `<span class="tagk">${c.check[0]} ${c.check[1]}${c.check[2] ? ' · ' + NAME(c.check[2]) : ''}</span>` : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
+      const tag = c.check ? `<span class="tagk">${c.check[0]} ${c.check[1]} · ${esc(NAME(roller(c.check[0], c.check[2])))}</span>` : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
       return `<button class="choice" id="ch${i}" data-i="${i}">${tag}${esc(c.t)}</button>`; }).join('')}</div>`;
   sh.scrollTop = 0;
   if (n.oncard) inlineCard($('#icard'), n.oncard[0], n.oncard[1]);
@@ -741,11 +761,11 @@ function talk(id){
 }
 function choose(c){
   if (c.fx) c.fx();
-  let tgt = c.go;
-  if (c.check) tgt = check(c.check[0], c.check[1], c.check[2]) ? c.go : c.fail;
-  if (!tgt) { closeSheet(); return; }
-  if (typeof tgt === 'function') { closeSheet(); tgt(); return; }
-  talk(tgt);
+  const go = tgt => { if (!tgt) { closeSheet(); return; } if (typeof tgt === 'function') { closeSheet(); tgt(); return; } talk(tgt); };
+  if (!c.check) return go(c.go);
+  const r = check(c.check[0], c.check[1], c.check[2]);
+  $('#sheet').querySelectorAll('.choice').forEach(b => b.disabled = true);
+  rollDice(r, () => go(r.ok ? c.go : c.fail));
 }
 function closeSheet(){
   $('#sheet').hidden = true; S.node = null;
