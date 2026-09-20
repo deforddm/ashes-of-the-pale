@@ -206,7 +206,7 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.0.0';
+const VERSION = '3.0.1';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -1527,7 +1527,7 @@ function flankers(a, t, from){
 function flanked(a, t, from){ return flankers(a, t, from).length > 0; }
 /* attacks of opportunity: leaving a tile next to an enemy gives that enemy one free melee swing per turn */
 function threatsAt(u, x, y){ return B.units.filter(e => e.side !== u.side && e.hp > 0 && !e.stun && cheb(e, {x,y}) === 1); }
-function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => e.aooTurn !== B.turn || (e.side === 'p' && !e.ally && has(e.id,'holdline'))); }
+function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => (!to || cheb(e, to) > 1) && (e.aooTurn !== B.turn || (e.side === 'p' && !e.ally && has(e.id,'holdline')))); }
 function attack(a, t, o={}){
   const nat = d20(), mine = a.side === 'p';
   const fl = !o.aoo && flanked(a, t);
@@ -1573,7 +1573,7 @@ function battleTap(x, y){
     if (a.tiles(u).some(q => q === t || (q.x === x && q.y === y))) return useAb(B.mode, x, y);
     B.mode = 'act'; return updBattleUI();
   }
-  if (t && t.side === 'e' && !B.acted && cheb(u,t) <= u.rng) { B.acted = true; B.busy = true; attack(u, t); setTimeout(() => { B.busy = false; afterAct(); }, 380 * SET.speed); updBattleUI(); return; }
+  if (t && t.side === 'e' && !B.acted && cheb(u,t) <= u.rng) { B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.busy = true; attack(u, t); setTimeout(() => { B.busy = false; afterAct(); }, 380 * SET.speed); updBattleUI(); return; }
   if (t) { blog(`${t.name}: ${t.hp}/${t.maxhp} health, armour ${t.ac}.`); return; }
   if (!B.moved && B.reach && B.reach.has(K(x,y)) && !(x === u.x && y === u.y)) moveCur(x, y);
 }
@@ -1600,7 +1600,7 @@ async function opportunity(u, to){
 function useAb(k, x, y){
   const u = B.cur, a = AB[k];
   if (a.item) S.inv[a.item]--;
-  B.acted = true; B.mode = 'act'; B.aim = null; B.busy = true;
+  B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.mode = 'act'; B.aim = null; B.busy = true;
   a.run(u, x, y); castStrain(u, a.strain);
   if (a.aoe) { updBattleUI(); return; } // blast() resumes after the arc lands
   setTimeout(() => { B.busy = false; afterAct(); }, 350 * SET.speed); updBattleUI();
@@ -1624,7 +1624,7 @@ async function ai(u, turnId){
   if (foesOf(u).length) {
     // score every reachable tile: flank a target > stay out of free-attack range > be in range at all > closer
     const reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), u.mv);
-    const stepsProvoke = n => { let k = K(n.x,n.y), c = 0; while (k) { const m = reach.get(k); if (m.p) { const pr = reach.get(m.p); if (threatsAt(u, pr.x, pr.y).length) c++; } k = m.p; } return c; };
+    const stepsProvoke = n => { let k = K(n.x,n.y), c = 0; while (k) { const m = reach.get(k); if (m.p) { const pr = reach.get(m.p); if (threatsAt(u, pr.x, pr.y).some(e => cheb(e, m) > 1)) c++; } k = m.p; } return c; };
     let best = null, bestS = -Infinity;
     reach.forEach(n => {
       const here = {x:n.x, y:n.y}; const tg = foesOf(u).filter(p => cheb(here, p) <= u.rng);
@@ -1671,8 +1671,8 @@ function updBattleUI(){
   if (B.reach) B.reach.forEach(n => { if (n.d === 0) return; let k = K(n.x,n.y), bad = false; while (k && !bad) { const m = B.reach.get(k); if (m.p) { const pr = B.reach.get(m.p); if (provokes(u, pr, m).length) bad = true; } k = m.p; } if (bad) B.hl.aoo.add(K(n.x,n.y)); });
   if (!B.acted) foes().forEach(f => { if (cheb(u,f) <= u.rng && flanked(u, f)) B.hl.flank.add(K(f.x,f.y)); });
   const threatened = threatsAt(u, u.x, u.y).length > 0;
-  let hint = !B.moved && !B.acted ? `Tap a gold tile to move, or a ringed enemy to attack${mvTxt}.` : !B.moved ? `You can still move${mvTxt}.` : !B.acted ? 'You can still act.' : '';
-  if (threatened && !B.moved && hint) hint += ' <span class="warn">Red-edged tiles mean an enemy gets a free swing as you leave.</span>';
+  let hint = !B.moved && !B.acted ? `Tap a gold tile to move, or a ringed enemy to attack${mvTxt}${mvLeft < u.mv ? ' — acting now ends your movement' : ''}.` : !B.moved ? `You can still move${mvTxt}.` : !B.acted ? 'You can still act.' : '';
+  if (threatened && !B.moved && hint) hint += ' <span class="warn">Red-edged tiles take you out of an enemy\'s reach: it gets a free swing as you go.</span>';
   if (B.mode && B.mode !== 'act') { const a = AB[B.mode]; hint = a.desc() + (a.aoe ? ' Tap a tile to aim, then tap it again to throw.' : ' Tap a highlighted target.');
     if (!a.aoe) a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y)));
     else for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= abRange(u,a)) B.hl.tgt.add(K(x,y)); }
@@ -1796,7 +1796,7 @@ function openChars(i, tab){
   const rel = c.rel ? Object.entries(c.rel).map(([k,v]) => `<li><b>${TPL[k].name}.</b> ${v}</li>`).join('') : PORDER.slice(1).map(k => `<li><b>${TPL[k].name}.</b> ${loyLabel(S.loy[k])}.</li>`).join('');
   const soldier = `<div class="sec"><h4>Measure</h4><div class="grid2">${bar('Might', c.st.might)}${bar('Wits', c.st.wits, 'w')}${bar('Guile', c.st.guile, 'g')}<div class="stbar"><span>Level</span><div class="bar"><i style="width:${S.lvl/8*100}%"></i></div><span>${S.lvl}</span></div></div></div>
     <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${hp}</span><span>Armour</span><span>${ac}</span><span>To hit</span><span>+${atk}</span><span>Damage</span><span>${c.dmg[0]}d${c.dmg[1]}${c.dmg[2] ? '+' + c.dmg[2] : ''}</span><span>Reach</span><span>${rng > 1 ? rng + ' tiles' : 'adjacent'}</span><span>Move</span><span>${mv}</span><span>Initiative</span><span>+${init}</span>${c.magic ? `<span>Strain limit</span><span>${STR_MAX}</span>` : ''}</div></div>
-    <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of a tile next to an enemy gives that enemy one free swing a turn. The deserters know both tricks.</p></div>
+    <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of an enemy's reach gives that enemy one free swing a turn; moving from one threatened tile to another does not. Once you have moved and then acted, your movement for the turn is spent. The deserters know both tricks.</p></div>
     <div class="sec"><h4>Abilities</h4><div class="abl">${abil}</div></div>
     ${talents.length ? `<div class="sec"><h4>Learned</h4><div class="abl">${talents.map(o => `<div><b>${o[1]}</b><span>${o[2]}</span></div>`).join('')}</div></div>` : ''}
     <div class="sec"><h4>Arms</h4><p>${c.weapon}.</p><p>${c.armour}.</p>${gearOf.map(it => `<p>${it.line}</p>`).join('')}</div>
