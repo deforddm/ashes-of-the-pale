@@ -68,13 +68,13 @@ function drawExplore(t){
     }));
   }
   // NPCs
-  a.npcs.forEach(n => { if (n.show && !n.show()) return; drawFigure(ctx, n.kind, n.x*T + T/2, n.y*T + T*.8, T/32, t, {phase:n.x, still:!!n.still});
+  a.npcs.forEach(n => { if (n.show && !n.show()) return; drawFigure(ctx, n.kind, n.x*T + T/2, n.y*T + T*.6, T/32, t, {phase:n.x, still:!!n.still});
     if (n.fresh && n.fresh()) { const by = Math.sin(t/300)*2; ctx.fillStyle = '#e8c073'; const cx = n.x*T+T/2, cy = n.y*T - T*.15 + by; ctx.beginPath(); ctx.moveTo(cx, cy-T*.16); ctx.lineTo(cx+T*.1, cy); ctx.lineTo(cx, cy+T*.12); ctx.lineTo(cx-T*.1, cy); ctx.fill(); } });
   // party: sergeant + trail, interpolated
-  SQUAD().slice(1).forEach((id,i) => { const p = S.trail[i]; if (!p) return; const d = dispOf(id, p.x, p.y); drawFigure(ctx, id, d.x*T + T/2, d.y*T + T*.8, T/32*.85, t, {phase:i+1, dir: d.x <= S.pos.x ? 1 : -1, still:!walking}); });
+  SQUAD().slice(1).forEach((id,i) => { const p = S.trail[i]; if (!p) return; const d = dispOf(id, p.x, p.y); drawFigure(ctx, id, d.x*T + T/2, d.y*T + T*.6, T/32*.85, t, {phase:i+1, dir: d.x <= S.pos.x ? 1 : -1, still:!walking}); });
   const d = dispOf('sgt', S.pos.x, S.pos.y);
-  if (!walking) { const p = REDUCE() ? 0 : (Math.sin(t/260)+1)*.5; ctx.strokeStyle = `rgba(201,151,63,${.35+p*.4})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(d.x*T + T/2, d.y*T + T*.8, T*.4 + p*2, T*.16 + p, 0, 0, 7); ctx.stroke(); }
-  drawFigure(ctx, 'sgt', d.x*T + T/2, d.y*T + T*.8, T/32, t, {phase:0, still:!walking});
+  if (!walking) { const p = REDUCE() ? 0 : (Math.sin(t/260)+1)*.5; ctx.strokeStyle = `rgba(201,151,63,${.35+p*.4})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(d.x*T + T/2, d.y*T + T*.6, T*.4 + p*2, T*.16 + p, 0, 0, 7); ctx.stroke(); }
+  drawFigure(ctx, 'sgt', d.x*T + T/2, d.y*T + T*.6, T/32, t, {phase:0, still:!walking});
   // lantern warmth around the party
   glow(ctx, d.x*T + T/2, d.y*T + T/2, T*2.6, '#e8b060', a.decor === 'pale' ? .09 : .14);
   // fog banks
