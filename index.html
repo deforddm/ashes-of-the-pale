@@ -110,6 +110,7 @@ textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem;min-
 .abil{display:flex;flex-wrap:wrap;gap:6px}
 .abil .btn{min-height:38px;padding:6px 10px;font-size:.85rem}
 .bhint{font-size:.9rem;color:var(--mute);font-family:var(--prose)}
+.bhint .warn{color:#f08a7c}
 /* modal */
 #modal,#settings,#chars{position:fixed;inset:0;background:rgba(6,5,4,.88);z-index:30;overflow:auto;padding:max(16px,env(safe-area-inset-top,0px)) 16px 24px;backdrop-filter:blur(2px)}
 .mbox{max-width:560px;margin:0 auto;background:linear-gradient(180deg,#1d1814,#13100d);border:1px solid var(--line2);padding:14px 16px 18px;box-shadow:0 0 0 1px #000,0 30px 80px rgba(0,0,0,.9);position:relative}
@@ -200,7 +201,7 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '2.0.1';
+const VERSION = '2.0.2';
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
 const R = n => Math.floor(Math.random() * n);
@@ -1337,9 +1338,19 @@ function blast(pt, dice, col){
   B.units.filter(u => u.hp > 0).forEach(u => { const d = cheb(u, pt); if (d < dice.length) { const [n,s,p] = dice[d]; hurt(u, roll(n,s,p)); if (u.side === 'p') blog(`${u.name} is caught in the blast.`); } });
   updBattleUI(); if (B.cur && B.cur.side === 'p') afterAct(); else if (checkEnd()) updBattleUI();
 }
+/* flanking: attacker gets +2 if an ally is adjacent to the target on the far side (works for melee and ranged) */
+function flankers(a, t, from){
+  const ax = (from || a).x, ay = (from || a).y;
+  return B.units.filter(b => b !== a && b.side === a.side && b.hp > 0 && !b.stun && cheb(b, t) === 1 && (b.x - t.x)*(ax - t.x) + (b.y - t.y)*(ay - t.y) < 0);
+}
+function flanked(a, t, from){ return flankers(a, t, from).length > 0; }
+/* attacks of opportunity: leaving a tile next to an enemy gives that enemy one free melee swing per turn */
+function threatsAt(u, x, y){ return B.units.filter(e => e.side !== u.side && e.hp > 0 && !e.stun && cheb(e, {x,y}) === 1); }
+function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => e.aooTurn !== B.turn); }
 function attack(a, t, o={}){
   const nat = d20(), mine = a.side === 'p';
-  const bonus = a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0);
+  const fl = !o.aoo && flanked(a, t);
+  const bonus = a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0);
   const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0);
   const crit = nat >= (mine && S.card === 'assassin' ? 19 : 20);
   const hit = crit || (nat !== 1 && nat + bonus >= ac);
@@ -1350,9 +1361,11 @@ function attack(a, t, o={}){
   a.facing = t.x >= a.x ? 1 : -1;
   AUDIO.play(a.kind === 'tuft' ? 'shadow' : a.kind === 'kettle' || a.kind === 'xbow' ? 'bow' : hit ? 'sword' : 'miss');
   const math = SET.dice ? ` <span class="stat">(${nat}+${bonus} vs ${ac})</span>` : '';
-  if (!hit) { blog(`${a.name} ${verb} ${t.name} and misses${math}.`); float(t, 'miss', '#a99a88'); return {hit:false}; }
+  const tags = [o.aoo ? 'free attack' : '', fl ? 'flanking +2' : ''].filter(Boolean).join(', ');
+  const tagTxt = tags ? ` <span class="stat">[${tags}]</span>` : '';
+  if (!hit) { blog(`${a.name} ${verb} ${t.name} and misses${tagTxt}${math}.`); float(t, 'miss', '#a99a88'); return {hit:false}; }
   const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]);
-  blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${math}.`);
+  blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${tagTxt}${math}.`);
   if (crit) { shakeMap(); sparks(t.x, t.y, 16, '#f08a7c'); }
   setTimeout(() => { hurt(t, dmg); updBattleUI(); }, ranged ? 200 * SET.speed : 140 * SET.speed);
   return {hit:true, dmg};
@@ -1382,9 +1395,23 @@ function battleTap(x, y){
 }
 async function moveCur(x, y){
   const u = B.cur, path = pathFrom(B.reach, x, y); B.busy = true; B.reach = null;
-  for (const st of path) { u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; AUDIO.play('step'); await wait(130); }
-  B.mvLeft = Math.max(0, (B.mvLeft ?? u.mv) - path.length); // leftover movement stays usable this turn
+  let stepped = 0;
+  for (const st of path) {
+    if (await opportunity(u, st)) break; // cut down mid-stride
+    u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; stepped++; AUDIO.play('step'); await wait(130); }
+  B.mvLeft = Math.max(0, (B.mvLeft ?? u.mv) - (u.hp > 0 ? path.length : stepped)); // leftover movement stays usable this turn
   B.busy = false; B.moved = B.mvLeft <= 0; afterAct();
+}
+/* resolve free attacks against u for stepping out of its current tile; returns true if u drops */
+async function opportunity(u, to){
+  const es = provokes(u, u, to); if (!es.length) return false;
+  for (const e of es) {
+    e.aooTurn = B.turn; e.facing = u.x >= e.x ? 1 : -1;
+    blog(`<em>${u.name} steps away from ${e.name}.</em>`);
+    attack(e, u, {aoo:true, verb:'takes a free swing at'}); updBattleUI(); await wait(420 * SET.speed);
+    if (u.hp <= 0) return true;
+  }
+  return false;
 }
 function useAb(k, x, y){
   const u = B.cur, a = AB[k];
@@ -1410,11 +1437,31 @@ async function ai(u, turnId){
     if (u.tc % 3 === 0 && adj.length) { blog(`<em>The Stonebound slams the floor.</em> Stone and grief in every direction.`); AUDIO.play('slam'); shakeMap();
       B.fx.push({kind:'boom', x:u.x, y:u.y, r:1, col:'#a08de0', t:performance.now()}); sparks(u.x, u.y, 40, '#9a86e0'); adj.forEach(p => hurt(p, roll(2,6)));
       await wait(900); if (!checkEnd()) endTurn(); else updBattleUI(); return; } }
-  if (!inRange().length && party().length) {
-    const path = findPath(u.x, u.y, (x,y) => free(x,y,u), (x,y) => party().some(p => cheb({x,y}, p) <= u.rng));
-    if (path) for (const st of path.slice(0, u.mv)) { u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); }
+  if (party().length) {
+    // score every reachable tile: flank a target > stay out of free-attack range > be in range at all > closer
+    const reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), u.mv);
+    const stepsProvoke = n => { let k = K(n.x,n.y), c = 0; while (k) { const m = reach.get(k); if (m.p) { const pr = reach.get(m.p); if (threatsAt(u, pr.x, pr.y).length) c++; } k = m.p; } return c; };
+    let best = null, bestS = -Infinity;
+    reach.forEach(n => {
+      const here = {x:n.x, y:n.y}; const tg = party().filter(p => cheb(here, p) <= u.rng);
+      let s = 0;
+      if (tg.length) { s += 100; if (tg.some(p => flanked(u, p, here))) s += 60; }
+      else { const nearest = Math.min(...party().map(p => cheb(here, p))); s -= nearest * 5; }
+      s -= stepsProvoke(n) * 70; s -= n.d; // a free hit isn't worth a flank; fewer steps when otherwise equal
+      if (s > bestS) { bestS = s; best = n; }
+    });
+    if (best && best.d > 0) {
+      const path = pathFrom(reach, best.x, best.y);
+      for (const st of path) { if (await opportunity(u, st)) break; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); }
+      if (u.hp <= 0) { updBattleUI(); if (!checkEnd()) endTurn(); return; }
+    } else if (!inRange().length) {
+      // nothing reachable in range this turn: close the distance along the shortest path
+      const path = findPath(u.x, u.y, (x,y) => free(x,y,u), (x,y) => party().some(p => cheb({x,y}, p) <= u.rng));
+      if (path) for (const st of path.slice(0, u.mv)) { if (await opportunity(u, st)) break; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); }
+      if (u.hp <= 0) { updBattleUI(); if (!checkEnd()) endTurn(); return; }
+    }
   }
-  const tg = inRange().sort((a,b) => a.hp - b.hp)[0];
+  const tg = inRange().sort((a,b) => (flanked(u,b) - flanked(u,a)) || (a.hp - b.hp))[0];
   if (tg) { attack(u, tg); await wait(650); }
   updBattleUI();
   if (!checkEnd()) endTurn();
@@ -1434,7 +1481,13 @@ function updBattleUI(){
   if (!B.moved && !B.busy) B.reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), mvLeft);
   if (!B.acted) foes().forEach(f => { if (cheb(u,f) <= u.rng) B.hl.atk.add(K(f.x,f.y)); });
   const mvTxt = mvLeft < u.mv ? ` (${mvLeft} of ${u.mv} move left)` : '';
+  // which move tiles cost a free enemy attack on the way, and which enemies we'd flank
+  B.hl.aoo = new Set(); B.hl.flank = new Set();
+  if (B.reach) B.reach.forEach(n => { if (n.d === 0) return; let k = K(n.x,n.y), bad = false; while (k && !bad) { const m = B.reach.get(k); if (m.p) { const pr = B.reach.get(m.p); if (provokes(u, pr, m).length) bad = true; } k = m.p; } if (bad) B.hl.aoo.add(K(n.x,n.y)); });
+  if (!B.acted) foes().forEach(f => { if (cheb(u,f) <= u.rng && flanked(u, f)) B.hl.flank.add(K(f.x,f.y)); });
+  const threatened = threatsAt(u, u.x, u.y).length > 0;
   let hint = !B.moved && !B.acted ? `Tap a gold tile to move, or a ringed enemy to attack${mvTxt}.` : !B.moved ? `You can still move${mvTxt}.` : !B.acted ? 'You can still act.' : '';
+  if (threatened && !B.moved && hint) hint += ' <span class="warn">Red-edged tiles mean an enemy gets a free swing as you leave.</span>';
   if (B.mode && B.mode !== 'act') { const a = AB[B.mode]; hint = a.desc() + (a.aoe ? ' Tap a tile to aim, then tap it again to throw.' : ' Tap a highlighted target.');
     if (!a.aoe) a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y)));
     else for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= a.range) B.hl.tgt.add(K(x,y)); }
@@ -1473,7 +1526,10 @@ function drawBattle(t){
     ctx.fillStyle = 'rgba(13,11,9,.85)'; ctx.font = `bold ${Math.round(T*.26)}px sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
     const tag = `range ${r}`, tw = ctx.measureText(tag).width + 8; ctx.fillRect(x0*T + 3, y0*T + 3, tw, T*.34); ctx.fillStyle = '#f08a7c'; ctx.fillText(tag, x0*T + 7, y0*T + 5); ctx.textBaseline = 'alphabetic';
   }
-  if (B.reach) B.reach.forEach(n => { if (n.d === 0) return; ctx.fillStyle = 'rgba(201,151,63,.14)'; ctx.fillRect(n.x*T+1, n.y*T+1, T-2, T-2); ctx.strokeStyle = 'rgba(232,192,115,.4)'; ctx.lineWidth = 1; ctx.strokeRect(n.x*T+1.5, n.y*T+1.5, T-3, T-3); });
+  if (B.reach) B.reach.forEach(n => { if (n.d === 0) return; const bad = B.hl && B.hl.aoo && B.hl.aoo.has(K(n.x,n.y));
+    ctx.fillStyle = bad ? 'rgba(201,120,63,.16)' : 'rgba(201,151,63,.14)'; ctx.fillRect(n.x*T+1, n.y*T+1, T-2, T-2);
+    ctx.strokeStyle = bad ? 'rgba(240,138,124,.75)' : 'rgba(232,192,115,.4)'; ctx.lineWidth = bad ? 1.5 : 1; ctx.strokeRect(n.x*T+1.5, n.y*T+1.5, T-3, T-3);
+    if (bad) { ctx.fillStyle = 'rgba(240,138,124,.9)'; ctx.beginPath(); ctx.moveTo(n.x*T+T-2, n.y*T+2); ctx.lineTo(n.x*T+T-2, n.y*T+T*.3); ctx.lineTo(n.x*T+T-T*.3, n.y*T+2); ctx.fill(); } });
   if (B.hl) B.hl.tgt.forEach(k => { const [x,y] = k.split(',').map(Number); ctx.fillStyle = 'rgba(154,134,224,.18)'; ctx.fillRect(x*T+1, y*T+1, T-2, T-2); });
   if (B.aim) { const a = AB[B.mode]; const r = a ? a.aoe : 1; ctx.fillStyle = 'rgba(224,87,74,.22)'; ctx.fillRect((B.aim.x-r)*T, (B.aim.y-r)*T, (2*r+1)*T, (2*r+1)*T);
     ctx.strokeStyle = '#f08a7c'; ctx.lineWidth = 2; ctx.setLineDash([4,3]); ctx.strokeRect(B.aim.x*T+2, B.aim.y*T+2, T-4, T-4); ctx.setLineDash([]); }
@@ -1493,7 +1549,8 @@ function drawBattle(t){
     drawFigure(ctx, u.kind, cx, cy, T/32*(u.boss ? 1.3 : 1), t, {phase:u.x*3 + u.y, dir:u.facing || (u.side === 'e' ? -1 : 1), still:u.stun});
     if (u.flash && now - u.flash < 160) { ctx.globalCompositeOperation = 'lighter'; ell(ctx, cx, cy - T*.4, T*.35, T*.45, `rgba(255,120,100,${(1 - (now - u.flash)/160)*.6})`); ctx.globalCompositeOperation = 'source-over'; }
     if (u.healed && now - u.healed < 500) glow(ctx, cx, cy - T*.4, T*.9, '#9fe0b8', (1 - (now - u.healed)/500)*.4);
-    if (B.hl && B.hl.atk.has(K(u.x,u.y))) { ctx.strokeStyle = '#f08a7c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(cx, cy - T*.02, T*.44, T*.18, 0, 0, 7); ctx.stroke(); }
+    if (B.hl && B.hl.atk.has(K(u.x,u.y))) { ctx.strokeStyle = '#f08a7c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(cx, cy - T*.02, T*.44, T*.18, 0, 0, 7); ctx.stroke();
+      if (B.hl.flank && B.hl.flank.has(K(u.x,u.y))) { const lbl = '+2 flank', fs = Math.round(T*.24); ctx.font = `bold ${fs}px sans-serif`; ctx.textAlign = 'center'; const tw = ctx.measureText(lbl).width + 8; ctx.fillStyle = 'rgba(13,11,9,.85)'; ctx.fillRect(cx - tw/2, cy - T*1.02, tw, fs + 4); ctx.fillStyle = '#f2c46b'; ctx.fillText(lbl, cx, cy - T*1.02 + fs); } }
     const w = T*.7, px = cx - w/2, py = cy + T*.06; ctx.fillStyle = '#0d0b09'; ctx.fillRect(px, py, w, Math.max(3, T*.08));
     ctx.fillStyle = u.side === 'p' ? '#7fb394' : '#d9695a'; ctx.fillRect(px, py, w * u.hp / u.maxhp, Math.max(3, T*.08));
     if (u.stun) { ctx.fillStyle = '#e9dfc9'; ctx.font = `${Math.round(T*.3)}px sans-serif`; ctx.textAlign = 'left'; ctx.fillText('z', cx + T*.3, cy - T*.7 + Math.sin(t/300)*2); }
@@ -1576,6 +1633,7 @@ function openChars(i, tab){
   const rel = c.rel ? Object.entries(c.rel).map(([k,v]) => `<li><b>${TPL[k].name}.</b> ${v}</li>`).join('') : PORDER.slice(1).map(k => `<li><b>${TPL[k].name}.</b> ${loyLabel(S.loy[k])}.</li>`).join('');
   const soldier = `<div class="sec"><h4>Measure</h4><div class="grid2">${bar('Might', c.st.might)}${bar('Wits', c.st.wits, 'w')}${bar('Guile', c.st.guile, 'g')}<div class="stbar"><span>Level</span><div class="bar"><i style="width:${S.lvl/4*100}%"></i></div><span>${S.lvl}</span></div></div></div>
     <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${hp}</span><span>Armour</span><span>${c.ac}</span><span>To hit</span><span>+${atk}</span><span>Damage</span><span>${c.dmg[0]}d${c.dmg[1]}${c.dmg[2] ? '+' + c.dmg[2] : ''}</span><span>Reach</span><span>${c.rng > 1 ? c.rng + ' tiles' : 'adjacent'}</span><span>Move</span><span>${c.mv}</span><span>Initiative</span><span>+${c.init}</span>${c.magic ? `<span>Strain limit</span><span>${STR_MAX}</span>` : ''}</div></div>
+    <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of a tile next to an enemy gives that enemy one free swing a turn. The deserters know both tricks.</p></div>
     <div class="sec"><h4>Abilities</h4><div class="abl">${abil}</div></div>
     <div class="sec"><h4>Arms</h4><p>${c.weapon}.</p><p>${c.armour}.</p></div>
     <div class="sec"><h4>Carries</h4><ul>${c.gear.map(g => `<li>${g}</li>`).join('')}</ul></div>`;
