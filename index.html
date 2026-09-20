@@ -200,7 +200,7 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '2.0.0';
+const VERSION = '2.0.1';
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
 const R = n => Math.floor(Math.random() * n);
@@ -1263,7 +1263,7 @@ function nextTurn(){
   if (B.idx >= B.order.length) newRound();
   const u = B.order[B.idx];
   if (!u || u.hp <= 0) return nextTurn();
-  B.cur = u; B.moved = false; B.acted = false; B.mode = null; B.aim = null; B.turn++;
+  B.cur = u; B.moved = false; B.mvLeft = u.mv; B.acted = false; B.mode = null; B.aim = null; B.turn++;
   if (u.strain) u.strain = Math.max(0, u.strain - 1);
   if (B.fires.some(f => f.x === u.x && f.y === u.y)) { blog(`${u.name} is caught in burner fire.`); hurt(u, roll(1,6)); }
   if (u.hp <= 0) { updBattleUI(); if (checkEnd()) return; return setTimeout(nextTurn, 600); }
@@ -1383,7 +1383,8 @@ function battleTap(x, y){
 async function moveCur(x, y){
   const u = B.cur, path = pathFrom(B.reach, x, y); B.busy = true; B.reach = null;
   for (const st of path) { u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; AUDIO.play('step'); await wait(130); }
-  B.busy = false; B.moved = true; afterAct();
+  B.mvLeft = Math.max(0, (B.mvLeft ?? u.mv) - path.length); // leftover movement stays usable this turn
+  B.busy = false; B.moved = B.mvLeft <= 0; afterAct();
 }
 function useAb(k, x, y){
   const u = B.cur, a = AB[k];
@@ -1429,14 +1430,16 @@ function updBattleUI(){
   B.reach = null; B.hl = {atk:new Set(), tgt:new Set()};
   if (!u || B.over) { ub.innerHTML = `<div class="bhint">${B.over ? 'The fighting stops.' : 'Rolling initiative…'}</div>`; return; }
   if (u.side === 'e') { ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="stat hp">${u.hp}/${u.maxhp} health</span></div><div class="bhint">Enemy turn.</div>`; return; }
-  if (!B.moved && !B.busy) B.reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), u.mv);
+  const mvLeft = B.mvLeft ?? u.mv;
+  if (!B.moved && !B.busy) B.reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), mvLeft);
   if (!B.acted) foes().forEach(f => { if (cheb(u,f) <= u.rng) B.hl.atk.add(K(f.x,f.y)); });
-  let hint = !B.moved && !B.acted ? 'Tap a gold tile to move, or a ringed enemy to attack.' : !B.moved ? 'You can still move.' : !B.acted ? 'You can still act.' : '';
+  const mvTxt = mvLeft < u.mv ? ` (${mvLeft} of ${u.mv} move left)` : '';
+  let hint = !B.moved && !B.acted ? `Tap a gold tile to move, or a ringed enemy to attack${mvTxt}.` : !B.moved ? `You can still move${mvTxt}.` : !B.acted ? 'You can still act.' : '';
   if (B.mode && B.mode !== 'act') { const a = AB[B.mode]; hint = a.desc() + (a.aoe ? ' Tap a tile to aim, then tap it again to throw.' : ' Tap a highlighted target.');
     if (!a.aoe) a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y)));
     else for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= a.range) B.hl.tgt.add(K(x,y)); }
   const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : ''].filter(Boolean).join(' · ');
-  ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="stat">${TPL[u.id].role}</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
+  ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="stat">${TPL[u.id].role}</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="hpbar"><i style="width:${u.hp/u.maxhp*100}%"></i></div>
     <div class="bhint">${hint}</div>
     <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? ` ×${S.inv[a.item]}` : ''; const dis = B.acted || !abOk(u,k);
@@ -1457,6 +1460,19 @@ function drawBattle(t){
   B.fires.forEach(f => { const px = f.x*T, py = f.y*T; glow(ctx, px + T/2, py + T/2, T*1.1, '#ff7a3a', .35 + Math.sin(t/90 + f.x*3 + f.y)*.1);
     for (let i=0;i<4;i++){ const h = T*(.35 + hash(f.x,f.y,i)*.4)*(.7 + Math.sin(t/(60 + i*13) + i)*.3), bx = px + T*(.15 + i*.22); poly(ctx, [[bx - T*.08, py + T*.9],[bx + T*.08, py + T*.9],[bx + Math.sin(t/80 + i)*T*.05, py + T*.9 - h]], `rgba(255,${120 + i*25},40,.85)`); poly(ctx, [[bx - T*.04, py + T*.9],[bx + T*.04, py + T*.9],[bx, py + T*.9 - h*.5]], 'rgba(255,240,180,.8)'); }
     if (Math.random() < .3 && !REDUCE()) B.parts.push({x:f.x + Math.random(), y:f.y + .8, vx:(Math.random()-.5)*.1, vy:-.15 - Math.random()*.2, life:1, decay:.03, col:'#ffb060', size:1.5}); });
+  // ranged attack radius: tinted zone with a dashed border, only for the current player unit with a ranged weapon
+  if (B.cur && B.cur.side === 'p' && !B.acted && B.cur.rng > 1 && !(B.mode && B.mode !== 'act')) {
+    const u = B.cur, r = u.rng, x0 = Math.max(0, u.x - r), y0 = Math.max(0, u.y - r), x1 = Math.min(7, u.x + r), y1 = Math.min(9, u.y + r);
+    const p = REDUCE() ? 0 : (Math.sin(t/420)+1)*.5;
+    ctx.fillStyle = 'rgba(224,87,74,.07)'; ctx.fillRect(x0*T, y0*T, (x1-x0+1)*T, (y1-y0+1)*T);
+    // fade the tint toward the edge of reach so the last tile reads as the limit
+    for (let y=y0;y<=y1;y++) for (let x=x0;x<=x1;x++) { const d = cheb(u,{x,y}); if (d === r) { ctx.fillStyle = `rgba(224,87,74,${.09 + p*.05})`; ctx.fillRect(x*T+1, y*T+1, T-2, T-2); } }
+    ctx.strokeStyle = `rgba(240,138,124,${.55 + p*.3})`; ctx.lineWidth = 2; ctx.setLineDash([6,4]); ctx.lineDashOffset = -t/60;
+    ctx.strokeRect(x0*T + 1.5, y0*T + 1.5, (x1-x0+1)*T - 3, (y1-y0+1)*T - 3); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+    // small range tag on the border
+    ctx.fillStyle = 'rgba(13,11,9,.85)'; ctx.font = `bold ${Math.round(T*.26)}px sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    const tag = `range ${r}`, tw = ctx.measureText(tag).width + 8; ctx.fillRect(x0*T + 3, y0*T + 3, tw, T*.34); ctx.fillStyle = '#f08a7c'; ctx.fillText(tag, x0*T + 7, y0*T + 5); ctx.textBaseline = 'alphabetic';
+  }
   if (B.reach) B.reach.forEach(n => { if (n.d === 0) return; ctx.fillStyle = 'rgba(201,151,63,.14)'; ctx.fillRect(n.x*T+1, n.y*T+1, T-2, T-2); ctx.strokeStyle = 'rgba(232,192,115,.4)'; ctx.lineWidth = 1; ctx.strokeRect(n.x*T+1.5, n.y*T+1.5, T-3, T-3); });
   if (B.hl) B.hl.tgt.forEach(k => { const [x,y] = k.split(',').map(Number); ctx.fillStyle = 'rgba(154,134,224,.18)'; ctx.fillRect(x*T+1, y*T+1, T-2, T-2); });
   if (B.aim) { const a = AB[B.mode]; const r = a ? a.aoe : 1; ctx.fillStyle = 'rgba(224,87,74,.22)'; ctx.fillRect((B.aim.x-r)*T, (B.aim.y-r)*T, (2*r+1)*T, (2*r+1)*T);
