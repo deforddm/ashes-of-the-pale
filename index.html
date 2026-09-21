@@ -212,7 +212,7 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.0.3';
+const VERSION = '3.0.4';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -562,7 +562,7 @@ function rollDice(r, done){
   AUDIO.play('shuffle');
   const settle = () => { if (fin) return; fin = true; n.textContent = r.nat; die.classList.add(r.nat === 20 ? 'crit' : r.nat === 1 ? 'fumble' : 'set'); el.classList.add(r.ok ? 'ok' : 'bad');
     res.innerHTML = `${r.nat} <span class="dm">${r.mod >= 0 ? '+' : '−'} ${Math.abs(r.mod)}</span> = <b>${r.tot}</b> <span class="dv">${r.ok ? 'success' : 'failure'}</span>`; AUDIO.play('dice', r.ok);
-    setTimeout(() => { if (el.isConnected) el.remove(); done(); }, REDUCE() ? 300 : 1100); };
+    setTimeout(() => { if (el.isConnected) el.remove(); done(); }, REDUCE() ? 500 : 2200); };
   const tick = () => { if (fin) return; const k = (performance.now() - t0) / dur; if (k >= 1) return settle(); n.textContent = 1 + R(20); die.style.transform = `rotate(${Math.sin(k*40)*18}deg) scale(${1 + Math.sin(k*Math.PI)*.15})`; setTimeout(tick, 45 + k*90); };
   el.onclick = settle; tick();
 }
@@ -1547,7 +1547,7 @@ function flankers(a, t, from){
 function flanked(a, t, from){ return flankers(a, t, from).length > 0; }
 /* attacks of opportunity: leaving a tile next to an enemy gives that enemy one free melee swing per turn */
 function threatsAt(u, x, y){ return B.units.filter(e => e.side !== u.side && e.hp > 0 && !e.stun && cheb(e, {x,y}) === 1); }
-function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => (!to || cheb(e, to) > 1) && (e.aooTurn !== B.turn || (e.side === 'p' && !e.ally && has(e.id,'holdline')))); }
+function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => e.aooTurn !== B.turn || (e.side === 'p' && !e.ally && has(e.id,'holdline'))); }
 function attack(a, t, o={}){
   const nat = d20(), mine = a.side === 'p';
   const fl = !o.aoo && flanked(a, t);
@@ -1644,7 +1644,7 @@ async function ai(u, turnId){
   if (foesOf(u).length) {
     // score every reachable tile: flank a target > stay out of free-attack range > be in range at all > closer
     const reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), u.mv);
-    const stepsProvoke = n => { let k = K(n.x,n.y), c = 0; while (k) { const m = reach.get(k); if (m.p) { const pr = reach.get(m.p); if (threatsAt(u, pr.x, pr.y).some(e => cheb(e, m) > 1)) c++; } k = m.p; } return c; };
+    const stepsProvoke = n => { let k = K(n.x,n.y), c = 0; while (k) { const m = reach.get(k); if (m.p) { const pr = reach.get(m.p); if (threatsAt(u, pr.x, pr.y).length) c++; } k = m.p; } return c; };
     let best = null, bestS = -Infinity;
     reach.forEach(n => {
       const here = {x:n.x, y:n.y}; const tg = foesOf(u).filter(p => cheb(here, p) <= u.rng);
@@ -1692,7 +1692,7 @@ function updBattleUI(){
   if (!B.acted) foes().forEach(f => { if (cheb(u,f) <= u.rng && flanked(u, f)) B.hl.flank.add(K(f.x,f.y)); });
   const threatened = threatsAt(u, u.x, u.y).length > 0;
   let hint = !B.moved && !B.acted ? `Tap a gold tile to move, or a ringed enemy to attack${mvTxt}${mvLeft < u.mv ? ' — acting now ends your movement' : ''}.` : !B.moved ? `You can still move${mvTxt}.` : !B.acted ? 'You can still act.' : '';
-  if (threatened && !B.moved && hint) hint += ' <span class="warn">Red-edged tiles take you out of an enemy\'s reach: it gets a free swing as you go.</span>';
+  if (threatened && !B.moved && hint) hint += ' <span class="warn">Red-edged tiles mean an enemy gets a free swing as you leave.</span>';
   if (B.mode && B.mode !== 'act') { const a = AB[B.mode]; hint = a.desc() + (a.aoe ? ' Tap a tile to aim, then tap it again to throw.' : ' Tap a highlighted target.');
     if (!a.aoe) a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y)));
     else for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= abRange(u,a)) B.hl.tgt.add(K(x,y)); }
@@ -1816,7 +1816,7 @@ function openChars(i, tab){
   const rel = c.rel ? Object.entries(c.rel).map(([k,v]) => `<li><b>${TPL[k].name}.</b> ${v}</li>`).join('') : PORDER.slice(1).map(k => `<li><b>${TPL[k].name}.</b> ${loyLabel(S.loy[k])}.</li>`).join('');
   const soldier = `<div class="sec"><h4>Measure</h4><div class="grid2">${bar('Might', c.st.might)}${bar('Wits', c.st.wits, 'w')}${bar('Guile', c.st.guile, 'g')}<div class="stbar"><span>Level</span><div class="bar"><i style="width:${S.lvl/8*100}%"></i></div><span>${S.lvl}</span></div></div></div>
     <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${hp}</span><span>Armour</span><span>${ac}</span><span>To hit</span><span>+${atk}</span><span>Damage</span><span>${c.dmg[0]}d${c.dmg[1]}${c.dmg[2] ? '+' + c.dmg[2] : ''}</span><span>Reach</span><span>${rng > 1 ? rng + ' tiles' : 'adjacent'}</span><span>Move</span><span>${mv}</span><span>Initiative</span><span>+${init}</span>${c.magic ? `<span>Strain limit</span><span>${STR_MAX}</span>` : ''}</div></div>
-    <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of an enemy's reach gives that enemy one free swing a turn; moving from one threatened tile to another does not. Once you have moved and then acted, your movement for the turn is spent. The deserters know both tricks.</p></div>
+    <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of a tile next to an enemy gives that enemy one free swing a turn, wherever you step to. Once you have moved and then acted, your movement for the turn is spent. The deserters know both tricks.</p></div>
     <div class="sec"><h4>Abilities</h4><div class="abl">${abil}</div></div>
     ${talents.length ? `<div class="sec"><h4>Learned</h4><div class="abl">${talents.map(o => `<div><b>${o[1]}</b><span>${o[2]}</span></div>`).join('')}</div></div>` : ''}
     <div class="sec"><h4>Arms</h4><p>${c.weapon}.</p><p>${c.armour}.</p>${gearOf.map(it => `<p>${it.line}</p>`).join('')}</div>
