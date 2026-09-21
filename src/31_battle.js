@@ -175,7 +175,7 @@ function flankers(a, t, from){
 function flanked(a, t, from){ return flankers(a, t, from).length > 0; }
 /* attacks of opportunity: leaving a tile next to an enemy gives that enemy one free melee swing per turn */
 function threatsAt(u, x, y){ return B.units.filter(e => e.side !== u.side && e.hp > 0 && !e.stun && cheb(e, {x,y}) === 1); }
-function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => (!to || cheb(e, to) > 1) && (e.aooTurn !== B.turn || (e.side === 'p' && !e.ally && has(e.id,'holdline')))); }
+function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => e.aooTurn !== B.turn || (e.side === 'p' && !e.ally && has(e.id,'holdline'))); }
 function attack(a, t, o={}){
   const nat = d20(), mine = a.side === 'p';
   const fl = !o.aoo && flanked(a, t);
@@ -272,7 +272,7 @@ async function ai(u, turnId){
   if (foesOf(u).length) {
     // score every reachable tile: flank a target > stay out of free-attack range > be in range at all > closer
     const reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), u.mv);
-    const stepsProvoke = n => { let k = K(n.x,n.y), c = 0; while (k) { const m = reach.get(k); if (m.p) { const pr = reach.get(m.p); if (threatsAt(u, pr.x, pr.y).some(e => cheb(e, m) > 1)) c++; } k = m.p; } return c; };
+    const stepsProvoke = n => { let k = K(n.x,n.y), c = 0; while (k) { const m = reach.get(k); if (m.p) { const pr = reach.get(m.p); if (threatsAt(u, pr.x, pr.y).length) c++; } k = m.p; } return c; };
     let best = null, bestS = -Infinity;
     reach.forEach(n => {
       const here = {x:n.x, y:n.y}; const tg = foesOf(u).filter(p => cheb(here, p) <= u.rng);
@@ -320,7 +320,7 @@ function updBattleUI(){
   if (!B.acted) foes().forEach(f => { if (cheb(u,f) <= u.rng && flanked(u, f)) B.hl.flank.add(K(f.x,f.y)); });
   const threatened = threatsAt(u, u.x, u.y).length > 0;
   let hint = !B.moved && !B.acted ? `Tap a gold tile to move, or a ringed enemy to attack${mvTxt}${mvLeft < u.mv ? ' — acting now ends your movement' : ''}.` : !B.moved ? `You can still move${mvTxt}.` : !B.acted ? 'You can still act.' : '';
-  if (threatened && !B.moved && hint) hint += ' <span class="warn">Red-edged tiles take you out of an enemy\'s reach: it gets a free swing as you go.</span>';
+  if (threatened && !B.moved && hint) hint += ' <span class="warn">Red-edged tiles mean an enemy gets a free swing as you leave.</span>';
   if (B.mode && B.mode !== 'act') { const a = AB[B.mode]; hint = a.desc() + (a.aoe ? ' Tap a tile to aim, then tap it again to throw.' : ' Tap a highlighted target.');
     if (!a.aoe) a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y)));
     else for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= abRange(u,a)) B.hl.tgt.add(K(x,y)); }

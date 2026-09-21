@@ -18,7 +18,7 @@ function rollDice(r, done){
   AUDIO.play('shuffle');
   const settle = () => { if (fin) return; fin = true; n.textContent = r.nat; die.classList.add(r.nat === 20 ? 'crit' : r.nat === 1 ? 'fumble' : 'set'); el.classList.add(r.ok ? 'ok' : 'bad');
     res.innerHTML = `${r.nat} <span class="dm">${r.mod >= 0 ? '+' : '−'} ${Math.abs(r.mod)}</span> = <b>${r.tot}</b> <span class="dv">${r.ok ? 'success' : 'failure'}</span>`; AUDIO.play('dice', r.ok);
-    setTimeout(() => { if (el.isConnected) el.remove(); done(); }, REDUCE() ? 300 : 1100); };
+    setTimeout(() => { if (el.isConnected) el.remove(); done(); }, REDUCE() ? 500 : 2200); };
   const tick = () => { if (fin) return; const k = (performance.now() - t0) / dur; if (k >= 1) return settle(); n.textContent = 1 + R(20); die.style.transform = `rotate(${Math.sin(k*40)*18}deg) scale(${1 + Math.sin(k*Math.PI)*.15})`; setTimeout(tick, 45 + k*90); };
   el.onclick = settle; tick();
 }
