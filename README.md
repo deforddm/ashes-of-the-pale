@@ -18,4 +18,5 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 - v1.0.0 — vertical slice (the prologue: Varrow's journal under the Pale).
 - v2.0.x — art pass, Deck sequence, audio, settings, character sheets; flanking, attacks of opportunity, movement carry-over, range indicator.
-- v3.0.0 — Chapter One: Pale. Chapter system, levels to 8 with talent picks at 3/5/7, gear slots, survive-objectives and reinforcements, allied units.
+- v3.0.x — Chapter One: Pale. Chapter system, levels to 8 with talent picks at 3/5/7, gear slots, survive-objectives and reinforcements, allied units; skill-check die; rule tweaks.
+- v3.1.0 — Chapter Two: The Rhivi Plain. Multi-area chapters with travel, open-plain maps with day/dusk/night, Ellis the tracker (sixth squadmate, Tracker's Mark), the Great Raven card.
