@@ -26,7 +26,7 @@ function mkParty(id, x, y){
   Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (!it) return; u.ac += it.ac || 0; u.atk += it.atk || 0; u.maxhp += it.hp || 0; u.mv += it.mv || 0; u.rng += it.rng || 0; if (it.dmg) u.dmg = it.dmg; });
   // veteran picks and talents
   if (has(id,'iron')) u.maxhp += 6; if (has(id,'keen')) u.atk += 1; if (has(id,'fleet')) u.mv += 1; if (has(id,'nerve')) u.init += 1;
-  ['quorl','shadowstep','mockra','argument'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
+  ['quorl','shadowstep','mockra','argument','quickshot'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
   u.hp = u.maxhp; return u;
 }
 function mkFoe(k, x, y, extra=0){ const f = FOES[k]; return {id:k, kind:k, side:'e', ...f, maxhp:f.hp+extra, hp:f.hp+extra, col:'#d9695a', x, y}; }
@@ -42,7 +42,7 @@ function startBattle(id, opt={}){
   SQUAD().forEach((pid,i) => { const p = def.party[i] || def.party[def.party.length - 1]; const at = freeNear(p[0], p[1]) || {x:p[0], y:p[1]}; B.units.push(mkParty(pid, at.x, at.y)); });
   (def.allies || []).forEach(a => { const at = freeNear(a[1], a[2]); if (at) B.units.push(mkAlly(a[0], at.x, at.y)); });
   def.foes.forEach((f,i) => { if (opt.drop && opt.drop.includes(i)) return; B.units.push(mkFoe(f[0], f[1], f[2], f[0]==='stone' && S.f.noisy ? 10 : 0)); });
-  const squadInit = SQUAD().some(id => has(id,'sappers_eye')) ? 2 : 0;
+  const squadInit = (SQUAD().some(id => has(id,'sappers_eye')) ? 2 : 0) + (S.card === 'raven' ? 2 : 0);
   const initRoll = u => d20() + u.init + (u.side === 'p' ? squadInit : 0);
   B.units.forEach(u => u.ini = initRoll(u));
   B.initOrder = [...B.units].sort((a,b) => b.ini - a.ini);
@@ -141,6 +141,10 @@ const AB = {
     run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,has(u.id,'triage') ? 6 : 3) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
   salve:{name:'Salve', item:'salve', desc:()=>'Heal 8, yourself or an adjacent squadmate.', tiles:u=>party().filter(p => cheb(u,p) <= 1),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, 8); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
+  mark:{name:'Tracker\'s Mark', desc:()=>'An enemy within 5 is marked: every hit on it does +2 damage for two rounds.', tiles:u=>foes().filter(f => cheb(u,f) <= 5 && !(f.markedUntil >= B.round)),
+    run(u,x,y){ const t = unitAt(x,y); t.markedUntil = B.round + 2; AUDIO.play('click'); float(t,'marked','#f2c46b'); blog(`${u.name} marks ${t.name}: a nick of chalk on the ground, a word to the squad, and it is a target.`); }},
+  quickshot:{name:'Quick Shot', desc:()=>'Once a fight: two arrows at one target within reach.', ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng),
+    run(u,x,y){ const t = unitAt(x,y); B.used.quickshot = 1; attack(u, t); setTimeout(() => { if (t.hp > 0) attack(u, t, {verb:'puts a second arrow into'}); }, 320 * SET.speed); }},
   /* talents (level 3 picks) */
   quorl:{name:'Quorl Signal', aoe:1, range:5, desc:()=>'Once a fight: a Moranth drop. A sharper from the sky, range 5, not from the satchel.', ok:()=>!B.used.quorl,
     run(u,x,y){ B.used.quorl = 1; const pt = {x,y}; AUDIO.play('bow'); setTimeout(() => { blast(pt, [[1,10,2],[1,6,0]], '#f2c46b'); AUDIO.play('boom', .8); sparks(pt.x, pt.y, 26, '#f2c46b'); }, 500 * SET.speed); blog(`${u.name} shows a lamp to the sky. Something with wings answers.`); }},
@@ -183,7 +187,8 @@ function attack(a, t, o={}){
   const discipline = t.side === 'p' && !t.ally && SQUAD().some(id => has(id,'discipline')) ? 1 : 0;
   const aooBonus = o.aoo && !a.ally && a.side === 'p' && (has(a.id,'holdline') || has(a.id,'sappers_eye')) ? 2 : 0;
   const bonus = a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus;
-  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline;
+  const ghost = t.side === 'p' && !t.ally && has(t.id,'ghost') ? 2 : 0;
+  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost;
   const crit = nat >= (mine && S.card === 'assassin' ? 19 : 20);
   const hit = crit || (nat !== 1 && nat + bonus >= ac);
   const verb = o.verb || a.verb;
@@ -196,7 +201,7 @@ function attack(a, t, o={}){
   const tags = [o.aoo ? 'free attack' : '', fl ? 'flanking +2' : ''].filter(Boolean).join(', ');
   const tagTxt = tags ? ` <span class="stat">[${tags}]</span>` : '';
   if (!hit) { blog(`${a.name} ${verb} ${t.name} and misses${tagTxt}${math}.`); float(t, 'miss', '#a99a88'); return {hit:false}; }
-  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]);
+  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0);
   blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${tagTxt}${math}.`);
   if (crit) { shakeMap(); sparks(t.x, t.y, 16, '#f08a7c'); }
   setTimeout(() => { hurt(t, dmg); updBattleUI(); }, ranged ? 200 * SET.speed : 140 * SET.speed);
@@ -379,6 +384,7 @@ function drawBattle(t){
     if (u === cur) { const p = REDUCE() ? 0 : (Math.sin(t/260)+1)*.5; ctx.strokeStyle = `rgba(232,192,115,${.45+p*.45})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(cx, cy - T*.02, T*.42 + p*2, T*.17 + p, 0, 0, 7); ctx.stroke(); }
     if (u.side === 'p') glow(ctx, cx, cy - T*.4, T*1.6, '#e8b060', .06);
     if (u.veilUntil >= B.round) { glow(ctx, cx, cy - T*.4, T*.9, '#9a86e0', .25); }
+    if (u.markedUntil >= B.round) { ctx.strokeStyle = 'rgba(242,196,107,.8)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.ellipse(cx, cy + T*.04, T*.4, T*.16, 0, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
     drawFigure(ctx, u.kind, cx, cy, T/32*(u.boss ? 1.3 : 1), t, {phase:u.x*3 + u.y, dir:u.facing || (u.side === 'e' ? -1 : 1), still:u.stun});
     if (u.flash && now - u.flash < 160) { ctx.globalCompositeOperation = 'lighter'; ell(ctx, cx, cy - T*.4, T*.35, T*.45, `rgba(255,120,100,${(1 - (now - u.flash)/160)*.6})`); ctx.globalCompositeOperation = 'source-over'; }
     if (u.healed && now - u.healed < 500) glow(ctx, cx, cy - T*.4, T*.9, '#9fe0b8', (1 - (now - u.healed)/500)*.4);

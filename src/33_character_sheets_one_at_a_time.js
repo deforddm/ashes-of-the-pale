@@ -2,8 +2,8 @@
 let charIdx = 0, charTab = 'soldier', charAnim = null;
 function openChars(i, tab){
   if (!S) { S = newState('Hask'); S._preview = true; }
-  charIdx = ((i % PORDER.length) + PORDER.length) % PORDER.length; if (tab) charTab = tab;
-  const id = PORDER[charIdx], c = TPL[id], L = S.lvl - 1, m = $('#chars'); m.hidden = false;
+  const SQ = SQUAD(); charIdx = ((i % SQ.length) + SQ.length) % SQ.length; if (tab) charTab = tab;
+  const id = SQ[charIdx], c = TPL[id], L = S.lvl - 1, m = $('#chars'); m.hidden = false;
   const gearOf = Object.values(S.gear[id] || {}).map(g => ITEMS[g]).filter(Boolean);
   const sum = k => gearOf.reduce((a,it) => a + (it[k] || 0), 0);
   const hp = c.hp + L*4 + (S.card === 'obelisk' ? 4 : 0) + sum('hp') + (has(id,'iron') ? 6 : 0), atk = c.atk + L + sum('atk') + (has(id,'keen') ? 1 : 0), ac = c.ac + sum('ac'), mv = c.mv + sum('mv') + (has(id,'fleet') ? 1 : 0), rng = c.rng + sum('rng'), init = c.init + (has(id,'nerve') ? 1 : 0);
@@ -18,7 +18,7 @@ function openChars(i, tab){
   const abil = c.ab.map(k => { const a = AB[k]; let d; try { d = B ? a.desc() : a.desc(); } catch(e) { d = {rally:'Squadmates within 3 heal 4 and get +2 to hit through next round. Once per fight.', bash:'Adjacent enemy: 1d6+3 and it loses its next turn on a hit. Recharges after 2 rounds.', sharper:'Thrown, range 4. 1d10+2 at the centre, 1d6 around it. Scatters on a natural 1.', burner:'Thrown, range 4. 1d6 to a 3×3 and leaves it burning for 2 rounds.', cusser:'Thrown, range 3. 3d8 centre and adjacent, 1d8 one step further. Scatters on 1–2.', veil:'Meanas illusion: enemies take −5 to hit the target for 2 rounds (more where Meanas is strong). Strain 2.', phantom:'An enemy chases a phantom and loses its turn unless it resists. Strain 3.', mend:'Denul healing, 2d6+3, weaker where Denul falters. Strain 3.', salve:'Heal 8, self or adjacent.'}[k]; }
     return `<div><b>${a.name}${a.item ? ` <span class="stat">×${S.inv[a.item]}</span>` : ''}</b><span>${d}</span></div>`; }).join('');
   const banter = c.banter ? c.banter[loyN <= -1 ? 0 : loyN >= 2 ? 2 : 1] : null;
-  const rel = c.rel ? Object.entries(c.rel).map(([k,v]) => `<li><b>${TPL[k].name}.</b> ${v}</li>`).join('') : PORDER.slice(1).map(k => `<li><b>${TPL[k].name}.</b> ${loyLabel(S.loy[k])}.</li>`).join('');
+  const rel = c.rel ? Object.entries(c.rel).filter(([k]) => SQ.includes(k)).map(([k,v]) => `<li><b>${TPL[k].name}.</b> ${v}</li>`).join('') : SQ.slice(1).map(k => `<li><b>${TPL[k].name}.</b> ${loyLabel(S.loy[k])}.</li>`).join('');
   const soldier = `<div class="sec"><h4>Measure</h4><div class="grid2">${bar('Might', c.st.might)}${bar('Wits', c.st.wits, 'w')}${bar('Guile', c.st.guile, 'g')}<div class="stbar"><span>Level</span><div class="bar"><i style="width:${S.lvl/8*100}%"></i></div><span>${S.lvl}</span></div></div></div>
     <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${hp}</span><span>Armour</span><span>${ac}</span><span>To hit</span><span>+${atk}</span><span>Damage</span><span>${c.dmg[0]}d${c.dmg[1]}${c.dmg[2] ? '+' + c.dmg[2] : ''}</span><span>Reach</span><span>${rng > 1 ? rng + ' tiles' : 'adjacent'}</span><span>Move</span><span>${mv}</span><span>Initiative</span><span>+${init}</span>${c.magic ? `<span>Strain limit</span><span>${STR_MAX}</span>` : ''}</div></div>
     <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of a tile next to an enemy gives that enemy one free swing a turn, wherever you step to. Once you have moved and then acted, your movement for the turn is spent. The deserters know both tricks.</p></div>
@@ -34,9 +34,9 @@ function openChars(i, tab){
     ${loyN !== null ? `<div class="sec"><h4>Standing with ${esc(S.name)}</h4><div class="loymeter">${[-3,-2,-1,0,1,2,3].map(v => `<i class="${v === 0 ? 'mid' : v < 0 ? (loyN <= v ? 'neg' : '') : (loyN >= v ? 'pos' : '')}"></i>`).join('')}</div><div class="pips">${loyLabel(loyN)}</div>${banter ? `<p class="banter">${banter}</p>` : ''}</div>` : ''}
     <div class="sec"><h4>${id === 'sgt' ? 'The squad, as they stand' : 'The others'}</h4><ul>${rel}</ul></div>`;
   m.innerHTML = `<div class="mbox csheet">
-    <div class="cshead"><button class="btn nav" id="cPrev" aria-label="Previous">‹</button><h2 class="m" style="text-align:center">Fourth Squad · ${charIdx + 1} of ${PORDER.length}</h2><button class="btn nav" id="cNext" aria-label="Next">›</button></div>
+    <div class="cshead"><button class="btn nav" id="cPrev" aria-label="Previous">‹</button><h2 class="m" style="text-align:center">Fourth Squad · ${charIdx + 1} of ${SQ.length}</h2><button class="btn nav" id="cNext" aria-label="Next">›</button></div>
     <div class="portrait"><canvas id="pcv" width="720" height="540"></canvas><div class="plate"><h3>${esc(NAME(id))}</h3><div class="r">${c.role}</div><div class="ep">${c.epithet}</div></div></div>
-    <div class="dots">${PORDER.map((p,k) => `<i class="${k === charIdx ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="dots">${SQ.map((p,k) => `<i class="${k === charIdx ? 'on' : ''}"></i>`).join('')}</div>
     <div class="tabs"><button class="tab ${charTab === 'soldier' ? 'on' : ''}" data-t="soldier">Soldier</button><button class="tab ${charTab === 'story' ? 'on' : ''}" data-t="story">Story</button><span style="flex:1"></span><button class="tab" data-t="pack">Pack</button><button class="tab" data-t="journal">Journal</button><button class="tab" data-t="save">Save</button></div>
     <div>${charTab === 'soldier' ? soldier : story}</div>
     <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" id="cClose">Close</button></div></div>`;
