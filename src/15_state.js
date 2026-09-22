@@ -16,11 +16,15 @@ function newState(name){
 /* fill in fields added after v1 saves, so old saves keep working */
 function migrate(s){
   s.chapter ??= 0; s.area ??= 'pale'; s.squad ??= [...PORDER]; s.kit ??= []; s.picksDue ??= []; s.chapters ??= {};
-  s.gear ??= {}; s.picks ??= {}; PORDER.forEach(id => { s.gear[id] ??= {}; s.picks[id] ??= []; });
+  s.gear ??= {}; s.picks ??= {}; Object.keys(TPL).forEach(id => { s.gear[id] ??= {}; s.picks[id] ??= []; }); s.squad.forEach(id => { s.loy[id] ??= 0; });
   if (s.ending && !(0 in s.chapters)) s.chapters[0] = s.ending;
   return s;
 }
 const SQUAD = () => S.squad;
+/* a new squadmate. If the squad has already earned its level-3 habits, the recruit picks hers before the next conversation. */
+function recruit(id){ if (!TPL[id] || S.squad.includes(id)) return; S.squad.push(id); S.loy[id] ??= 0; S.gear[id] ??= {}; S.picks[id] ??= [];
+  if (S.lvl >= 3 && PICKS[3][id] && !S.picks[id].some(k => PICKS[3][id].some(o => o[0] === k)) && !S.picksDue.includes(3)) S.picksDue.push(3);
+  note(`${NAME(id)} joins the Fourth.`, 'good'); AUDIO.play('up'); save(); }
 const has = (id, k) => (S.picks[id] || []).includes(k);
 /* stat with gear and veteran picks folded in */
 function statOf(id, stat){ let v = TPL[id].st[stat]; Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (it && it.stat && it.stat[stat]) v += it.stat[stat]; }); if (has(id,'nerve')) v += 1; return v; }

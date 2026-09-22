@@ -236,6 +236,9 @@ const SCENES = {
   camp_night:{loc:'The Pale', sub:'The camp at night', cap:'Tent lines under a bruised sky. The cadre row has one lamp lit.', amb:'explore'},
   tent:{loc:'Tattersail\'s tent', sub:'The cadre row', cap:'Candle smoke, wet canvas, and cards that will not lie still.', amb:'explore'},
   fire:{loc:'The Bridgeburners\' fire', sub:'East picket', cap:'Nine soldiers who do not look up when you arrive, which is how you know they saw you coming.', amb:'explore'},
+  plain:{loc:'The Rhivi Plain', sub:'Grass to every horizon', cap:'The wagon, the guide, and six days of grass.', amb:'explore'},
+  plain_dusk:{loc:'The Rhivi Plain', sub:'Dusk', cap:'The light goes long and red across the grass, and the grass does not care.', amb:'explore'},
+  plain_night:{loc:'The Rhivi Plain', sub:'Night', cap:'Stars all the way down to the ground. Nothing between you and them.', amb:'explore'},
 };
 function sceneShell(kind){
   if (kind === 'explore') { if (view !== 'explore') { startExplore(); } return; }

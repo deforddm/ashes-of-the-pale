@@ -48,3 +48,25 @@ function drawInterior(cv, kind, t){
   }
   const v = ctx.createRadialGradient(W/2, H*.6, H*.25, W/2, H*.6, W*.7); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.85)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
 }
+
+/* the Rhivi Plain, for Chapter 2 talk nodes: day, dusk, night (with the light in the west once it rises) */
+function drawPlain(cv, kind, t){
+  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, hz = H*.62;
+  const sky = ctx.createLinearGradient(0,0,0,hz);
+  if (kind === 'plain_dusk') { sky.addColorStop(0,'#1a1218'); sky.addColorStop(.6,'#5a2a1e'); sky.addColorStop(1,'#c9713a'); }
+  else if (kind === 'plain_night') { sky.addColorStop(0,'#04040a'); sky.addColorStop(1,'#0e0d16'); }
+  else { sky.addColorStop(0,'#2a2e3a'); sky.addColorStop(.7,'#6b6a62'); sky.addColorStop(1,'#a8a08a'); }
+  ctx.fillStyle = sky; ctx.fillRect(0,0,W,hz);
+  if (kind === 'plain_night') { ctx.fillStyle = 'rgba(220,220,240,.7)'; for (let i=0;i<70;i++) ctx.fillRect(hash(i,41)*W, hash(i,42)*hz, 1, 1);
+    if (S && S.f && S.f.c2_light) { const lx = W*.12, fl = .85 + Math.sin(t/140)*.08 + Math.sin(t/53)*.05; glow(ctx, lx, hz, W*.5, '#ffb35a', .35*fl); const g = ctx.createLinearGradient(lx - 14, 0, lx + 14, 0); g.addColorStop(0,'rgba(255,200,120,0)'); g.addColorStop(.5,`rgba(255,230,180,${.55*fl})`); g.addColorStop(1,'rgba(255,200,120,0)'); ctx.fillStyle = g; ctx.fillRect(lx - 14, hz*.15, 28, hz*.85); } }
+  if (kind === 'plain_dusk') { ell(ctx, W*.85, hz - 6, 26, 26, '#f0a060'); glow(ctx, W*.85, hz, W*.4, '#e8923a', .25); }
+  // ground
+  const gr = ctx.createLinearGradient(0,hz,0,H); gr.addColorStop(0, kind === 'plain_night' ? '#141a10' : kind === 'plain_dusk' ? '#3a3a20' : '#4a5232'); gr.addColorStop(1, kind === 'plain_night' ? '#080a06' : '#26301c'); ctx.fillStyle = gr; ctx.fillRect(0,hz,W,H-hz);
+  ctx.strokeStyle = kind === 'plain_night' ? 'rgba(80,100,60,.35)' : 'rgba(140,160,80,.45)'; ctx.lineWidth = 1;
+  for (let i=0;i<140;i++){ const x = hash(i,51)*W, y = hz + 4 + hash(i,52)*(H-hz), h = 4 + hash(i,53)*10 * (1 + (y-hz)/(H-hz)); ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.sin(t/900 + i)*2, y - h*.6, x + Math.sin(t/700 + i)*3, y - h); ctx.stroke(); }
+  // the wagon, small, to the right
+  ctx.fillStyle = '#2a2018'; ctx.fillRect(W*.72, hz + 10, 60, 22); ctx.fillStyle = '#4a3a26'; ctx.fillRect(W*.72, hz + 2, 60, 10); ell(ctx, W*.72 + 12, hz + 34, 7, 7, '#15100a'); ell(ctx, W*.72 + 48, hz + 34, 7, 7, '#15100a');
+  // the squad walking, small
+  (typeof SQUAD === 'function' && S ? SQUAD() : PORDER).forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.9, 2.1, t, {phase:i, dir:1}));
+  const v = ctx.createRadialGradient(W/2, H*.55, H*.3, W/2, H*.55, W*.75); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1, kind === 'plain_night' ? 'rgba(0,0,0,.85)' : 'rgba(0,0,0,.6)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
+}

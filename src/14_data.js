@@ -48,9 +48,19 @@ const TPL = {
     quest:`Keeps a list of every soldier he couldn't save. He reads it at night. He has not added a name from the Fourth yet, and intends to die before he does.`,
     banter:[`"I have served under sergeants who thought soldiers were munitions. They are on my list too, some of them."`,`"Drink the tea, Sergeant. It's not poison. It's just unpleasant, which is how you know."`,`"Twenty-two years and this is the squad I'd have Hood take last. Don't tell them. Brisk would be unbearable."`],
     rel:{brisk:'Calls her "child." She allows it.',kettle:'Nine stitchings. He is fond of her the way one is fond of weather.',tuft:'Worries. Says nothing. Watches the lamp.'}},
+  ellis:{name:'Ellis',role:'Scout · Claw-trained',sig:'E',col:'#8fb3a0',hp:13,ac:13,atk:4,dmg:[1,6,1],rng:5,mv:6,init:3,st:{might:0,wits:2,guile:3},ab:['mark','salve'],
+    epithet:'Cut loose on the plain. Kept the bow.',origin:'Genabaris, the river quarter',age:24,service:'Six years, the Claw\'s scouts. Ended on the Rhivi Plain.',height:'Slight, and stands like a bowstring.',
+    weapon:'Rhivi horn bow, a skinning knife, and a glove she does not take off',armour:'Plains leathers dyed to grass. Nothing that rings.',
+    bio:`Quiet, exact, and funnier than she looks, which is not difficult. Reads ground the way Tuft reads cards and trusts it more. Was Toc the Younger's scout until the plain took the captain and Toc told her the Claw was done with her.`,
+    bio2:`Recruited off a Genabaris dock at eighteen by a man who never gave his name and taught her to walk without leaving anything behind. Spent six years counting other people's sentries for the Claw. Burned her hand at Pale pulling a courier out of a tent that was already gone, and has worn a glove since. Does not talk about the courier. Does not talk about the Claw either, except once, and then briefly.`,
+    traits:['Sleeps at the edge of the light, facing out','Will not draw a card. Will watch you draw one','Counts horses before people, and apologises for it','Laughs without any sound at all'],
+    gear:['Forty arrows, fletched grey','A Claw scout\'s whistle, cord cut','Salve for the hand, which she rations'],
+    quest:`Toc said the Claw was done with her. The Claw has not said so. Somewhere in Darujhistan there is a house with her name in a ledger, and she means to find out which way it is written.`,
+    banter:[`"You took me on because a one-eyed Claw told you to. I'd think about that, Sergeant."`,`"Six years I counted sentries for people who never said thank you. This lot say it. I'm not used to it. Don't stop."`,`"If the Claw come for me, they'll come at night and they'll come quiet. I'll hear them. I'm telling you so you'll know it wasn't your fault."`],
+    rel:{brisk:'Brisk watched her walk for a day and then handed her the rations count. That is a promotion.',kettle:'They trade: arrows for fuse-cord, and neither has said what for.',tuft:'Ellis watches her the way she watched sentries. Tuft has noticed and, oddly, does not mind.',ohl:'He asked about the glove. She said "later." He wrote something on the oilcloth, and she has not asked what.'}},
 };
 const PORDER = ['sgt','brisk','kettle','tuft','ohl'];
-const VERB = {sgt:'cuts at',brisk:'drives her spear at',kettle:'looses a quarrel at',tuft:'lashes shadow at',ohl:'cracks a cudgel at'};
+const VERB = {sgt:'cuts at',brisk:'drives her spear at',kettle:'looses a quarrel at',tuft:'lashes shadow at',ohl:'cracks a cudgel at',ellis:'puts an arrow into'};
 const FOES = {
   deserter:{name:'Deserter',sig:'D',hp:11,ac:12,atk:3,dmg:[1,6,1],rng:1,mv:4,init:1,verb:'hacks at'},
   xbow:{name:'Deserter crossbow',sig:'X',hp:8,ac:11,atk:3,dmg:[1,8,0],rng:5,mv:3,init:2,verb:'shoots at'},
@@ -101,12 +111,14 @@ const PICKS = {
       brisk:[['shieldwall','Shield Wall','Squadmates standing next to Brisk get +2 armour.'],['holdline','Hold the Line','Brisk\'s free swings are unlimited and hit +2.']],
       kettle:[['longfuse','Long Fuse','Munitions never scatter, and throw one tile further.'],['quorl','Quorl Signal','Once a fight: a Moranth drop. A sharper from the sky, not from the satchel.']],
       tuft:[['shadowstep','Shadow Step','Step through Meanas to any free tile within 4. No free swings. Strain 1.'],['mockra','Mockra Whisper','An enemy within 4 loses its next turn. Bosses may resist. Strain 2.']],
-      ohl:[['triage','Field Triage','Mend heals +3 and reaches 4 tiles.'],['argument','Argument with Hood','Once a fight: a downed squadmate within 2 stands up at 6 health. Strain 3.']] },
+      ohl:[['triage','Field Triage','Mend heals +3 and reaches 4 tiles.'],['argument','Argument with Hood','Once a fight: a downed squadmate within 2 stands up at 6 health. Strain 3.']],
+      ellis:[['quickshot','Quick Shot','Once a fight: two arrows at one target within reach.'],['ghost','Ghost Step','Enemies take −2 to hit Ellis. Six years of not being where the sentry looked.']] },
   vet:[['iron','Iron','+6 health.'],['keen','Keen','+1 to hit.'],['fleet','Fleet','+1 move.'],['nerve','Nerve','+1 initiative and +1 to every skill check.']],
 };
 function registerChapter(n, CH){
   CHAPTERS[n] = CH;
-  if (CH.area) AREAS[CH.area.id] = Object.assign({decor:CH.area.decor || 'camp_night'}, CH.area);
+  if (CH.areas && !CH.area) CH.area = CH.areas[0];
+  (CH.areas || (CH.area ? [CH.area] : [])).forEach(a => { AREAS[a.id] = Object.assign({decor:a.decor || 'camp_night'}, a); });
   if (CH.battles) Object.assign(BATTLES, CH.battles);
   if (CH.foes) Object.assign(FOES, CH.foes);
   if (CH.gear) Object.assign(ITEMS, CH.gear);
