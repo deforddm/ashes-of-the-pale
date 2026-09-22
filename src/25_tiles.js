@@ -2,8 +2,32 @@
 function drawTile(ctx, ch, x, y, T, dark, tunnel, style){
   const px = x*T, py = y*T, h = hash(x,y);
   const plain = style && style.startsWith('plain');
+  const city = style && (style.startsWith('city') || style === 'cellar'), cellar = style === 'cellar';
   const fill = c => { ctx.fillStyle = c; ctx.fillRect(px,py,T,T); };
   const speck = (c, n, s=1, sz=.06) => { ctx.fillStyle = c; for (let i=0;i<n;i++){ const a = hash(x,y,i+s), b = hash(y,x,i+s+9); ctx.fillRect(px+a*T, py+b*T, Math.max(1,T*sz), Math.max(1,T*sz)); } };
+  if (ch === '#' && city) { // brick and mortar, or the cellar's cut stone
+    fill(cellar ? '#0e0c0b' : dark ? '#100e10' : '#1a1614');
+    ctx.fillStyle = cellar ? '#1e1a17' : dark ? '#221c1e' : '#2e2622'; const bh = T*.22, bw = T*.5;
+    for (let r=0;r<4;r++){ const off = (r%2)*bw*.5; for (let c=-1;c<3;c++){ const bx = px + c*bw + off + 1, by = py + r*bh + 1; ctx.fillRect(Math.max(px,bx), by, Math.min(bw-2, px+T-bx), bh-2); } }
+    if (!cellar && hash(x,y,3) > .7) { ctx.fillStyle = dark ? 'rgba(90,140,210,.10)' : 'rgba(232,192,115,.12)'; ctx.fillRect(px+T*.3, py+T*.25, T*.4, T*.35); ctx.fillStyle = '#0a0808'; ctx.fillRect(px+T*.48, py+T*.25, T*.04, T*.35); } // a window, lit or not
+    return; }
+  if (city && ch !== '#') {
+    fill(cellar ? (ch === ',' ? '#1a1815' : '#221e1a') : dark ? (ch === ',' ? '#171a20' : '#1e1e22') : (ch === ',' ? '#2a2c30' : '#33312f'));
+    ctx.strokeStyle = cellar ? 'rgba(0,0,0,.5)' : 'rgba(0,0,0,.45)'; ctx.lineWidth = 1; const cw = T*.34, chh = T*.25; // cobbles
+    for (let r=0;r<4;r++){ const off = (r%2)*cw*.5; for (let c=-1;c<4;c++){ const bx = px + c*cw + off, by = py + r*chh; ctx.beginPath(); ctx.ellipse(bx + cw*.5, by + chh*.5, cw*.46, chh*.42, 0, 0, 7); ctx.stroke(); } }
+    if (ch === ',') { ctx.fillStyle = dark ? 'rgba(90,140,210,.16)' : 'rgba(180,190,200,.12)'; ell(ctx, px+T*.5, py+T*.55, T*.36, T*.2, dark ? 'rgba(90,140,210,.16)' : 'rgba(180,190,200,.12)'); } // a puddle
+    if (h > .85) speck('#0a0908', 3, 7, .08);
+    if (ch === 'L') { ctx.fillStyle = '#1a1a1c'; ctx.fillRect(px+T*.44, py+T*.2, T*.12, T*.72); ctx.fillStyle = '#2e2e32'; ctx.fillRect(px+T*.36, py+T*.1, T*.28, T*.22); ctx.fillStyle = 'rgba(120,180,255,.85)'; ctx.fillRect(px+T*.42, py+T*.14, T*.16, T*.14); }
+    if (ch === 'D') { ctx.fillStyle = '#0a0806'; ctx.fillRect(px+T*.18, py+T*.1, T*.64, T*.82); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(px+T*.22, py+T*.14, T*.56, T*.74); ctx.fillStyle = '#1a1208'; ctx.fillRect(px+T*.49, py+T*.14, T*.02, T*.74); ctx.fillStyle = '#c9a44a'; ctx.fillRect(px+T*.4, py+T*.52, T*.06, T*.06); ctx.fillStyle = 'rgba(232,192,115,.18)'; ctx.fillRect(px+T*.22, py+T*.14, T*.56, T*.1); }
+    if (ch === 'H') { ell(ctx, px+T*.5, py+T*.55, T*.42, T*.3, '#050404'); ell(ctx, px+T*.5, py+T*.5, T*.36, T*.22, '#000'); ctx.fillStyle = '#3a3230'; for (let i=0;i<6;i++){ const a = i/6*6.28; ctx.fillRect(px+T*.5 + Math.cos(a)*T*.44 - 2, py+T*.55 + Math.sin(a)*T*.32 - 1, 4, 3); } }
+    if (ch === 'B') { ctx.fillStyle = '#2a1e12'; ctx.fillRect(px+T*.1, py+T*.35, T*.5, T*.5); ctx.fillStyle = '#4a3622'; ctx.fillRect(px+T*.1, py+T*.35, T*.5, T*.08); ctx.fillRect(px+T*.1, py+T*.6, T*.5, T*.05); ctx.fillStyle = '#3a2c1c'; ctx.fillRect(px+T*.5, py+T*.15, T*.4, T*.4); ctx.fillStyle = '#6b5a3c'; ctx.fillRect(px+T*.5, py+T*.15, T*.4, T*.06); ctx.fillStyle = '#8fa38a'; ctx.fillRect(px+T*.6, py+T*.28, T*.2, T*.12); /* a Moranth seal */ }
+    if (ch === 'S') { for (let i=0;i<4;i++){ ctx.fillStyle = i%2 ? '#2a2622' : '#1a1714'; ctx.fillRect(px+T*.1, py+T*.15+i*T*.2, T*.8, T*.18); } ctx.fillStyle = 'rgba(232,192,115,.2)'; ctx.fillRect(px+T*.1, py+T*.1, T*.8, T*.1); }
+    if (ch === 'W') { ctx.fillStyle = '#3c2d1e'; ctx.fillRect(px+T*.12, py+T*.3, T*.76, T*.4); ctx.fillStyle = '#5a4630'; ctx.fillRect(px+T*.12, py+T*.3, T*.76, T*.08); ell(ctx, px+T*.28, py+T*.76, T*.11, T*.11, '#15100a'); ell(ctx, px+T*.72, py+T*.76, T*.11, T*.11, '#15100a'); ctx.fillStyle = '#8a7a5a'; ctx.fillRect(px+T*.2, py+T*.16, T*.6, T*.16); }
+    if (ch === 'x') { ctx.fillStyle = '#3a2a18'; ctx.fillRect(px+T*.44, py+T*.2, T*.12, T*.7); ctx.fillStyle = '#6b5a3c'; ctx.fillRect(px+T*.44, py+T*.2, T*.12, T*.1); ctx.strokeStyle = 'rgba(120,100,70,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, py+T*.35); ctx.lineTo(px+T, py+T*.35); ctx.stroke(); }
+    if (ch === 'F') { for (let i=0;i<7;i++){ const a = i/7*6.28; ell(ctx, px+T/2 + Math.cos(a)*T*.32, py+T*.6 + Math.sin(a)*T*.2, T*.07, T*.05, '#3a3128'); } ell(ctx, px+T/2, py+T*.6, T*.16, T*.08, '#1a1008'); }
+    if (ch === 'r') { ell(ctx, px+T*.5, py+T*.62, T*.3, T*.2, '#3a3630'); ell(ctx, px+T*.44, py+T*.56, T*.2, T*.14, '#57534c'); }
+    if (ch === '>' || ch === '<') { ctx.fillStyle = 'rgba(232,192,115,.55)'; const d = ch === '>' ? 1 : -1; ctx.beginPath(); ctx.moveTo(px+T*.5 - d*T*.18, py+T*.3); ctx.lineTo(px+T*.5 + d*T*.18, py+T*.5); ctx.lineTo(px+T*.5 - d*T*.18, py+T*.7); ctx.closePath(); ctx.fill(); }
+    return; }
   if (ch === '#' && plain) { fill(dark ? '#0f130c' : '#1e2616'); for (let i=0;i<5;i++){ const a = hash(x,y,i), b = hash(x,y,i+5), r = T*(.14 + hash(x,y,i+11)*.16); ell(ctx, px + (.15 + a*.7)*T, py + (.25 + b*.6)*T, r, r*.7, dark ? '#101508' : '#243019'); ell(ctx, px + (.15 + a*.7)*T - r*.25, py + (.25 + b*.6)*T - r*.25, r*.5, r*.35, dark ? '#16200c' : '#334523'); } return; }
   if (ch === '#') { fill(dark ? '#0c0a0a' : tunnel ? '#151110' : '#171310');
     for (let i=0;i<4;i++){ const a=hash(x,y,i), b=hash(x,y,i+5), r = T*(.16 + hash(x,y,i+11)*.14); const g = ctx.createRadialGradient(px+(.2+a*.6)*T - r*.3, py+(.2+b*.6)*T - r*.3, 1, px+(.2+a*.6)*T, py+(.2+b*.6)*T, r); g.addColorStop(0, dark ? '#2a2426' : '#43372e'); g.addColorStop(1, dark ? '#0a0909' : '#130f0d'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(px+(.2+a*.6)*T, py+(.2+b*.6)*T, r, r*.7, a*3, 0, 7); ctx.fill(); }

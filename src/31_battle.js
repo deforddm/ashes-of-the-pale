@@ -254,7 +254,7 @@ function useAb(k, x, y){
   const u = B.cur, a = AB[k];
   if (a.item) S.inv[a.item]--;
   B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.mode = 'act'; B.aim = null; B.busy = true;
-  a.run(u, x, y); castStrain(u, a.strain);
+  a.run(u, x, y); castStrain(u, a.strain && u.id === 'tuft' && S.card === 'magi' ? a.strain - 1 : a.strain);
   if (a.aoe) { updBattleUI(); return; } // blast() resumes after the arc lands
   setTimeout(() => { B.busy = false; afterAct(); }, 350 * SET.speed); updBattleUI();
 }

@@ -58,6 +58,16 @@ function drawExplore(t){
     a.map.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === 'F') drawFireAt(ctx, T, x*T + T/2, y*T + T*.55, t); if (ch === 'M') glow(ctx, x*T + T/2, y*T + T*.6, T*1.2, '#9a86e0', .05 + Math.sin(t/1100 + x)*.03); }));
     if (a.decor === 'plain_dusk') { ctx.fillStyle = 'rgba(200,110,50,.10)'; ctx.fillRect(0,0,cols*T,rows*T); }
     if (a.decor === 'plain_night' && S.f.c2_light) { const g = ctx.createLinearGradient(0,0,cols*T*.35,0); g.addColorStop(0,`rgba(255,200,120,${.16 + Math.sin(t/500)*.05})`); g.addColorStop(1,'rgba(255,200,120,0)'); ctx.fillStyle = g; ctx.fillRect(0,0,cols*T,rows*T); }
+  } else if (a.decor && (a.decor.startsWith('city') || a.decor === 'cellar')) {
+    // the city of blue fire: every lamp burns blue, the dig has a lantern in it, braziers burn orange
+    a.map.forEach((row, y) => [...row].forEach((ch, x) => {
+      if (ch === 'L') { const fl = .85 + Math.sin(t/230 + x*1.7)*.08 + Math.sin(t/71 + y)*.04; glow(ctx, x*T + T/2, y*T + T*.2, T*3.4, '#6aa8ff', .42*fl); glow(ctx, x*T + T/2, y*T + T*.2, T*.9, '#bfe0ff', .5*fl); ctx.fillStyle = `rgba(160,210,255,${.7 + fl*.2})`; ctx.fillRect(x*T + T*.44, y*T + T*.15, T*.12, T*.12); }
+      if (ch === 'H') glow(ctx, x*T + T/2, y*T + T*.5, T*1.6, '#e8b060', .18 + Math.sin(t/400)*.05);
+      if (ch === 'F') drawFireAt(ctx, T, x*T + T/2, y*T + T*.55, t, .9);
+      if (ch === 'S') glow(ctx, x*T + T/2, y*T + T*.5, T*1.2, '#e8b060', .12);
+    }));
+    if (a.decor === 'city_dusk') { ctx.fillStyle = 'rgba(200,110,50,.07)'; ctx.fillRect(0,0,cols*T,rows*T); }
+    if (a.decor === 'city_night') { ctx.fillStyle = 'rgba(40,70,140,.07)'; ctx.fillRect(0,0,cols*T,rows*T); }
   } else if (a.decor === 'pale') {
     // crater: Kurald Galain shimmer with the occasional pulse
     const pulse = (Math.sin(t/900) + 1) / 2, flick = hash(Math.floor(t/120), 1) > .93 ? .5 : 0;
@@ -81,11 +91,11 @@ function drawExplore(t){
   if (!walking) { const p = REDUCE() ? 0 : (Math.sin(t/260)+1)*.5; ctx.strokeStyle = `rgba(201,151,63,${.35+p*.4})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(d.x*T + T/2, d.y*T + T*.6, T*.4 + p*2, T*.16 + p, 0, 0, 7); ctx.stroke(); }
   drawFigure(ctx, 'sgt', d.x*T + T/2, d.y*T + T*.6, T/32, t, {phase:0, still:!walking});
   // lantern warmth around the party
-  glow(ctx, d.x*T + T/2, d.y*T + T/2, T*2.6, '#e8b060', a.decor === 'pale' || a.decor === 'plain' ? .06 : .14);
+  glow(ctx, d.x*T + T/2, d.y*T + T/2, T*2.6, '#e8b060', a.decor === 'pale' || a.decor === 'plain' || a.decor === 'city_dusk' ? .06 : .14);
   // fog banks
   fog.forEach(f => { f.x += f.v; if (f.x > 1.3) f.x = -.3; ell(ctx, f.x*cols*T, f.y*rows*T, f.w*cols*T, T*.9, a.decor === 'plain' ? `rgba(120,130,90,${f.a*.6})` : `rgba(70,62,58,${f.a})`); });
   // drifting ash
   if (!(a.decor && a.decor.startsWith('plain'))) ash.forEach(s => { s.y += s.v; if (s.y > 1) s.y = 0; const x = (s.x + Math.sin(t/1600 + s.w)*.01) * cols*T; ctx.fillStyle = 'rgba(200,190,175,.4)'; ctx.fillRect(x, s.y*rows*T, s.s, s.s); });
   // darkness at the edges (deeper at night)
-  const v = ctx.createRadialGradient(cols*T/2, rows*T/2, T*4, cols*T/2, rows*T/2, T*10); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${a.decor === 'pale' ? .6 : a.decor === 'plain' ? .35 : a.decor === 'plain_dusk' ? .5 : .7})`); ctx.fillStyle = v; ctx.fillRect(0,0,cols*T,rows*T);
+  const v = ctx.createRadialGradient(cols*T/2, rows*T/2, T*4, cols*T/2, rows*T/2, T*10); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, `rgba(0,0,0,${a.decor === 'pale' ? .6 : a.decor === 'plain' ? .35 : a.decor === 'plain_dusk' || a.decor === 'city_dusk' ? .5 : a.decor === 'city_night' ? .45 : .7})`); ctx.fillStyle = v; ctx.fillRect(0,0,cols*T,rows*T);
 }

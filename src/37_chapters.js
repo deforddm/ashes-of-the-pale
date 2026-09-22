@@ -11,11 +11,15 @@ const CHEND = {
   2:{
     light:['You rode to the light','A mage died on the plain and the Fourth went to see it, against orders and against the clock. The Rhivi were there first and carried something away. Tuft knows what. The wagon arrives in Darujhistan a day late, and Whiskeyjack will have counted the day.'],
     road:['You kept the road','A mage died on the plain and the Fourth watched the light and counted rations. The timetable held. Three tall figures with silver hair came out of the dark to ask one question, and were afraid, and that is the thing nobody in the squad is talking about.'] },
+  3:{
+    report:['You told the Claw','A grey-haired woman in a dye-shop asked what the Bridgeburners were doing under the city, and the Fourth told her, for silver and the Empire\'s regard. Whiskeyjack does not know. Brisk does. So does the sergeant, every time the crew goes down the hole.'],
+    refuse:['You walked out','A grey-haired woman in a dye-shop asked what the Bridgeburners were doing under the city, and the Fourth gave her nothing, and paid for it in an alley. The Claw has the sergeant\'s name in a neat hand now. Whiskeyjack, told or not, has the squad.'] },
 };
 const CHTEASE = {
   0:'Next: Captain Paran arrives at the Pale, the Hounds of Shadow come hunting, and the Fourth is told where it is going.',
   1:'Next: the Black Moranth will not carry a sixth squad. The Fourth rides south across the Rhivi Plain, and something is riding the same way.',
   2:'Next: Darujhistan, the city of blue fire. The Bridgeburners are a week ahead and already under it.',
+  3:'Next: assassins on the rooftops, a war nobody in the city admits is being fought, and a name said quietly at the Phoenix Inn: Rallick Nom.',
 };
 function chapterEnd(n, key){
   S.chapters[n] = key; S.chapter = n; S.scene = 'chend'; S.node = null; S.bg = null; save(); showChapterEnd();
@@ -37,6 +41,17 @@ function showChapterEnd(){
     if (S.f.c2_outFought) extra.push('Rhivi blood on the grass. They will remember the squad that spilled it.');
     if (S.f.c2_badge) extra.push('A Second Army badge from the barrow. Wrong regiment. Brisk keeps it anyway.');
     if (S.f.c2_croneSaw) extra.push('A Great Raven knows the sergeant\'s name now. That is not a comfort.');
+  }
+  if (n === 3) {
+    if (S.f.c3_lied) extra.push('You lied to a Claw handler to her face. She may or may not have believed it. She will find out.');
+    if (S.f.c3_told) extra.push('Madryn knows what is under the intersection. That is a loaded gun with the Fourth\'s name on the grip.');
+    if (S.f.c3_wjTold) extra.push('Whiskeyjack said "Good." Once. The squad heard it.');
+    if (S.f.c3_kruppe) extra.push('Kruppe said a sentence about the plain and Tuft went white. Nobody else understood it. Tuft has not explained.');
+    if (S.f.c3_sorry) extra.push('The sergeant spoke to Sorry. Eleven words came back. They were the wrong shape.');
+    if (S.f.c3_coll) extra.push('Coll\'s signet is in the sergeant\'s pocket. It opens doors in this city that Coll no longer walks through.');
+    if (S.f.c3_ellisMsg) extra.push('The Claw\'s message came through Ellis. She brought it anyway. Remember that.');
+    if (S.f.c3_paid) extra.push('The Fourth\'s real name is in a gate-clerk\'s ledger, for five silver.');
+    if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
   }
   if (n === 1) {
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
@@ -79,7 +94,7 @@ function showChapterIntro(){
   <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${I.cap}</div></div>
   <div class="narr">${I.paras.map(p => fmt(p)).join('')}</div>
   <div class="row"><button class="btn primary" id="bGo">${I.go}</button><button class="btn" id="bSq">The squad</button></div>`;
-  G.sceneKind = CH.area.decor === 'pale' ? 'camp' : (CH.area.decor || '').startsWith('plain') ? CH.area.decor : 'camp_night';
+  G.sceneKind = CH.area.decor === 'pale' ? 'camp' : (CH.area.decor || '').startsWith('plain') ? CH.area.decor : (CH.area.decor || '').startsWith('city') ? 'city_street' : 'camp_night';
   $('#bGo').onclick = () => { AUDIO.play('click'); $('#bGo').disabled = true; startExplore(CH.area.id); if (I.node) talk(I.node); };
   $('#bSq').onclick = () => { AUDIO.play('click'); openChars(0); };
   bindHud();
@@ -90,6 +105,9 @@ const QUESTS = {
   hound_site:()=> S.f.c2_tocGone ? 'East, to the fourth camp' : 'Dead horses, and two people who are not dead',
   ridge:()=> S.f.c2_lightDone ? 'Dawn. East, to the hills' : S.f.c2_light ? 'The light in the west' : 'The fourth camp. Talk to Sethand.',
   hills_edge:()=> 'The Gadrobi Hills. Darujhistan beyond.',
+  worry_gate:()=> S.f.c3_gateFought ? 'East, into the Gadrobi District' : S.f.c3_gate ? 'The wagon through the gate. East.' : 'The Worry Gate. Talk to the gate-clerk.',
+  gadrobi_cross:()=> S.f.c3_key ? 'Dawn. The roof above the dig.' : S.f.c3_msg ? 'The Daru District. A dye-shop. East.' : S.f.c3_workDone ? (S.f.c3_inn ? 'The second night. Somebody is looking for you.' : 'The Phoenix Inn, or the second night') : S.f.c3_reported ? 'Crates down the hole. Whiskeyjack\'s orders.' : 'Report to Whiskeyjack at the barrier',
+  daru_street:()=> S.f.c3_key ? 'Back west, to the dig' : S.f.c3_madryn ? 'The dye-shop. Decide.' : 'The dye-shop door, Daru District',
   pale_night:()=> S.f.c1_done ? 'Get some sleep. Somebody should.' : S.f.c1_hounds ? 'Hounds in the tent lines' : !S.f.c1_reported ? 'Report to Whiskeyjack at the Bridgeburners\' fire (east)' : !S.f.c1_tent ? 'Tattersail\'s tent, cadre row (north)' : 'Walk the lines. Something is coming.',
 };
 /* ability picks: shown before the next conversation after a level 3/5/7 */
