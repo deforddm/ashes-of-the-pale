@@ -14,12 +14,15 @@ const CHEND = {
   3:{
     report:['You told the Claw','A grey-haired woman in a dye-shop asked what the Bridgeburners were doing under the city, and the Fourth told her, for silver and the Empire\'s regard. Whiskeyjack does not know. Brisk does. So does the sergeant, every time the crew goes down the hole.'],
     refuse:['You walked out','A grey-haired woman in a dye-shop asked what the Bridgeburners were doing under the city, and the Fourth gave her nothing, and paid for it in an alley. The Claw has the sergeant\'s name in a neat hand now. Whiskeyjack, told or not, has the squad.'] },
+  4:{
+    shield:['You held the roof','A Guild boy came over the parapet with a Tiste Andii behind him and the Fourth stood in between, which is what a line is for, and held three rounds against something that does not lose. Something in Quick Ben\'s sack laughed, and the silver-haired shapes went elsewhere. The boy is alive. The Guild knows which squad did that.'],
+    aside:['You stepped aside','A Guild boy came over the parapet with a Tiste Andii behind him and the Fourth let it through. It killed him in one motion, looked at the sergeant, and nodded. Tuft looked into Kurald Galain and it looked back. Ohl\'s list has a name on it he did not put there.'] },
 };
 const CHTEASE = {
   0:'Next: Captain Paran arrives at the Pale, the Hounds of Shadow come hunting, and the Fourth is told where it is going.',
   1:'Next: the Black Moranth will not carry a sixth squad. The Fourth rides south across the Rhivi Plain, and something is riding the same way.',
   2:'Next: Darujhistan, the city of blue fire. The Bridgeburners are a week ahead and already under it.',
-  3:'Next: assassins on the rooftops, a war nobody in the city admits is being fought, and a name said quietly at the Phoenix Inn: Rallick Nom.',
+  3:'Next: assassins on the rooftops, a war nobody in the city admits is being fought, and a name said quietly at the Phoenix Inn: Rallick Nom.',  4:'Next: the Gadrobi Hills. An Adjunct with a T\'lan Imass at her side is digging for something that should stay buried, and the Fourth is sent to watch the wrong hill.',
 };
 function chapterEnd(n, key){
   S.chapters[n] = key; S.chapter = n; S.scene = 'chend'; S.node = null; S.bg = null; save(); showChapterEnd();
@@ -51,6 +54,17 @@ function showChapterEnd(){
     if (S.f.c3_coll) extra.push('Coll\'s signet is in the sergeant\'s pocket. It opens doors in this city that Coll no longer walks through.');
     if (S.f.c3_ellisMsg) extra.push('The Claw\'s message came through Ellis. She brought it anyway. Remember that.');
     if (S.f.c3_paid) extra.push('The Fourth\'s real name is in a gate-clerk\'s ledger, for five silver.');
+    if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
+  }
+  if (n === 4) {
+    if (S.f.c4_vell) extra.push('Vell is alive. A Guild journeyman owes the Fourth his life, and the Guild pays its debts, one way or the other.');
+    if (S.f.c4_guildKnows) extra.push('Ocelot knows a Malazan squad held a roof for one of his. Rallick told him. Rallick tells him everything, eventually.');
+    if (S.f.c4_seen) extra.push('A Tiste Andii knows the Fourth\'s faces. That is a Rake thing now.');
+    if (S.f.c4_tuftDark) extra.push('Tuft has not slept. She says the dark was polite. She says it the way you say a thing you are trying not to say.');
+    if (S.f.c4_kalamLook) extra.push('Kalam looked at the sergeant a beat too long before he went up. He knows something was told. He does not know by whom. Yet.');
+    if (S.f.c4_reprisalFought) extra.push('Guild blood in the alley. Ocelot sent three and got none back, and will count that.');
+    if (S.f.c4_sawSorry) extra.push('A girl in a doorway who did not move at all. Kettle has not stopped talking about it, which is how Kettle is afraid.');
+    if (S.f.c4_rallick) extra.push('Rallick Nom told the Fourth to go home. He is the first person in this city to say it as a kindness.');
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
   }
   if (n === 1) {
@@ -94,7 +108,7 @@ function showChapterIntro(){
   <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${I.cap}</div></div>
   <div class="narr">${I.paras.map(p => fmt(p)).join('')}</div>
   <div class="row"><button class="btn primary" id="bGo">${I.go}</button><button class="btn" id="bSq">The squad</button></div>`;
-  G.sceneKind = CH.area.decor === 'pale' ? 'camp' : (CH.area.decor || '').startsWith('plain') ? CH.area.decor : (CH.area.decor || '').startsWith('city') ? 'city_street' : 'camp_night';
+  G.sceneKind = CH.area.decor === 'pale' ? 'camp' : (CH.area.decor || '').startsWith('plain') ? CH.area.decor : (CH.area.decor || '').startsWith('city') ? 'city_street' : CH.area.decor === 'roof_night' ? 'roof_night' : 'camp_night';
   $('#bGo').onclick = () => { AUDIO.play('click'); $('#bGo').disabled = true; startExplore(CH.area.id); if (I.node) talk(I.node); };
   $('#bSq').onclick = () => { AUDIO.play('click'); openChars(0); };
   bindHud();
@@ -107,6 +121,8 @@ const QUESTS = {
   hills_edge:()=> 'The Gadrobi Hills. Darujhistan beyond.',
   worry_gate:()=> S.f.c3_gateFought ? 'East, into the Gadrobi District' : S.f.c3_gate ? 'The wagon through the gate. East.' : 'The Worry Gate. Talk to the gate-clerk.',
   gadrobi_cross:()=> S.f.c3_key ? 'Dawn. The roof above the dig.' : S.f.c3_msg ? 'The Daru District. A dye-shop. East.' : S.f.c3_workDone ? (S.f.c3_inn ? 'The second night. Somebody is looking for you.' : 'The Phoenix Inn, or the second night') : S.f.c3_reported ? 'Crates down the hole. Whiskeyjack\'s orders.' : 'Report to Whiskeyjack at the barrier',
+  roofs_gadrobi:()=> S.f.c4_key ? 'Down. The dig, and Whiskeyjack.' : S.f.c4_roofsFought ? 'East across the planks, to Kalam\'s roof' : 'Two roofs over. Watch. Do not help.',
+  roofs_daru:()=> S.f.c4_key ? 'Down, west. The street.' : S.f.c4_meet ? 'The parapet' : 'Kalam\'s roof. Watch.',
   daru_street:()=> S.f.c3_key ? 'Back west, to the dig' : S.f.c3_madryn ? 'The dye-shop. Decide.' : 'The dye-shop door, Daru District',
   pale_night:()=> S.f.c1_done ? 'Get some sleep. Somebody should.' : S.f.c1_hounds ? 'Hounds in the tent lines' : !S.f.c1_reported ? 'Report to Whiskeyjack at the Bridgeburners\' fire (east)' : !S.f.c1_tent ? 'Tattersail\'s tent, cadre row (north)' : 'Walk the lines. Something is coming.',
 };
