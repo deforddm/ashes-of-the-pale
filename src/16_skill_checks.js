@@ -239,6 +239,11 @@ const SCENES = {
   plain:{loc:'The Rhivi Plain', sub:'Grass to every horizon', cap:'The wagon, the guide, and six days of grass.', amb:'explore'},
   plain_dusk:{loc:'The Rhivi Plain', sub:'Dusk', cap:'The light goes long and red across the grass, and the grass does not care.', amb:'explore'},
   plain_night:{loc:'The Rhivi Plain', sub:'Night', cap:'Stars all the way down to the ground. Nothing between you and them.', amb:'explore'},
+  city_street:{loc:'Darujhistan', sub:'The city of blue fire', cap:'Gas lamps burning blue down every street, and a black mountain hanging over the lake that nobody looks at any more.', amb:'explore'},
+  inn:{loc:'The Phoenix Inn', sub:'The Daru District', cap:'Low beams, spilled wine, a fat man in a red waistcoat, and every thief in the city pretending not to watch the door.', amb:'explore'},
+  cellar:{loc:'Under the intersection', sub:'The gas conduits', cap:'Cut stone, a lantern, a smell like a struck match, and crates with Moranth seals stacked where no crate should be.', amb:'tunnel'},
+  room:{loc:'The dye-shop', sub:'An upstairs room, Daru District', cap:'Skeins of blue and madder hung to dry, one lamp, one chair, and a woman who has been expecting you.', amb:'explore'},
+  roof:{loc:'Darujhistan', sub:'A rooftop above the dig · dawn', cap:'Tiles wet with lake mist. The blue fire going out lamp by lamp, and a shape on the next roof that was not there a moment ago.', amb:'explore'},
 };
 function sceneShell(kind){
   if (kind === 'explore') { if (view !== 'explore') { startExplore(); } return; }

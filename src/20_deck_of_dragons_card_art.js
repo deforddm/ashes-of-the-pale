@@ -51,6 +51,12 @@ function drawCard(ctx, id, W, H, face, t = 0){
       poly(ctx, [[fx - pw*.16, fy + ph*.05],[fx - pw*.1, fy - ph*.16],[fx, fy - ph*.22],[fx + pw*.1, fy - ph*.16],[fx + pw*.17, fy + ph*.05],[fx + pw*.1, fy + ph*.02],[fx - pw*.1, fy + ph*.02]], '#08070b');
       ell(ctx, fx, fy - ph*.14, pw*.05, ph*.03, '#000');
       ctx.strokeStyle = '#cfc8b8'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(fx - pw*.2, fy); ctx.lineTo(fx - pw*.12, fy - ph*.04); ctx.moveTo(fx + pw*.2, fy - ph*.02); ctx.lineTo(fx + pw*.13, fy - ph*.05); ctx.stroke(); break; }
+    case 'magi': { // a robed figure with a staff, and the shadows of many hands reaching from the hem
+      for (let i=0;i<7;i++){ const a = t/900 + i*.9; ell(ctx, cx + Math.cos(a)*pw*.22, py + ph*.42 + Math.sin(a*.6)*ph*.08, pw*.14, ph*.05, 'rgba(154,134,224,.06)'); }
+      poly(ctx, [[cx - pw*.22, gy],[cx - pw*.12, py + ph*.28],[cx, py + ph*.2],[cx + pw*.12, py + ph*.28],[cx + pw*.22, gy]], '#0a0810'); ell(ctx, cx, py + ph*.26, pw*.06, ph*.035, '#000');
+      ctx.strokeStyle = '#6b5a8a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx + pw*.2, gy); ctx.lineTo(cx + pw*.24, py + ph*.14); ctx.stroke(); ell(ctx, cx + pw*.24, py + ph*.13, pw*.03, pw*.03, `rgba(201,187,255,${.5 + Math.sin(t/300)*.3})`);
+      for (let i=0;i<6;i++){ const a = i/6*3.14 + 3.14, r = pw*.28; ctx.strokeStyle = 'rgba(154,134,224,.35)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(cx, gy - ph*.02); ctx.quadraticCurveTo(cx + Math.cos(a)*r*.6, gy - ph*.06, cx + Math.cos(a)*r, gy + Math.sin(a)*ph*.04 - ph*.02 + Math.sin(t/500 + i)*2); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(201,187,255,.6)'; ctx.fillRect(cx - pw*.02, py + ph*.255, pw*.012, ph*.006); ctx.fillRect(cx + pw*.01, py + ph*.255, pw*.012, ph*.006); break; }
     case 'herald': { poly(ctx, [[cx - pw*.3, gy],[cx - pw*.3, py + ph*.2],[cx - pw*.12, py + ph*.06],[cx + pw*.12, py + ph*.06],[cx + pw*.3, py + ph*.2],[cx + pw*.3, gy],[cx + pw*.22, gy],[cx + pw*.22, py + ph*.26],[cx, py + ph*.16],[cx - pw*.22, py + ph*.26],[cx - pw*.22, gy]], '#0a0c0a');
       ctx.fillStyle = '#000'; ctx.fillRect(cx - pw*.22, py + ph*.16, pw*.44, gy - py - ph*.16);
       const hx = cx, top = py + ph*.34; poly(ctx, [[hx - pw*.1, gy],[hx - pw*.08, top + ph*.12],[hx, top + ph*.08],[hx + pw*.08, top + ph*.12],[hx + pw*.1, gy]], '#1e2420');

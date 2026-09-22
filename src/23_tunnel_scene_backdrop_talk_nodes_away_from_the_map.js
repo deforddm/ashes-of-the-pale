@@ -70,3 +70,68 @@ function drawPlain(cv, kind, t){
   (typeof SQUAD === 'function' && S ? SQUAD() : PORDER).forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.9, 2.1, t, {phase:i, dir:1}));
   const v = ctx.createRadialGradient(W/2, H*.55, H*.3, W/2, H*.55, W*.75); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1, kind === 'plain_night' ? 'rgba(0,0,0,.85)' : 'rgba(0,0,0,.6)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
 }
+
+/* Darujhistan, for Chapter 3 talk nodes: the street, the Phoenix Inn, the cellar under the dig, the dye-shop room, a rooftop at dawn */
+function drawCity(cv, kind, t){
+  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, fl = .85 + Math.sin(t/140)*.06 + Math.sin(t/53)*.04;
+  const squad = (typeof SQUAD === 'function' && S ? SQUAD() : PORDER);
+  ctx.fillStyle = '#060505'; ctx.fillRect(0,0,W,H);
+  if (kind === 'inn') {
+    const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#1a120c'); g.addColorStop(1,'#0a0705'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#2a1c10'; for (let i=0;i<4;i++) ctx.fillRect(0, H*.08 + i*H*.16, W, 6); // beams
+    ctx.fillStyle = '#1e140c'; ctx.fillRect(0, H*.7, W, H*.3); ctx.strokeStyle = 'rgba(0,0,0,.4)'; for (let i=0;i<9;i++){ ctx.beginPath(); ctx.moveTo(0, H*.7 + i*H*.035); ctx.lineTo(W, H*.7 + i*H*.035); ctx.stroke(); } // floorboards
+    // the bar, bottles, a hearth to the right
+    ctx.fillStyle = '#3a2a1a'; ctx.fillRect(W*.02, H*.5, W*.34, H*.08); ctx.fillStyle = '#26190f'; ctx.fillRect(W*.02, H*.58, W*.34, H*.2);
+    for (let i=0;i<9;i++){ ctx.fillStyle = ['#4a6a3a','#6a3a2a','#3a3a5a'][i%3]; ctx.fillRect(W*.04 + i*W*.035, H*.36 + hash(i,2)*8, 8, 24 - hash(i,3)*8); }
+    glow(ctx, W*.86, H*.62, W*.3, '#e8923a', .4*fl); ctx.fillStyle = '#1a1210'; ctx.fillRect(W*.78, H*.4, W*.18, H*.32); ctx.fillStyle = '#0a0605'; ctx.fillRect(W*.81, H*.46, W*.12, H*.26);
+    poly(ctx, [[W*.84, H*.72],[W*.9, H*.72],[W*.87 + Math.sin(t/90)*4, H*.72 - 30*fl]], '#ffb35a'); poly(ctx, [[W*.855, H*.72],[W*.885, H*.72],[W*.87 + Math.sin(t/70)*2, H*.72 - 16*fl]], '#fff1c2');
+    // tables and candles
+    [[W*.5, H*.66],[W*.28, H*.8]].forEach(([x,y]) => { ell(ctx, x, y, 44, 12, '#2e2014'); ctx.fillStyle = '#1c130b'; ctx.fillRect(x-4, y, 8, 20); ell(ctx, x+18, y-6, 2, 5, '#e8d8a8'); glow(ctx, x+18, y-10, 40, '#ffb060', .3*fl); });
+    [['kruppe', W*.42, H*.9, 1], ['crokus', W*.56, H*.84, -1], ['murillio', W*.66, H*.92, -1], ['coll', W*.16, H*.72, 1]].forEach(([k,x,y,d], i) => drawFigure(ctx, k, x, y, 2.3, t, {still:true, dir:d, phase:i}));
+    squad.slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.78 + i*30, H*.98, 2.1, t, {phase:i, dir:-1}));
+  } else if (kind === 'cellar') {
+    const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0a0908'); g.addColorStop(1,'#14100d'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 1; for (let r=0;r<12;r++) for (let c=0;c<14;c++){ ctx.strokeRect(c*W/14 + (r%2)*W/28, r*H/12, W/14, H/12); } // cut stone
+    // gas conduit: a bronze pipe along the back wall, blue seep at the joints
+    ctx.fillStyle = '#4a3a22'; ctx.fillRect(0, H*.3, W, 14); ctx.fillStyle = '#6b5a3c'; ctx.fillRect(0, H*.3, W, 3);
+    for (let i=0;i<5;i++){ const x = W*.1 + i*W*.2; ctx.fillStyle = '#3a2c18'; ctx.fillRect(x-6, H*.3-4, 12, 22); glow(ctx, x, H*.3 + 7, 30, '#6aa8ff', .12 + Math.sin(t/300 + i)*.06); }
+    // crates with seals, a lantern, the hole above
+    for (let i=0;i<6;i++){ const x = W*.55 + (i%3)*52, y = H*.62 + Math.floor(i/3)*-30; ctx.fillStyle = '#3a2c1c'; ctx.fillRect(x, y, 46, 28); ctx.fillStyle = '#6b5a3c'; ctx.fillRect(x, y, 46, 4); ctx.fillStyle = '#8fa38a'; ctx.fillRect(x+16, y+10, 14, 9); }
+    ell(ctx, W*.3, H*.2, 60, 14, '#000'); ctx.fillStyle = 'rgba(90,140,210,.12)'; ell(ctx, W*.3, H*.2, 50, 10, 'rgba(90,140,210,.12)');
+    ell(ctx, W*.22, H*.72, 5, 10, '#e8d8a8'); glow(ctx, W*.22, H*.66, W*.35, '#e8923a', .35*fl);
+    [['fiddler', W*.4, H*.9, -1], ['hedge', W*.5, H*.84, 1]].forEach(([k,x,y,d], i) => drawFigure(ctx, k, x, y, 2.3, t, {still:true, dir:d, phase:i}));
+    squad.slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.1 + i*34, H*.97, 2.1, t, {phase:i, dir:1}));
+  } else if (kind === 'room') {
+    const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#120e0c'); g.addColorStop(1,'#080606'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    // skeins hung to dry, blue and madder
+    for (let i=0;i<12;i++){ const x = W*.06 + i*W*.08, h = 40 + hash(i,4)*50; ctx.fillStyle = i%3 === 0 ? '#2a3a6a' : i%3 === 1 ? '#6a2a2a' : '#3a4a7a'; ctx.fillRect(x, H*.06, 14, h); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x+9, H*.06, 5, h); }
+    ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, H*.06); ctx.lineTo(W, H*.06); ctx.stroke();
+    ctx.fillStyle = '#1e140c'; ctx.fillRect(0, H*.72, W, H*.28);
+    // one table, one lamp, one chair
+    ctx.fillStyle = '#3a2a1a'; ctx.fillRect(W*.4, H*.6, W*.2, H*.05); ctx.fillStyle = '#26190f'; ctx.fillRect(W*.42, H*.65, W*.02, H*.2); ctx.fillRect(W*.56, H*.65, W*.02, H*.2);
+    ctx.fillStyle = '#2a1e12'; ctx.fillRect(W*.66, H*.56, W*.06, H*.3); ctx.fillRect(W*.66, H*.56, W*.1, H*.03);
+    ell(ctx, W*.5, H*.56, 4, 8, '#e8d8a8'); glow(ctx, W*.5, H*.5, W*.32, '#ffb060', .4*fl);
+    drawFigure(ctx, 'claw', W*.7, H*.9, 2.5, t, {still:true, dir:-1});
+    squad.slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.18 + i*36, H*.97, 2.1, t, {phase:i, dir:1}));
+  } else {
+    // the street or the roof: night sky, Moon's Spawn over the lake, roofs, blue lamps
+    const dawn = kind === 'roof';
+    const sky = ctx.createLinearGradient(0,0,0,H*.6); if (dawn) { sky.addColorStop(0,'#1a1a2a'); sky.addColorStop(.7,'#4a3a4a'); sky.addColorStop(1,'#a06a50'); } else { sky.addColorStop(0,'#04040a'); sky.addColorStop(1,'#10121e'); }
+    ctx.fillStyle = sky; ctx.fillRect(0,0,W,H*.6);
+    if (!dawn) { ctx.fillStyle = 'rgba(220,220,240,.6)'; for (let i=0;i<50;i++) ctx.fillRect(hash(i,41)*W, hash(i,42)*H*.5, 1, 1); }
+    // Moon's Spawn, hanging
+    const mx = W*.74, my = H*.2 + Math.sin(t/4000)*2; glow(ctx, mx, my, 70, dawn ? '#6a4a5a' : '#2a2a3a', .5);
+    poly(ctx, [[mx-38,my+14],[mx-30,my-22],[mx-8,my-34],[mx+20,my-30],[mx+40,my-8],[mx+34,my+18],[mx+8,my+28],[mx-22,my+24]], dawn ? '#14101a' : '#08080c');
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; ell(ctx, mx-6, my+4, 30, 22, 'rgba(0,0,0,.35)'); for (let i=0;i<6;i++){ ctx.fillStyle = `rgba(200,180,120,${.15 + hash(i,9)*.2})`; ctx.fillRect(mx - 24 + hash(i,10)*44, my - 12 + hash(i,11)*28, 1.5, 1.5); }
+    // the lake, a line of it, and the far shore
+    ctx.fillStyle = dawn ? '#3a3a4a' : '#0c1018'; ctx.fillRect(0, H*.52, W, H*.1); ctx.fillStyle = dawn ? 'rgba(200,140,120,.15)' : 'rgba(90,140,210,.12)'; for (let i=0;i<20;i++) ctx.fillRect(hash(i,12)*W, H*.53 + hash(i,13)*H*.08, 10 + hash(i,14)*20, 1);
+    // roofs, stepped, then the street or the near roof
+    for (let i=0;i<12;i++){ const x = i*W/11 - 10, h = H*.12 + hash(i,15)*H*.18, w = W/11 + 14; ctx.fillStyle = dawn ? (i%2 ? '#241c22' : '#1c161c') : (i%2 ? '#0c0a0e' : '#100d12'); poly(ctx, [[x, H*.62],[x, H*.62 - h],[x + w*.5, H*.62 - h - 18],[x + w, H*.62 - h],[x + w, H*.62]], ctx.fillStyle); if (!dawn && hash(i,16) > .5) { ctx.fillStyle = 'rgba(232,192,115,.25)'; ctx.fillRect(x + w*.4, H*.62 - h*.5, 6, 8); } }
+    if (dawn) { ctx.fillStyle = '#1e1a1e'; ctx.fillRect(0, H*.66, W, H*.34); ctx.strokeStyle = 'rgba(0,0,0,.5)'; for (let r=0;r<6;r++){ ctx.beginPath(); ctx.moveTo(0, H*.66 + r*H*.06); ctx.lineTo(W, H*.66 + r*H*.06); ctx.stroke(); } for (let i=0;i<30;i++) ell(ctx, hash(i,17)*W, H*.7 + hash(i,18)*H*.3, 8, 3, 'rgba(120,130,150,.12)');
+      drawFigure(ctx, 'assassin', W*.9, H*.66, 1.6, t, {still:true, dir:-1, alpha:.55});
+    } else { ctx.fillStyle = '#16161a'; ctx.fillRect(0, H*.62, W, H*.38); ctx.strokeStyle = 'rgba(0,0,0,.45)'; for (let i=0;i<40;i++){ ctx.beginPath(); ctx.ellipse(hash(i,19)*W, H*.66 + hash(i,20)*H*.34, 9, 4, 0, 0, 7); ctx.stroke(); }
+      for (let i=0;i<4;i++){ const x = W*.1 + i*W*.27, y = H*.62; ctx.fillStyle = '#1a1a1c'; ctx.fillRect(x-2, y-46, 4, 46); ctx.fillStyle = '#2e2e32'; ctx.fillRect(x-6, y-54, 12, 10); ctx.fillStyle = `rgba(160,210,255,${.7 + Math.sin(t/230 + i)*.2})`; ctx.fillRect(x-3, y-52, 6, 6); glow(ctx, x, y-48, 60, '#6aa8ff', .3*fl); ctx.fillStyle = 'rgba(90,140,210,.08)'; ell(ctx, x, y+10, 40, 10, 'rgba(90,140,210,.08)'); } }
+    squad.forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.92, 2.1, t, {phase:i, dir:1}));
+  }
+  const v = ctx.createRadialGradient(W/2, H*.55, H*.3, W/2, H*.55, W*.72); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.8)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
+}
