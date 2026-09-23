@@ -53,6 +53,7 @@ function drawInterior(cv, kind, t){
 function drawPlain(cv, kind, t){
   const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, hz = H*.62;
   const sky = ctx.createLinearGradient(0,0,0,hz);
+  const hills = kind.startsWith('hills'); if (hills) kind = kind === 'hills' ? 'plain' : kind === 'hills_dusk' ? 'plain_dusk' : 'plain_night';
   if (kind === 'plain_dusk') { sky.addColorStop(0,'#1a1218'); sky.addColorStop(.6,'#5a2a1e'); sky.addColorStop(1,'#c9713a'); }
   else if (kind === 'plain_night') { sky.addColorStop(0,'#04040a'); sky.addColorStop(1,'#0e0d16'); }
   else { sky.addColorStop(0,'#2a2e3a'); sky.addColorStop(.7,'#6b6a62'); sky.addColorStop(1,'#a8a08a'); }
@@ -64,8 +65,14 @@ function drawPlain(cv, kind, t){
   const gr = ctx.createLinearGradient(0,hz,0,H); gr.addColorStop(0, kind === 'plain_night' ? '#141a10' : kind === 'plain_dusk' ? '#3a3a20' : '#4a5232'); gr.addColorStop(1, kind === 'plain_night' ? '#080a06' : '#26301c'); ctx.fillStyle = gr; ctx.fillRect(0,hz,W,H-hz);
   ctx.strokeStyle = kind === 'plain_night' ? 'rgba(80,100,60,.35)' : 'rgba(140,160,80,.45)'; ctx.lineWidth = 1;
   for (let i=0;i<140;i++){ const x = hash(i,51)*W, y = hz + 4 + hash(i,52)*(H-hz), h = 4 + hash(i,53)*10 * (1 + (y-hz)/(H-hz)); ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.sin(t/900 + i)*2, y - h*.6, x + Math.sin(t/700 + i)*3, y - h); ctx.stroke(); }
+  if (hills) { // folded hills on the horizon, barrow mounds, and at night a grey tear of light on the far slope
+    for (let i=0;i<4;i++){ const k = i/4; ctx.fillStyle = kind === 'plain_night' ? `rgba(14,16,10,${.9 - k*.15})` : kind === 'plain_dusk' ? `rgba(70,50,30,${.9 - k*.15})` : `rgba(60,70,40,${.9 - k*.15})`; ctx.beginPath(); ctx.moveTo(0, hz + 4 + i*8); for (let x=0;x<=W;x+=20) ctx.lineTo(x, hz + 4 + i*8 - Math.abs(Math.sin(x/90 + i*1.7))*(26 - i*5)); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill(); }
+    [[W*.3, hz+30, 40],[W*.62, hz+22, 30],[W*.8, hz+40, 50]].forEach(([x,y,r]) => { ell(ctx, x, y, r, r*.32, kind === 'plain_night' ? '#0c0e08' : '#3a4028'); for (let i=0;i<5;i++) ctx.fillRect(x - r*.7 + i*r*.35, y - r*.2 + hash(i,x)*4, 3, 5); });
+    if (kind === 'plain_night' && S && S.f && S.f.c5_night && !S.f.c5_rentFought) { const rx = W*.72, ry = hz - 4; glow(ctx, rx, ry + 10, 70, '#9a86e0', .3 + Math.sin(t/200)*.08); ctx.strokeStyle = `rgba(210,205,230,${.7 + Math.sin(t/90)*.2})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(rx - 6, ry - 30); ctx.quadraticCurveTo(rx + 8, ry - 5, rx - 4, ry + 20); ctx.stroke(); }
+  } else {
   // the wagon, small, to the right
   ctx.fillStyle = '#2a2018'; ctx.fillRect(W*.72, hz + 10, 60, 22); ctx.fillStyle = '#4a3a26'; ctx.fillRect(W*.72, hz + 2, 60, 10); ell(ctx, W*.72 + 12, hz + 34, 7, 7, '#15100a'); ell(ctx, W*.72 + 48, hz + 34, 7, 7, '#15100a');
+  }
   // the squad walking, small
   (typeof SQUAD === 'function' && S ? SQUAD() : PORDER).forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.9, 2.1, t, {phase:i, dir:1}));
   const v = ctx.createRadialGradient(W/2, H*.55, H*.3, W/2, H*.55, W*.75); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1, kind === 'plain_night' ? 'rgba(0,0,0,.85)' : 'rgba(0,0,0,.6)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
