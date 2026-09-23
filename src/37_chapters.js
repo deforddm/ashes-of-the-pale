@@ -88,10 +88,13 @@ function showChapterEnd(){
     if (S.f.cadreTrust) extra.push('Tattersail knows what the Fourth is for.'); if (S.f.clawFavour) extra.push('The Claw remembers a favour. That is not the same as owing one.');
     if (S.f.c1_refusedKnife) extra.push('You turned down a Claw\'s knife. Brisk noticed.');
   }
-  const next = CHAPTERS[n + 1];
-  const title = n === 0 ? 'End of the prologue' : `End of Chapter ${CHAPTERS[n].number}`;
+  const CH = CHAPTERS[n], safe = (f, d) => { try { const v = f(); return v == null ? d : v; } catch(e) { return d; } };
+  if (n > 0 && CH && CH.extras) extra.push(...safe(() => CH.extras(), []).filter(Boolean)); // the chapter's own lines, after the engine's
+  const next = CHAPTERS[n + 1], epi = n === 7; // there is no Chapter Eight: the last end screen opens the epilogue
+  const title = n === 0 ? 'End of the prologue' : `End of Chapter ${CH ? CH.number : n}`;
+  const cap = n === 0 ? 'The Fourth comes up out of the dark. All five.' : CH && CH.endCap ? safe(() => CH.endCap(), 'Morning finds the Fourth still standing, which is the whole of the job.') : 'Morning finds the Fourth still standing, which is the whole of the job.';
   $('#app').innerHTML = `<div class="end">
-    <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${n === 0 ? 'The Fourth comes up out of the dark. All five.' : 'Morning finds the Fourth still standing, which is the whole of the job.'}</div></div>
+    <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>
     <div class="sub" style="margin-top:12px">${title}</div>
     <h2>${E[0]}</h2>
     <p class="narr" style="margin:0">${E[1]}</p>
@@ -99,9 +102,10 @@ function showChapterEnd(){
     <div class="kv" style="margin:16px 0">${SQUAD().slice(1).map(id => `<span>${TPL[id].name}</span><span class="pips">${loyLabel(S.loy[id])}</span>`).join('')}
       <span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.card ? `<span>Card drawn</span><span>${CARDS[S.card].name}</span>` : ''}</div>
     <p class="fine">${CHTEASE[n] || ''}</p>
-    <div class="row" style="margin-top:14px">${next ? `<button class="btn primary" id="bNext">Chapter ${next.number}: ${next.title}</button>` : ''}<button class="btn" id="bSq">Squad</button><button class="btn" id="bSet2">Settings</button><button class="btn" id="bAgain">Title</button></div></div>`;
-  G.sceneKind = 'camp';
-  if (next) $('#bNext').onclick = () => { AUDIO.play('click'); startChapter(n + 1); };
+    <div class="row" style="margin-top:14px">${epi ? `<button class="btn primary" id="bEpi">Epilogue</button>` : next ? `<button class="btn primary" id="bNext">Chapter ${next.number}: ${next.title}</button>` : ''}<button class="btn" id="bSq">Squad</button><button class="btn" id="bSet2">Settings</button><button class="btn" id="bAgain">Title</button></div></div>`;
+  G.sceneKind = (CH && CH.endScene) || (n === 6 ? 'fete_garden' : n === 7 ? 'quorl_hill' : 'camp');
+  if (epi) $('#bEpi').onclick = () => { AUDIO.play('click'); showFinale(0); };
+  else if (next) $('#bNext').onclick = () => { AUDIO.play('click'); startChapter(n + 1); };
   $('#bSq').onclick = () => { AUDIO.play('click'); openChars(0); };
   $('#bSet2').onclick = () => { AUDIO.play('click'); openSettings(); };
   $('#bAgain').onclick = () => { AUDIO.play('click'); showTitle(); };
@@ -122,11 +126,64 @@ function showChapterIntro(){
   <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${I.cap}</div></div>
   <div class="narr">${I.paras.map(p => fmt(p)).join('')}</div>
   <div class="row"><button class="btn primary" id="bGo">${I.go}</button><button class="btn" id="bSq">The squad</button></div>`;
-  G.sceneKind = CH.area.decor === 'pale' ? 'camp' : (CH.area.decor || '').startsWith('plain') || (CH.area.decor || '').startsWith('hills') ? CH.area.decor : (CH.area.decor || '').startsWith('city') ? 'city_street' : CH.area.decor === 'roof_night' ? 'roof_night' : 'camp_night';
+  const dec = CH.area.decor || '';
+  G.sceneKind = I.scene || (S.chapter === 6 ? 'fete_street' : S.chapter === 7 ? 'lakefront_dawn' : dec === 'pale' ? 'camp' : dec.startsWith('plain') || dec.startsWith('hills') ? dec : dec.startsWith('city') ? 'city_street' : dec === 'roof_night' ? 'roof_night' : dec.startsWith('estate') ? 'fete_garden' : dec === 'lakefront' ? 'lakefront_dawn' : 'camp_night');
+  AUDIO.setScene(sceneAmb(G.sceneKind, 'explore'));
   $('#bGo').onclick = () => { AUDIO.play('click'); $('#bGo').disabled = true; startExplore(CH.area.id); if (I.node) talk(I.node); };
   $('#bSq').onclick = () => { AUDIO.play('click'); openChars(0); };
   bindHud();
 }
+/* ============ the finale: the road taken, a page per squadmate, the sergeant, and the end of the book ============ */
+const FIN_IDS = ['brisk','kettle','tuft','ohl','ellis'];
+let finAnim = null;
+function finKey(){ return S.chapters[7] || S.f.c7_key || 'outlaw'; }
+function finCall(f, ...a){ try { return f ? f(...a) : null; } catch(e) { console.warn('finale', e); return null; } }
+function finGone(id, key){ const F = CHAPTERS[7] && CHAPTERS[7].finale; if (F && F.gone) return finCall(F.gone, id, key);
+  return S.dead && S.dead[id] ? {title:'Fallen', txt:`${TPL[id].name} did not get up. The Fourth carried the name the rest of the way.`} : null; } // no finale text: only the dead get a page
+function finPages(){
+  const key = finKey(), P = [{k:'road'}];
+  S.squad.filter(id => id !== 'sgt').forEach(id => P.push({k:'fate', id}));
+  FIN_IDS.filter(id => !S.squad.includes(id)).forEach(id => { const g = finGone(id, key); if (g) P.push({k:'gone', id, g}); });
+  P.push({k:'fate', id:'sgt'}, {k:'end'}); return P;
+}
+function showFinale(i = 0){
+  const P = finPages(); i = clamp(i|0, 0, P.length - 1); const pg = P[i], key = finKey(), F = (CHAPTERS[7] && CHAPTERS[7].finale) || {};
+  S.scene = 'finale'; S.finPage = i; S.node = null; save();
+  view = 'finale'; $('#sheet').hidden = true; B = null; titleAnim = null; finAnim = null; AUDIO.setScene('end');
+  const E7 = (CHEND[7] || {})[key] || ['The road', ''];
+  let body = '';
+  if (pg.k === 'road') { const E = (F.endings && F.endings[key]) || {title:E7[0], scene:(CHAPTERS[7] && CHAPTERS[7].endScene) || 'quorl_hill', paras:[E7[1]].filter(Boolean)};
+    G.sceneKind = E.scene || 'quorl_hill';
+    body = `<div class="scene"><canvas id="scv" width="560" height="240"></canvas></div><div class="fin-k">Epilogue</div><h1 class="fin-title">${E.title || E7[0]}</h1><div class="narr">${(E.paras || []).map(p => fmt(p)).join('')}</div>`; }
+  else if (pg.k === 'fate' || pg.k === 'gone') { const id = pg.id, sgt = id === 'sgt', dead = pg.k === 'gone' && S.dead && S.dead[id];
+    const f = pg.k === 'gone' ? pg.g : (finCall(F.fate, id, key) || {title: sgt ? 'The sergeant' : TPL[id].role, txt: sgt ? TPL.sgt.quest : TPL[id].quest});
+    const where = dead ? [S.dead[id].where, CHAPTERS[S.dead[id].ch] ? `Chapter ${CHAPTERS[S.dead[id].ch].number}` : ''].filter(Boolean).join(' · ') : '';
+    body = `<div class="fin-k">${sgt ? 'The sergeant' : pg.k === 'gone' ? (dead ? 'The fallen' : 'Gone their own way') : 'The Fourth'}</div>
+      <div class="fin-card"><div class="fin-por ${pg.k === 'gone' ? 'gone' : ''}"><canvas id="fpc" width="400" height="520" aria-hidden="true"></canvas>${pg.k === 'gone' ? `<span class="fin-mark ${dead ? '' : 'away'}">${dead ? '†' : 'gone'}</span>` : ''}</div>
+        <div class="fin-who"><h2>${esc(NAME(id))}</h2><div class="r">${sgt ? 'Sergeant · Fourth Squad, Seventh Company' : TPL[id].role}</div>${sgt ? '' : pg.k === 'gone' ? (where ? `<div class="pips">${esc(where)}</div>` : '') : `<div class="pips">${loyLabel(S.loy[id] || 0)}</div>`}</div></div>
+      <h3 class="fin-h">${f.title || ''}</h3><div class="narr fin-txt">${fmt(f.txt || '')}</div>`;
+    finAnim = t => { const cv = $('#fpc'); if (!cv) { finAnim = null; return; } drawPortrait(cv.getContext('2d'), id, 400, 520, t); }; }
+  else { const coda = finCall(F.coda, key) || [];
+    const road = [`<li><span>Prologue</span><b>${((CHEND[0] || {})[S.chapters[0]] || ['—'])[0]}</b></li>`].concat([1,2,3,4,5,6,7].map(n => `<li><span>Chapter ${n} · ${CHAPTERS[n] ? CHAPTERS[n].title : '—'}</span><b>${((CHEND[n] || {})[S.chapters[n]] || ['—'])[0]}</b></li>`)).join('');
+    const dead = Object.keys(S.dead || {});
+    body = `<div class="fin-k">The end</div>${coda.length ? `<div class="narr">${coda.map(p => fmt(p)).join('')}</div>` : ''}
+      <div class="fin-sum"><h3>The Fourth's road</h3><ol class="fin-road">${road}</ol>
+        <h3>The dead</h3>${dead.length ? `<ul class="fin-dead">${dead.map(id => `<li><b>${esc(NAME(id))}</b>${S.dead[id].where ? ` — ${esc(S.dead[id].where)}` : ''}</li>`).join('')}</ul>` : `<p class="fine">None of the Fourth. Every one of them came up out of the dark.</p>`}
+        <div class="kv"><span>Ohl's list</span><span>${listCount()} names</span><span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span></div></div>
+      <div class="fin-endline">The End of <em>Gardens of the Moon</em></div>
+      <p class="fine fin-credit">The Malazan world and its canon characters belong to Steven Erikson. With thanks to him for the book, the Bridgeburners, and the long road; the Fourth only walked beside it.</p>`; }
+  const last = i === P.length - 1;
+  $('#app').innerHTML = `<div class="fin" id="fin">${body}
+    <div class="fin-nav ${last ? 'last' : ''}"><button class="btn" id="fBack">Back</button><span class="fin-pg">${i + 1} / ${P.length}</span>${last ? `<button class="btn" id="fSq">The squad</button><button class="btn primary" id="fTitle">Title</button>` : `<button class="btn primary" id="fNext">Next</button>`}</div></div>`;
+  window.scrollTo(0, 0);
+  $('#fBack').onclick = () => { AUDIO.play('click'); finGo(-1); };
+  if (last) { $('#fSq').onclick = () => { AUDIO.play('click'); openChars(0); }; $('#fTitle').onclick = () => { AUDIO.play('click'); showTitle(); }; }
+  else $('#fNext').onclick = () => { AUDIO.play('click'); finGo(1); };
+  let sx = null, sy = null; const el = $('#fin'); el.ontouchstart = e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; };
+  el.ontouchend = e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null; if (Math.abs(dx) > 70 && Math.abs(dy) < 50) { AUDIO.play('flip'); finGo(dx < 0 ? 1 : -1); } };
+}
+function finGo(d){ const i = (S.finPage || 0) + d, n = finPages().length; if (i < 0) { S.scene = 'chend'; save(); return showChapterEnd(); } if (i < n) showFinale(i); }
+window.addEventListener('keydown', e => { if (view !== 'finale' || !$('#chars').hidden || !$('#settings').hidden || !$('#modal').hidden) return; if (e.key === 'ArrowRight') finGo(1); else if (e.key === 'ArrowLeft') finGo(-1); });
 /* quest lines per area (chapter content sets flags; the engine reads them) */
 const QUESTS = {
   plain_road:()=> S.f.c2_barrowFought ? 'East, to the wagon road\'s end' : S.f.c2_seth ? 'East. Sethand says do not go into the barrow.' : 'Talk to the guide, Sethand',

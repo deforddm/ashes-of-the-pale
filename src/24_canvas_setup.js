@@ -16,7 +16,7 @@ function fitCanvas(cols, rows){
     if (x < 0 || y < 0 || x >= cols || y >= rows) return;
     if (view === 'explore') exploreTap(x, y); else if (view === 'battle') battleTap(x, y);
   };
-  if (view === 'explore') { const a = AREA(); prerender(a.map, cols, rows, a.decor === 'camp_night' || a.decor === 'plain_night' || a.decor === 'city_night' || a.decor === 'cellar' || a.decor === 'roof_night' || a.decor === 'hills_night', false, a.decor); } else if (view === 'battle' && B) prerender(B.def.map, 8, 10, B.def.dark, !B.def.open && !B.def.style, B.def.style || (B.def.open ? 'plain' : '')); 
+  if (view === 'explore') { const a = AREA(); prerender(a.map, cols, rows, a.decor === 'camp_night' || a.decor === 'plain_night' || a.decor === 'city_night' || a.decor === 'cellar' || a.decor === 'roof_night' || a.decor === 'hills_night' || a.decor === 'estate_night' || a.decor === 'estate_terrace' || a.decor === 'estate_storm', false, a.decor); } else if (view === 'battle' && B) prerender(B.def.map, 8, 10, B.def.dark, !B.def.open && !B.def.style, B.def.style || (B.def.open ? 'plain' : '')); 
 }
 window.addEventListener('resize', () => { if (view === 'explore') fitCanvas(ACOLS(),AROWS()); else if (view === 'battle') fitCanvas(8,10); });
 function shakeMap(){ if (!SET.shake || REDUCE()) return; const w = $('.cvwrap'); if (!w) return; w.classList.remove('shake'); void w.offsetWidth; w.classList.add('shake'); }

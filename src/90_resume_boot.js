@@ -3,6 +3,7 @@ function resume(){
   $('#sheet').hidden = true; $('#modal').hidden = true; notes = []; titleAnim = null;
   migrate(S);
   if (S.scene === 'end' || S.scene === 'chend') return showChapterEnd();
+  if (S.scene === 'finale') return showFinale(S.finPage || 0);
   if (S.scene === 'chintro') return showChapterIntro();
   if (S.scene === 'intro') { showIntro(); if (S.node) talk(S.node); return; }
   if (S.scene === 'battle') return startBattle(S.battle, S.bopt || {});
@@ -12,7 +13,8 @@ function resume(){
 function loop(t){
   if (view === 'explore') drawExplore(t); else if (view === 'battle') drawBattle(t);
   else if (view === 'title' && titleAnim) titleAnim();
-  const scv = $('#scv'); if (scv && (view === 'scene' || view === 'intro' || view === 'end')) { if (G.sceneKind === 'camp' || G.sceneKind === 'camp_night') drawCamp(scv, t, G.sceneKind === 'camp_night'); else if (G.sceneKind === 'tent' || G.sceneKind === 'fire') drawInterior(scv, G.sceneKind, t); else if (G.sceneKind && (G.sceneKind.startsWith('plain') || G.sceneKind.startsWith('hills'))) drawPlain(scv, G.sceneKind, t); else if (G.sceneKind && (G.sceneKind.startsWith('city') || ['inn','cellar','room','roof','roof_night'].includes(G.sceneKind))) drawCity(scv, G.sceneKind, t); else drawScene(scv, G.sceneKind, t); }
+  const scv = $('#scv'); if (scv && (view === 'scene' || view === 'intro' || view === 'end' || view === 'finale')) { if (FETE_SCENES.includes(G.sceneKind)) drawEstate(scv, G.sceneKind, t); else if (G.sceneKind === 'camp' || G.sceneKind === 'camp_night') drawCamp(scv, t, G.sceneKind === 'camp_night'); else if (G.sceneKind === 'tent' || G.sceneKind === 'fire') drawInterior(scv, G.sceneKind, t); else if (G.sceneKind && (G.sceneKind.startsWith('plain') || G.sceneKind.startsWith('hills'))) drawPlain(scv, G.sceneKind, t); else if (G.sceneKind && (G.sceneKind.startsWith('city') || ['inn','cellar','room','roof','roof_night'].includes(G.sceneKind))) drawCity(scv, G.sceneKind, t); else drawScene(scv, G.sceneKind, t); }
+  if (view === 'finale' && finAnim) finAnim(t);
   if (charAnim) charAnim(t);
   if (cardAnim) cardAnim();
   requestAnimationFrame(loop);
@@ -24,6 +26,8 @@ function start(data){
   if (typeof CH3 !== 'undefined') registerChapter(3, CH3);
   if (typeof CH4 !== 'undefined') registerChapter(4, CH4);
   if (typeof CH5 !== 'undefined') registerChapter(5, CH5);
+  if (typeof CH6 !== 'undefined') registerChapter(6, CH6);
+  if (typeof CH7 !== 'undefined') registerChapter(7, CH7);
   if (data && data.S) { S = migrate(data.S); resume(); } else showTitle();
   requestAnimationFrame(loop);
 }

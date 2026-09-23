@@ -14,7 +14,8 @@ const phantomDC = () => 13 + (B.warren.meanas > 1 ? 3 : 0);
 function blog(m){ B.log.unshift(m); B.log = B.log.slice(0,5); const el = $('#blog'); if (el) el.innerHTML = B.log.map(l => `<div>${l}</div>`).join(''); }
 function float(u, txt, col){ B.fx.push({kind:'txt', x:u.x, y:u.y, txt, col, t:performance.now()}); }
 function hurt(u, n){ if (u.side === 'p' && !u.ally && S.card === 'herald' && u.hp - n <= 0 && !B.used.herald) { B.used.herald = true; n = u.hp - 1; blog(`<em>The Herald turns its head.</em> ${u.name} stays standing at 1 health.`); }
-  u.hp = Math.max(0, u.hp - n); float(u, '−'+n, '#f08a7c'); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
+  if (u.immortal && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'holds', '#bfe8ff'); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // it does not fall
+  u.hp = Math.max(0, u.hp - n); if (!(u.immortal && u.hp === 1)) float(u, '−'+n, '#f08a7c'); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
   if (u.side === 'p') redFlash(); if (n >= 8) shakeMap();
   if (u.hp === 0) { u.deadAt = performance.now(); AUDIO.play('death'); blog(u.side === 'p' ? `<em>${u.name} goes down!</em>` : `${u.name} falls.`); } else AUDIO.play('hurt'); }
 function heal(u, n){ const before = u.hp; u.hp = Math.min(u.maxhp, u.hp + n); float(u, '+'+(u.hp-before), '#9fe0b8'); u.healed = performance.now(); }
@@ -28,6 +29,7 @@ function mkParty(id, x, y){
   // veteran picks and talents
   if (has(id,'iron')) u.maxhp += 6; if (has(id,'keen')) u.atk += 1; if (has(id,'fleet')) u.mv += 1; if (has(id,'nerve')) u.init += 1;
   ['quorl','shadowstep','mockra','argument','quickshot'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
+  if (B && B.def.nomagic && u.magic) { u.rng = 1; if (id === 'tuft') { u.dmg = [1,4,1]; u.verb = 'jabs a knife at'; } } // otataral: a knife, or the cudgel
   u.hp = u.maxhp; return u;
 }
 function mkFoe(k, x, y, extra=0){ const f = FOES[k]; return {id:k, kind:k, side:'e', ...f, maxhp:f.hp+extra, hp:f.hp+extra, col:'#d9695a', x, y}; }
@@ -35,9 +37,9 @@ function mkAlly(k, x, y){ const f = FOES[k]; return {id:'ally_' + k, kind:k, sid
 function freeNear(x, y, self){ if (free(x,y,self)) return {x,y}; for (let r=1;r<4;r++) for (const [dx,dy] of DIRS) { const nx = x+dx*r, ny = y+dy*r; if (free(nx,ny,self)) return {x:nx,y:ny}; } return null; }
 
 function startBattle(id, opt={}){
-  S.scene = 'battle'; S.battle = id; S.bopt = opt; S.node = null; S.bg = 'tunnel'; save();
-  const snap = JSON.stringify(S);
   const def = BATTLES[id];
+  S.scene = 'battle'; S.battle = id; S.bopt = opt; S.node = null; S.bg = 'tunnel'; if (def.mortal) S.f.lastFallen = []; save();
+  const snap = JSON.stringify(S);
   view = 'battle'; AUDIO.setScene(def.music || 'battle');
   B = {def, id, opt, snap, warren:def.warren, units:[], order:[], idx:-1, round:0, fires:[], fx:[], parts:[], log:[], used:{}, cur:null, moved:false, acted:false, mode:null, aim:null, busy:true, over:false, turn:0, anim:null};
   SQUAD().forEach((pid,i) => { const p = def.party[i] || def.party[def.party.length - 1]; const at = freeNear(p[0], p[1]) || {x:p[0], y:p[1]}; B.units.push(mkParty(pid, at.x, at.y)); });
@@ -58,6 +60,8 @@ function startBattle(id, opt={}){
   G.disp = {};
   fitCanvas(8, 10);
   if (opt.pre) { AUDIO.play('boom', .8); B.fx.push({kind:'boom', x:3.5, y:1, r:1, col:'#f2c46b', t:performance.now()}); sparks(3.5, 1, 30, '#f2c46b'); shakeMap(); foes().forEach(f => hurt(f, roll(1,10))); blog(`Kettle's sharper skips across the floor and goes off in the middle of them. The whole tunnel hears it.`); }
+  if (def.nomagic) blog(`<em>Otataral. The warrens are dead here.</em>`);
+  if (def.mortal) blog(`<em>Whoever falls here stays down.</em>`);
   if (def.objective) blog(`<em>${def.objective.text}</em>`);
   if (def.allies && def.allies.length) blog(`Others fight beside you tonight. They are not yours.`);
   if (B.surprise === 'p') blog(`Surprise: your squad moves first.`);
@@ -88,7 +92,7 @@ function nextTurn(){
   if (u.hp <= 0) { updBattleUI(); if (checkEnd()) return; return setTimeout(nextTurn, 600); }
   if (u.stun) { u.stun = false; blog(`${u.name} is dazed and loses the turn.`); updBattleUI(); return setTimeout(nextTurn, 800); }
   if (u.side === 'p' && !u.ally) { B.busy = false; B.mode = 'act'; updBattleUI(); }
-  else { B.busy = true; updBattleUI(); setTimeout(() => ai(u, B.turn), 550 * SET.speed); }
+  else { B.busy = true; updBattleUI(); const b0 = B; setTimeout(() => { if (B === b0) ai(u, B.turn); }, 550 * SET.speed); } // not if the battle was left or restarted meanwhile
 }
 function endTurn(){ if (!B || B.over) return; B.busy = true; B.mode = null; B.aim = null; setTimeout(nextTurn, 250); }
 function checkEnd(){
@@ -99,9 +103,15 @@ function checkEnd(){
   return false;
 }
 function win(){
-  const up = gainXP(B.def.xp);
+  const up = gainXP(B.def.xp), head = `${B.def.objective ? 'Held' : 'Victory'}. +${B.def.xp} experience.`;
+  if (B.def.mortal) { // the fallen stay down: the sergeant gets up with a scar, everyone else is dead
+    const fallen = B.units.filter(u => u.side === 'p' && !u.ally && u.hp <= 0).map(u => u.id);
+    if (fallen.includes('sgt')) S.f.sgtScar = 1;
+    const dead = fallen.filter(id => id !== 'sgt'); S.f.lastFallen = dead; dead.forEach(id => kill(id));
+    const names = dead.map(NAME), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
+    note(dead.length ? `${head} ${list} did not get up.` : `${head} Everyone is still breathing.`, dead.length ? 'bad' : 'good');
+  } else note(`${head} ${SQUAD().includes('ohl') ? 'Ohl patches up the squad' : 'The squad patches itself up'}; everyone is back on their feet.`, 'good');
   S.scene = 'talk'; save(); AUDIO.play('win');
-  note(`${B.def.objective ? 'Held' : 'Victory'}. +${B.def.xp} experience. Ohl patches up the squad; everyone is back on their feet.`, 'good');
   if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good');
   updBattleUI();
   talk(B.def.after);
@@ -158,7 +168,7 @@ const AB = {
     tiles:u=>B.units.filter(p => p.side === 'p' && !p.ally && p.hp <= 0 && cheb(u,p) <= 2),
     run(u,x,y){ const t = B.units.find(p => p.side === 'p' && p.hp <= 0 && p.x === x && p.y === y); if (!t) return; B.used.argument = 1; AUDIO.play('heal'); t.hp = 6; t.deadAt = null; t.healed = performance.now(); sparks(t.x, t.y, 20, '#9fe0b8', .5); blog(`${u.name} argues with Hood in Ehrlii. ${t.name} gets up, which settles it for now.`); }},
 };
-function abOk(u, k){ const a = AB[k]; if (a.item && S.inv[a.item] <= 0) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
+function abOk(u, k){ const a = AB[k]; if (a.strain && B && B.def.nomagic) return false; if (a.item && S.inv[a.item] <= 0) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
 function scatter(u, x, y, failOn, dist){
   const nat = d20() + (S.card === 'oponn' ? 1 : 0);
   if (nat <= failOn && !has(u.id,'longfuse')) { const [dx,dy] = DIRS[R(8)]; let nx = x, ny = y;
@@ -194,10 +204,11 @@ function attack(a, t, o={}){
   const hit = crit || (nat !== 1 && nat + bonus >= ac);
   const verb = o.verb || a.verb;
   const ranged = cheb(a, t) > 1;
-  if (ranged) B.fx.push({kind:'bolt', from:{x:a.x,y:a.y}, to:{x:t.x,y:t.y}, col:a.kind === 'tuft' ? '#9a86e0' : '#cfc8b8', t:performance.now(), dur:220, wob:a.kind === 'tuft'});
+  const lash = a.kind === 'tuft' && !B.def.nomagic;
+  if (ranged) B.fx.push({kind:'bolt', from:{x:a.x,y:a.y}, to:{x:t.x,y:t.y}, col:lash ? '#9a86e0' : '#cfc8b8', t:performance.now(), dur:220, wob:lash});
   else B.anim = {u:a, tx:t.x, ty:t.y, t0:performance.now()};
   a.facing = t.x >= a.x ? 1 : -1;
-  AUDIO.play(a.kind === 'tuft' ? 'shadow' : a.kind === 'kettle' || a.kind === 'xbow' ? 'bow' : hit ? 'sword' : 'miss');
+  AUDIO.play(lash ? 'shadow' : a.kind === 'kettle' || a.kind === 'xbow' ? 'bow' : hit ? 'sword' : 'miss');
   const math = SET.dice ? ` <span class="stat">(${nat}+${bonus} vs ${ac})</span>` : '';
   const tags = [o.aoo ? 'free attack' : '', fl ? 'flanking +2' : ''].filter(Boolean).join(', ');
   const tagTxt = tags ? ` <span class="stat">[${tags}]</span>` : '';
@@ -205,7 +216,9 @@ function attack(a, t, o={}){
   const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0);
   blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${tagTxt}${math}.`);
   if (crit) { shakeMap(); sparks(t.x, t.y, 16, '#f08a7c'); }
-  setTimeout(() => { hurt(t, dmg); updBattleUI(); }, ranged ? 200 * SET.speed : 140 * SET.speed);
+  const b0 = B; setTimeout(() => { if (B !== b0) return; hurt(t, dmg);
+    if (S.card === 'chains' && a.side === 'e' && t.side === 'p' && !t.ally && a.hp > 0) { hurt(a, 2); sparks(a.x, a.y, 10, '#9a9aa6', .5); blog(`<em>The chains bite back.</em> ${a.name} takes 2.`); }
+    updBattleUI(); }, ranged ? 200 * SET.speed : 140 * SET.speed);
   return {hit:true, dmg};
 }
 function castStrain(u, cost){
@@ -232,11 +245,12 @@ function battleTap(x, y){
   if (!B.moved && B.reach && B.reach.has(K(x,y)) && !(x === u.x && y === u.y)) moveCur(x, y);
 }
 async function moveCur(x, y){
-  const u = B.cur, path = pathFrom(B.reach, x, y); B.busy = true; B.reach = null;
+  const u = B.cur, path = pathFrom(B.reach, x, y), b0 = B; B.busy = true; B.reach = null;
   let stepped = 0;
   for (const st of path) {
     if (await opportunity(u, st)) break; // cut down mid-stride
-    u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; stepped++; AUDIO.play('step'); await wait(130); }
+    u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; stepped++; AUDIO.play('step'); await wait(130); if (B !== b0) return; }
+  if (B !== b0) return;
   B.mvLeft = Math.max(0, (B.mvLeft ?? u.mv) - (u.hp > 0 ? path.length : stepped)); // leftover movement stays usable this turn
   B.busy = false; B.moved = B.mvLeft <= 0; afterAct();
 }
@@ -247,7 +261,7 @@ async function opportunity(u, to){
     e.aooTurn = B.turn; e.facing = u.x >= e.x ? 1 : -1;
     blog(`<em>${u.name} steps away from ${e.name}.</em>`);
     attack(e, u, {aoo:true, verb:'takes a free swing at'}); updBattleUI(); await wait(420 * SET.speed);
-    if (u.hp <= 0) return true;
+    if (!B || u.hp <= 0) return true;
   }
   return false;
 }
@@ -270,11 +284,19 @@ function afterAct(){
 /* enemy AI */
 async function ai(u, turnId){
   if (!B || B.over || B.turn !== turnId) return;
+  const b0 = B, gone = () => B !== b0; // the battle was left or restarted while this turn was still playing out
   const inRange = () => foesOf(u).filter(p => cheb(u,p) <= u.rng);
   if (u.boss && u.kind === 'stone') { u.tc = (u.tc || 0) + 1; const adj = party().filter(p => cheb(u,p) === 1);
     if (u.tc % 3 === 0 && adj.length) { blog(`<em>The Stonebound slams the floor.</em> Stone and grief in every direction.`); AUDIO.play('slam'); shakeMap();
       B.fx.push({kind:'boom', x:u.x, y:u.y, r:1, col:'#a08de0', t:performance.now()}); sparks(u.x, u.y, 40, '#9a86e0'); adj.forEach(p => hurt(p, roll(2,6)));
-      await wait(900); if (!checkEnd()) endTurn(); else updBattleUI(); return; } }
+      await wait(900); if (gone()) return; if (!checkEnd()) endTurn(); else updBattleUI(); return; } }
+  if (u.ai === 'raest') { u.tc = (u.tc || 0) + 1; // the Tyrant: a lance of Omtose Phellack on odd turns, a slow walk on even ones
+    if (u.tc % 2 === 1) { const pool = party(), sq = pool.filter(p => !p.ally), tg = (sq.length ? sq : pool)[R((sq.length ? sq : pool).length)];
+      if (tg) { u.facing = tg.x >= u.x ? 1 : -1; blog(`<em>The Tyrant speaks a word of Omtose Phellack.</em> The air around ${tg.name} turns to knives.`); AUDIO.play('shadow'); AUDIO.play('slam');
+        B.fx.push({kind:'lance', from:{x:u.x,y:u.y}, to:{x:tg.x,y:tg.y}, col:'#bfe8ff', t:performance.now(), dur:1200}); await wait(420);
+        if (gone() || B.over) return; shakeMap(); sparks(tg.x, tg.y, 34, '#bfe8ff', 1.1); B.fx.push({kind:'boom', x:tg.x, y:tg.y, r:1, col:'#bfe8ff', t:performance.now()});
+        hurt(tg, roll(2,8,2)); party().filter(p => p !== tg && cheb(p, tg) === 1).forEach(p => { hurt(p, roll(1,8,0)); sparks(p.x, p.y, 12, '#bfe8ff', .7); });
+        updBattleUI(); await wait(800); if (gone()) return; if (!checkEnd()) endTurn(); else updBattleUI(); return; } } }
   if (foesOf(u).length) {
     // score every reachable tile: flank a target > stay out of free-attack range > be in range at all > closer
     const reach = reachMap(u.x, u.y, (x,y) => free(x,y,u), u.mv);
@@ -290,17 +312,20 @@ async function ai(u, turnId){
     });
     if (best && best.d > 0) {
       const path = pathFrom(reach, best.x, best.y);
-      for (const st of path) { if (await opportunity(u, st)) break; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); }
-      if (u.hp <= 0) { updBattleUI(); if (!checkEnd()) endTurn(); return; }
+      for (const st of path) { if (await opportunity(u, st) || gone()) break; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); if (gone()) return; }
+      if (gone()) return; if (u.hp <= 0) { updBattleUI(); if (!checkEnd()) endTurn(); return; }
     } else if (!inRange().length) {
       // nothing reachable in range this turn: close the distance along the shortest path
       const path = findPath(u.x, u.y, (x,y) => free(x,y,u), (x,y) => foesOf(u).some(p => cheb({x,y}, p) <= u.rng));
-      if (path) for (const st of path.slice(0, u.mv)) { if (await opportunity(u, st)) break; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); }
-      if (u.hp <= 0) { updBattleUI(); if (!checkEnd()) endTurn(); return; }
+      if (path) for (const st of path.slice(0, u.mv)) { if (await opportunity(u, st) || gone()) break; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); if (gone()) return; }
+      if (gone()) return; if (u.hp <= 0) { updBattleUI(); if (!checkEnd()) endTurn(); return; }
     }
   }
   const tg = inRange().sort((a,b) => (flanked(u,b) - flanked(u,a)) || (a.hp - b.hp))[0];
-  if (tg) { attack(u, tg); await wait(650); }
+  if (tg) { attack(u, tg); await wait(650); if (gone()) return;
+    for (let i = 1; i < (u.attacks || 1); i++) { if (gone() || B.over || u.hp <= 0) break; // more than one blow a turn
+      const nx = tg.hp > 0 && cheb(u, tg) <= u.rng ? tg : inRange().sort((a,b) => a.hp - b.hp)[0]; if (!nx) break; attack(u, nx, {verb:'cuts again at'}); await wait(650); } }
+  if (gone()) return;
   updBattleUI();
   if (!checkEnd()) endTurn();
 }
@@ -309,7 +334,7 @@ async function ai(u, turnId){
 function updBattleUI(){
   if (!B || view !== 'battle') return;
   $('#bRound').textContent = B.surpriseRound ? 'Surprise round' : `Round ${Math.max(1, B.round)}`;
-  $('#order').innerHTML = (B.order.length ? B.order : B.initOrder).map(u => `<span class="chip ${u.side} ${u === B.cur ? 'now' : ''} ${u.hp <= 0 ? 'dead' : ''}">${esc(u.name)}</span>`).join('');
+  $('#order').innerHTML = (B.order.length ? B.order : B.initOrder).map(u => `<span class="chip ${u.side} ${u.ally ? 'ally' : ''} ${u === B.cur ? 'now' : ''} ${u.hp <= 0 ? 'dead' : ''}">${esc(u.name)}</span>`).join('');
   $('#blog').innerHTML = B.log.map(l => `<div>${l}</div>`).join('');
   if ($('#objective') && B.def.objective) $('#objective').textContent = `${B.def.objective.text} · round ${Math.max(1,B.round)} of ${B.def.objective.rounds}`;
   const u = B.cur, ub = $('#ubar');
@@ -405,7 +430,7 @@ function drawBattle(t){
     const fl = 1 + Math.sin(t/110)*.04 + Math.sin(t/43)*.03;
     party().forEach(u => { const d = G.disp['u' + u.id] || u; lamp(d.x*T + T/2, d.y*T + T/2, T*(u.kind === 'kettle' ? 3.2 : 2.3)*fl); });
     B.fires.forEach(f => lamp(f.x*T + T/2, f.y*T + T/2, T*2.2*fl));
-    B.units.filter(u => u.side === 'e' && u.hp > 0).forEach(u => { const d = G.disp['u' + u.id + B.units.indexOf(u)] || u; lamp(d.x*T + T/2, d.y*T + T/2, T*.9); });
+    B.units.filter(u => u.side === 'e' && u.hp > 0).forEach(u => { const d = G.disp['u' + u.id + B.units.indexOf(u)] || u; lamp(d.x*T + T/2, d.y*T + T/2, T*(u.ai === 'raest' ? 2.2 : u.kind === 'rime' ? 1.3 : .9)); }); // the Tyrant and his dead carry their own cold light
     ctx.drawImage(layer, 0, 0, 8*T, 10*T);
     for (let i=0;i<8;i++) ell(ctx, hash(i,3)*8*T + Math.sin(t/3000 + i)*T, (hash(i,4)*10*T + t*.01) % (10*T), T*1.4, T*.4, 'rgba(60,45,100,.06)');
   }
@@ -417,6 +442,11 @@ function drawBattle(t){
   B.fx.forEach(f => { const k = clamp((now - f.t) / (f.dur || 950), 0, 1);
     if (f.kind === 'boom') { ctx.globalAlpha = (1 - k) * .9; ctx.fillStyle = f.col; const s = (f.r + .5) * T * (0.4 + k*.7); ctx.beginPath(); ctx.arc(f.x*T + T/2, f.y*T + T/2, s, 0, 7); ctx.fill(); ctx.globalAlpha = (1 - k) * .5; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x*T + T/2, f.y*T + T/2, s*1.3, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; glow(ctx, f.x*T + T/2, f.y*T + T/2, s*2.5, f.col, (1-k)*.4); }
     else if (f.kind === 'bolt') { const x = lerp(f.from.x, f.to.x, k)*T + T/2, y = lerp(f.from.y, f.to.y, k)*T + T*.5 + (f.wob ? Math.sin(k*20)*T*.15 : 0); ctx.strokeStyle = f.col; ctx.lineWidth = f.wob ? 2.5 : 1.5; ctx.beginPath(); ctx.moveTo(lerp(f.from.x, f.to.x, Math.max(0,k-.15))*T + T/2, lerp(f.from.y, f.to.y, Math.max(0,k-.15))*T + T*.5); ctx.lineTo(x, y); ctx.stroke(); if (f.wob) glow(ctx, x, y, T*.6, f.col, .5); }
+    else if (f.kind === 'lance') { const x0 = f.from.x*T + T/2, y0 = f.from.y*T + T*.3, x1 = f.to.x*T + T/2, y1 = f.to.y*T + T*.45, a = k < .6 ? 1 : 1 - (k - .6)/.4, reach = clamp(k*3, 0, 1);
+      const xe = lerp(x0, x1, reach), ye = lerp(y0, y1, reach); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+      for (let j=0;j<3;j++){ ctx.strokeStyle = j === 2 ? `rgba(255,255,255,${a*.9})` : rgba(f.col, a*(j ? .7 : .3)); ctx.lineWidth = j === 0 ? T*.34 : j === 1 ? T*.12 : T*.04; ctx.beginPath(); ctx.moveTo(x0, y0);
+        for (let q=1;q<=8;q++){ const kk = q/8; ctx.lineTo(lerp(x0, xe, kk) + (q < 8 ? (hash(q, j, Math.floor(now/60)) - .5)*T*.3 : 0), lerp(y0, ye, kk) + (q < 8 ? (hash(j, q, Math.floor(now/60)) - .5)*T*.3 : 0)); } ctx.stroke(); }
+      glow(ctx, x0, y0, T*1.2, f.col, a*.5); glow(ctx, xe, ye, T*1.6, f.col, a*.6); ctx.restore(); }
     else if (f.kind === 'arc') { const x = lerp(f.from.x, f.to.x, k)*T + T/2, y = lerp(f.from.y, f.to.y, k)*T + T/2 - Math.sin(k*Math.PI)*T*1.6; ell(ctx, x, y, T*.12, T*.12, '#3a3230'); ctx.fillStyle = '#ffb060'; ctx.fillRect(x + T*.08, y - T*.16 - Math.random()*3, 2, 2);
       if (k >= 1 && B.pendingBlast) { const fn = B.pendingBlast; B.pendingBlast = null; fn(); } }
     else { ctx.globalAlpha = 1 - k*k; ctx.fillStyle = f.col; ctx.font = `700 ${Math.round(T*.36)}px 'Alegreya Sans', sans-serif`; ctx.textAlign = 'center'; ctx.shadowColor = '#000'; ctx.shadowBlur = 4;

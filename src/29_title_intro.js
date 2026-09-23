@@ -6,7 +6,7 @@ function showTitle(){
     <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them, and then south.</p>
     <div class="field"><label for="nm">Your sergeant's name</label><input type="text" id="nm" maxlength="18" value="${esc(has?.name || 'Hask')}" autocomplete="off"></div>
     <div class="row"><button class="btn primary" id="bNew">Begin</button>${has ? '<button class="btn" id="bCont">Continue</button>' : ''}<button class="btn" id="bImp">Load a save code</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button></div>
-    <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and Chapter One so far. Sound on for the full effect. · v${VERSION}</p></div>`;
+    <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. · v${VERSION}</p></div>`;
   startTitleBackdrop($('#titlecv'));
   $('#bNew').onclick = () => { AUDIO.play('click'); S = newState($('#nm').value.trim()); save(); showIntro(); };
   if (has) $('#bCont').onclick = () => { AUDIO.play('click'); S = has; resume(); };
