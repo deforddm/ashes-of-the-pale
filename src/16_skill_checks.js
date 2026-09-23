@@ -2,9 +2,10 @@
 function roller(stat, who){ const ids = who ? [who] : SQUAD(); let best = ids[0]; ids.forEach(id => { if (statOf(id, stat) > statOf(best, stat)) best = id; }); return best; }
 function check(stat, dc, who){
   const best = roller(stat, who);
-  const nat = d20(), mod = statOf(best, stat) + (S.card === 'oponn' ? 1 : 0), tot = nat + mod, ok = tot >= dc;
-  const label = stat[0].toUpperCase() + stat.slice(1);
-  note(SET.dice ? `${label} check (DC ${dc}): ${NAME(best)} rolls ${nat} + ${mod} = ${tot} · ${ok ? 'success' : 'failure'}` : `${label} check: ${NAME(best)} · ${ok ? 'success' : 'failure'}`, ok ? 'good' : 'bad');
+  const crown = S.card === 'crown', r1 = d20(), r2 = crown ? d20() : 0; // the Crown: two dice, keep the better
+  const nat = Math.max(r1, r2), mod = statOf(best, stat) + (S.card === 'oponn' ? 1 : 0), tot = nat + mod, ok = tot >= dc;
+  const label = stat[0].toUpperCase() + stat.slice(1), cr = crown ? (SET.dice ? ` (the Crown: best of two, ${r1} and ${r2})` : ' (the Crown: best of two)') : '';
+  note(SET.dice ? `${label} check (DC ${dc}): ${NAME(best)} rolls ${nat} + ${mod} = ${tot}${cr} · ${ok ? 'success' : 'failure'}` : `${label} check: ${NAME(best)}${cr} · ${ok ? 'success' : 'failure'}`, ok ? 'good' : 'bad');
   return {ok, nat, mod, tot, dc, who:best, label};
 }
 /* the die: a d20 tumbles in the sheet, settles on the roll, then the story goes on. Tap to hurry it. */
@@ -248,12 +249,25 @@ const SCENES = {
   room:{loc:'The dye-shop', sub:'An upstairs room, Daru District', cap:'Skeins of blue and madder hung to dry, one lamp, one chair, and a woman who has been expecting you.', amb:'explore'},
   roof_night:{loc:'Darujhistan', sub:'The rooftops · night', cap:'Flat roofs and planks, chimneys, the lake mist coming up between the buildings, and a black mountain over all of it. Nothing moves. Something is moving.', amb:'explore'},
   roof:{loc:'Darujhistan', sub:'A rooftop above the dig · dawn', cap:'Tiles wet with lake mist. The blue fire going out lamp by lamp, and a shape on the next roof that was not there a moment ago.', amb:'explore'},
+  /* Chapters 6 and 7 (the chapters overwrite these with their own text at registration) */
+  fete_street:{loc:'Darujhistan', sub:'The Gedderone Fete · dusk', cap:'Lanterns strung across every street, masks on every face, and a black mountain over the lake that nobody looks at.', amb:'explore'},
+  fete_hall:{loc:'Lady Simtal\'s estate', sub:'The hall', cap:'Chandeliers, masks, music, and a very tall guest by a pillar who does not dance.', amb:'explore'},
+  fete_garden:{loc:'Lady Simtal\'s estate', sub:'The garden', cap:'Hedges, lanterns in the trees, a fountain, and something small and black growing in turned earth.', amb:'explore'},
+  garden_storm:{loc:'Lady Simtal\'s estate', sub:'The garden · Omtose Phellack', warren:true, cap:'Frost goes across the lawn in rings. The lanterns go out one after another.', amb:'dark'},
+  dragon_sky:{loc:'Darujhistan', sub:'The sky over the city', warren:true, cap:'Two dragons over the roofs, and one of them is not a dragon.', amb:'dark'},
+  alley_night:{loc:'Darujhistan', sub:'An alley off the Daru District', cap:'Wet stone, one blue lamp, a doorway, and somebody standing in it.', amb:'dark'},
+  lakefront_dawn:{loc:'Darujhistan', sub:'The Lakefront · dawn', cap:'Docks, the lake, a ship at the pier, and a sky with nothing in it.', amb:'explore'},
+  quorl_hill:{loc:'East of Darujhistan', sub:'A hill on the Gadrobi road', cap:'Quorls on the grass, Black Moranth in chitin, and the city small behind.', amb:'explore'},
+  road_east:{loc:'Genabackis', sub:'The road north-east', cap:'A column on a road through brown hills, very far off, and banners.', amb:'explore'},
+  ship:{loc:'Lake Azur', sub:'A deck', cap:'Grey water, a sail, and the city getting smaller.', amb:'explore'},
 };
+/* ambience for the new scenes: the Fete has a crowd and pipes, the lake has water and gulls */
+const sceneAmb = (kind, amb) => amb === 'explore' && ['fete_street','fete_hall'].includes(kind) ? 'fete' : amb === 'explore' && kind === 'fete_garden' && !feteDawn() ? 'fete' : amb === 'explore' && ['lakefront_dawn','ship'].includes(kind) ? 'lake' : amb;
 function sceneShell(kind){
   if (kind === 'explore') { if (view !== 'explore') { startExplore(); } return; }
   S.bg = kind;
   if (view === 'scene' && G.sceneKind === kind) return;
-  view = 'scene'; B = null; G.sceneKind = kind; const sc = SCENES[kind] || SCENES.tunnel; AUDIO.setScene(sc.amb || kind);
+  view = 'scene'; B = null; G.sceneKind = kind; const sc = SCENES[kind] || SCENES.tunnel; AUDIO.setScene(sceneAmb(kind, sc.amb || kind));
   $('#app').innerHTML = `<header class="hud"><div><div class="loc">${sc.loc}</div><div class="sub ${sc.warren ? 'warren' : ''}">${sc.sub}</div></div><div class="hudr">${hudButtons()}</div></header>
     <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${sc.cap}</div></div>`;
   bindHud();

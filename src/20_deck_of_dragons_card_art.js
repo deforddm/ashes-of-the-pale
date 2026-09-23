@@ -62,7 +62,33 @@ function drawCard(ctx, id, W, H, face, t = 0){
       const hx = cx, top = py + ph*.34; poly(ctx, [[hx - pw*.1, gy],[hx - pw*.08, top + ph*.12],[hx, top + ph*.08],[hx + pw*.08, top + ph*.12],[hx + pw*.1, gy]], '#1e2420');
       ell(ctx, hx, top, pw*.055, ph*.04, '#c9c4b0'); ctx.fillStyle = '#000'; ctx.fillRect(hx - pw*.035, top - ph*.01, pw*.025, ph*.012); ctx.fillRect(hx + pw*.01, top - ph*.01, pw*.025, ph*.012);
       ctx.strokeStyle = '#8fa38a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hx + pw*.06, top + ph*.14); ctx.lineTo(hx + pw*.22, top - ph*.06); ctx.stroke(); poly(ctx, [[hx + pw*.22, top - ph*.06],[hx + pw*.28, top - ph*.1],[hx + pw*.26, top - ph*.01]], '#8fa38a'); break; }
-    case 'crown': { const y = py + ph*.5; poly(ctx, [[cx - pw*.25, y + ph*.1],[cx - pw*.25, y - ph*.1],[cx - pw*.12, y],[cx, y - ph*.16],[cx + pw*.12, y],[cx + pw*.25, y - ph*.1],[cx + pw*.25, y + ph*.1]], '#6b6155'); break; }
+    case 'crown': { // an iron crown with a thread of gold, and behind it an empty throne in the dark
+      const tb = py + ph*.1, tw = pw*.5; poly(ctx, [[cx - tw*.5, gy],[cx - tw*.5, tb + ph*.12],[cx - tw*.3, tb],[cx, tb - ph*.03],[cx + tw*.3, tb],[cx + tw*.5, tb + ph*.12],[cx + tw*.5, gy]], '#120f0c');
+      ctx.strokeStyle = 'rgba(232,192,115,.12)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cx - tw*.5, gy); ctx.lineTo(cx - tw*.5, tb + ph*.12); ctx.lineTo(cx - tw*.3, tb); ctx.lineTo(cx, tb - ph*.03); ctx.lineTo(cx + tw*.3, tb); ctx.lineTo(cx + tw*.5, tb + ph*.12); ctx.lineTo(cx + tw*.5, gy); ctx.stroke();
+      poly(ctx, [[cx - tw*.62, gy - ph*.2],[cx + tw*.62, gy - ph*.2],[cx + tw*.62, gy - ph*.16],[cx - tw*.62, gy - ph*.16]], '#0c0a08'); ctx.fillStyle = '#080605'; ctx.fillRect(cx - tw*.34, tb + ph*.12, tw*.68, gy - tb - ph*.32); // the seat, nobody on it
+      const y = py + ph*.56, cw = pw*.3, chh = ph*.08, g = ctx.createLinearGradient(cx - cw, 0, cx + cw, 0); g.addColorStop(0, '#6a655e'); g.addColorStop(.4, '#3a3632'); g.addColorStop(1, '#161412');
+      ell(ctx, cx, y + chh + ph*.03, cw*1.1, ph*.03, 'rgba(0,0,0,.6)');
+      poly(ctx, [[cx - cw, y + chh],[cx - cw, y - chh*.4],[cx - cw*.72, y - chh*1.9],[cx - cw*.5, y - chh*.3],[cx - cw*.2, y - chh*2.4],[cx, y - chh*.5],[cx + cw*.2, y - chh*2.4],[cx + cw*.5, y - chh*.3],[cx + cw*.72, y - chh*1.9],[cx + cw, y - chh*.4],[cx + cw, y + chh]], g);
+      ctx.fillStyle = 'rgba(0,0,0,.35)'; for (let i=0;i<6;i++) ctx.fillRect(cx - cw + hash(i,2)*cw*2, y - chh*.2 + hash(i,3)*chh, 2, 1.5); // pitted iron
+      const gl = .55 + Math.sin(t/500)*.25; ctx.strokeStyle = `rgba(232,192,115,${gl})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(cx - cw, y + chh*.35); ctx.bezierCurveTo(cx - cw*.3, y + chh*.1, cx + cw*.3, y + chh*.6, cx + cw, y + chh*.3); ctx.stroke(); // the thread of gold
+      [[-.72,-1.9],[-.2,-2.4],[.2,-2.4],[.72,-1.9]].forEach(([a,b],i) => { ell(ctx, cx + a*cw, y + b*chh, 1.8, 1.8, `rgba(232,192,115,${.4 + Math.sin(t/400 + i*1.6)*.35})`); });
+      glow(ctx, cx, y, pw*.35, '#e8c073', .1 + Math.sin(t/700)*.04); break; }
+    case 'chains': { // chains hanging out of the dark, bound at both ends; the shadow of a sword behind them
+      const dk = ctx.createLinearGradient(0, py, 0, py + ph*.45); dk.addColorStop(0, '#000'); dk.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = dk; ctx.fillRect(px, py, pw, ph*.45);
+      ctx.save(); ctx.translate(cx + pw*.06, py + ph*.5); ctx.rotate(-.5); ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(-pw*.035, -ph*.46, pw*.07, ph*.8); ctx.fillRect(-pw*.14, ph*.3, pw*.28, ph*.035); ctx.fillRect(-pw*.025, ph*.33, pw*.05, ph*.12); ctx.strokeStyle = 'rgba(154,154,166,.12)'; ctx.lineWidth = 1; ctx.strokeRect(-pw*.035, -ph*.46, pw*.07, ph*.8); ctx.restore();
+      for (let i=0;i<8;i++){ const k = ((t/2600 + i/8) % 1); ell(ctx, cx + Math.sin(i*2.3 + t/900)*pw*.3, py + ph*.8 - k*ph*.5, pw*(.08 + k*.1), ph*.02 + k*ph*.02, `rgba(20,18,26,${.35*(1-k)})`); } // smoke
+      [[-.3, .66, 0],[-.1, .78, 1],[.12, .6, 2],[.3, .72, 3]].forEach(([dx, len, j]) => { const sw = Math.sin(t/1100 + j*1.4)*.04, x0 = cx + dx*pw, n = Math.round(len*ph/(pw*.055));
+        for (let q=0;q<n;q++){ const yy = py + q*pw*.055, xx = x0 + Math.sin(sw*q*.6)*q*1.2 + sw*q*2, lit = yy > py + ph*.18, a = clamp((yy - py)/(ph*.3), 0, 1);
+          ctx.strokeStyle = q%2 ? `rgba(70,70,78,${a})` : `rgba(110,110,122,${a})`; ctx.lineWidth = pw*.014; ctx.beginPath(); if (q%2) ctx.ellipse(xx, yy, pw*.012, pw*.034, 0, 0, 7); else ctx.ellipse(xx, yy, pw*.028, pw*.034, 0, 0, 7); ctx.stroke();
+          if (lit && hash(q, j) > .55) { ctx.fillStyle = `rgba(230,228,240,${a*(.35 + Math.sin(t/300 + q + j)*.3)})`; ctx.fillRect(xx - pw*.02, yy - pw*.02, 1.6, 1.6); } }
+        const ey = py + n*pw*.055, ex = x0 + Math.sin(sw*n*.6)*n*1.2 + sw*n*2; ctx.strokeStyle = '#8a8a96'; ctx.lineWidth = pw*.02; ctx.beginPath(); ctx.arc(ex, ey + pw*.04, pw*.045, Math.PI*1.1, Math.PI*1.9 + Math.PI*.9); ctx.stroke(); }); // open shackles at the ends
+      glow(ctx, cx, py + ph*.62, pw*.4, '#9a9aa6', .08); break; }
+    case 'blank': { // gesso and grain, nothing on it yet
+      const g = ctx.createLinearGradient(px, py, px + pw, py + ph); g.addColorStop(0, '#e4ddcc'); g.addColorStop(.6, '#d8d0c0'); g.addColorStop(1, '#c2b8a4'); ctx.fillStyle = g; ctx.fillRect(px, py, pw, ph);
+      ctx.strokeStyle = 'rgba(120,100,70,.10)'; ctx.lineWidth = 1; for (let i=0;i<26;i++){ const yy = py + i*ph/26 + hash(i,5)*4; ctx.beginPath(); ctx.moveTo(px, yy); ctx.bezierCurveTo(px + pw*.3, yy + (hash(i,6) - .5)*8, px + pw*.7, yy + (hash(i,7) - .5)*8, px + pw, yy + (hash(i,8) - .5)*5); ctx.stroke(); } // the grain of the wood through the gesso
+      ctx.fillStyle = 'rgba(255,255,250,.35)'; for (let i=0;i<40;i++) ctx.fillRect(px + hash(i,11)*pw, py + hash(i,12)*ph, 1, 1); ctx.fillStyle = 'rgba(90,70,50,.12)'; for (let i=0;i<14;i++) ctx.fillRect(px + hash(i,13)*pw, py + hash(i,14)*ph, 1.4, 1.4);
+      ell(ctx, cx + pw*.1, py + ph*.3, pw*.3, ph*.12, 'rgba(255,255,248,.12)'); const v = ctx.createRadialGradient(cx, py + ph*.45, pw*.2, cx, py + ph*.45, pw*.75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(60,45,30,.28)'); ctx.fillStyle = v; ctx.fillRect(px, py, pw, ph);
+      glow(ctx, cx, py + ph*.45, pw*.5, '#fff8e8', .08 + Math.sin(t/900)*.04); break; }
     case 'sceptre': { ctx.strokeStyle = '#6b6155'; ctx.lineWidth = pw*.03; ctx.beginPath(); ctx.moveTo(cx - pw*.1, py + ph*.75); ctx.lineTo(cx + pw*.1, py + ph*.2); ctx.stroke(); ell(ctx, cx + pw*.1, py + ph*.18, pw*.06, pw*.06, '#8d8a86'); break; }
     case 'orb': { ell(ctx, cx, py + ph*.45, pw*.2, pw*.2, '#2a2826'); ctx.strokeStyle = '#8d8a86'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, py + ph*.45, pw*.2, 0, 7); ctx.stroke(); glow(ctx, cx - pw*.07, py + ph*.38, pw*.1, '#bdb3a3', .3); break; }
   }
@@ -71,7 +97,7 @@ function drawCard(ctx, id, W, H, face, t = 0){
   // nameplate
   ctx.fillStyle = hue; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   const nm = c.name.split(' of ');
-  ctx.font = `${Math.round(W*.085)}px 'IM Fell English SC', serif`; ctx.fillText(nm[0], W/2, H*.83);
+  let fs = Math.round(W*.085); ctx.font = `${fs}px 'IM Fell English SC', serif`; while (fs > 8 && ctx.measureText(nm[0]).width > W*.82) { fs--; ctx.font = `${fs}px 'IM Fell English SC', serif`; } ctx.fillText(nm[0], W/2, H*.83);
   ctx.font = `${Math.round(W*.06)}px 'IM Fell English', serif`; ctx.fillStyle = '#9c8c78'; ctx.fillText(nm[1] ? 'of ' + nm[1] : (c.house || ''), W/2, H*.905);
   ctx.restore();
 }
@@ -92,7 +118,7 @@ function inlineCard(cv, id, refuse){
     ctx.clearRect(0,0,240,360); drawCardFlip(ctx, id, 0, 0, 240, 360, k, t);
     if (!played && k > .5) { played = true; AUDIO.play('flip'); }
     if (refuse && t > 1300) { const a = clamp((t - 1300) / 900, 0, .75); ctx.fillStyle = `rgba(6,5,4,${a})`; ctx.fillRect(0,0,240,360); for (let i=0;i<8;i++){ const yy = 360 - ((t/6 + i*47) % 400); ell(ctx, 120 + Math.sin(t/400 + i)*60, yy, 40, 14, `rgba(60,50,45,${a*.5})`); } }
-    if (k < 1 || (refuse && t < 2400) || id === 'oponn') requestAnimationFrame(fr); }
+    if (k < 1 || (refuse && t < 2400) || ['oponn','chains','crown','blank'].includes(id)) requestAnimationFrame(fr); }
   requestAnimationFrame(fr);
 }
 

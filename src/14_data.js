@@ -73,7 +73,9 @@ const CARDS = {
   knight:{name:'Knight of High House Dark',house:'High House Dark',hue:'#7d7fc9',txt:`A tall figure with a black sword, turned away. Tuft puts the card back fast. "He's watching the city. Not us. Probably."`,fx:'Enemies take −1 to hit this chapter.'},
   assassin:{name:'Assassin of High House Shadow',house:'High House Shadow',hue:'#9a86e0',txt:`A figure half in shadow, rope and knives. Tuft grins for the first time in days.`,fx:'Your squad lands critical hits on 19–20.'},
   herald:{name:'Herald of High House Death',house:'High House Death',hue:'#8fa38a',txt:'',fx:''},
-  crown:{name:'Crown',house:'Unaligned',hue:'#bdb3a3'}, sceptre:{name:'Sceptre',house:'Unaligned',hue:'#bdb3a3'}, orb:{name:'Orb',house:'Unaligned',hue:'#bdb3a3'},
+  crown:{name:'Crown',house:'Unaligned',hue:'#e8c073',txt:'An iron crown with a thread of gold in it, and an empty dark behind it where a throne should be.',fx:'Every skill check this chapter rolls twice and keeps the better.'}, sceptre:{name:'Sceptre',house:'Unaligned',hue:'#bdb3a3'}, orb:{name:'Orb',house:'Unaligned',hue:'#bdb3a3'},
+  chains:{name:'Chains',house:'Unaligned',hue:'#9a9aa6',txt:'Chains hanging out of the dark, bound at both ends, and the shadow of a sword across them.',fx:'An enemy that lands a blow on a squadmate takes 2 damage back.'},
+  blank:{name:'The unpainted card',house:'—',hue:'#d8d0c0',txt:'No house. No figure. Gesso and grain, and nothing on it yet.',fx:'None. It isn\'t anyone\'s yet.'},
 };
 const LEVELS = [0,100,250,450,700,1000,1400,1900]; // levels 1..8
 const STR_MAX = 6;
@@ -124,6 +126,10 @@ function registerChapter(n, CH){
   if (CH.gear) Object.assign(ITEMS, CH.gear);
   if (CH.card) CARDS[CH.card.id] = CH.card;
   if (CH.dlg) Object.assign(DLG, CH.dlg);
+  if (CH.scenes) Object.assign(SCENES, CH.scenes);
+  if (CH.quests) Object.assign(QUESTS, CH.quests);
+  if (CH.end) CHEND[n] = CH.end;
+  if (CH.tease) CHTEASE[n] = CH.tease;
 }
 
 const BATTLES = {

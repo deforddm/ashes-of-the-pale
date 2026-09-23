@@ -80,6 +80,19 @@ const AUDIO = (() => {
       if (kind === 'dark') { const wh = setInterval(() => { if (ac.state === 'running' && Math.random() < .3) tone(f(R(7), 2) * 2, {type:'sine', a:.6, d:1.4, v:.04, bus:amb, detune:R(30)-15}); }, 2200); ambNodes.push({stop(){ clearInterval(wh); }}); }
     }
   }
+  function startAmb2(kind){ // the Fete: a crowd far off, and pipes; the lake: water on the piles, and gulls
+    const t = now(), s = ac.createBufferSource(); s.buffer = BB; s.loop = true; const fl = ac.createBiquadFilter(); fl.type = kind === 'fete' ? 'bandpass' : 'lowpass'; fl.frequency.value = kind === 'fete' ? 520 : 380; fl.Q.value = .6;
+    const lfo = ac.createOscillator(); lfo.frequency.value = kind === 'fete' ? .13 : .09; const lg = ac.createGain(); lg.gain.value = kind === 'fete' ? 160 : 140; lfo.connect(lg); lg.connect(fl.frequency);
+    const g = ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(kind === 'fete' ? .26 : .34, t + 3); s.connect(fl); fl.connect(g); g.connect(amb); s.start(); lfo.start(); ambNodes.push(s, lfo, g);
+    if (kind === 'fete') {
+      const mu = setInterval(() => { if (ac.state === 'running' && Math.random() < .6) noise({d:.12 + Math.random()*.3, v:.025 + Math.random()*.03, f:300 + R(600), q:4, bus:amb}); }, 420); // voices
+      const pp = setInterval(() => { if (ac.state !== 'running' || Math.random() > .45) return; const t0 = now(), base = R(3); for (let i=0;i<3 + R(3);i++) tone(f(base + [0,2,4,3,1][i], 3), {t:t0 + i*.22, type:'triangle', a:.04, d:.3, v:.025, bus:amb, detune:R(14) - 7}); }, 1900); // pipes, a street away
+      ambNodes.push({stop(){ clearInterval(mu); clearInterval(pp); }}); }
+    else {
+      const lp = setInterval(() => { if (ac.state === 'running' && Math.random() < .55) noise({a:.08, d:.5 + Math.random()*.4, v:.07 + Math.random()*.05, f:700 + R(300), slide:180, type:'lowpass', bus:amb, brown:true}); }, 1100); // water slapping the piles
+      const gl = setInterval(() => { if (ac.state !== 'running' || Math.random() > .3) return; const t0 = now(); [0, .28].forEach(d => tone(1500 + R(300), {t:t0 + d, type:'sawtooth', a:.02, d:.22, v:.018, slide:900, filt:{f:2200, q:2}, bus:amb})); }, 2600); // gulls
+      ambNodes.push({stop(){ clearInterval(lp); clearInterval(gl); }}); }
+  }
   /* generative music */
   function stopMusic(){ if (schedTimer) clearInterval(schedTimer); schedTimer = null; musicNodes.forEach(n => { try { n.stop(); } catch(e) {} }); musicNodes = []; }
   const MOTIFS = [[0,-1,0,2],[4,3,1,0],[7,5,4,3],[0,3,4,7],[2,1,0,-3],[4,7,8,7],[0,0,3,2],[7,8,10,7]];
@@ -113,7 +126,8 @@ const AUDIO = (() => {
     if (s === scene && !force) return; scene = s;
     if (!ac || ac.state !== 'running') return;
     stopMusic(); nextBeat = now() + .1; beat = 0; padUntil = 0;
-    startAmb({title:'title', explore:'wind', tunnel:'tunnel', battle:'tunnel', dark:'dark', end:'wind'}[s] || 'wind');
+    const ak = {title:'title', explore:'wind', tunnel:'tunnel', battle:'tunnel', dark:'dark', end:'wind', fete:'fete', lake:'lake'}[s] || 'wind';
+    if (ak === 'fete' || ak === 'lake') { stopAmb(); NB = NB || noiseBuf(2); BB = BB || noiseBuf(3, true); startAmb2(ak); } else startAmb(ak);
     if (s === 'dark') scene = 'battle';
     schedTimer = setInterval(sched, 200); sched();
   }
