@@ -1,7 +1,7 @@
 /* ============ tiles ============ */
 function drawTile(ctx, ch, x, y, T, dark, tunnel, style){
   const px = x*T, py = y*T, h = hash(x,y);
-  const plain = style && style.startsWith('plain');
+  const plain = style && (style.startsWith('plain') || style.startsWith('hills'));
   const city = style && (style.startsWith('city') || style === 'cellar'), cellar = style === 'cellar';
   const fill = c => { ctx.fillStyle = c; ctx.fillRect(px,py,T,T); };
   const speck = (c, n, s=1, sz=.06) => { ctx.fillStyle = c; for (let i=0;i<n;i++){ const a = hash(x,y,i+s), b = hash(y,x,i+s+9); ctx.fillRect(px+a*T, py+b*T, Math.max(1,T*sz), Math.max(1,T*sz)); } };

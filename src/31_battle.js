@@ -13,7 +13,8 @@ const veilPen = () => Math.round(5 * B.warren.meanas);
 const phantomDC = () => 13 + (B.warren.meanas > 1 ? 3 : 0);
 function blog(m){ B.log.unshift(m); B.log = B.log.slice(0,5); const el = $('#blog'); if (el) el.innerHTML = B.log.map(l => `<div>${l}</div>`).join(''); }
 function float(u, txt, col){ B.fx.push({kind:'txt', x:u.x, y:u.y, txt, col, t:performance.now()}); }
-function hurt(u, n){ u.hp = Math.max(0, u.hp - n); float(u, '−'+n, '#f08a7c'); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
+function hurt(u, n){ if (u.side === 'p' && !u.ally && S.card === 'herald' && u.hp - n <= 0 && !B.used.herald) { B.used.herald = true; n = u.hp - 1; blog(`<em>The Herald turns its head.</em> ${u.name} stays standing at 1 health.`); }
+  u.hp = Math.max(0, u.hp - n); float(u, '−'+n, '#f08a7c'); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
   if (u.side === 'p') redFlash(); if (n >= 8) shakeMap();
   if (u.hp === 0) { u.deadAt = performance.now(); AUDIO.play('death'); blog(u.side === 'p' ? `<em>${u.name} goes down!</em>` : `${u.name} falls.`); } else AUDIO.play('hurt'); }
 function heal(u, n){ const before = u.hp; u.hp = Math.min(u.maxhp, u.hp + n); float(u, '+'+(u.hp-before), '#9fe0b8'); u.healed = performance.now(); }
