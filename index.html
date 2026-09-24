@@ -296,7 +296,7 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.7.1';
+const VERSION = '3.7.2';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -721,7 +721,7 @@ const TPL = {
     epithet:'Quiet, and too young for her eyes.',origin:'Malaz City, the Mouse Quarter',age:19,service:'Fourteen months. Feels longer to everyone.',height:'Slight. Vanishes into a crowd of two.',
     weapon:'Shadow-lash at range, a Meanas veil up close, and a Deck of Dragons she says is for luck',armour:'A grey cloak that is sometimes not there when you look at it',
     bio:`Shadow-lash at range, illusions up close, and a battered Deck of Dragons in her sleeve that she reads when she thinks no one is watching, which is a thing a Meanas mage should be better at judging.`,
-    bio2:`A Mouse Quarter foundling who found her warren the way children in that quarter find most things, by accident and at night. Was taken into the cadre at sixteen, spent a season attached to the High Mage's staff, and requested transfer to a marine squad with a letter that said nothing and a face that said the rest. Nobody in the Fourth has asked. Ohl came closest.`,
+    bio2:`A Mouse Quarter foundling who found her warren the way children in that quarter find most things, by accident and at night. She was ten the night the Claw came through the Quarter killing every mage who wasn't on a register, nine years before Pale, and she lived by being small and very quiet, which she has been ever since. Was taken into the cadre at sixteen, spent a season attached to the High Mage's staff, and requested transfer to a marine squad with a letter that said nothing and a face that said the rest. Nobody in the Fourth has asked. Ohl came closest.`,
     traits:['Goes very still when someone says "High Mage"','Never draws a card for herself','Sleeps with a lamp lit','Laughs at exactly one thing: Kettle'],
     gear:['Deck of Dragons, wooden cards, the paint worn from the House of Shadow','A grey ribbon','A cadre badge she does not wear'],
     get quest(){ return squadQuest('tuft', `Something happened on the High Mage's staff that her transfer letter did not mention. Nobody has asked her what. The journal in the tunnels may answer it for them.`); },
@@ -1001,7 +1001,7 @@ const SCENES = {
   hills_dusk:{loc:'The Gadrobi Hills', sub:'Dusk', cap:'The hills go red and then brown and then nothing. The opened barrow breathes cold up out of the ground.', amb:'explore'},
   hills_night:{loc:'The Gadrobi Hills', sub:'Night', cap:'No stars over the barrow. There should be. Something on the next hill is the size of a child and is not one.', amb:'dark'},
   city_street:{loc:'Darujhistan', sub:'The city of blue fire', cap:'Gas lamps burning blue down every street, and a black mountain hanging over the lake that nobody looks at any more.', amb:'explore'},
-  inn:{loc:'The Phoenix Inn', sub:'The Gadrobi crossroads', cap:'Low beams, spilled wine, a fat man in a red waistcoat, and every thief in the city pretending not to watch the door.', amb:'explore'},
+  inn:{loc:'The Phoenix Inn', sub:'The Daru District', cap:'Low beams, spilled wine, a fat man in a red waistcoat, and every thief in the city pretending not to watch the door.', amb:'explore'},
   cellar:{loc:'Under the intersection', sub:'The gas conduits', cap:'Cut stone, a lantern, a smell like a struck match, and crates with Moranth seals stacked where no crate should be.', amb:'tunnel'},
   room:{loc:'The dye-shop', sub:'An upstairs room, Daru District', cap:'Skeins of blue and madder hung to dry, one lamp, one chair, and a woman who has been expecting you.', amb:'explore'},
   roof_night:{loc:'Darujhistan', sub:'The rooftops · night', cap:'Flat roofs and planks, chimneys, the lake mist coming up between the buildings, and a black mountain over all of it. Nothing moves. Something is moving.', amb:'explore'},
@@ -1762,6 +1762,8 @@ function sceneLayer(key, W, H, paint){ const dpr = Math.min(2, window.devicePixe
   if (!c) { c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W*dpr)); c.height = Math.max(1, Math.round(H*dpr)); const x = c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); paint(x, W, H); if (SCENE_CACHE.size > 12) SCENE_CACHE.clear(); SCENE_CACHE.set(k, c); }
   return c; }
 const sceneSquad = () => (typeof SQUAD === 'function' && S ? SQUAD() : PORDER);
+/* a column walking right, drawn left to right: the rest behind, then Brisk, then the sergeant in the lead */
+const marchOrder = sq => { const lead = ['brisk','sgt'].filter(id => sq.includes(id)); return [...sq.filter(id => !lead.includes(id)), ...lead]; };
 /* the sapper tunnels under the Pale: timber frames going back into the dark, a lantern on the nearest, rubble; or, deeper, Kurald Galain seeping in */
 function paintTunnel(x, W, H, dark, barrow = false){ // barrow: a Rhivi barrow on the plain, dry-laid stone instead of timber shoring
   const vx = W*.56, vy = H*.42, N = 7, fr = i => { const k = Math.pow(.64, i); return {l:vx - W*.66*k, r:vx + W*.66*k, t:vy - H*.6*k, b:vy + H*.66*k, k}; };
@@ -1868,7 +1870,7 @@ function drawPlain(cv, kind, t){
   if (hills && tod === 'night') { const hx = W*.72, hy = hz - 2; drawFigure(ctx, 'hairlock', hx, hy, 1.2, t, {still:true, alpha:.55}); // on the next hill, the size of a child and not one
     if (S && S.f && S.f.c5_night && !S.f.c5_rentFought) { glow(ctx, hx - 20, hy - 14, 70, '#9a86e0', .28 + Math.sin(t/200)*.08*mo); ctx.strokeStyle = `rgba(210,205,230,${.7 + Math.sin(t/90)*.2*mo})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hx - 26, hy - 44); ctx.quadraticCurveTo(hx - 12, hy - 18, hx - 24, hy + 6); ctx.stroke(); } } // the rent
   ctx.lineWidth = 1.2; for (let i=0;i<46;i++){ const px = hash(i,61)*W, yy = H*(.9 + hash(i,62)*.12), h = 10 + hash(i,63)*14, sw = Math.sin(t/900 + i*.7)*3*mo; ctx.strokeStyle = tod === 'night' ? 'rgba(40,56,34,.8)' : tod === 'dusk' ? 'rgba(90,64,34,.8)' : 'rgba(84,100,52,.85)'; ctx.beginPath(); ctx.moveTo(px, yy); ctx.quadraticCurveTo(px + sw*.3, yy - h*.6, px + sw, yy - h); ctx.stroke(); } // the near grass, moving
-  const sq = sceneSquad(); sq.forEach((id, i) => drawFigure(ctx, id, W*.1 + i*Math.min(36, W*.6/sq.length), H*.93 + (i%2)*3, 2.1, t, {phase:i, dir:1}));
+  const sq = marchOrder(sceneSquad()); sq.forEach((id, i) => drawFigure(ctx, id, W*.1 + i*Math.min(36, W*.6/sq.length), H*.93 + (i%2)*3, 2.1, t, {phase:i, dir:1}));
   vign(ctx, W, H, tod === 'night' ? .82 : tod === 'dusk' ? .62 : .5);
 }
 
@@ -1901,7 +1903,7 @@ function drawCity(cv, kind, t){
     ell(ctx, W*.3, H*.2, 60, 14, '#000'); ctx.fillStyle = 'rgba(90,140,210,.12)'; ell(ctx, W*.3, H*.2, 50, 10, 'rgba(90,140,210,.12)');
     ell(ctx, W*.22, H*.72, 5, 10, '#e8d8a8'); glow(ctx, W*.22, H*.66, W*.35, '#e8923a', .35*fl);
     [['fiddler', W*.4, H*.9, -1], ['hedge', W*.5, H*.84, 1]].forEach(([k,x,y,d], i) => drawFigure(ctx, k, x, y, 2.3, t, {still:true, dir:d, phase:i}));
-    squad.slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.1 + i*34, H*.97, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad.slice(0,3)).forEach((id, i) => drawFigure(ctx, id, W*.1 + i*34, H*.97, 2.1, t, {phase:i, dir:1}));
   } else if (kind === 'room') {
     const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#120e0c'); g.addColorStop(1,'#080606'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
     // skeins hung to dry, blue and madder
@@ -1913,7 +1915,7 @@ function drawCity(cv, kind, t){
     ctx.fillStyle = '#2a1e12'; ctx.fillRect(W*.66, H*.56, W*.06, H*.3); ctx.fillRect(W*.66, H*.56, W*.1, H*.03);
     ell(ctx, W*.5, H*.56, 4, 8, '#e8d8a8'); glow(ctx, W*.5, H*.5, W*.32, '#ffb060', .4*fl);
     drawFigure(ctx, 'claw', W*.7, H*.9, 2.5, t, {still:true, dir:-1});
-    squad.slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.18 + i*36, H*.97, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad.slice(0,3)).forEach((id, i) => drawFigure(ctx, id, W*.18 + i*36, H*.97, 2.1, t, {phase:i, dir:1}));
   } else {
     // the street or the roof: night sky, Moon's Spawn over the lake, roofs, blue lamps
     const dawn = kind === 'roof', roofN = kind === 'roof_night';
@@ -1937,7 +1939,7 @@ function drawCity(cv, kind, t){
       drawFigure(ctx, 'assassin', W*.9, H*.66, 1.6, t, {still:true, dir:-1, alpha:.55});
     } else { ctx.fillStyle = '#16161a'; ctx.fillRect(0, H*.62, W, H*.38); ctx.strokeStyle = 'rgba(0,0,0,.45)'; for (let i=0;i<40;i++){ ctx.beginPath(); ctx.ellipse(hash(i,19)*W, H*.66 + hash(i,20)*H*.34, 9, 4, 0, 0, 7); ctx.stroke(); }
       for (let i=0;i<4;i++){ const x = W*.1 + i*W*.27, y = H*.62; ctx.fillStyle = '#1a1a1c'; ctx.fillRect(x-2, y-46, 4, 46); ctx.fillStyle = '#2e2e32'; ctx.fillRect(x-6, y-54, 12, 10); ctx.fillStyle = `rgba(160,210,255,${.7 + Math.sin(t/230 + i)*.2})`; ctx.fillRect(x-3, y-52, 6, 6); glow(ctx, x, y-48, 60, '#6aa8ff', .3*fl); ctx.fillStyle = 'rgba(90,140,210,.08)'; ell(ctx, x, y+10, 40, 10, 'rgba(90,140,210,.08)'); } }
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.92, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.92, 2.1, t, {phase:i, dir:1}));
   }
   const v = ctx.createRadialGradient(W/2, H*.55, H*.3, W/2, H*.55, W*.72); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.8)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
 }
@@ -2021,7 +2023,7 @@ function drawEstate(cv, kind, t){
     // masked revellers, far and near
     [[.12,5],[.3,4],[.55,4],[.8,3]].forEach(([d, n], j) => { const yy = lerp(H*.58, H*.96, d), sc = lerp(.7, 2.3, d), half = lerp(W*.13, W*.5, d);
       for (let i=0;i<n;i++){ const k = ((hash(i, j + 20) + t/(40000 - d*20000)*(i%2 ? 1 : -1)) % 1 + 1) % 1, xx = vx - half*.9 + k*half*1.8; if (d > .7 && xx < W*.34) continue; drawFigure(ctx, 'reveller', xx, yy, sc, t, {phase:i*3 + j*7 + 1, dir: i%2 ? 1 : -1}); } });
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.06 + i*30, H*.95, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.06 + i*30, H*.95, 2.1, t, {phase:i, dir:1}));
     confetti(ctx, W, H, t, 26, .55);
     vign(ctx, W, H, .75);
   } else if (kind === 'fete_hall') {
@@ -2046,7 +2048,7 @@ function drawEstate(cv, kind, t){
     drawFigure(ctx, 'kruppe', W*.8, H*.86, 2.3, t, {still:true, dir:-1});
     // masked dancers, turning in pairs
     for (let p=0;p<4;p++){ const cx = W*(.22 + p*.17), cy = H*(.86 + (p%2)*.06), a = t/1400 + p*1.7; [0, Math.PI].forEach((o, j) => { const x = cx + Math.cos(a + o)*12, depth = Math.sin(a + o); drawFigure(ctx, 'reveller', x, cy + depth*3, 2 + depth*.1, t, {phase:p*2 + j + 2, dir: Math.cos(a + o + Math.PI/2) > 0 ? 1 : -1}); }); }
-    squad.slice(0, 3).forEach((id, i) => drawFigure(ctx, id, 22 + i*Math.min(24, W*.07), H*.99, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad.slice(0, 3)).forEach((id, i) => drawFigure(ctx, id, 22 + i*Math.min(24, W*.07), H*.99, 2.1, t, {phase:i, dir:1}));
     vign(ctx, W, H, .8);
   } else if (kind === 'fete_garden') {
     const dawn = feteDawn(), az = !!(S && S.f && S.f.c6_azath), vx = W*.5, vy = H*.5;
@@ -2091,7 +2093,7 @@ function drawEstate(cv, kind, t){
       glow(ctx, ax + 19, ay - 32, 30, '#9ad8a0', .16 + p*.12); glow(ctx, ax, ay - 40, 90, '#7ad0a0', .04 + p*.05);
     } else { ell(ctx, ax, ay + 2, 30, 8, '#1e140e'); for (let i=0;i<12;i++) ell(ctx, ax + (hash(i,3)-.5)*50, ay + (hash(3,i)-.5)*9, 3.4, 2, '#2e2016'); glow(ctx, ax, ay - 16, 50, p > .5 ? '#7ad0a0' : '#9a86e0', .1 + p*.1);
       ctx.strokeStyle = '#040304'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.bezierCurveTo(ax - 8, ay - 16, ax + 9, ay - 26, ax - 3, ay - 46); ctx.stroke(); ctx.lineWidth = 2; [[-2,-38,-16,-52],[1,-30,16,-42],[0,-20,-12,-26],[-2,-44,5,-60],[1,-34,10,-30]].forEach(([a,b,c,d]) => { ctx.beginPath(); ctx.moveTo(ax + a, ay + b); ctx.quadraticCurveTo(ax + (a+c)/2, ay + (b+d)/2 - 5, ax + c, ay + d); ctx.stroke(); }); ctx.lineCap = 'butt'; }
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.06 + i*30, H*.97, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.06 + i*30, H*.97, 2.1, t, {phase:i, dir:1}));
     if (!dawn) confetti(ctx, W, H, t, 16, .5); else { ctx.fillStyle = 'rgba(255,190,140,.06)'; ctx.fillRect(0,0,W,H); for (let i=0;i<30;i++){ ctx.fillStyle = `rgba(230,240,255,${.2 + Math.sin(t/400 + i)*.15})`; ctx.fillRect(hash(i,77)*W, vy + hash(i,78)*H*.5, 1, 1); } } // dew
     vign(ctx, W, H, dawn ? .6 : .8);
   } else if (kind === 'garden_storm') {
@@ -2145,7 +2147,7 @@ function drawEstate(cv, kind, t){
     ctx.fillStyle = 'rgba(90,140,210,.12)'; ctx.fillRect(0, H*.7, W, H*.3); glow(ctx, W*.5, H*1.05, W*.6, '#6aa8ff', .2);
     skyline(ctx, W, H*.92, H*.2, '#07080e', (x) => `rgba(${hash(Math.floor(x*40),2) > .5 ? '140,190,255' : '255,200,120'},.6)`, 5);
     ctx.fillStyle = '#040408'; ctx.fillRect(0, H*.9, W, H*.1); poly(ctx, [[0, H],[0, H*.84],[W*.3, H*.86],[W*.34, H]], '#08070a');
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.03 + i*18, H*.9, 1.5, t, {phase:i, dir:1, still:true}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.03 + i*18, H*.9, 1.5, t, {phase:i, dir:1, still:true}));
     vign(ctx, W, H, .75, .45);
   } else if (kind === 'alley_night') {
     // a narrow wet alley: high walls close on both sides, a strip of sky, one blue lamp, a doorway, and somebody in it who is only faintly there
@@ -2175,7 +2177,7 @@ function drawEstate(cv, kind, t){
     const sh = ctx.createLinearGradient(dx0, 0, dx1, 0); sh.addColorStop(0, 'rgba(4,3,6,.92)'); sh.addColorStop(.55, 'rgba(4,3,6,.5)'); sh.addColorStop(1, 'rgba(4,3,6,0)'); ctx.fillStyle = sh; ctx.fillRect(dx0 - 10, dyt(dx0) - 10, dx1 - dx0 + 10, dyb(dx0) - dyt(dx0) + 20); // the shadow takes half of him
     glow(ctx, dx1, dyt(dx1) + 30, 20, '#6aa8ff', .08);
     for (let i=0;i<30;i++){ const x = hash(i,81)*W, y = ((hash(i,82)*H) + t*.25) % H; ctx.strokeStyle = 'rgba(160,190,230,.16)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 1, y + 6); ctx.stroke(); } // a fine rain
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.36 + i*28, H*.99, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.36 + i*28, H*.99, 2.1, t, {phase:i, dir:1}));
     vign(ctx, W, H, .85, .5);
   } else if (kind === 'lakefront_dawn') {
     // the docks at dawn: the lake, a ship at the pier, gulls, the city behind; and the sky has nothing in it
@@ -2196,7 +2198,7 @@ function drawEstate(cv, kind, t){
     ctx.fillStyle = '#1a1a1e'; ctx.fillRect(W*.5, H*.8, 12, 16); ell(ctx, W*.5 + 6, H*.8, 7, 3, '#3a3a40'); ctx.fillStyle = '#2a1e12'; ctx.fillRect(W*.86, H*.74, 34, 26); ctx.fillStyle = '#3a2c1c'; ctx.fillRect(W*.9, H*.66, 26, 22); ctx.fillStyle = '#8fa38a'; ctx.fillRect(W*.915, H*.72, 10, 6);
     [[W*.1, H*.52],[W*.28, H*.5],[W*.44, H*.52]].forEach(([x, y], i) => { const f = hash(Math.floor(t/120), i) > .9 ? .1 : .35 + Math.sin(t/300 + i)*.1; ctx.fillStyle = `rgba(140,190,255,${f})`; ctx.fillRect(x - 1.5, y - 8, 3, 3); glow(ctx, x, y - 7, 12, '#6aa8ff', f*.4); }); // the last lamps going out
     gulls(ctx, W, H, t, 6, .08, .3);
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.08 + i*32, H*.97, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.08 + i*32, H*.97, 2.1, t, {phase:i, dir:1}));
     ctx.fillStyle = 'rgba(255,190,140,.05)'; ctx.fillRect(0,0,W,H); vign(ctx, W, H, .55);
   } else if (kind === 'quorl_hill' || kind === 'road_east') {
     const road = kind === 'road_east';
@@ -2220,7 +2222,7 @@ function drawEstate(cv, kind, t){
       [[W*.62, H*.78],[W*.6, H*.8],[W*.8, H*.8]].forEach(([x, y], i) => drawFigure(ctx, ['fiddler','hedge','mallet'][i], x, y, 1.5, t, {phase:i, dir:1})); }
     ctx.fillStyle = vgrad(ctx, H*.78, H, [[0,'#5a4a30'],[1,'#2e2416']]); ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(0, H*.82); ctx.quadraticCurveTo(W*.2, H*.76, W*.42, H*.88); ctx.quadraticCurveTo(W*.7, H*1.0, W, H*.96); ctx.lineTo(W, H); ctx.fill();
     ctx.strokeStyle = 'rgba(140,130,80,.5)'; ctx.lineWidth = 1; for (let i=0;i<50;i++){ const x = hash(i,51)*W*.42, y = H*.84 + hash(i,52)*H*.16, h = 3 + hash(i,53)*6; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.sin(t/900 + i)*2, y - h*.6, x + Math.sin(t/700 + i)*3, y - h); ctx.stroke(); }
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.05 + i*28, H*.95, 2.1, t, {phase:i, dir:1, still:road}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.05 + i*28, H*.95, 2.1, t, {phase:i, dir:1, still:road}));
     ctx.fillStyle = 'rgba(255,220,160,.05)'; ctx.fillRect(0,0,W,H); vign(ctx, W, H, .5);
   } else if (kind === 'ship') {
     // a deck, a rail, a sail; grey water all round, and the city going small behind
@@ -2237,7 +2239,7 @@ function drawEstate(cv, kind, t){
     ctx.fillStyle = '#3a2c1e'; poly(ctx, [[-40, H],[-40, H*.72],[W + 40, H*.72],[W + 40, H]], '#3a2c1e'); ctx.strokeStyle = 'rgba(0,0,0,.4)'; for (let i=0;i<7;i++){ ctx.beginPath(); ctx.moveTo(-40, H*.74 + i*H*.04); ctx.lineTo(W + 40, H*.74 + i*H*.04); ctx.stroke(); }
     ctx.fillStyle = '#4a3624'; ctx.fillRect(-40, H*.6, W + 80, 6); for (let i=0;i<22;i++) ctx.fillRect(i*W/20 - 2, H*.6, 4, H*.13); ctx.fillStyle = 'rgba(255,240,220,.12)'; ctx.fillRect(-40, H*.6, W + 80, 1.5);
     ctx.restore();
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.5 + i*Math.min(30, (W*.5 - 24)/Math.max(1, squad.length - 1)), H*.96, 2.1, t, {phase:i, dir:1, still:true}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.5 + i*Math.min(30, (W*.5 - 24)/Math.max(1, squad.length - 1)), H*.96, 2.1, t, {phase:i, dir:1, still:true}));
     for (let i=0;i<12;i++){ const k = ((t/1400 + i/12) % 1); ctx.fillStyle = `rgba(230,235,240,${(1-k)*.35})`; ctx.fillRect(hash(i,91)*W, H*.6 - k*H*.3, 1.4, 1.4); } // spray
     vign(ctx, W, H, .55);
   }
@@ -2634,7 +2636,7 @@ function showTitle(){
 }
 function showIntro(){
   view = 'intro'; S.scene = 'intro'; save(); titleAnim = null; AUDIO.setScene('explore');
-  $('#app').innerHTML = `<header class="hud"><div><div class="loc">The Pale</div><div class="sub">Genabackis · three days after</div></div><div class="hudr">${hudButtons()}</div></header>
+  $('#app').innerHTML = `<header class="hud"><div><div class="loc">The Pale</div><div class="sub">Genabackis · 1163 Burn's Sleep · three days after</div></div><div class="hudr">${hudButtons()}</div></header>
   <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">The Second Army lies in pits on the hillside. Nobody talks about whose sorcery fell on whom.</div></div>
   <div class="narr">
     <p>Three days ago the Moon's Spawn drifted away from the Pale, leaving behind a city that had surrendered and an army that hadn't survived the surrender. What's left of the Second Army lies in pits on the hillside. The cadre of mages is down to a handful. Onearm's Host holds the ruins, counts its dead, and doesn't talk about whose sorcery fell on whom.</p>
@@ -2656,8 +2658,10 @@ function drawCamp(cv, t, night){ // intro backdrop: the pits and the camp under 
   for (let i=0;i<7;i++){ const x = W*.08 + i*W*.12, y = H*.66 + hash(i,2)*H*.2; ell(ctx, x, y, 30, 8, '#060504'); ctx.fillStyle = 'rgba(200,190,170,.35)'; for (let j=0;j<4;j++) ctx.fillRect(x - 20 + hash(i,j)*40, y - 3 + hash(j,i)*5, 2, 2); }
   for (let i=0;i<4;i++){ const x = W*.6 + i*W*.1, y = H*.6; poly(ctx, [[x-24,y+12],[x,y-24],[x+24,y+12]], i%2 ? '#2a2016' : '#3a2c1c'); poly(ctx, [[x,y-24],[x+24,y+12],[x+8,y+12]], '#1a1410'); }
   const fl = .8 + Math.sin(t/120)*.15; ell(ctx, W*.75, H*.7, 6*fl, 3, '#ffb060'); glow(ctx, W*.75, H*.7, 40, '#ffb060', .4*fl);
-  PORDER.forEach((id, i) => drawFigure(ctx, id, W*.15 + i*38, H*.86, 2.4, t, {phase:i}));
-  drawFigure(ctx, 'garrow', W*.5, H*.8, 2.2, t, {still:true});
+  // the gravedigger back at his pits, then the squad walking in to the lamplight: the rest behind, Brisk, and the sergeant in the lead
+  if (!S || !S.chapter) drawFigure(ctx, 'garrow', W*.07, H*.72, 1.7, t, {still:true});
+  const col = marchOrder(sceneSquad()), n = col.length, x0 = W*.66, st = Math.min(42, (x0 - 34)/Math.max(1, n - 1));
+  col.forEach((id, i) => { const back = n - 1 - i; drawFigure(ctx, id, x0 - back*st, H*.86 - (back ? 2 + (back % 2)*2 : 0), 2.4, t, {phase:i}); });
   ctx.fillStyle = 'rgba(200,190,175,.3)'; for (let i=0;i<30;i++) ctx.fillRect(hash(i,9)*W + Math.sin(t/1400 + i)*5, (hash(i,10)*H + t*.03) % H, 1.5, 1.5);
   const v = ctx.createRadialGradient(W/2, H/2, H*.3, W/2, H/2, W*.7); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.8)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
 }
@@ -3635,7 +3639,7 @@ const CHEND = {
 };
 const CHTEASE = {
   0:'Next: Captain Paran arrives at the Pale, the Hounds of Shadow come hunting, and the Fourth is told where it is going.',
-  1:'Next: the Black Moranth will not carry a sixth squad. The Fourth rides south across the Rhivi Plain, and something is riding the same way.',
+  1:'Next: the Black Moranth will not carry a second squad. The Fourth rides south-east across the Rhivi Plain, and something is riding the same way.',
   2:'Next: Darujhistan, the city of blue fire. The Bridgeburners are a week ahead and already under it.',
   3:'Next: assassins on the rooftops, a war nobody in the city admits is being fought, and a name said quietly at the Phoenix Inn: Rallick Nom.',  4:'Next: the Gadrobi Hills. An Adjunct with a T\'lan Imass at her side is digging for something that should stay buried, and the Fourth is sent to watch the wrong hill.',
   5:'Next: the Fete. Darujhistan throws a party the size of a city while a Tyrant walks toward it, and everyone the Fourth has met is going to be at Lady Simtal\'s.',
@@ -3804,7 +3808,7 @@ const QUESTS = {
   hound_site:()=> S.f.c2_tocGone ? 'East, to the fourth camp' : 'Dead horses, and two people who are not dead',
   ridge:()=> S.f.c2_lightDone ? 'Dawn. East, to the hills' : S.f.c2_light ? 'The light in the west' : 'The fourth camp. Talk to Sethand.',
   hills_edge:()=> 'The Gadrobi Hills. Darujhistan beyond.',
-  worry_gate:()=> S.f.c3_gateFought ? 'East, into the Gadrobi District' : S.f.c3_gate ? 'The wagon through the gate. East.' : 'The Worry Gate. Talk to the gate-clerk.',
+  worry_gate:()=> S.f.c3_gateFought ? 'Into the city, down to the Gadrobi District' : S.f.c3_gate ? 'The wagon through the gate.' : 'The Worry Gate. Talk to the gate-clerk.',
   gadrobi_cross:()=> S.f.c3_key ? 'Dawn. The roof above the dig.' : S.f.c3_msg ? 'The Daru District. A dye-shop. East.' : S.f.c3_workDone ? (SQUAD().includes('ellis') ? 'The second night. Ellis is waiting at the dig.' : 'The second night. A Gadrobi child is looking for you.') : S.f.c3_reported ? 'Crates down the hole. Whiskeyjack\'s orders.' : 'Report to Whiskeyjack at the barrier',
   hills_ridge:()=> S.f.c5_seth ? 'East, to the barrow. Don\'t be seen.' : 'Talk to the Rhivi on the ridge',
   barrow_vale:()=> S.f.c5_key ? 'Dawn. Paran rides for the city.' : S.f.c5_night ? 'Night. Something on the next hill. East.' : S.f.c5_wardsFought ? 'Two riders coming up the vale' : 'The Adjunct and the Imass. Watch.',
@@ -4139,7 +4143,7 @@ Behind you, Brisk shifts her weight, which is as close as she comes to a comment
 `Whiskeyjack has gone back to the sword. "Darujhistan," he says, to the blade. "Overland, with the baggage, a week behind us. Anything else, Sergeant, ask it now."` :
 `"Darujhistan." He lets the word sit in the fire a moment. "The last free city. Dujek's orders are to take it from the inside, and the Empress's orders are for the Bridgeburners to do it, and the new captain's orders are to command the Bridgeburners while they do it. You'll have seen the captain. Tall. Polite. Wearing his commission like a coat that hasn't been rained on yet."
 
-"The Black Moranth fly us south. Five squads. The quorls carry five, and I've asked about a sixth, and the answer was a noise I've decided was a no. So the Fourth goes overland with the baggage train and a Rhivi guide and whatever the Host can spare, which is nothing. You'll be a week behind us. You'll come into the city from the plain, and you'll be the only Malazans in it that nobody's watching for."
+"The Black Moranth fly us to the north shore of Lake Azur. One squad, nine of us, and then a boat across the lake by night, which Hedge has already started complaining about. I've asked about a second squad, and the answer was a noise I've decided was a no. So the Fourth goes overland with the baggage train and a Rhivi guide and whatever the Host can spare, which is nothing. You'll be a week behind us. You'll come into the city from the plain, and you'll be the only Malazans in it that nobody's watching for."
 
 ${S.ending === 'claw' ? `Quick Ben, mildly: "A grey cloak walked out of the north quarter two nights ago with a satchel under his arm. Half the camp saw it. The other half was paid not to." He is smiling. It isn't at you.` :
   S.ending === 'burned' ? `Quick Ben, mildly: "Tattersail burned a candle for an hour that night. Not for reading by." He is smiling. It isn't at you.` :
@@ -4616,9 +4620,9 @@ function c2LeaveBarrow(fx){ if (S.f.c2_barrowLeft) return; S.f.c2_barrowLeft = 1
 const c2Mule = (cap) => S.f.c2_wagon ? 'Pell' : cap ? 'The mule' : 'the mule';
 const CH2 = {
   title:'The Rhivi Plain', number:'Two',
-  intro:{loc:'The Rhivi Plain', sub:'Genabackis · three days south of Pale', cap:'Grass to every horizon, and one wagon on it, and the sky empty of quorls.',
+  intro:{loc:'The Rhivi Plain', sub:'Genabackis · three days south-east of Pale', cap:'Grass to every horizon, and one wagon on it, and the sky empty of quorls.',
     paras:[
-`The Black Moranth went south on the second morning, five squads riding things that should not fly, and the sky over the Pale was full of them for the time it takes to say a name, and then it was not. Whiskeyjack did not wave. Nobody expected him to. Kettle watched until there was nothing to watch, and then she counted the munitions.`,
+`The Black Moranth went south on the second morning, nine Bridgeburners riding things that should not fly, bound for the north shore of Lake Azur and a boat across it by night. Hedge was still complaining about the boat when the quorl lifted him. The sky over the Pale was full of wings for the time it takes to say a name, and then it was not. Whiskeyjack did not wave. Nobody expected him to. Kettle watched until there was nothing to watch, and then she counted the munitions.`,
 `You are Sergeant {sgt}, Fourth Squad, Seventh Company marines, and you are the baggage. One wagon, one mule, eighteen days of hardtack, the Bridgeburners' spare kit under an oilcloth, and a Rhivi guide who has said eleven words in three days and rationed them. The grass is chest-high on Brisk and taller than Tuft. It does not end. Sethand says it ends at the Gadrobi Hills, and says it the way you'd tell a child the sea has a far side.`,
 `Day four. Somewhere ahead, a city with blue fire in its streets. Somewhere behind, a camp that has stopped burning. Somewhere on the same road, though nobody has said so, a captain who should have died twice.`],
     go:'Ride', node:'c2_start'},
@@ -5809,7 +5813,7 @@ At the gate, Pallick has not looked up from his ledger once. You get the feeling
 
     /* ---- the Gadrobi crossroads: arrival ---- */
     c3_cross_arrive:()=>({sp:'The Gadrobi crossroads', scene:'city_street', fx:()=>{S.f.c3_cross=1;}, txt:
-`Four streets meet here, badly, the way streets meet in a district nobody planned: a tannery on one corner, a shuttered chandler's on another, a tavern with a painted bird over the door on the third, and on the fourth nothing but a wall with a lamp on it. In the middle of the crossing somebody has taken up the cobbles in a square and put a ring of sharpened stakes round the hole, and a sign on the stakes that says, in Daric, *By order of the District Warden: Works*.
+`Four streets meet here, badly, the way streets meet where two districts do and neither will admit it: a tannery on one corner, a shuttered chandler's on another, and on the third, across the line where the cobbles change and the Daru District begins, a tavern with a painted bird over the door. On the fourth, nothing but a wall with a lamp on it. In the middle of the crossing somebody has taken up the cobbles in a square and put a ring of sharpened stakes round the hole, and a sign on the stakes that says, in Daric, *By order of the District Warden: Works*.
 
 A lantern burns down inside the hole. Voices come up out of it, arguing, in Malazan.
 
@@ -5910,7 +5914,7 @@ Kettle, rigid: "No."
 
 "Your healer." He nods at Ohl. "Denul?" Ohl nods back. It's a long nod, the kind two old dogs give each other across a yard. "Good. Then there's two of us. I don't know what's down that hole, Sergeant, and neither does anyone who's been down it, but I know the smell, and it's the smell of a thing that stops people needing healers."
 
-${S.f.c3_inn ? `"Been to the Phoenix?" A faint smile. "Coll still buying? He'll buy for anyone who'll listen and he'll listen to anyone who won't talk about the Empire. You'll have failed that. Everyone does."` : `"If your lot are thirsty there's a tavern on the corner. The Phoenix. It's full of thieves." He considers. "They're the best people in the district. Don't tell them I said."`}
+${S.f.c3_inn ? `"Been to the Phoenix?" A faint smile. "Coll still buying? He'll buy for anyone who'll listen and he'll listen to anyone who won't talk about the Empire. You'll have failed that. Everyone does."` : `"If your lot are thirsty there's a tavern across the crossing, on the Daru side. The Phoenix. It's full of thieves." He considers. "They're the best people in Daru. Don't tell them I said."`}
 
 Ohl, when you've moved on: "He knows. About the list. I don't know how." Then, mildly: "Healers."`,
       ch:[{t:'Leave him.'}]}),
@@ -6052,7 +6056,7 @@ He goes back to the rooftops.`,
 
 He beams. His eyes are small and brown and extremely friendly, and they have, in the time it took him to dust your sleeve, counted your squad, priced your boots, noted Kettle's satchel and the way she holds it, and moved on to Tuft, and stopped there, for exactly one blink, and moved on again.
 
-"Kruppe is merely a humble citizen of this great city, a man of modest appetites and immodest waistcoats. Kruppe drinks at the Phoenix, yonder, where the painted bird is. Kruppe finds that road crews are thirsty. Kruppe finds that thirsty road crews, from the *hills*," he lingers on the word, lovingly, like a man smelling a wine he knows to be forged, "are the most delightful company in all Darujhistan, having so many stories and so few of them true."`,
+"Kruppe is merely a humble citizen of this great city, a man of modest appetites and immodest waistcoats. Kruppe drinks at the Phoenix, yonder, where the painted bird is, on the Daru side of the cobbles, for Kruppe is a Daru man, though his heart is broad enough for both districts and his waistcoat very nearly so. Kruppe finds that road crews are thirsty. Kruppe finds that thirsty road crews, from the *hills*," he lingers on the word, lovingly, like a man smelling a wine he knows to be forged, "are the most delightful company in all Darujhistan, having so many stories and so few of them true."`,
       ch:[{t:'"We\'re from the hills."', go:'c3_kruppe_hills'},
           {t:'"Who are you?"', go:'c3_kruppe_hills'},
           {t:'Step round him.', go:'c3_kruppe_hills'}]}),
@@ -7633,7 +7637,7 @@ const CH5 = {
   title:'The Gadrobi Hills', number:'Five',
   intro:{loc:'The Gadrobi Hills', sub:'East of Darujhistan · the third day', cap:'Brown hills folded on each other like blankets on a sickbed, and barrow-stones on every crest, and no smoke anywhere.',
     paras:[
-`Out through the Gadrobi Gate before the lamps go off, past the tanneries and the goat-pens and the last shrine to a god whose name has worn off the lintel, and then the road east stops pretending. Ruts. A cairn. A dead fire nobody claims. The city is behind you, blue and loud, and in front of you there is nothing, and the nothing goes up and down.`,
+`Out through the Worry Gate before the lamps go off, through Worrytown, past the tanneries and the goat-pens and the last shrine to a god whose name has worn off the lintel, and then the road east stops pretending. Ruts. A cairn. A dead fire nobody claims. The city is behind you, blue and loud, and in front of you there is nothing, and the nothing goes up and down.`,
 `The Gadrobi Hills are brown in autumn and brown the rest of the year. They fold into each other the way old men's hands fold, and on the crests there are stones, set upright, older than the Gadrobi, older than the city, older than anybody the Gadrobi can think of to blame. Sheep won't graze near them. The Gadrobi shepherds won't say why. They say *sheep know*, and spit, and walk the long way round.`,
 `Three days ago Whiskeyjack said a thing to you in the vault, over the hiss of the pipes, that you have been turning over since like a stone in a boot. *You found her once without meaning to. Find her again on purpose.* You remember the dust-line on the Rhivi Plain, and now you know what raised it: a woman on a horse riding badly and fast, and something beside her, walking, keeping up. Sethand would not cross its line. You are being sent to stand on it.`],
     go:'Into the hills', node:'c5_start'},
@@ -7773,7 +7777,7 @@ ${S.inv.cusser > 0 ? `Kettle doesn't say anything. She puts her face down agains
 
 "Lorn," she says. Only that, at first. Then: "I carried a letter to her once. Genabaris, three years ago. She took it without looking at me and read it standing, and when she'd read it she looked at me for the first time, and I understood that she was deciding whether I'd read it too." A breath. "I hadn't. She believed me. I've never been so glad to be believed." She goes up the ladder ahead of you. "She has a sword. You'll know it when you're near it. Everyone does."
 
-` : ''}Three days of it, then. Out through the Gadrobi Gate, east, on foot, with the packs and no wagon, because a wagon is a thing an Adjunct can see from a hill.
+` : ''}Three days of it, then. Out through the Worry Gate, east, on foot, with the packs and no wagon, because a wagon is a thing an Adjunct can see from a hill.
 
 The first day the hills are just hills. The second day the stones start: one on a crest, then three, then a line of them along a ridge like the back of a buried animal. The sheep go round them. The squad goes round them too, after Brisk watches the sheep for a while and says nothing and leads the way the sheep went.
 
@@ -8225,7 +8229,30 @@ ${SQUAD().includes('ohl') ? `Ohl has been standing a pace behind you, listening.
 
 Night comes down fast in the hills. It comes down like a lid.
 
-You watch the Adjunct go. She saddles her own horse. She strikes her own tent. The T'lan Imass climbs up out of the dig one last time and stands by her stirrup, and she mounts, and they go west, along the vale, past the ridge of small barrows, torn open, and past the Fourth, close enough to spit on. She doesn't look at you. The thing beside her doesn't look at anything. And then the dark has them, and there's only the sound of one horse walking, and then there isn't that.
+You watch the Adjunct go. She saddles her own horse. She strikes her own tent. The T'lan Imass climbs up out of the dig one last time and stands by her stirrup, and she mounts, and they go west, along the vale, past the ridge of small barrows, torn open, and past the Fourth, close enough to spit on. She doesn't look at you. The thing beside her doesn't look at anything.`,
+      ch:[{t:'Watch her go.', go:'c5_lorn_ride'}]}),
+    c5_lorn_ride:()=>({sp:'The barrow vale', scene:'hills_night', fx:()=>{ S.f.c5_collDown=1; }, txt:
+`On the long slope to the north-west, where the old road goes over the hills toward the city, there are riders on the skyline. Four of them, small with distance, black against the last green of the afterglow, sitting their ponies the way townsfolk sit ponies: as if the pony were a chair that might at any moment disagree. They've been there a while, watching the vale the way you've been watching it. ${S.f.c3_inn ? `One of them is very round. You know the shape before you know you know it: a table in the Phoenix, and a cup raised to you through the smoke.` : `One of them is very round, on a very small pony.`} One of them is very big.
+
+The Adjunct sees them.
+
+She doesn't change pace. She turns her horse off the vale road and up the slope toward them at the same walk, and the Imass doesn't follow; it stands in the road and waits, the way a spear waits against a wall. Halfway up the slope the walk becomes a canter.
+
+The riders break. Too late, and the wrong way: downhill, into each other. All but the big man. The big man turns his pony round, back into her road, between her and the others, with something in his hand that catches the last of the light. It's brave. It's the bravest thing you'll see in these hills, and it's worth exactly what bravery is worth against a woman with that sword.
+
+${SQUAD().includes('brisk') ? `Brisk is up on one knee with the shield already coming round. ` : ''}Paran's hand closes on your shoulder, hard. "*No*," he says, very low. "Stay down, Sergeant. That's an order. She'd kill every one of you and not be late for the city."
+
+So you watch. It was Whiskeyjack's order before it was Paran's: watch.
+
+The sword goes in. You see it go in. You don't hear it; it's three hundred paces, and it makes no sound at all. The big man sits his pony for a moment longer, as if he were thinking something over, and then goes sideways into the grass, and the pony runs.
+
+The Adjunct doesn't look down. She turns her horse and comes back down the slope at a walk, and takes the road again with the Imass beside her. The other riders have gone over the crest. The one in the grass doesn't move.
+
+${S.f.c3_innColl ? `You know the shoulders. The Phoenix, and the jug, and a ruined soldier's back. The big man in the grass is Coll.
+
+` : ''}"Remember where he fell," Paran says, and takes his hand off your shoulder. It's all he says.
+
+And then the dark has her, and there's only the sound of one horse walking, and then there isn't that.
 
 ${SQUAD().includes('tuft') ? `Tuft lets out a breath like someone surfacing. "Gone," she says. "She's gone. Oh, it's *back*." She holds up her hand and the shadow comes to it, thick as smoke, and wraps her fingers, and she presses the hand against her mouth.` : ''}
 
@@ -8533,7 +8560,42 @@ Paran hasn't sat down. He's standing at the edge of the fold with his back to th
 
 ${SQUAD().includes('ohl') ? `Ohl has the oilcloth on his knee. He hasn't opened it. "I won't write him," he says, to nobody, to Paran's back. "I don't know where he went. Nobody's dead until I know where they went." He puts it away. "That's a rule. I've just made it. I'm old enough to make rules."` : ''}
 
-Nobody sleeps. The stars go round. Somewhere before dawn there's a sound of hooves, slow and uneven, coming down into the fold from the west, and Toc's horse walks into the last of the firelight dragging its reins, lathered and shaking, and stops by the fire because it has nowhere else to stop.`,
+Nobody sleeps. The stars go round.`,
+      ch:[{t:'Keep watch.', go:'c5_hounds'}]}),
+    c5_hounds:()=>({sp:'The fold below the far hill', scene:'hills_night', fx:()=>{ S.f.c5_rakeNight=1; }, txt:
+`Past the middle of the night Paran goes out of the firelight. Not far: to the lip of the fold, twenty paces, where he can see the next hill and the pale litter of strings on it. He stands there with his back to the fire. You watch him go. You're the only one who does.
+
+So you see them come back.
+
+No baying this time. No grey. Two shapes on the slope above him where a heartbeat ago there were none, low to the grass, the size of horses, and the lamp-eyes are on him and only on him. They aren't passing anything tonight.
+
+Paran draws. You hear the sword come out, a thin clean sound, and you're up and running, ${SQUAD().includes('brisk') ? `Brisk beside you with the shield, ` : ''}and twenty paces is too far. It's much too far.
+
+Then the dark behind the Hounds stands up.
+
+A man. Taller than any man. Hair to his waist, white, gone silver under the stars. And a sword, a great two-handed sword, black, that doesn't take the starlight: the air round the blade smokes, the way air smokes round an iron bar left out in a hard frost.
+
+The first Hound turns to meet him, faster than anything you've ever seen move, and dies anyway. The black sword takes it across the shoulders. It doesn't fall the way things fall. It drops, all at once, as if whatever held it up had been taken somewhere else.
+
+And you hear chains.
+
+Not near. A long way off, and all round, and under your boots: a great many chains, heavy, dragging over stone, as if the sword were a door and on the far side of it something had just taken up the slack. It goes on for a long moment. Then it stops.
+
+The second Hound is on Paran. He's down under it, with his sword in it to the hilt and its jaws at his shoulder, and the tall man walks the three paces to it without hurrying and brings the black sword down across its back. The chains again. Louder. Closer. The Hound slumps across Paran like a dropped tent, and its blood comes out over him, black in the starlight, over his chest and his arms and his hands.
+
+The tall man stands over them. He looks down at Paran under the dead Hound. He looks for a long time at the sword in Paran's hand, the ordinary-looking sword, the way you'd look at a coin somebody had just tossed. Then he looks up, across the fold, at the fire, and at you.
+
+He says nothing. The black sword goes over his shoulder, and the sound of chains goes with it, dwindling, and he walks back into the dark he came out of, and the dark closes.
+
+${SQUAD().includes('tuft') ? `Tuft has both hands over her ears, and it isn't the chains she's keeping out. "There are people in it," she says. "In the sword. Sergeant, there are *people* in that sword, pulling."
+
+` : ''}${SQUAD().includes('ohl') ? `Ohl, on his knees by the fire, very quietly: "Hood didn't get those two. Something else did. Something that keeps what it takes."
+
+` : ''}It takes ${SQUAD().includes('brisk') ? `Brisk and you` : `three of you`} to get the Hound off him. It's heavier than it should be, and cold, and it doesn't smell of anything at all. Paran gets up on his own. He stands in the starlight with his sword in one hand and his hands black to the wrist, and he looks at them, and then at the dark where the tall man went.
+
+"Not this time," he says again. He doesn't sound disappointed now. He doesn't sound like anything.
+
+Nobody sleeps. Somewhere before dawn there's a sound of hooves, slow and uneven, coming down into the fold from the west, and Toc's horse walks into the last of the firelight dragging its reins, lathered and shaking, and stops by the fire because it has nowhere else to stop.`,
       ch:[{t:'Dawn.', go:'c5_dawn'}]}),
 
     /* ---- dawn ---- */
@@ -8542,13 +8604,15 @@ Nobody sleeps. The stars go round. Somewhere before dawn there's a sound of hoov
 
 Paran is on his horse. He's grey in the face, grey the way Tuft went grey near the Adjunct, as if something had been drawn out of him in the night and not put back. He has Toc's horse on a lead rein. He sat with it, you think, the last hour before light. Behind its saddle, rolled tight and strapped with a scout's knot, a Second Army cloak; he unstraps it without a word and holds it down to you, and you take it.
 
+His hands are still black to the wrist. You saw him wash them in the spring, twice, and it hasn't come off, and he's stopped trying. Where the Hounds died there's nothing: torn turf, and a dark stain the frost won't settle on, and nothing else. Nobody saw anyone take them.
+
 "The Adjunct's gone to the city," he says. "With the Imass. I'm to follow." He looks west, along the vale, toward Darujhistan. "I'm going to find Whiskeyjack first."
 
 He's quiet for a moment.
 
 "Tell Whiskeyjack I'm coming," he says. "Tell him —" And stops, and you watch him look at whatever he was going to say, and put it down. "No. I'll tell him."
 
-He turns the horse; not west, yet, but up the slope toward the next hill, where the strings are lying in the grass. "I'm going to look at what's left of him before I go. Somebody who knew him should." A pause. "I'll pass you on the road. But when you get there, tell Whiskeyjack about Toc. I'd rather he heard it from someone who saw."
+He turns the horse; not west, yet, but up the slope toward the next hill, where the strings are lying in the grass. "I'm going to look at what's left of him before I go. Somebody who knew him should." A pause. "Then the man the Adjunct rode down, on the north slope. If he's alive he'll need a horse more than I need a spare one." Another pause. "I'll pass you on the road. But when you get there, tell Whiskeyjack about Toc. I'd rather he heard it from someone who saw."
 
 ${S.f.c5_toolSaw ? `As he goes: "The Imass spoke to you. I saw it from the head of the vale." He doesn't turn round. "It hasn't spoken to me once, in a month. I'd think about that, Sergeant."` : ''}
 
@@ -8573,7 +8637,7 @@ It's the right sentence. You'll think about it for a long time, and you won't fi
     c5_dawn_ridge:()=>({sp:'The long ridge', scene:'hills', txt:
 `Up the fall, in the grey light, with the scree going out from under you and nobody caring now how loud it is.
 
-The Rhivi are still on the ridge. They've been there all night; you can see it in how they're lying. They watched the frost go out round the long barrow. They watched the grey light on the far hill, and the two shapes that came out of it. They watched the Adjunct go by in the dark with the thing beside her, and did not shoot, and are still alive because they did not.
+The Rhivi are still on the ridge. They've been there all night; you can see it in how they're lying. They watched the frost go out round the long barrow. They watched the grey light on the far hill, and the two shapes that came out of it, and the tall one that came after them out of the dark, and went back into it. They watched the Adjunct go by in the dark with the thing beside her, and did not shoot, and are still alive because they did not.
 
 The woman with the bundle is standing, below the crest, among the horses. She has it in both arms now, against her chest, the good red Rhivi wool, and she's looking west, toward the city, the way the Adjunct went. The bundle is very still.
 
@@ -8706,7 +8770,7 @@ const CH6 = {
   title:'The Fete', number:'Six',
   intro:{loc:'Darujhistan', sub:'The Gedderone Fete · the morning after the hills', cap:'Paper lanterns in every colour but blue strung over the streets, masks on every door, and over the lake a black mountain that nobody has dressed.',
     paras:[
-`Three days west out of the hills on foot, with the barrow's *thud* still in the soles of your boots, and on the third morning the Gadrobi Gate, and a clerk at it who does not ask your name, because nobody at any gate in Darujhistan is asking anybody anything today. Paran's horse passed you on the road the first morning, with Toc's on a lead rein behind it, and did not stop. You did not expect it to.`,
+`Three days west out of the hills on foot, with the barrow's *thud* still in the soles of your boots, and on the third morning the Worry Gate, and a clerk at it who does not ask your name, because nobody at any gate in Darujhistan is asking anybody anything today. Paran's horse passed you on the road the first morning, with Toc's on a lead rein behind it and a big man slumped across Toc's saddle, bound on, one arm hanging, and did not stop. You did not expect it to.`,
 `The city is dressing. Paper lanterns strung across every street from eave to eave, red and green and amber, every colour but blue, as if the city had got tired of its own light for one night. Masks on the doors. Masks on the carthorses. Masks tied with ribbon on the statues in the squares, a bird's face on a dead councillor, a fox on a god. The Gedderone Fete, a Gadrobi woman tells Kettle, and when Kettle asks who Gedderone is, the woman looks at her the way you'd look at somebody who asked what spring was.`,
 `And over the lake, where it has hung since before any of you came to this city, the Moon's Spawn. Black. Lampless. Nobody has strung a lantern on it. Nobody has tied a mask on it. Down in the streets, with the whole city looking up at its own paper lights, nobody looks at it at all, and you have learned enough about Darujhistan by now to know that this is how the city says it is afraid.`],
     go:'Down to the crossing', node:'c6_start'},
@@ -9138,7 +9202,7 @@ Tuft doesn't answer him. Her hand is at her collar, and she doesn't take it away
 `He's where he was, against the wall, with his arms folded, looking at the house. ${S.f.c6_collRing ? `Every so often he turns the ring on his finger, as if checking it's still there.` : `He doesn't look round.`}` :
 `A very big man in plain brown clothes is standing across the street from Lady Simtal's gate with his back to a wall and his arms folded, looking at the house the way you'd look at a dog that used to be yours and has since been taught to bite you.
 
-${S.f.c3_innColl ? `You know him, and then you don't. The Phoenix. The jug. The ruined soldier's shoulders. The shoulders are still a soldier's; the rest has been put back. He's sober. He's been sober, you'd guess, for weeks, and it's been hard, and it shows in how still he stands: like a man standing on something that might not hold.` : `He's sober, and it looks new on him, and hard.`}
+${S.f.c3_innColl ? `You know him, and then you don't. The Phoenix. The jug. The ruined soldier's shoulders. The shoulders are still a soldier's; the rest has been put back. He's sober. He's been sober, you'd guess, for weeks, and it's been hard, and it shows in how still he stands: like a man standing on something that might not hold.` : `He's sober, and it looks new on him, and hard.`}${S.f.c5_collDown ? ` He stands a little crooked, favouring his left side, the way a man stands round a wound that has closed and hasn't yet agreed to it. The last time you saw a man that size, he was going sideways into the grass of a hillside with the Adjunct's sword in him.` : ''}
 
 "Malazans," he says. ${S.f.c3_innColl ? `"Kruppe's road-menders. In Simtal's blue." He doesn't smile. "Of course you are. Kruppe arranges everything, and never where anybody can see him do it."` : `"In Simtal's blue. Hood's breath." He doesn't smile.`}
 
@@ -10056,7 +10120,11 @@ She hasn't left the squad. She'll walk back to the crossing with you in the morn
 
     /* ---- the Tyrant ---- */
     c6_tyrant:()=>({sp:'The old priest', scene:'garden_storm', fx:()=>{ if (!S.f.c6_tuft) S.f.c6_tuft='kept'; S.f.c6_tyrantUp=1; }, txt:
-`The old priest in the Jaghut mask has come down the white steps. You didn't see him come. Nobody did. He walks across the lawn slowly, an old man's walk, with his hands folded in his sleeves, and the couples on the gravel step out of his way without looking at him, the way you'd step out of a draught.
+`You're looking at the sky when it starts, which is why you miss the rest.
+
+Over the lake, the Moon's Spawn lets something fall. A shape drops off its black underside, opens, and catches itself on the air; then another, and another. Five. Winged, long-necked, bigger than any bird has a right to be, and the first of them is red where the lanterns catch it. They go east over the city, low and fast and without a sound, toward the Gadrobi Hills and the barrow. Nobody in the garden sees them but you.
+
+The old priest in the Jaghut mask has come down the white steps. You didn't see him come. Nobody did. He walks across the lawn slowly, an old man's walk, with his hands folded in his sleeves, and the couples on the gravel step out of his way without looking at him, the way you'd step out of a draught.
 
 He goes to the sapling.
 
@@ -10586,6 +10654,8 @@ Paran gets up. He puts her sword through his belt beside his own. He gathers her
 
 The frost is gone. The lawn is wet and trampled and black in rings where it froze. The lanterns hang dead in the trees, and the paper from the broken ones lies all over the grass like the petals of some enormous flower that came out in the night and went over. The fountain is running. Somebody has fished a mask out of it and left it on the rim.
 
+Beyond the wall the bells have started, and under the bells, a sound like a hunt: the priestesses of Gedderone running the streets at first light the way they do every year, barefoot, with strips of grey wolf fur in their fists, beating Fander the She-Wolf out of the doorways so that winter will leave the city for another year. Last night winter came into this garden on its own feet. Nobody here laughs at the ritual.
+
 ${S.f.c6_key === 'bridgeburners' ? `And the house is still there.` : `And there's a house.`}
 
 At the far end of the lawn, where the flowerbed was, where the Adjunct knelt and a black stick grew, ${S.f.c6_key === 'bridgeburners' ? `there's the house you watched come up out of the lawn in the night, with the Tyrant going into it. In daylight it's worse.` : `there's a house that wasn't there last night.`} It isn't large. Squat and dark, made of wood that is still growing, you'd swear, if you stood and watched it long enough: a peaked roof, a door, one small window with a light in it that isn't any colour a lamp makes. Round it, a yard. And in the yard, mounds. Low grassed mounds, a dozen or more, as if the house had arrived with its graves already dug. One of them is fresh. Bare earth, still dark with the wet.
@@ -10733,7 +10803,7 @@ ${SQUAD().includes('tuft') ? (S.f.c6_tuft === 'glove' ? `He looks across at Tuft
 
 ${S.f.c6_key === 'cellars' ? `"That paper," she says, to the lake. "In your coat. They'll know it's gone by noon. They'll know who by supper." A pause. "Don't keep it anywhere you sleep."` : S.f.c6_key === 'alley' ? (S.f.c6_steppedIn ? `"You stepped in," she says, to the lake. "I saw." That's all. It isn't forgiveness. You can hear it not being forgiveness. It isn't nothing, either.` : `She doesn't say anything at all. She's said her sentence, in the alley, and it was the right one, and she isn't going to say another.`) : `"The captain's sword drank that lance," she says, to the lake. "Toc would have given his other eye to see that." A pause. "He'd have been insufferable about it for a year."`}
 
-${S.f.c6_horses ? `After a long time: "The old man with the ponies. He'll be at the horse fair in the spring, by the Gadrobi Gate." She pulls her glove tight at the wrist. "I might go."` : ''}
+${S.f.c6_horses ? `After a long time: "The old man with the ponies. He'll be at the horse fair in the spring, outside the Worry Gate." She pulls her glove tight at the wrist. "I might go."` : ''}
 
 She doesn't look at you. You sit there until the sun is properly up, and she lets you, and that's the whole of it.`,
       ch:[{t:'Back to the steps.', go:'c6_close'}]}),
@@ -11040,7 +11110,7 @@ It comes out of the bone, or out of the air over it: thin, and far, full of wind
     c7_sending_dujek:()=>{ const d = C7H.dead(); return {sp:'Dujek Onearm · a long way north', scene:'fete_garden', fx:()=>{ S.f.c7_dujek=1; }, txt:
 `You know the voice. You'd know it at the bottom of a well: you heard it for three years across parade grounds and burning towns, while its one arm pointed you at whatever came next. High Fist Dujek. Onearm. The Host.
 
-"Here it is, then. The Empress has outlawed the Host. Me by name, the rest of you by the usual courtesy. There's a price on my head. I've seen the figure. I'd be insulted by anything lower." The wind comes through the bone and takes a word away and gives it back. "Seven Cities is sharpening its knives. The Empire's got more map than soldiers. So the Host is going its own way, and the first place it's going is to have a talk with Caladan Brood, and don't ask me what about, because I haven't decided yet what I'm going to lie about."
+"Here it is, then. The Empress has outlawed the Host. Me by name, the rest of you by the usual courtesy. There's a price on my head. I've seen the figure. I'd be insulted by anything lower." The wind comes through the bone and takes a word away and gives it back. "Seven Cities is sharpening its knives. The Empire's got more map than soldiers. So the Host is going its own way, and the first place it's going is to have a talk with Caladan Brood, and don't ask me what about, because I haven't decided yet what I'm going to lie about." A pause, and the voice goes flat, which is how you know it isn't lying now. "Here's what I won't lie about. There's a prophet in a tower in the south who calls himself the Pannion Seer. His priests are eating cities, and he doesn't care whose flag was on them. Brood's going to have to care. So am I."
 
 "The Black Moranth are with me. The rest of the Moranth are thinking about it, which with the Moranth takes a generation."
 
@@ -11343,7 +11413,7 @@ Then he laughs. Not much. Once, down his nose: the laugh of a man hit somewhere 
     c7_paran_horse:()=>({sp:'Captain Paran', fx:()=>{ S.f.c7_tocHorse=1; if (C7H.has('ellis')) loy('ellis',1); }, txt:
 `"Toc's horse." He knows before you've finished. ${S.f.c5_toc && (S.f.c2_ellisJoined || S.f.c7_ellisBack) ? `He looks past you at Ellis${S.f.c7_ellisBack ? `, and the grey in her hair, and doesn't ask` : ''}.` : `He looks past you at Ellis. "His scout," he says. "He told me about you. He said you'd tell me your eye was bad, and it isn't."`}
 
-"It's in the stable at the Gadrobi gate. I led it all the way in from the hills. It stood by my fire every night because it had nowhere else to stand." He takes one hand off the pommel of the sword that isn't his. "It's yours, if you want it. He'd want it ridden."
+"It's in the stable at the Worry Gate. I led it all the way in from the hills. It stood by my fire every night because it had nowhere else to stand." He takes one hand off the pommel of the sword that isn't his. "It's yours, if you want it. He'd want it ridden."
 
 Ellis doesn't say anything for a moment. Then she nods, once, the way you'd nod at a number you'd been waiting to hear.
 
@@ -11684,7 +11754,7 @@ ${C7H.has('brisk') ? `Brisk hasn't moved. "We don't leave people," she says. "Yo
 
 She pulls her glove tight at the wrist, finger by finger.
 
-You tell her about the horse: that it came back out of the hills riderless, on the captain's lead rein, and is standing in a stable at the Gadrobi gate with nobody to ride it. She listens with her head down.
+You tell her about the horse: that it came back out of the hills riderless, on the captain's lead rein, and is standing in a stable at the Worry Gate with nobody to ride it. She listens with her head down.
 
 "Then I'll go and see if it remembers me," she says.
 
@@ -11860,7 +11930,7 @@ The man in the grey cloak is still on the step by the green door. He hasn't move
 
     /* ---- the quorl hill ---- */
     c7_hill_arrive:()=>{ const pend = C7H.pendingTell(); return {sp:'The Gadrobi road · a hill east of the city', scene:'quorl_hill', fx:()=>{ S.f.c7_hill=1; }, txt:
-`East along the quay and up through the Gadrobi District, out through the Gadrobi Gate you came in by from the hills, past the tanneries and the goat-pens and the shrine to a god whose face somebody chiselled off with care. The road climbs into brown hills. An hour out, from the top of a rise, you see them.
+`East along the quay and out through the Worry Gate you came in by from the hills, through Worrytown, past the tanneries and the goat-pens and the shrine to a god whose face somebody chiselled off with care. The road climbs into brown hills. An hour out, from the top of a rise, you see them.
 
 Quorls.
 
@@ -12371,7 +12441,7 @@ She takes the hand away. "That's the last thing I can do for her. It's a good on
 "${C7H.Num(C7H.lc())}," he says, of the list, because you haven't asked. ${d.length ? `"${C7H.names(d)}. I meant to die before I wrote one of you. I didn't manage it."` : `"None of you. I intend to die first. I'm more confident of it than I was."`}${S.f.c7_ohlTat ? ` "Tattersail's crossed out. She went east."` : ''}`,
       ch:[{t:'Back to the squad.', go:'c7_close'}]}; },
     c7_close_ellis:()=>{ const k = S.f.c7_key || 'outlaw', fol = C7H.follows('ellis', k), horse = !!S.f.c7_tocHorse, held = !!S.f.c5_ellisHeld && !S.f.c7_ellisSpoke; return {sp:'Ellis', scene:'quorl_hill', fx:()=>{ if (held) S.f.c7_ellisSpoke=1; }, txt:
-`${k === 'disband' ? `"He kept riding," she says. "Somebody should see where." ${horse ? `"I've a horse that knows the way, or thinks it does."` : ''}` : k === 'outlaw' && fol ? `"North," she says. ${horse ? `"On a horse. I'm not going up on one of those things with a horse at the Gadrobi gate that nobody's riding." She looks at Paran. "He'll let me ride ahead. It's where a scout rides."` : `"I'll ride ahead, where a scout rides. On anything they'll give me."`}` : k === 'outlaw' ? `"No," she says. "Not north. Not with the Host." She pulls her glove tight. "He kept riding. Somebody should see where."` : k === 'empire' && fol ? `"Genabaris," she says. "The river quarter. Where a man who never gave his name took me off a dock." She pulls her glove tight. "I'll walk past the dock. I'd like to see if I can."` : k === 'empire' ? (S.f.c7_clawDeal === 'took' ? `"You took his paper," she says. "I'm not going home to be written."` : S.f.c7_ledger === 'retained' ? `"They wrote *useful*," she says. "I'm not going home to be useful."` : `"No," she says. "Not west. I've been west."`) : fol ? `"My mother sold horses at the Fete," she says. "Gadrobi. There's a horse-market outside the Gadrobi gate every tenth day." She almost smiles. "I'll see if they cheat the woman with the glove."` : `"No," she says. "Not here. It's a lovely city. It had my name in a book."`}
+`${k === 'disband' ? `"He kept riding," she says. "Somebody should see where." ${horse ? `"I've a horse that knows the way, or thinks it does."` : ''}` : k === 'outlaw' && fol ? `"North," she says. ${horse ? `"On a horse. I'm not going up on one of those things with a horse at the Gadrobi gate that nobody's riding." She looks at Paran. "He'll let me ride ahead. It's where a scout rides."` : `"I'll ride ahead, where a scout rides. On anything they'll give me."`}` : k === 'outlaw' ? `"No," she says. "Not north. Not with the Host." She pulls her glove tight. "He kept riding. Somebody should see where."` : k === 'empire' && fol ? `"Genabaris," she says. "The river quarter. Where a man who never gave his name took me off a dock." She pulls her glove tight. "I'll walk past the dock. I'd like to see if I can."` : k === 'empire' ? (S.f.c7_clawDeal === 'took' ? `"You took his paper," she says. "I'm not going home to be written."` : S.f.c7_ledger === 'retained' ? `"They wrote *useful*," she says. "I'm not going home to be useful."` : `"No," she says. "Not west. I've been west."`) : fol ? `"My mother sold horses at the Fete," she says. "Gadrobi. There's a horse-market outside the Worry Gate every tenth day." She almost smiles. "I'll see if they cheat the woman with the glove."` : `"No," she says. "Not here. It's a lovely city. It had my name in a book."`}
 
 ${held ? `Then she looks at you, and says one sentence, the first she has said to you since the hillside that wasn't an answer to an order; and it's the right one.
 
@@ -12508,7 +12578,7 @@ The Host's lines are a city of tents with no Empire in it. The Fourth Regiment i
     const p1 = rides ? `${k === 'empire' && f.c7_clawDeal === 'took' ? `"You took his paper," she said, on the hill. "I'm not going home to be written." ` : ''}Ellis rides.${horse ? ` On Toc's horse, which has decided she will do.` : ''} North, some days; east, most. *He kept riding. Somebody should see where.* She looks at the ground more than the sky. Once in a long while, where the grass is pressed flat in a way grass shouldn't be, she gets down and puts her gloved hand flat on the prints and counts the days.` :
       k === 'outlaw' ? `Ellis goes north with the Host and scouts for it, out ahead where a scout rides${horse ? `, on Toc's horse, which has decided she will do` : ''}. She looks back once a day and counts. The number is right more often than it isn't.` :
       k === 'empire' ? `Ellis goes home to Genabaris, the river quarter, where a man who never gave his name took her off a dock at eighteen. She walks past the dock. She doesn't look at it. Then she goes back and looks at it, for a long time, and walks on, and that's the end of that.` :
-      `Ellis stays in Darujhistan. Her mother was Gadrobi and sold horses at the Fete, and there's a horse-market outside the Gadrobi gate every tenth day, and by midsummer the Gadrobi traders have stopped trying to cheat the woman with the glove, which in that market is a kind of citizenship.${horse ? ` She keeps Toc's horse. She never sells it.` : ''}`;
+      `Ellis stays in Darujhistan. Her mother was Gadrobi and sold horses at the Fete, and there's a horse-market outside the Worry Gate every tenth day, and by midsummer the Gadrobi traders have stopped trying to cheat the woman with the glove, which in that market is a kind of citizenship.${horse ? ` She keeps Toc's horse. She never sells it.` : ''}`;
     const said = f.c7_ledgerBurnt ? `something the fire had half of` : lc === 'retained' ? `*retained, useful through the Fourth*` : lc === 'lost' ? `*lost, entry closed*` : `*not retained*`;
     const did = act === 'struck' ? `She struck it through, neatly. They'd want it neat.` : act === 'burned' ? `She gave it to the fire, which was where it was going.` : act === 'kept' ? `She keeps it folded small in the cuff of her glove, against the burned hand. When she's dead properly, somebody can send it back to them.` : '';
     const p2 = lc ? `Her line in the ledger behind the green door said ${said}. ${did}` : `She never went through the green door. "I know which way it's written," she says, if anybody asks. "It's written the way I walk."`;
@@ -12571,7 +12641,7 @@ C7H.gone = (id, key) => {
   const lc = f.c7_ledger, act = f.c7_ledgerAct, horse = !!f.c7_tocHorse;
   if (f.c7_ellisLeft) return {title:'He kept riding', txt:C7H.join([
 `She came back out of the grey on the Lakefront at dawn, with ash in her hair and Kettle's cord on her wrist, and the sergeant told her she could go where she liked, and she did.`,
-`There was a horse in the stable at the Gadrobi gate that nobody was riding. It remembered her. She rides. North, some days; east, most. She looks at the ground more than the sky, and once in a long while, where the grass is pressed flat in a way grass shouldn't be, she gets down and puts her gloved hand flat on the prints and counts the days.`,
+`There was a horse in the stable at the Worry Gate that nobody was riding. It remembered her. She rides. North, some days; east, most. She looks at the ground more than the sky, and once in a long while, where the grass is pressed flat in a way grass shouldn't be, she gets down and puts her gloved hand flat on the prints and counts the days.`,
 `"He kept riding," she says, to the horse. "So will we."`,
 C7H.has('ohl') ? `Ohl crossed out her space anyway. "She's not dead," he said. "She's only not ours. Those are different lists."` : ''])};
   if (f.c2_ellisRefused) {
