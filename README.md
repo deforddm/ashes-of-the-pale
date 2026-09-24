@@ -12,6 +12,8 @@ The Malazan world and its canon characters belong to Steven Erikson. This is fan
 
     python3 build.py
 
+`tools/` holds the checks used for the polish pass (Node + Playwright): `lint.mjs` evaluates every dialogue node under randomised states, `play.mjs` is a bot that plays the whole game from the title to the finale, and `shoot.mjs` screenshots any state.
+
 Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; each defines its area, battles, foes, gear, a Deck card and its dialogue tree. `docs/` holds the campaign outline and the per-chapter content briefs.
 
 ## Versions
@@ -24,3 +26,4 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 - v3.3.0 — Chapter Four: Assassins. The rooftops at night, Kalam's meet, the Tiste Andii, the Guild and the roof choice.
 - v3.4.0 — Chapter Five: The Gadrobi Hills. Lorn and Tool, the barrow, Hairlock's rent, Toc, the Hounds, the Herald card.
 - v3.6.0 — Chapters Six and Seven: The Fete, Outlaws — the end of the book. Estate and lakefront maps, the Tyrant, the Adjunct, otataral and mortal fights, the finale and a page per squadmate.
+- v3.7.0 — The polish pass. Every chapter proofread and checked for continuity, including every combination of the dead after the alley. Painted portraits, reworked sprites, tiles, backdrops and cards. A rebuilt procedural score and place-by-place ambience. Sturdier battles with hit chances, clearer turns and no clipped sprites. A close-up explore map that follows the sergeant. Proper curly quotes. Updates now wait for a tap instead of reloading mid-fight, and the fonts work offline.
