@@ -33,13 +33,13 @@ function openChars(i, tab){
     <div class="sec"><h4>Unfinished business</h4><p class="q">${c.quest}</p></div>
     ${loyN !== null ? `<div class="sec"><h4>Standing with ${esc(S.name)}</h4><div class="loymeter">${[-3,-2,-1,0,1,2,3].map(v => `<i class="${v === 0 ? 'mid' : v < 0 ? (loyN <= v ? 'neg' : '') : (loyN >= v ? 'pos' : '')}"></i>`).join('')}</div><div class="pips">${loyLabel(loyN)}</div>${banter ? `<p class="banter">${banter}</p>` : ''}</div>` : ''}
     <div class="sec"><h4>${id === 'sgt' ? 'The squad, as they stand' : 'The others'}</h4><ul>${rel}</ul></div>`;
-  m.innerHTML = `<div class="mbox csheet">
+  m.innerHTML = smartq(`<div class="mbox csheet">
     <div class="cshead"><button class="btn nav" id="cPrev" aria-label="Previous">‹</button><h2 class="m" style="text-align:center">Fourth Squad · ${charIdx + 1} of ${SQ.length}</h2><button class="btn nav" id="cNext" aria-label="Next">›</button></div>
     <div class="portrait"><canvas id="pcv" width="720" height="540"></canvas><div class="plate"><h3>${esc(NAME(id))}</h3><div class="r">${c.role}</div><div class="ep">${c.epithet}</div></div></div>
     <div class="dots">${SQ.map((p,k) => `<i class="${k === charIdx ? 'on' : ''}"></i>`).join('')}</div>
     <div class="tabs"><button class="tab ${charTab === 'soldier' ? 'on' : ''}" data-t="soldier">Soldier</button><button class="tab ${charTab === 'story' ? 'on' : ''}" data-t="story">Story</button><span style="flex:1"></span><button class="tab" data-t="pack">Pack</button><button class="tab" data-t="journal">Journal</button><button class="tab" data-t="save">Save</button></div>
     <div>${charTab === 'soldier' ? soldier : story}</div>
-    <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" id="cClose">Close</button></div></div>`;
+    <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn" id="cClose">Close</button></div></div>`);
   const pcv = $('#pcv'), pctx = pcv.getContext('2d'); charAnim = t => { if (!pcv.isConnected) { charAnim = null; return; } drawPortrait(pctx, id, 720, 540, t); };
   $('#cPrev').onclick = () => { AUDIO.play('flip'); openChars(charIdx - 1); };
   $('#cNext').onclick = () => { AUDIO.play('flip'); openChars(charIdx + 1); };

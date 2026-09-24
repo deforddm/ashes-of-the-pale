@@ -193,32 +193,67 @@ function drawTile(ctx, ch, x, y, T, dark, tunnel, style){
   if (ch === '#') { fill(dark ? '#0c0a0a' : tunnel ? '#151110' : '#171310');
     for (let i=0;i<4;i++){ const a=hash(x,y,i), b=hash(x,y,i+5), r = T*(.16 + hash(x,y,i+11)*.14); const g = ctx.createRadialGradient(px+(.2+a*.6)*T - r*.3, py+(.2+b*.6)*T - r*.3, 1, px+(.2+a*.6)*T, py+(.2+b*.6)*T, r); g.addColorStop(0, dark ? '#2a2426' : '#43372e'); g.addColorStop(1, dark ? '#0a0909' : '#130f0d'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(px+(.2+a*.6)*T, py+(.2+b*.6)*T, r, r*.7, a*3, 0, 7); ctx.fill(); }
     if (tunnel && hash(x,y,3) > .6) { ctx.fillStyle = '#2a1e12'; ctx.fillRect(px + T*.1, py, T*.12, T); } return; }
-  const base = plain ? (ch === ',' ? '#4f5a34' : '#4a5232') : ch === ',' ? '#403a34' : ch === 'P' ? '#161210' : tunnel ? '#26211c' : '#332b23';
-  fill(dark ? shade(base, -.4) : shade(base, (h - .5) * .16));
+  const base = plain ? (ch === ',' ? '#4f5a34' : '#4a5232') : ch === ',' ? (tunnel ? '#29231e' : '#37302a') : tunnel ? '#26211c' : '#332b23';
+  fill(dark ? shade(base, -.4 + (h - .5)*.04) : shade(base, (h - .5) * .06)); // gentle per tile; the broad light and dark comes from the mottling pass in prerender
   if (plain) { ctx.strokeStyle = dark ? 'rgba(90,110,60,.35)' : 'rgba(120,140,70,.5)'; ctx.lineWidth = 1; const n = ch === ',' ? 7 : 3; for (let i=0;i<n;i++){ const gx = px + hash(x,y,i+20)*T, gy = py + T*.3 + hash(y,x,i+30)*T*.7, gh = T*(ch === ',' ? .35 : .18); ctx.beginPath(); ctx.moveTo(gx, gy); ctx.quadraticCurveTo(gx + 2, gy - gh*.6, gx + (hash(x,y,i+40)-.5)*4, gy - gh); ctx.stroke(); } }
-  else speck(ch === ',' ? '#5e574f' : '#3f362e', 4);
+  else { speck(ch === ',' ? '#5e574f' : '#3f362e', 4); if (ch === ',') for (let i=0;i<3;i++) ell(ctx, px + T*(.25 + hash(x,y,i+80)*.5), py + T*(.25 + hash(y,x,i+80)*.5), T*(.14 + hash(x,y,i+83)*.12), T*(.08 + hash(x,y,i+84)*.06), 'rgba(150,140,128,.1)', hash(x,y,i+85)*3); } // ash lying in drifts
+  if (ch === 'T' && !tunnel && !plain) { const g = ctx.createLinearGradient(0, py + T*.2, 0, py + T*.95); g.addColorStop(0, '#020101'); g.addColorStop(1, '#120d0a'); ctx.fillStyle = g; ctx.fillRect(px+T*.16, py+T*.2, T*.68, T*.75); // the tunnel mouth: a shored opening going down into the dark
+    ctx.fillStyle = 'rgba(60,48,36,.5)'; for (let i=0;i<3;i++) ctx.fillRect(px+T*(.2 + i*.03), py+T*(.72 + i*.08), T*(.6 - i*.06), T*.03); ctx.fillStyle = '#4a3a26'; ctx.fillRect(px+T*.08, py+T*.1, T*.84, T*.12); ctx.fillStyle = '#3a2c1c'; ctx.fillRect(px+T*.1, py+T*.12, T*.1, T*.84); ctx.fillStyle = '#2a1e12'; ctx.fillRect(px+T*.8, py+T*.12, T*.1, T*.84); ctx.fillStyle = 'rgba(210,180,130,.18)'; ctx.fillRect(px+T*.08, py+T*.1, T*.84, T*.03); }
   if (ch === 'r') { ell(ctx, px+T*.5, py+T*.62, T*.3, T*.2, '#3a3630'); ell(ctx, px+T*.44, py+T*.56, T*.2, T*.14, '#57534c'); ell(ctx, px+T*.62, py+T*.66, T*.12, T*.08, '#2a2724'); }
   if (ch === 'M') { ctx.fillStyle = '#3a3a38'; ctx.beginPath(); ctx.moveTo(px+T*.08, py+T*.92); ctx.quadraticCurveTo(px+T*.5, py-T*.1, px+T*.92, py+T*.92); ctx.fill(); ctx.fillStyle = '#2a2a28'; ctx.fillRect(px+T*.4, py+T*.5, T*.2, T*.42); ctx.fillStyle = '#6b6a66'; for (let i=0;i<5;i++) ctx.fillRect(px+T*.15+i*T*.15, py+T*.55+hash(x,y,i)*T*.2, T*.08, T*.06); }
   exitArrow(ctx, ch, px, py, T);
-  if (h > .82) speck('#0f0c0a', 2, 7, .1); // pebbles
-  if (ch === 'R') { ctx.fillStyle = '#1e1915'; ctx.fillRect(px+1,py+1,T-2,T-2); ctx.fillStyle = '#3d3229'; ctx.fillRect(px+1,py+1,T-2,T*.22);
-    ctx.strokeStyle = '#120f0d'; ctx.lineWidth = 1; for (let r=1;r<4;r++){ ctx.beginPath(); ctx.moveTo(px+1, py+r*T/4); ctx.lineTo(px+T-1, py+r*T/4); ctx.stroke(); } ctx.fillStyle = '#0a0807'; ctx.fillRect(px + T*.3, py + T*.35, T*.4, T*.3); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(px + T*.5, py + T*.05, T*.5, T*.9); }
-  if (ch === 'P') { speck('#cfc4b0', 5, 3); speck('#8a7a68', 3, 13, .05); ctx.strokeStyle = '#26201a'; ctx.strokeRect(px+2,py+2,T-4,T-4); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(px+2,py+2,T-4,T*.3); }
-  if (ch === '~') { fill('#0b0910'); const cg = ctx.createRadialGradient(9*T, 6*T, T*.3, 9*T, 6*T, T*2.3); cg.addColorStop(0, '#1e1630'); cg.addColorStop(.7, '#0e0b14'); cg.addColorStop(1, '#221c18'); ctx.fillStyle = cg; ctx.fillRect(px,py,T,T); ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.lineWidth = 1; for (let i=0;i<3;i++){ ctx.beginPath(); ctx.moveTo(px + hash(x,y,i)*T, py + hash(x,y,i+9)*T); ctx.lineTo(px + hash(x,y,i+4)*T, py + hash(x,y,i+13)*T); ctx.stroke(); } speck('#3a2f4a', 3, 21, .05); }
+  if (h > .8 && ch !== 'P') for (let i=0;i<2;i++){ const a = hash(x,y,i+7), b = hash(y,x,i+7), r = T*(.035 + hash(x,y,i+60)*.035); ell(ctx, px + a*T, py + b*T, r, r*.7, plain ? '#343c22' : '#1c1612'); ell(ctx, px + a*T - r*.3, py + b*T - r*.3, r*.45, r*.3, plain ? 'rgba(170,180,120,.25)' : 'rgba(150,130,105,.28)'); } // pebbles, lit from above
+  if (ch === 'R') { // a stub of broken masonry: courses of block, a ragged top, a doorway gone black, rubble at its foot
+    const top = T*(.1 + hash(x,y,5)*.22); ell(ctx, px+T*.56, py+T*.9, T*.46, T*.1, 'rgba(0,0,0,.45)');
+    ctx.beginPath(); ctx.moveTo(px+T*.06, py+T*.9); ctx.lineTo(px+T*.06, py + top + T*.12); for (let i=1;i<=5;i++) ctx.lineTo(px + T*(.06 + i*.176), py + top + (hash(x,y,i+20) - .3)*T*.24); ctx.lineTo(px+T*.94, py+T*.9); ctx.closePath(); ctx.fillStyle = '#2c241d'; ctx.fill();
+    ctx.save(); ctx.clip(); ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fillRect(px + T*.62, py, T*.4, T); ctx.fillStyle = 'rgba(210,180,140,.08)'; ctx.fillRect(px, py, T*.3, T);
+    ctx.strokeStyle = 'rgba(8,6,5,.75)'; ctx.lineWidth = 1; ctx.beginPath(); for (let r=0;r<6;r++){ const yy = py + T*(.9 - r*.155); ctx.moveTo(px, yy); ctx.lineTo(px + T, yy); for (let c=0;c<3;c++){ const xx = px + T*((c + (r%2)*.5)*.34 + .1); ctx.moveTo(xx, yy); ctx.lineTo(xx, yy - T*.155); } } ctx.stroke();
+    if (hash(x,y,9) > .45) { ctx.fillStyle = '#080605'; ctx.beginPath(); ctx.moveTo(px+T*.36, py+T*.9); ctx.lineTo(px+T*.36, py+T*.6); ctx.arc(px+T*.49, py+T*.6, T*.13, Math.PI, 0); ctx.lineTo(px+T*.62, py+T*.9); ctx.fill(); }
+    ctx.restore(); for (let i=0;i<4;i++) ell(ctx, px + T*(.15 + hash(x,y,i+40)*.7), py + T*(.86 + hash(x,y,i+41)*.08), T*(.05 + hash(x,y,i+42)*.05), T*.035, i%2 ? '#4a3e32' : '#231c16'); }
+  if (ch === 'P') { // a burial pit: turned earth at its lip, lime, the shrouded dead in rows
+    const n = (dx, dy) => !tileMap || (tileMap[y + dy] && tileMap[y + dy][x + dx] === 'P'); fill(dark ? '#0c0908' : '#15100c');
+    for (let i=0;i<2;i++){ if (hash(x,y,i+30) < .25) continue; const bx = px + T*(.26 + hash(x,y,i+31)*.34), by = py + T*(.3 + i*.38); ctx.save(); ctx.translate(bx, by); ctx.rotate((hash(x,y,i+32) - .5)*.35);
+      ell(ctx, 0, T*.03, T*.25, T*.08, 'rgba(0,0,0,.5)'); ell(ctx, 0, 0, T*.24, T*.075, dark ? '#4a443c' : '#6e665a'); ell(ctx, -T*.06, -T*.025, T*.14, T*.03, 'rgba(210,200,180,.22)'); ctx.strokeStyle = 'rgba(30,24,18,.6)'; ctx.lineWidth = 1; ctx.beginPath(); for (let j=-1;j<=1;j++){ ctx.moveTo(j*T*.09, -T*.07); ctx.lineTo(j*T*.09 + T*.015, T*.07); } ctx.stroke(); ctx.restore(); }
+    speck('rgba(220,215,200,.45)', 6, 3, .035);
+    const lip = (x0, y0, w, hh) => { ctx.fillStyle = dark ? '#261e16' : '#3a2e22'; ctx.fillRect(x0, y0, w, hh); ctx.fillStyle = 'rgba(170,140,105,.16)'; ctx.fillRect(x0, y0, w, Math.max(1, hh*.4)); };
+    if (!n(0,-1)) { lip(px, py, T, T*.14); const g = ctx.createLinearGradient(0, py + T*.14, 0, py + T*.5); g.addColorStop(0, 'rgba(0,0,0,.6)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(px, py + T*.14, T, T*.36); }
+    if (!n(0,1)) lip(px, py + T*.9, T, T*.1); if (!n(-1,0)) { lip(px, py, T*.1, T); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(px + T*.1, py, T*.12, T); } if (!n(1,0)) lip(px + T*.9, py, T*.1, T); }
+  if (ch === '~' && !tileMap) { fill('#0b0910'); const cg = ctx.createRadialGradient(9*T, 6*T, T*.3, 9*T, 6*T, T*2.3); cg.addColorStop(0, '#1e1630'); cg.addColorStop(.7, '#0e0b14'); cg.addColorStop(1, '#221c18'); ctx.fillStyle = cg; ctx.fillRect(px,py,T,T); } // (the crater is drawn whole by prerender)
   if (ch === '=') { ctx.fillStyle = '#5a4630'; ctx.beginPath(); ctx.moveTo(px, py+T); ctx.lineTo(px+T/2, py+T*.12); ctx.lineTo(px+T, py+T); ctx.fill(); ctx.fillStyle = '#3c2d1e'; ctx.beginPath(); ctx.moveTo(px+T/2, py+T*.12); ctx.lineTo(px+T, py+T); ctx.lineTo(px+T*.62, py+T); ctx.fill(); ctx.fillStyle = '#0a0806'; ctx.beginPath(); ctx.moveTo(px+T*.4, py+T); ctx.lineTo(px+T*.5, py+T*.6); ctx.lineTo(px+T*.6, py+T); ctx.fill(); }
   if (ch === 'C') { ctx.fillStyle = '#4a3a26'; ctx.beginPath(); ctx.moveTo(px - T*.1, py+T); ctx.lineTo(px+T/2, py+T*.02); ctx.lineTo(px+T*1.1, py+T); ctx.fill(); ctx.fillStyle = '#2c2216'; ctx.beginPath(); ctx.moveTo(px+T/2, py+T*.02); ctx.lineTo(px+T*1.1, py+T); ctx.lineTo(px+T*.66, py+T); ctx.fill(); ctx.fillStyle = '#1a1208'; ctx.beginPath(); ctx.moveTo(px+T*.38, py+T); ctx.lineTo(px+T*.5, py+T*.55); ctx.lineTo(px+T*.62, py+T); ctx.fill(); ctx.fillStyle = 'rgba(255,190,110,.55)'; ctx.fillRect(px+T*.45, py+T*.7, T*.1, T*.3); }
   if (ch === 'F' || ch === 'B') { for (let i=0;i<7;i++){ const a = i/7*6.28; ell(ctx, px+T/2 + Math.cos(a)*T*.32, py+T*.6 + Math.sin(a)*T*.2, T*.07, T*.05, '#3a3128'); } ell(ctx, px+T/2, py+T*.6, T*.16, T*.08, '#1a1008'); }
   if (ch === 'W') { ctx.fillStyle = '#3c2d1e'; ctx.fillRect(px+T*.12, py+T*.3, T*.76, T*.4); ctx.fillStyle = '#5a4630'; ctx.fillRect(px+T*.12, py+T*.3, T*.76, T*.08); ctx.fillStyle = '#15100a'; ell(ctx, px+T*.28, py+T*.76, T*.11, T*.11, '#15100a'); ell(ctx, px+T*.72, py+T*.76, T*.11, T*.11, '#15100a'); ctx.fillStyle = '#8a7a5a'; ctx.fillRect(px+T*.2, py+T*.16, T*.6, T*.16); }
   if (ch === 'x') { ctx.fillStyle = '#3a2a18'; ctx.fillRect(px+T*.44, py+T*.2, T*.12, T*.7); ctx.fillStyle = '#6b5a3c'; ctx.fillRect(px+T*.44, py+T*.2, T*.12, T*.1); ctx.strokeStyle = 'rgba(120,100,70,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, py+T*.35); ctx.lineTo(px+T, py+T*.35); ctx.stroke(); }
-  if (ch === 'T') { ctx.fillStyle = '#030202'; ctx.fillRect(px+T*.15, py+T*.2, T*.7, T*.72); ctx.fillStyle = '#4a3a26'; ctx.fillRect(px+T*.08, py+T*.12, T*.84, T*.12); ctx.fillRect(px+T*.1, py+T*.12, T*.1, T*.8); ctx.fillRect(px+T*.8, py+T*.12, T*.1, T*.8); }
+  if (ch === 'T' && (tunnel || plain)) { ctx.fillStyle = '#030202'; ctx.fillRect(px+T*.15, py+T*.2, T*.7, T*.72); ctx.fillStyle = '#4a3a26'; ctx.fillRect(px+T*.08, py+T*.12, T*.84, T*.12); ctx.fillRect(px+T*.1, py+T*.12, T*.1, T*.8); ctx.fillRect(px+T*.8, py+T*.12, T*.1, T*.8); }
+}
+let tileMap = null; // the map being prerendered, for tiles that look at their neighbours (pits)
+/* the crater at the heart of the Pale: one bowl across all its tiles, a rim of thrown earth, glassed and cracked stone, shards that hold the warren's light */
+function drawCrater(ctx, map, T){
+  let x0 = 99, y0 = 99, x1 = -1, y1 = -1; map.forEach((r, y) => [...r].forEach((c, x) => { if (c === '~') { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); } })); if (x1 < 0) return;
+  const cx = (x0 + x1 + 1)/2*T, cy = (y0 + y1 + 1)/2*T, rx = (x1 - x0 + 1)/2*T*1.04, ry = (y1 - y0 + 1)/2*T*1.12;
+  for (let i=0;i<44;i++){ const a = i/44*6.283, rr = 1.02 + hash(i,3)*.2; ell(ctx, cx + Math.cos(a)*rx*rr, cy + Math.sin(a)*ry*rr, T*(.1 + hash(i,4)*.14), T*(.06 + hash(i,5)*.07), i%3 ? '#433729' : '#241d17', a); } // thrown earth
+  const path = () => { ctx.beginPath(); for (let i=0;i<=40;i++){ const a = i/40*6.283, rr = .9 + hash(i % 40, 7)*.12; const px = cx + Math.cos(a)*rx*rr, py = cy + Math.sin(a)*ry*rr; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); };
+  path(); const g = ctx.createRadialGradient(cx, cy + ry*.12, T*.2, cx, cy, Math.max(rx, ry)); g.addColorStop(0, '#1c1430'); g.addColorStop(.55, '#0d0a14'); g.addColorStop(.86, '#16120f'); g.addColorStop(1, '#2a2219'); ctx.fillStyle = g; ctx.fill();
+  ctx.save(); path(); ctx.clip();
+  const lg = ctx.createLinearGradient(0, cy - ry, 0, cy - ry*.3); lg.addColorStop(0, 'rgba(0,0,0,.6)'); lg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = lg; ctx.fillRect(cx - rx*1.2, cy - ry*1.2, rx*2.4, ry*.9); // the near lip throws its shadow down into it
+  ctx.strokeStyle = 'rgba(0,0,0,.75)'; ctx.lineWidth = 1; for (let i=0;i<16;i++){ const a = i/16*6.283 + hash(i,9); let px = cx, py = cy; ctx.beginPath(); ctx.moveTo(px, py); for (let q=1;q<6;q++){ px = cx + Math.cos(a + (hash(i,q) - .5)*.6)*rx*q/5; py = cy + Math.sin(a + (hash(q,i) - .5)*.6)*ry*q/5; ctx.lineTo(px, py); } ctx.stroke(); }
+  for (let i=0;i<26;i++){ const px = cx + (hash(i,11) - .5)*rx*1.7, py = cy + (hash(i,12) - .5)*ry*1.6, s = T*(.04 + hash(i,15)*.05); poly(ctx, [[px, py - s*1.4],[px + s*1.6, py],[px, py + s],[px - s, py]], `rgba(${130 + Math.round(hash(i,13)*60)},110,210,${.18 + hash(i,14)*.3})`); } // glassed shards
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(190,160,120,.12)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(cx, cy + 1, rx*.97, ry*.97, 0, Math.PI*.1, Math.PI*.9); ctx.stroke(); // the far lip catching a little light
 }
 function prerender(map, cols, rows, dark, tunnel, style){
   const {bctx, T} = G; if (!bctx) return;
   const est = style && style.startsWith('estate');
   if (style && (est || style === 'storm')) { estateRing = est ? {x:8, y:5} : {x:3.5, y:1}; map.forEach((r, y) => [...r].forEach((c, x) => { if (est && c === 'A') estateRing = {x, y}; })); }
-  estateMap = est ? map : null;
+  estateMap = est ? map : null; tileMap = map;
   for (let y=0;y<rows;y++) for (let x=0;x<cols;x++) drawTile(bctx, map[y][x] === '#' ? '#' : tunnel ? (hash(x,y,4) > .8 ? ',' : '.') : map[y][x], x, y, T, dark, tunnel, style);
   estateMap = null;
+  const earth = !style || style === 'pale' || style === 'camp_night' || style.startsWith('plain') || style.startsWith('hills');
+  if (earth) { // broad, soft light and dark across the ground, so the tiles read as one field and not a board
+    for (let i=0;i<cols*rows*.55;i++){ const x = hash(i,71)*cols*T, y = hash(i,72)*rows*T, r = T*(.9 + hash(i,73)*1.6), lit = hash(i,74) > .55, g = bctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, lit ? `rgba(255,236,200,${dark ? .02 : .04})` : 'rgba(0,0,0,.1)'); g.addColorStop(1, lit ? 'rgba(255,236,200,0)' : 'rgba(0,0,0,0)'); bctx.fillStyle = g; bctx.fillRect(x - r, y - r, r*2, r*2); }
+    if (map.some(r => r.includes('~'))) drawCrater(bctx, map, T); }
+  tileMap = null;
   if (est) { const mode = style.endsWith('terrace') ? 'terrace' : style.endsWith('storm') ? 'storm' : 'night'; for (let y=0;y<rows;y++) for (let x=0;x<cols;x++) drawEstateOver(bctx, map[y][x], x, y, T, mode, map); G.azath = !!(S && S.f && S.f.c6_azath); }
   // grime / soft shadows along walls
   for (let y=0;y<rows;y++) for (let x=0;x<cols;x++) if (map[y][x] !== '#' && (map[y-1]?.[x] === '#')) { const g = bctx.createLinearGradient(0, y*T, 0, y*T + T*.5); g.addColorStop(0, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); bctx.fillStyle = g; bctx.fillRect(x*T, y*T, T, T*.5); }

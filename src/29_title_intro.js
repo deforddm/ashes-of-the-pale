@@ -5,10 +5,15 @@ function showTitle(){
     <h1>Ashes<span>of the Pale</span></h1>
     <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them, and then south.</p>
     <div class="field"><label for="nm">Your sergeant's name</label><input type="text" id="nm" maxlength="18" value="${esc(has?.name || 'Hask')}" autocomplete="off"></div>
-    <div class="row"><button class="btn primary" id="bNew">Begin</button>${has ? '<button class="btn" id="bCont">Continue</button>' : ''}<button class="btn" id="bImp">Load a save code</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button></div>
-    <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. · v${VERSION}</p></div>`;
+    <div class="tbtns">${has ? '<button class="btn primary" id="bCont">Continue</button>' : '<button class="btn primary" id="bNew">Begin</button>'}<button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
+      <div class="row2">${has ? '<button class="btn" id="bNew">New game</button>' : ''}<button class="btn" id="bImp">Load a save code</button></div></div>
+    <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. <span class="ver">v${VERSION}</span></p></div>`;
   startTitleBackdrop($('#titlecv'));
-  $('#bNew').onclick = () => { AUDIO.play('click'); S = newState($('#nm').value.trim()); save(); showIntro(); };
+  // a new game over a saved one asks twice: the first tap says what it will cost
+  $('#bNew').onclick = () => { const b = $('#bNew'); AUDIO.play('click');
+    if (has && !b.dataset.arm) { b.dataset.arm = 1; b.classList.add('warn'); b.textContent = 'Tap again: it replaces your save'; setTimeout(() => { if (b.isConnected) { delete b.dataset.arm; b.classList.remove('warn'); b.textContent = 'New game'; } }, 4000); return; }
+    S = newState($('#nm').value.trim()); save(); showIntro(); };
+  $('#nm').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); if (has) e.target.blur(); else $('#bNew').click(); } };
   if (has) $('#bCont').onclick = () => { AUDIO.play('click'); S = has; resume(); };
   $('#bImp').onclick = () => { AUDIO.play('click'); openModal('save'); };
   $('#bSet').onclick = () => { AUDIO.play('click'); openSettings(); };
@@ -29,7 +34,7 @@ function showIntro(){
   bindHud();
 }
 function drawCamp(cv, t, night){ // intro backdrop: the pits and the camp under a bruised sky
-  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+  const {ctx, W, H} = sceneFit(cv);
   const sky = ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0, night ? '#04040a' : '#08070b'); sky.addColorStop(.6, night ? '#0e0b12' : '#1c1414'); sky.addColorStop(1,'#0a0807'); ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
   if (night) { ctx.fillStyle = 'rgba(220,220,240,.5)'; for (let i=0;i<40;i++) ctx.fillRect(hash(i,21)*W, hash(i,22)*H*.5, 1, 1); glow(ctx, W*.2, H*.25, W*.25, '#9a86e0', .08 + Math.sin(t/900)*.03); }
   glow(ctx, W*.8, H*.62, W*.5, '#e8923a', (night ? .3 : .22) + Math.sin(t/140)*.03);

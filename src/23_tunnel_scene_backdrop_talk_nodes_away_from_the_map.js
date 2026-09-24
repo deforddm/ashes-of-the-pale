@@ -1,26 +1,62 @@
-/* ============ tunnel scene backdrop (talk nodes away from the map) ============ */
+/* ============ scene backdrops (talk nodes away from the map) ============ */
+/* The backdrop canvas is sized by CSS (full width, 240px tall), so its backing store is fitted here to the box it is shown in,
+   at the device's pixel ratio: nothing is squashed on a narrow phone, and it stays sharp. W and H are CSS pixels. */
+function sceneFit(cv){
+  const ctx = cv.getContext('2d'), cw = cv.clientWidth, ch = cv.clientHeight;
+  if (!cw || !ch) { ctx.setTransform(1,0,0,1,0,0); return {ctx, W:cv.width, H:cv.height}; }
+  const dpr = Math.min(2, window.devicePixelRatio || 1), bw = Math.round(cw*dpr), bh = Math.round(ch*dpr);
+  if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
+  ctx.setTransform(bw/cw, 0, 0, bh/ch, 0, 0); return {ctx, W:cw, H:ch};
+}
+/* the still parts of a backdrop, painted once per kind and size; the frame only adds what moves */
+const SCENE_CACHE = new Map();
+function sceneLayer(key, W, H, paint){ const dpr = Math.min(2, window.devicePixelRatio || 1), k = `${key}|${W}x${H}|${dpr}`; let c = SCENE_CACHE.get(k);
+  if (!c) { c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W*dpr)); c.height = Math.max(1, Math.round(H*dpr)); const x = c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); paint(x, W, H); if (SCENE_CACHE.size > 12) SCENE_CACHE.clear(); SCENE_CACHE.set(k, c); }
+  return c; }
+const sceneSquad = () => (typeof SQUAD === 'function' && S ? SQUAD() : PORDER);
+/* the sapper tunnels under the Pale: timber frames going back into the dark, a lantern on the nearest, rubble; or, deeper, Kurald Galain seeping in */
+function paintTunnel(x, W, H, dark, barrow = false){ // barrow: a Rhivi barrow on the plain, dry-laid stone instead of timber shoring
+  const vx = W*.56, vy = H*.42, N = 7, fr = i => { const k = Math.pow(.64, i); return {l:vx - W*.66*k, r:vx + W*.66*k, t:vy - H*.6*k, b:vy + H*.66*k, k}; };
+  x.fillStyle = dark ? '#060509' : '#0a0807'; x.fillRect(0,0,W,H);
+  const end = fr(N); x.fillStyle = dark ? '#0c0816' : '#050404'; x.fillRect(end.l, end.t, end.r - end.l, end.b - end.t);
+  const q = (pts, c) => poly(x, pts, c), stone = (a, b, lit, side, seed) => { // lumps of rock and cracks between two frames
+    for (let j=0;j<5;j++){ const u = hash(seed, j, 1), v = hash(seed, j, 2), px = side === 'l' ? lerp(a.l, b.l, u) : side === 'r' ? lerp(a.r, b.r, u) : lerp(lerp(a.l, b.l, u), lerp(a.r, b.r, u), v), py = side === 'f' ? lerp(a.b, b.b, u) : side === 'c' ? lerp(a.t, b.t, u) : lerp(lerp(a.t, b.t, u), lerp(a.b, b.b, u), .1 + v*.8), r = (W*.05 + hash(seed, j, 3)*W*.05)*lerp(a.k, b.k, u);
+      ell(x, px, py, r, r*.6, `rgba(${dark ? '70,60,90' : '110,90,70'},${.12*lit})`, hash(seed, j, 4)*3); ell(x, px + r*.2, py + r*.2, r*.7, r*.35, `rgba(0,0,0,${.25})`, hash(seed, j, 4)*3); } };
+  for (let i=N-1;i>=0;i--){ const a = fr(i), b = fr(i + 1), lit = clamp(1 - i*.15, .1, 1), c = (base, amt) => shade(base, -1 + lit*amt);
+    q([[a.l, a.t],[b.l, b.t],[b.l, b.b],[a.l, a.b]], c(dark ? '#3a3448' : barrow ? '#48443c' : '#4a3a2c', .75)); q([[a.r, a.t],[b.r, b.t],[b.r, b.b],[a.r, a.b]], c(dark ? '#2a2636' : barrow ? '#34312b' : '#33291f', .6)); // walls, the left one lit
+    q([[a.l, a.t],[a.r, a.t],[b.r, b.t],[b.l, b.t]], c('#241c16', .55)); q([[a.l, a.b],[a.r, a.b],[b.r, b.b],[b.l, b.b]], c(dark ? '#2a2630' : '#3a3026', .7)); // roof, floor
+    ['l','r','c','f'].forEach((sd, j) => stone(a, b, lit, sd, i*4 + j + (dark ? 50 : 0)));
+    if (barrow) { // dry-laid stone: two posts of stacked blocks and a lintel slab, mortarless
+      const pw = W*.05*a.k, cap = H*.08*a.k, st = shade('#6e685c', -1 + lit*.95), sd = shade('#4a463e', -1 + lit*.9), rows = 6, rh = (a.b - a.t - cap)/rows;
+      for (let r=0;r<rows;r++){ const yy = a.t + cap + r*rh, jog = (hash(i, r, 5) - .5)*pw*.25; x.fillStyle = st; x.fillRect(a.l + jog, yy, pw, rh - Math.max(.5, a.k)); x.fillStyle = sd; x.fillRect(a.r - pw - jog, yy, pw, rh - Math.max(.5, a.k)); }
+      const g = x.createLinearGradient(0, a.t, 0, a.t + cap); g.addColorStop(0, st); g.addColorStop(1, sd); x.fillStyle = g; x.fillRect(a.l - pw*.2, a.t, a.r - a.l + pw*.4, cap);
+      x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(a.l + pw, a.t + cap, a.r - a.l - pw*2, cap*.3); continue; }
+    const pw = W*.045*a.k, cap = H*.07*a.k, wood = shade('#6a4a2a', -1 + lit*.95), wd = shade('#3a2616', -1 + lit*.9); // the frame: two posts and a cap
+    x.fillStyle = wood; x.fillRect(a.l, a.t, pw, a.b - a.t); x.fillStyle = wd; x.fillRect(a.r - pw, a.t, pw, a.b - a.t);
+    const g = x.createLinearGradient(0, a.t, 0, a.t + cap); g.addColorStop(0, wood); g.addColorStop(1, wd); x.fillStyle = g; x.fillRect(a.l, a.t, a.r - a.l, cap);
+    x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(a.l + pw, a.t + cap, a.r - a.l - pw*2, cap*.35); x.fillRect(a.l + pw*.7, a.t, pw*.3, a.b - a.t);
+    x.strokeStyle = `rgba(0,0,0,${.4})`; x.lineWidth = Math.max(.5, a.k*1.2); x.beginPath(); for (let j=1;j<4;j++){ x.moveTo(a.l + pw*j/4, a.t + cap); x.lineTo(a.l + pw*j/4 + (hash(i,j)-.5)*pw*.3, a.b); } x.stroke(); } // grain
+  // the near floor: rubble, a fallen beam, a puddle
+  const f0 = fr(0); for (let i=0;i<26;i++){ const u = hash(i, 7), yy = lerp(f0.b, H, hash(i, 8)*.9) - H*.02, r = 3 + hash(i, 9)*10*(yy/H); ell(x, lerp(-10, W + 10, u), yy, r, r*.55, i%3 ? '#14100c' : '#241c16'); ell(x, lerp(-10, W + 10, u) - r*.3, yy - r*.2, r*.5, r*.25, 'rgba(120,100,80,.08)'); }
+  if (barrow) { const e = fr(3); x.fillStyle = '#2a2722'; x.fillRect(lerp(e.l, e.r, .22), lerp(e.t, e.b, .72), (e.r - e.l)*.56, (e.b - e.t)*.12); x.fillStyle = 'rgba(160,150,130,.14)'; x.fillRect(lerp(e.l, e.r, .22), lerp(e.t, e.b, .72), (e.r - e.l)*.56, (e.b - e.t)*.025); } // the slab, with nothing on it
+  else { x.save(); x.translate(W*.72, H*.86); x.rotate(-.12); x.fillStyle = '#1e140c'; x.fillRect(-W*.16, -5, W*.32, 9); x.fillStyle = 'rgba(120,90,60,.2)'; x.fillRect(-W*.16, -5, W*.32, 2); x.restore(); }
+  ell(x, W*.3, H*.9, W*.1, H*.02, dark ? 'rgba(120,100,200,.12)' : 'rgba(232,150,80,.12)');
+}
 function drawScene(cv, kind, t){
-  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
-  ctx.fillStyle = '#060505'; ctx.fillRect(0,0,W,H);
-  const cx = W/2, cy = H*.55, fl = .8 + Math.sin(t/110)*.08 + Math.sin(t/41)*.05;
-  // perspective tunnel walls
-  for (let i=0;i<9;i++){ const k = i/9, w = W*(1 - k*.8), h = H*(1 - k*.8), x = cx - w/2, y = cy - h*.55; const a = .18 - k*.02; ctx.strokeStyle = kind === 'dark' ? `rgba(60,50,80,${a})` : `rgba(90,70,50,${a})`; ctx.lineWidth = 4 - k*3; ctx.strokeRect(x, y, w, h); }
-  // shoring beams
-  for (let i=0;i<5;i++){ const k = i/5 + .05, w = W*(1 - k*.8), x = cx - w/2, y = cy - H*(1 - k*.8)*.55; ctx.fillStyle = '#2a1e12'; ctx.fillRect(x, y, w, 8 - k*5); ctx.fillRect(x, y, 6 - k*4, H*(1 - k*.8)); ctx.fillRect(x + w - (6 - k*4), y, 6 - k*4, H*(1 - k*.8)); }
-  glow(ctx, cx - W*.2, cy + H*.1, W*.45, kind === 'dark' ? '#9a86e0' : '#e8923a', (kind === 'dark' ? .12 : .28)*fl);
-  if (kind === 'dark') { for (let i=0;i<10;i++) ell(ctx, hash(i,3)*W, H*.6 + hash(i,4)*H*.4 - ((t/30 + i*30) % 60), 40 + hash(i,5)*40, 12, 'rgba(60,45,100,.08)'); glow(ctx, cx + W*.2, cy - H*.1, W*.2, '#9a86e0', .1 + Math.sin(t/700)*.05); }
-  // floor rubble
-  for (let i=0;i<20;i++) ell(ctx, hash(i,6)*W, H*.75 + hash(i,7)*H*.25, 6 + hash(i,8)*18, 4, '#0d0b0a');
-  // party silhouettes small in foreground
-  PORDER.forEach((id, i) => drawFigure(ctx, id, cx - 90 + i*45, H*.92, 2.2, t, {phase:i, dir: i < 2 ? 1 : -1}));
-  // dust
-  ctx.fillStyle = 'rgba(200,190,175,.25)'; for (let i=0;i<20;i++) ctx.fillRect(hash(i,9)*W + Math.sin(t/1400 + i)*5, (hash(i,10)*H + t*.02) % H, 1.5, 1.5);
-  const v = ctx.createRadialGradient(cx, cy, H*.2, cx, cy, W*.7); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.85)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
+  const {ctx, W, H} = sceneFit(cv), dark = kind === 'dark', barrow = kind === 'rhivi_barrow', mo = REDUCE() ? 0 : 1, fl = .82 + (Math.sin(t/110)*.08 + Math.sin(t/41)*.05)*mo;
+  ctx.drawImage(sceneLayer('tunnel:' + (dark ? 'dark' : barrow ? 'barrow' : ''), W, H, (x, W, H) => paintTunnel(x, W, H, dark, barrow)), 0, 0, W, H);
+  const vx = W*.56, vy = H*.42, lx = vx - W*.66*.64 + W*.1, ly = vy - H*.6*.64 + H*.1; // the lantern, hung from the second frame
+  if (dark) { const p = (Math.sin(t/900) + 1)/2; glow(ctx, vx, vy, W*.3, '#9a86e0', .16 + p*.1); for (let i=0;i<9;i++){ const k = ((t/(5200 + i*300)*mo + hash(i,3)) % 1); ell(ctx, lerp(vx, hash(i,4)*W, k), lerp(vy + H*.1, H*.84, k), 16 + k*50, 4 + k*9, `rgba(70,55,120,${.12*Math.sin(k*Math.PI)})`); } }
+  ctx.globalCompositeOperation = 'lighter'; glow(ctx, lx, ly + 10, W*.5, '#e8923a', (dark ? .16 : .26)*fl); glow(ctx, lx, ly + 8, 26, '#ffc070', .5*fl); ctx.globalCompositeOperation = 'source-over';
+  ctx.strokeStyle = '#1a140e'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(lx, ly - 8); ctx.lineTo(lx, ly + 1); ctx.stroke(); ctx.fillStyle = '#2a2016'; ctx.fillRect(lx - 4, ly + 1, 8, 11); ctx.fillStyle = `rgba(255,${200 + Math.round(fl*20)},130,${.75*fl})`; ctx.fillRect(lx - 2.6, ly + 3, 5.2, 7); ctx.fillStyle = '#2a2016'; ctx.fillRect(lx - 5, ly, 10, 1.6);
+  const sq = sceneSquad(), n = sq.length; sq.forEach((id, i) => drawFigure(ctx, id, W*.5 + (i - (n - 1)/2)*Math.min(44, W*.8/n), H*.95 - (i%2)*4, 1.9, t, {phase:i, dir: i < n/2 ? 1 : -1}));
+  ctx.fillStyle = 'rgba(210,190,160,.3)'; for (let i=0;i<22;i++){ const y = (hash(i,10)*H + t*.012*mo*(1 + hash(i,11))) % H, xx = lx + (hash(i,9) - .5)*W*.6 + Math.sin(t/1400 + i)*6; ctx.globalAlpha = clamp(1 - Math.hypot(xx - lx, y - ly)/(W*.35), 0, 1); ctx.fillRect(xx, y, 1.4, 1.4); } ctx.globalAlpha = 1; // dust in the lantern light
+  vign(ctx, W, H, .8, .5);
 }
 
 /* tent and fire interiors for Chapter 1 talk nodes */
 function drawInterior(cv, kind, t){
-  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, fl = .8 + Math.sin(t/110)*.08 + Math.sin(t/41)*.05;
+  const {ctx, W, H} = sceneFit(cv), fl = .8 + Math.sin(t/110)*.08 + Math.sin(t/41)*.05;
   ctx.fillStyle = '#060505'; ctx.fillRect(0,0,W,H);
   if (kind === 'tent') {
     // canvas walls lit from a candle on a table; cards on the table; a crate in the corner with something on it
@@ -34,7 +70,7 @@ function drawInterior(cv, kind, t){
     ctx.save(); ctx.translate(W*.87, H*.66); ctx.fillStyle = '#4a3a2c'; ctx.fillRect(-5, -16, 10, 14); ell(ctx, 0, -20, 5, 5, '#8a6a52'); ctx.fillStyle = '#0a0808'; ctx.fillRect(-2, -21, 1.5, 1.5); ctx.fillRect(1, -21, 1.5, 1.5); ctx.strokeStyle = 'rgba(200,180,220,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-4, -30); ctx.lineTo(-3, -16); ctx.moveTo(4, -30); ctx.lineTo(3, -16); ctx.stroke(); ctx.restore();
     glow(ctx, W*.87, H*.6, W*.12, '#9a86e0', .1 + Math.sin(t/500)*.05);
     drawFigure(ctx, 'tat', W*.15, H*.9, 2.6, t, {still:true, dir:1});
-    SQUAD().slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.4 + i*40, H*.98, 2.2, t, {phase:i, dir:-1}));
+    SQUAD().slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.4 + i*40, H*.95, 2.2, t, {phase:i, dir:-1}));
   } else {
     // the Bridgeburners' fire: a ring of figures, most of them not looking at you
     const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#04040a'); g.addColorStop(1,'#0a0807'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
@@ -49,38 +85,48 @@ function drawInterior(cv, kind, t){
   const v = ctx.createRadialGradient(W/2, H*.6, H*.25, W/2, H*.6, W*.7); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.85)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
 }
 
-/* the Rhivi Plain, for Chapter 2 talk nodes: day, dusk, night (with the light in the west once it rises) */
+/* the Rhivi Plain (Chapter 2) and the Gadrobi Hills (Chapter 5): day, dusk and night; the light in the west once it rises; the rent on the far hill */
+function paintPlain(x, W, H, hills, tod, hz){
+  const night = tod === 'night', dusk = tod === 'dusk';
+  x.fillStyle = vgrad(x, 0, hz, night ? [[0,'#030309'],[1,'#0e0d18']] : dusk ? [[0,'#140e1a'],[.45,'#3e1e24'],[.8,'#9a4a2a'],[1,'#e08a44']] : [[0,'#2a3040'],[.6,'#6e6e68'],[1,'#b0a68c']]); x.fillRect(0,0,W,hz + 2);
+  if (night) { for (let i=0;i<110;i++){ const sx = hash(i,41)*W, sy = Math.pow(hash(i,42), 1.3)*hz; if (hills && sx > W*.52 && sx < W*.9 && sy > hz*.35) continue; x.fillStyle = `rgba(225,225,245,${.25 + hash(i,43)*.55})`; x.fillRect(sx, sy, hash(i,44) > .9 ? 1.6 : 1, hash(i,44) > .9 ? 1.6 : 1); } // no stars over the barrow
+    x.fillStyle = 'rgba(160,160,200,.05)'; x.beginPath(); x.ellipse(W*.3, hz*.45, W*.5, hz*.12, -.3, 0, 7); x.fill(); } // the smear of the sky's river
+  else if (dusk) { const sx = W*.84, sy = hz - H*.035; glow(x, sx, sy, W*.5, '#ff9a50', .4); ell(x, sx, sy, 16, 16, '#ffc890'); glow(x, sx, sy, 30, '#fff0c0', .5);
+    for (let i=0;i<5;i++) cloud(x, W*(.2 + hash(i,5)*.6), hz*(.3 + i*.13), W*(.26 + hash(i,6)*.24), 3 + i, i%2 ? '#e07848' : '#b85a4a', .16); } // cloud lit from below
+  else { cloud(x, W*.28, hz*.28, W*.4, 12, '#e8e4dc', .16); cloud(x, W*.74, hz*.16, W*.3, 9, '#e8e4dc', .12); cloud(x, W*.6, hz*.55, W*.5, 6, '#f0e8d8', .1); glow(x, W*.2, hz*.2, W*.5, '#fff4dc', .12); }
+  // the horizon: a low line of haze on the plain; folded hills, one behind another, with the barrow mounds on them
+  if (hills) { for (let i=0;i<4;i++){ const k = i/3, base = hz + i*H*.045, c = night ? shade('#10140c', -k*.2) : dusk ? shade(i%2 ? '#4a3020' : '#5a3a24', -k*.35) : shade(i%2 ? '#5a5a3a' : '#6a6440', -k*.3);
+      x.fillStyle = c; x.beginPath(); x.moveTo(0, H); for (let px=0;px<=W + 16;px+=8) x.lineTo(px, base - Math.abs(Math.sin(px/(70 + i*25) + i*1.9))*(26 - i*5) - Math.sin(px/31 + i)*2); x.lineTo(W, H); x.fill();
+      if (!night) { x.fillStyle = dusk ? 'rgba(255,150,80,.07)' : 'rgba(240,230,200,.06)'; x.fillRect(0, base - 30, W, 8); } }
+    [[.18,.03,26],[.42,.06,18],[.64,.02,34]].forEach(([k, dy, r], i) => { const mx = W*k, my = hz + H*(.08 + dy) + i*6; ell(x, mx, my, r, r*.34, night ? '#0a0c07' : dusk ? '#3a2616' : '#4a4a2e'); ell(x, mx - r*.2, my - r*.12, r*.6, r*.14, night ? 'rgba(60,70,50,.15)' : 'rgba(255,230,180,.08)');
+      for (let j=0;j<4;j++){ x.fillStyle = night ? '#1a1c16' : dusk ? '#5a4632' : '#7a7462'; x.fillRect(mx - r*.6 + j*r*.4, my - r*.32 - 3 - hash(i,j)*3, 2.2, 5 + hash(j,i)*3); } }); // knuckles of barrow under the grass, with stones
+    if (dusk) { const mx = W*.64, my = hz + H*.08 + 12; ell(x, mx + 4, my - 2, 6, 3, '#050404'); } } // the opened barrow
+  else { x.fillStyle = night ? '#0c0f0a' : dusk ? '#3a2a1c' : '#626448'; x.beginPath(); x.moveTo(0, hz + 2); for (let px=0;px<=W + 12;px+=12) x.lineTo(px, hz - Math.sin(px/90)*3 - Math.sin(px/23)*1.2); x.lineTo(W, hz + 2); x.fill();
+    if (!night) { x.fillStyle = dusk ? 'rgba(255,170,100,.1)' : 'rgba(240,235,210,.12)'; x.fillRect(0, hz - 6, W, 8); } // haze on the line of the world
+    if (tod === 'day') for (let i=0;i<14;i++) ell(x, W*.3 + hash(i,1)*W*.2, hz + 1 + hash(i,2)*3, 1.4, .9, '#2a2418'); } // a herd, very far off
+  // the ground, grass all the way down
+  x.fillStyle = vgrad(x, hz, H, night ? [[0,'#141a10'],[1,'#060805']] : dusk ? [[0,'#4a3a22'],[1,'#1e1a10']] : [[0,'#56603a'],[1,'#26301a']]); x.fillRect(0, hz + (hills ? H*.14 : 1), W, H);
+  if (hills) { x.fillStyle = night ? '#0c100a' : dusk ? '#3a2c1a' : '#4a5030'; x.beginPath(); x.moveTo(0, H); x.lineTo(0, hz + H*.2); x.quadraticCurveTo(W*.3, hz + H*.12, W*.6, hz + H*.2); x.quadraticCurveTo(W*.85, hz + H*.26, W, hz + H*.18); x.lineTo(W, H); x.fill(); }
+  x.lineWidth = 1; for (let i=0;i<260;i++){ const y0 = hz + (hills ? H*.2 : 3), yy = y0 + Math.pow(hash(i,52), .8)*(H - y0), px = hash(i,51)*W, d = (yy - y0)/(H - y0), h = 2 + d*9 + hash(i,53)*4;
+    x.strokeStyle = night ? `rgba(70,90,55,${.2 + d*.25})` : dusk ? `rgba(${150 + d*40},${110 + d*20},60,${.2 + d*.3})` : `rgba(${120 + hash(i,54)*50},${140 + hash(i,55)*30},80,${.25 + d*.35})`; x.beginPath(); x.moveTo(px, yy); x.quadraticCurveTo(px + 1, yy - h*.6, px + (hash(i,56) - .5)*4, yy - h); x.stroke(); }
+  if (!hills) { const wx = W*.74, wy = hz + H*.07; ell(x, wx + 30, wy + 26, 40, 5, 'rgba(0,0,0,.35)'); x.fillStyle = '#2a2018'; x.fillRect(wx, wy + 8, 58, 16); x.fillStyle = night ? '#2a2620' : '#8a7e66'; x.beginPath(); x.moveTo(wx - 2, wy + 9); x.quadraticCurveTo(wx + 29, wy - 14, wx + 60, wy + 9); x.fill(); x.strokeStyle = 'rgba(0,0,0,.35)'; for (let i=1;i<5;i++){ x.beginPath(); x.moveTo(wx + i*12, wy + 9); x.quadraticCurveTo(wx + i*12, wy - 4, wx + i*12 + 1, wy - 2); x.stroke(); } // the wagon, its canvas hooped
+    [[wx + 10],[wx + 48]].forEach(([cx]) => { ell(x, cx, wy + 26, 7, 7, '#15100a'); x.strokeStyle = '#3a2c1c'; x.beginPath(); x.arc(cx, wy + 26, 5, 0, 7); x.stroke(); }); x.fillStyle = '#1a140e'; x.fillRect(wx + 58, wy + 18, 18, 2); }
+}
 function drawPlain(cv, kind, t){
-  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, hz = H*.62;
-  const sky = ctx.createLinearGradient(0,0,0,hz);
-  const hills = kind.startsWith('hills'); if (hills) kind = kind === 'hills' ? 'plain' : kind === 'hills_dusk' ? 'plain_dusk' : 'plain_night';
-  if (kind === 'plain_dusk') { sky.addColorStop(0,'#1a1218'); sky.addColorStop(.6,'#5a2a1e'); sky.addColorStop(1,'#c9713a'); }
-  else if (kind === 'plain_night') { sky.addColorStop(0,'#04040a'); sky.addColorStop(1,'#0e0d16'); }
-  else { sky.addColorStop(0,'#2a2e3a'); sky.addColorStop(.7,'#6b6a62'); sky.addColorStop(1,'#a8a08a'); }
-  ctx.fillStyle = sky; ctx.fillRect(0,0,W,hz);
-  if (kind === 'plain_night') { ctx.fillStyle = 'rgba(220,220,240,.7)'; for (let i=0;i<70;i++) ctx.fillRect(hash(i,41)*W, hash(i,42)*hz, 1, 1);
-    if (S && S.f && S.f.c2_light) { const lx = W*.12, fl = .85 + Math.sin(t/140)*.08 + Math.sin(t/53)*.05; glow(ctx, lx, hz, W*.5, '#ffb35a', .35*fl); const g = ctx.createLinearGradient(lx - 14, 0, lx + 14, 0); g.addColorStop(0,'rgba(255,200,120,0)'); g.addColorStop(.5,`rgba(255,230,180,${.55*fl})`); g.addColorStop(1,'rgba(255,200,120,0)'); ctx.fillStyle = g; ctx.fillRect(lx - 14, hz*.15, 28, hz*.85); } }
-  if (kind === 'plain_dusk') { ell(ctx, W*.85, hz - 6, 26, 26, '#f0a060'); glow(ctx, W*.85, hz, W*.4, '#e8923a', .25); }
-  // ground
-  const gr = ctx.createLinearGradient(0,hz,0,H); gr.addColorStop(0, kind === 'plain_night' ? '#141a10' : kind === 'plain_dusk' ? '#3a3a20' : '#4a5232'); gr.addColorStop(1, kind === 'plain_night' ? '#080a06' : '#26301c'); ctx.fillStyle = gr; ctx.fillRect(0,hz,W,H-hz);
-  ctx.strokeStyle = kind === 'plain_night' ? 'rgba(80,100,60,.35)' : 'rgba(140,160,80,.45)'; ctx.lineWidth = 1;
-  for (let i=0;i<140;i++){ const x = hash(i,51)*W, y = hz + 4 + hash(i,52)*(H-hz), h = 4 + hash(i,53)*10 * (1 + (y-hz)/(H-hz)); ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.sin(t/900 + i)*2, y - h*.6, x + Math.sin(t/700 + i)*3, y - h); ctx.stroke(); }
-  if (hills) { // folded hills on the horizon, barrow mounds, and at night a grey tear of light on the far slope
-    for (let i=0;i<4;i++){ const k = i/4; ctx.fillStyle = kind === 'plain_night' ? `rgba(14,16,10,${.9 - k*.15})` : kind === 'plain_dusk' ? `rgba(70,50,30,${.9 - k*.15})` : `rgba(60,70,40,${.9 - k*.15})`; ctx.beginPath(); ctx.moveTo(0, hz + 4 + i*8); for (let x=0;x<=W;x+=20) ctx.lineTo(x, hz + 4 + i*8 - Math.abs(Math.sin(x/90 + i*1.7))*(26 - i*5)); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.fill(); }
-    [[W*.3, hz+30, 40],[W*.62, hz+22, 30],[W*.8, hz+40, 50]].forEach(([x,y,r]) => { ell(ctx, x, y, r, r*.32, kind === 'plain_night' ? '#0c0e08' : '#3a4028'); for (let i=0;i<5;i++) ctx.fillRect(x - r*.7 + i*r*.35, y - r*.2 + hash(i,x)*4, 3, 5); });
-    if (kind === 'plain_night' && S && S.f && S.f.c5_night && !S.f.c5_rentFought) { const rx = W*.72, ry = hz - 4; glow(ctx, rx, ry + 10, 70, '#9a86e0', .3 + Math.sin(t/200)*.08); ctx.strokeStyle = `rgba(210,205,230,${.7 + Math.sin(t/90)*.2})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(rx - 6, ry - 30); ctx.quadraticCurveTo(rx + 8, ry - 5, rx - 4, ry + 20); ctx.stroke(); }
-  } else {
-  // the wagon, small, to the right
-  ctx.fillStyle = '#2a2018'; ctx.fillRect(W*.72, hz + 10, 60, 22); ctx.fillStyle = '#4a3a26'; ctx.fillRect(W*.72, hz + 2, 60, 10); ell(ctx, W*.72 + 12, hz + 34, 7, 7, '#15100a'); ell(ctx, W*.72 + 48, hz + 34, 7, 7, '#15100a');
-  }
-  // the squad walking, small
-  (typeof SQUAD === 'function' && S ? SQUAD() : PORDER).forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.9, 2.1, t, {phase:i, dir:1}));
-  const v = ctx.createRadialGradient(W/2, H*.55, H*.3, W/2, H*.55, W*.75); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1, kind === 'plain_night' ? 'rgba(0,0,0,.85)' : 'rgba(0,0,0,.6)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
+  const {ctx, W, H} = sceneFit(cv), hills = kind.startsWith('hills'), tod = kind.endsWith('dusk') ? 'dusk' : kind.endsWith('night') ? 'night' : 'day', hz = H*(hills ? .44 : .58), mo = REDUCE() ? 0 : 1;
+  ctx.drawImage(sceneLayer('plain:' + kind, W, H, (x, W, H) => paintPlain(x, W, H, hills, tod, hz)), 0, 0, W, H);
+  if (!hills && tod === 'night' && S && S.f && S.f.c2_light && !S.f.c2_lightOut && !S.f.c2_lightDone) { const lx = W*.1, f = .85 + (Math.sin(t/140)*.08 + Math.sin(t/53)*.05)*mo; glow(ctx, lx, hz, W*.5, '#ffb35a', .35*f); const g = ctx.createLinearGradient(lx - 12, 0, lx + 12, 0); g.addColorStop(0,'rgba(255,200,120,0)'); g.addColorStop(.5,`rgba(255,230,180,${.55*f})`); g.addColorStop(1,'rgba(255,200,120,0)'); ctx.fillStyle = g; ctx.fillRect(lx - 12, hz*.1, 24, hz*.9); } // the light in the west
+  if (hills && tod === 'dusk') for (let i=0;i<4;i++){ const k = ((t/4200*mo + i/4) % 1); ell(ctx, W*.64 + 4 + k*18, hz + H*.08 + 8 - k*22, 5 + k*16, 2 + k*5, `rgba(200,220,235,${.16*(1 - k)})`); } // cold breathing out of the opened barrow
+  if (hills && tod === 'night') { const hx = W*.72, hy = hz - 2; drawFigure(ctx, 'hairlock', hx, hy, 1.2, t, {still:true, alpha:.55}); // on the next hill, the size of a child and not one
+    if (S && S.f && S.f.c5_night && !S.f.c5_rentFought) { glow(ctx, hx - 20, hy - 14, 70, '#9a86e0', .28 + Math.sin(t/200)*.08*mo); ctx.strokeStyle = `rgba(210,205,230,${.7 + Math.sin(t/90)*.2*mo})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hx - 26, hy - 44); ctx.quadraticCurveTo(hx - 12, hy - 18, hx - 24, hy + 6); ctx.stroke(); } } // the rent
+  ctx.lineWidth = 1.2; for (let i=0;i<46;i++){ const px = hash(i,61)*W, yy = H*(.9 + hash(i,62)*.12), h = 10 + hash(i,63)*14, sw = Math.sin(t/900 + i*.7)*3*mo; ctx.strokeStyle = tod === 'night' ? 'rgba(40,56,34,.8)' : tod === 'dusk' ? 'rgba(90,64,34,.8)' : 'rgba(84,100,52,.85)'; ctx.beginPath(); ctx.moveTo(px, yy); ctx.quadraticCurveTo(px + sw*.3, yy - h*.6, px + sw, yy - h); ctx.stroke(); } // the near grass, moving
+  const sq = sceneSquad(); sq.forEach((id, i) => drawFigure(ctx, id, W*.1 + i*Math.min(36, W*.6/sq.length), H*.93 + (i%2)*3, 2.1, t, {phase:i, dir:1}));
+  vign(ctx, W, H, tod === 'night' ? .82 : tod === 'dusk' ? .62 : .5);
 }
 
 /* Darujhistan, for Chapter 3 talk nodes: the street, the Phoenix Inn, the cellar under the dig, the dye-shop room, a rooftop at dawn */
 function drawCity(cv, kind, t){
-  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, fl = .85 + Math.sin(t/140)*.06 + Math.sin(t/53)*.04;
+  const {ctx, W, H} = sceneFit(cv), fl = .85 + Math.sin(t/140)*.06 + Math.sin(t/53)*.04;
   const squad = (typeof SQUAD === 'function' && S ? SQUAD() : PORDER);
   ctx.fillStyle = '#060505'; ctx.fillRect(0,0,W,H);
   if (kind === 'inn') {
@@ -95,7 +141,7 @@ function drawCity(cv, kind, t){
     // tables and candles
     [[W*.5, H*.66],[W*.28, H*.8]].forEach(([x,y]) => { ell(ctx, x, y, 44, 12, '#2e2014'); ctx.fillStyle = '#1c130b'; ctx.fillRect(x-4, y, 8, 20); ell(ctx, x+18, y-6, 2, 5, '#e8d8a8'); glow(ctx, x+18, y-10, 40, '#ffb060', .3*fl); });
     [['kruppe', W*.42, H*.9, 1], ['crokus', W*.56, H*.84, -1], ['murillio', W*.66, H*.92, -1], ['coll', W*.16, H*.72, 1]].forEach(([k,x,y,d], i) => drawFigure(ctx, k, x, y, 2.3, t, {still:true, dir:d, phase:i}));
-    squad.slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.78 + i*30, H*.98, 2.1, t, {phase:i, dir:-1}));
+    { const q3 = squad.slice(0,3), st = Math.min(30, W*.085); q3.forEach((id, i) => drawFigure(ctx, id, W - 22 - (q3.length - 1 - i)*st, H*.98, 2.1, t, {phase:i, dir:-1})); }
   } else if (kind === 'cellar') {
     const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0a0908'); g.addColorStop(1,'#14100d'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
     ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 1; for (let r=0;r<12;r++) for (let c=0;c<14;c++){ ctx.strokeRect(c*W/14 + (r%2)*W/28, r*H/12, W/14, H/12); } // cut stone
@@ -199,7 +245,7 @@ function drawDragon(ctx, x, y, s, ang, flap, body, rim, wrong, t){
   ctx.restore(); }
 
 function drawEstate(cv, kind, t){
-  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, fl = .85 + Math.sin(t/140)*.06 + Math.sin(t/53)*.04, squad = (typeof SQUAD === 'function' && S ? SQUAD() : PORDER);
+  const {ctx, W, H} = sceneFit(cv), fl = .85 + Math.sin(t/140)*.06 + Math.sin(t/53)*.04, squad = (typeof SQUAD === 'function' && S ? SQUAD() : PORDER);
   ctx.fillStyle = '#060505'; ctx.fillRect(0,0,W,H);
   if (kind === 'fete_street') {
     // dusk over a street strung with lanterns; the lake at the end of it, and the black mountain over the lake
@@ -252,7 +298,7 @@ function drawEstate(cv, kind, t){
     drawFigure(ctx, 'kruppe', W*.8, H*.86, 2.3, t, {still:true, dir:-1});
     // masked dancers, turning in pairs
     for (let p=0;p<4;p++){ const cx = W*(.22 + p*.17), cy = H*(.86 + (p%2)*.06), a = t/1400 + p*1.7; [0, Math.PI].forEach((o, j) => { const x = cx + Math.cos(a + o)*12, depth = Math.sin(a + o); drawFigure(ctx, 'reveller', x, cy + depth*3, 2 + depth*.1, t, {phase:p*2 + j + 2, dir: Math.cos(a + o + Math.PI/2) > 0 ? 1 : -1}); }); }
-    squad.slice(0, 3).forEach((id, i) => drawFigure(ctx, id, W*.02 + i*24, H*.99, 2.1, t, {phase:i, dir:1}));
+    squad.slice(0, 3).forEach((id, i) => drawFigure(ctx, id, 22 + i*Math.min(24, W*.07), H*.99, 2.1, t, {phase:i, dir:1}));
     vign(ctx, W, H, .8);
   } else if (kind === 'fete_garden') {
     const dawn = feteDawn(), az = !!(S && S.f && S.f.c6_azath), vx = W*.5, vy = H*.5;
@@ -326,7 +372,7 @@ function drawEstate(cv, kind, t){
     const qx = W*.2, qy = H*.9, cols = ['#e8c073','#9a86e0','#6aa8ff','#e0574a','#7fb394','#f0f0f0','#c05a8a'];
     cols.forEach((c, i) => { const a = t/600 + i*.9; glow(ctx, qx + Math.cos(a)*22, qy - 40 + Math.sin(a*1.3)*16, 26, c, .22); ctx.strokeStyle = rgba(c, .6); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(qx, qy - 30); ctx.quadraticCurveTo(qx + Math.cos(a)*30, qy - 50 + Math.sin(a)*20, qx + Math.cos(a + 1)*40, qy - 70 + Math.sin(a*.7)*20); ctx.stroke(); });
     drawFigure(ctx, 'qb', qx, qy, 2.4, t, {still:true, dir:1});
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.72 + i*26, H*.99, 2, t, {phase:i, dir:-1}));
+    squad.forEach((id, i) => drawFigure(ctx, id, W - 22 - (squad.length - 1 - i)*Math.min(26, W*.4/squad.length), H*.99, 2, t, {phase:i, dir:-1}));
     for (let i=0;i<40;i++){ const y = ((hash(i,51)*H) + t*(.01 + hash(i,52)*.015)) % H, x = (hash(i,53)*W + t*.02*(hash(i,54) + .3)) % W; ctx.fillStyle = 'rgba(225,242,255,.6)'; ctx.fillRect(x, y, 1.6, 1.6); }
     ctx.fillStyle = 'rgba(120,170,220,.08)'; ctx.fillRect(0,0,W,H); vign(ctx, W, H, .85);
   } else if (kind === 'dragon_sky') {
@@ -443,7 +489,7 @@ function drawEstate(cv, kind, t){
     ctx.fillStyle = '#3a2c1e'; poly(ctx, [[-40, H],[-40, H*.72],[W + 40, H*.72],[W + 40, H]], '#3a2c1e'); ctx.strokeStyle = 'rgba(0,0,0,.4)'; for (let i=0;i<7;i++){ ctx.beginPath(); ctx.moveTo(-40, H*.74 + i*H*.04); ctx.lineTo(W + 40, H*.74 + i*H*.04); ctx.stroke(); }
     ctx.fillStyle = '#4a3624'; ctx.fillRect(-40, H*.6, W + 80, 6); for (let i=0;i<22;i++) ctx.fillRect(i*W/20 - 2, H*.6, 4, H*.13); ctx.fillStyle = 'rgba(255,240,220,.12)'; ctx.fillRect(-40, H*.6, W + 80, 1.5);
     ctx.restore();
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.5 + i*30, H*.96, 2.1, t, {phase:i, dir:1, still:true}));
+    squad.forEach((id, i) => drawFigure(ctx, id, W*.5 + i*Math.min(30, (W*.5 - 24)/Math.max(1, squad.length - 1)), H*.96, 2.1, t, {phase:i, dir:1, still:true}));
     for (let i=0;i<12;i++){ const k = ((t/1400 + i/12) % 1); ctx.fillStyle = `rgba(230,235,240,${(1-k)*.35})`; ctx.fillRect(hash(i,91)*W, H*.6 - k*H*.3, 1.4, 1.4); } // spray
     vign(ctx, W, H, .55);
   }
