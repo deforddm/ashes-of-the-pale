@@ -3,7 +3,12 @@ const party = () => B.units.filter(u => u.side === 'p' && u.hp > 0);
 const squadUnits = () => B.units.filter(u => u.side === 'p' && !u.ally && u.hp > 0);
 const foesOf = u => B.units.filter(x => x.hp > 0 && x.side !== u.side);
 const friendsOf = u => B.units.filter(x => x.hp > 0 && x.side === u.side && x !== u);
-const abRange = (u, a) => (a.range || 0) + (a.item && has(u.id, 'longfuse') ? 1 : 0);
+const abRange = (u, a) => (a.range || 0) + (a.item && has(u.id, 'longfuse') ? 1 : 0); // 'longfuse' is the Crossbow Cradle talent (key kept for old saves)
+/* smoke from a smoker: nobody shoots into it or out of it. Blades still work, and so does sorcery. */
+const smoked = (x, y) => !!(B && B.smoke && B.smoke.some(s => s.x === x && s.y === y && s.until >= B.round));
+const canShoot = (a, t) => cheb(a, t) <= 1 || (!smoked(a.x, a.y) && !smoked(t.x, t.y));
+/* the word for where a fight is, for the log: a sharper wakes the whole tunnel, or the whole street */
+const placeWord = def => ({city:'street', roof:'roof', terrace:'terrace', garden:'garden', storm:'garden', cellar:'vault', dock:'quay', plain:'plain', hills:'hillside'})[def.style] || (def.open ? 'plain' : 'tunnel');
 const foes = () => B.units.filter(u => u.side === 'e' && u.hp > 0);
 const unitAt = (x,y) => B.units.find(u => u.hp > 0 && u.x === x && u.y === y);
 const inB = (x,y) => x>=0 && y>=0 && x<8 && y<10;
@@ -29,7 +34,7 @@ function sparks(x, y, n, col, spd = 1){ if (REDUCE()) return; for (let i=0;i<n;i
 
 function mkParty(id, x, y){
   const t = TPL[id], L = S.lvl - 1;
-  const u = {id, side:'p', name:NAME(id), sig:t.sig, col:t.col, maxhp:t.hp + L*4 + (S.card === 'obelisk' ? 4 : 0), ac:t.ac, atk:t.atk + L, dmg:t.dmg, rng:t.rng, mv:t.mv + (S.card === 'hounds' ? 1 : 0), init:t.init, ab:[...t.ab], magic:t.magic, strain:0, verb:VERB[id], x, y, kind:id};
+  const u = {id, side:'p', name:NAME(id), sig:t.sig, col:t.col, maxhp:t.hp + L*4 + (S.card === 'obelisk' ? 4 : 0), ac:t.ac, atk:t.atk + L, dmg:t.dmg, rng:t.rng, mv:t.mv + (S.card === 'hounds' ? 1 : 0), init:t.init, ab:kitAb(id), magic:t.magic, strain:0, verb:VERB[id], x, y, kind:id};
   // gear
   Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (!it) return; u.ac += it.ac || 0; u.atk += it.atk || 0; u.maxhp += it.hp || 0; u.mv += it.mv || 0; u.rng += it.rng || 0; if (it.dmg) u.dmg = it.dmg; });
   // veteran picks and talents
@@ -55,7 +60,7 @@ function startBattle(id, opt={}){
   S.scene = 'battle'; S.battle = id; S.bopt = opt; S.node = null; S.bg = 'tunnel'; if (def.mortal) S.f.lastFallen = []; save();
   const snap = JSON.stringify(S);
   view = 'battle'; AUDIO.setScene(def.music || 'battle');
-  B = {def, id, opt, snap, warren:def.warren, units:[], order:[], idx:-1, round:0, fires:[], fx:[], parts:[], log:[], used:{}, cur:null, moved:false, acted:false, mode:null, aim:null, busy:true, over:false, turn:0, anim:null};
+  B = {def, id, opt, snap, warren:def.warren, units:[], order:[], idx:-1, round:0, fires:[], smoke:[], fx:[], parts:[], log:[], used:{}, cur:null, moved:false, acted:false, mode:null, aim:null, busy:true, over:false, turn:0, anim:null};
   SQUAD().forEach((pid,i) => { const p = def.party[i] || def.party[def.party.length - 1]; const at = freeNear(p[0], p[1]) || {x:p[0], y:p[1]}; B.units.push(mkParty(pid, at.x, at.y)); });
   (def.allies || []).forEach(a => { const at = freeNear(a[1], a[2]); if (at) B.units.push(mkAlly(a[0], at.x, at.y)); });
   def.foes.forEach((f,i) => { if (opt.drop && opt.drop.includes(i)) return; B.units.push(mkFoe(f[0], f[1], f[2], f[0]==='stone' && S.f.noisy ? 10 : 0)); });
@@ -76,8 +81,8 @@ function startBattle(id, opt={}){
   $('#order').onclick = e => { const c = e.target.closest('[data-u]'); if (!c || !B) return; const u = B.units[+c.dataset.u]; if (!u) return; B.ping = {u, t:performance.now()}; if (u.hp > 0) blog(`${esc(u.name)}: ${u.hp}/${u.maxhp} health, armour ${u.ac}${u.rng > 1 ? `, range ${u.rng}` : ''}.`); };
   G.disp = {};
   fitBattle();
-  if (opt.pre) { AUDIO.play('boom', .8); B.fx.push({kind:'boom', x:3.5, y:1, r:1, col:'#f2c46b', t:performance.now()}); sparks(3.5, 1, 30, '#f2c46b'); shakeMap(); foes().forEach(f => hurt(f, roll(1,10))); blog(typeof opt.pre === 'string' ? opt.pre : `Kettle's sharper skips across the ground and goes off in the middle of them. The whole ${({city:'street',roof:'roof',terrace:'terrace',garden:'garden',storm:'garden',cellar:'vault',dock:'quay',plain:'plain',hills:'hillside'})[def.style] || (def.open ? 'plain' : 'tunnel')} hears it.`); }
-  if (def.nomagic) blog(`<em>Otataral. The warrens are dead here.</em>`);
+  if (opt.pre) { AUDIO.play('boom', .8); B.fx.push({kind:'boom', x:3.5, y:1, r:1, col:'#f2c46b', t:performance.now()}); sparks(3.5, 1, 30, '#f2c46b'); shakeMap(); foes().forEach(f => hurt(f, roll(1,10))); blog(typeof opt.pre === 'string' ? opt.pre : `Kettle's sharper skips across the ground and goes off in the middle of them. The whole ${placeWord(def)} hears it.`); }
+  if (def.nomagic) { blog(`<em>Otataral. The warrens are dead here.</em>`); if (SQUAD().includes('kettle') && S.inv.burner > 0) blog(`Kettle straps her burners down tight. "Not near that stuff. Burners and otataral don't argue, they just go."`); }
   if (def.nothrow) blog(`<em>Gas in the pipes. Nobody throws anything in here.</em>`);
   if (def.mortal) blog(`<em>Whoever falls here stays down.</em>`);
   if (def.objective) blog(`<em>${def.objective.text}</em>`);
@@ -96,7 +101,7 @@ function newRound(){
     if (w.text) blog(`<em>${w.text}</em>`); AUDIO.play('growl'); shakeMap(); });
   if (B.surprise) { B.order = B.initOrder.filter(u => u.side === B.surprise); B.surprise = null; B.surpriseRound = true; }
   else { B.order = B.initOrder; B.surpriseRound = false; }
-  B.fires = B.fires.filter(f => f.until >= B.round);
+  B.fires = B.fires.filter(f => f.until >= B.round); B.smoke = (B.smoke || []).filter(s => s.until >= B.round);
 }
 function nextTurn(){
   if (checkEnd()) return;
@@ -163,9 +168,13 @@ const AB = {
   burner:{name:'Burner', item:'burner', boom:true, aoe:1, range:4, desc:()=>'Throw, range 4. 1d6 to everything in a 3×3 and leaves it burning for 2 rounds. A natural 1 scatters it.',
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => { blast(pt, [[1,6,0],[1,6,0]], '#ff7a3a'); AUDIO.play('burner'); sparks(pt.x, pt.y, 30, '#ff9a3a', .6);
       for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(pt.x+dx, pt.y+dy)) B.fires.push({x:pt.x+dx, y:pt.y+dy, until:B.round+2}); });
-      blog(`${u.name} throws a burner. The tunnel fills with orange light.`); }},
-  cusser:{name:'Cusser', item:'cusser', boom:true, aoe:2, range:3, desc:()=>'Throw, range 3. 3d8 to the centre and everything next to it, 1d8 one step further. Scatters on a 1–2. It\'s a cusser.',
-    run(u,x,y){ const pt = scatter(u,x,y,2,R(2)+1); throwArc(u, pt, () => { blast(pt, [[3,8,0],[3,8,0],[1,8,0]], '#fff1c2'); AUDIO.play('boom', 1.6); sparks(pt.x, pt.y, 60, '#fff1c2', 1.6); shakeMap(); const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }); blog(`${u.name} throws a cusser. The ceiling thinks about it.`); }},
+      blog(`${u.name} throws a burner. The ${placeWord(B.def)} fills with orange light.`); }},
+  cusser:{name:'Cusser', item:'cusser', boom:true, aoe:2, range:3, desc:()=>'Fired from the crossbow\'s cradle, range 3: nobody throws a cusser by hand twice. 3d8 to the centre and everything next to it, 1d8 one step further. Scatters on a 1–2.',
+    run(u,x,y){ const pt = scatter(u,x,y,2,R(2)+1); throwArc(u, pt, () => { blast(pt, [[3,8,0],[3,8,0],[1,8,0]], '#fff1c2'); AUDIO.play('boom', 1.6); sparks(pt.x, pt.y, 60, '#fff1c2', 1.6); shakeMap(); const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }); blog(`${u.name} cradles a cusser on the crossbow and looses it. The ${placeWord(B.def) === 'tunnel' || placeWord(B.def) === 'vault' ? 'ceiling' : 'ground'} thinks about it.`); }},
+  smoker:{name:'Smoker', item:'smoker', boom:true, aoe:1, range:4, smoke:true, desc:()=>'Throw, range 4. A 3×3 of smoke for 2 rounds: nobody shoots into it or out of it. Blades still work. A natural 1 scatters it.',
+    run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => { AUDIO.play('burner', .5); sparks(pt.x, pt.y, 18, '#9a968e', .35);
+      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(pt.x+dx, pt.y+dy)) B.smoke.push({x:pt.x+dx, y:pt.y+dy, until:B.round+2}); });
+      blog(`${u.name} breaks a smoker. Grey rolls out across the ${placeWord(B.def)} and sits there like a held breath.`); }},
   veil:{name:'Veil', strain:2, desc:()=>`Meanas illusion on a squadmate within 4: enemies take −${veilPen()} to hit them for 2 rounds. Strain 2.`,
     tiles:u=>party().filter(p => cheb(u,p) <= 4),
     run(u,x,y){ const t = unitAt(x,y); t.veilUntil = B.round + 2; AUDIO.play('magic'); sparks(t.x, t.y, 14, '#c9bbff', .4); blog(`${u.name} folds shadow around ${t.name}. They blur at the edges.`); float(t,'veiled','#c9bbff'); }},
@@ -179,9 +188,9 @@ const AB = {
     run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,has(u.id,'triage') ? 6 : 3) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
   salve:{name:'Salve', item:'salve', desc:()=>'Heal 8, yourself or an adjacent squadmate.', tiles:u=>party().filter(p => cheb(u,p) <= 1),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, 8); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
-  mark:{name:'Tracker\'s Mark', desc:()=>'An enemy within 5 is marked: every hit on it does +2 damage for two rounds.', tiles:u=>foes().filter(f => cheb(u,f) <= 5 && !(f.markedUntil >= B.round)),
+  mark:{name:'Tracker\'s Mark', desc:()=>'An enemy within 5 is marked: every hit on it does +2 damage for two rounds.', tiles:u=>foes().filter(f => cheb(u,f) <= 5 && canShoot(u,f) && !(f.markedUntil >= B.round)),
     run(u,x,y){ const t = unitAt(x,y); t.markedUntil = B.round + 2; AUDIO.play('click'); float(t,'marked','#f2c46b'); blog(`${u.name} marks ${t.name}: a nick of chalk on the ground, a word to the squad, and it is a target.`); }},
-  quickshot:{name:'Quick Shot', desc:()=>'Once a fight: two arrows at one target within reach.', ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng),
+  quickshot:{name:'Quick Shot', desc:()=>'Once a fight: two arrows at one target within reach.', ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng && canShoot(u,f)),
     run(u,x,y){ const t = unitAt(x,y); B.used.quickshot = 1; attack(u, t); later(() => { if (t.hp > 0) attack(u, t, {verb:'puts a second arrow into'}); }, pace(320)); }},
   /* talents (level 3 picks) */
   quorl:{name:'Quorl Signal', boom:true, aoe:1, range:5, desc:()=>'Once a fight: a Moranth drop. A sharper from the sky, range 5, not from the satchel.', ok:()=>!B.used.quorl,
@@ -196,7 +205,7 @@ const AB = {
     run(u,x,y){ const t = B.units.find(p => p.side === 'p' && !p.ally && p.hp <= 0 && p.x === x && p.y === y); if (!t) return; const at = freeNear(t.x, t.y, t); if (!at) return; // someone may be standing over the body
       B.used.argument = 1; AUDIO.play('heal'); t.x = at.x; t.y = at.y; t.hp = 6; t.deadAt = null; t.healed = performance.now(); sparks(t.x, t.y, 20, '#9fe0b8', .5); blog(`${u.name} argues with Hood in Ehrlii. ${t.name} gets up, which settles it for now.`); }},
 };
-function abOk(u, k){ const a = AB[k]; if (!a) return false; if (a.strain && B && B.def.nomagic) return false; if (a.boom && B && B.def.nothrow) return false; if (a.item === 'cusser' && B && B.def.style === 'roof') return false; /* Fiddler's order: no cussers on the roofs */ if (a.item && !(S.inv[a.item] > 0)) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
+function abOk(u, k){ const a = AB[k]; if (!a) return false; if (a.strain && B && B.def.nomagic) return false; if (a.boom && B && B.def.nothrow) return false; if (a.item === 'cusser' && B && B.def.style === 'roof') return false; /* Fiddler's order: no cussers on the roofs */ if (a.item === 'burner' && B && B.def.nomagic) return false; /* burners and otataral: Kettle won't */ if (a.item && !(S.inv[a.item] > 0)) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
 function scatter(u, x, y, failOn, dist){
   const nat = d20() + (S.card === 'oponn' ? 1 : 0);
   if (nat <= failOn && !has(u.id,'longfuse')) { const [dx,dy] = DIRS[R(8)]; let nx = x, ny = y;
@@ -278,8 +287,8 @@ function battleTap(x, y){
     if (a.tiles(u).some(q => q === t || (q.x === x && q.y === y))) return useAb(B.mode, x, y);
     B.mode = 'act'; return updBattleUI();
   }
-  if (t && t.side === 'e' && !B.acted && cheb(u,t) <= u.rng) { B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.busy = true; attack(u, t); later(() => { B.busy = false; afterAct(); }, pace(380)); updBattleUI(); return; }
-  if (t) { B.ping = {u:t, t:performance.now()}; blog(`${t.name}: ${t.hp}/${t.maxhp} health, armour ${t.ac}${t.rng > 1 ? `, range ${t.rng}` : ''}${t.side === 'e' && !B.acted ? (cheb(u,t) <= u.rng ? '' : ' · out of reach') : ''}.`); return; }
+  if (t && t.side === 'e' && !B.acted && cheb(u,t) <= u.rng && canShoot(u,t)) { B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.busy = true; attack(u, t); later(() => { B.busy = false; afterAct(); }, pace(380)); updBattleUI(); return; }
+  if (t) { B.ping = {u:t, t:performance.now()}; blog(`${t.name}: ${t.hp}/${t.maxhp} health, armour ${t.ac}${t.rng > 1 ? `, range ${t.rng}` : ''}${t.side === 'e' && !B.acted ? (cheb(u,t) > u.rng ? ' · out of reach' : !canShoot(u,t) ? ' · smoke in the way' : '') : ''}.`); return; }
   if (!B.moved && B.reach && B.reach.has(K(x,y)) && !(x === u.x && y === u.y)) moveCur(x, y);
 }
 async function moveCur(x, y){
@@ -337,7 +346,7 @@ async function aiTurn(u, turnId){
   if (!B || B.over || B.turn !== turnId) return;
   const b0 = B, gone = () => B !== b0 || B.turn !== turnId; // the battle was left or restarted, or the turn moved on, while this one played out
   const done = () => { updBattleUI(); if (!checkEnd()) endTurn(); };
-  const inRange = () => foesOf(u).filter(p => cheb(u,p) <= u.rng);
+  const inRange = () => foesOf(u).filter(p => cheb(u,p) <= u.rng && canShoot(u,p));
   if (u.boss && u.kind === 'stone') { u.tc = (u.tc || 0) + 1; const adj = party().filter(p => cheb(u,p) === 1);
     if (u.tc % 3 === 0 && adj.length) { blog(`<em>The Stonebound slams the floor.</em> Stone and grief in every direction.`); AUDIO.play('slam'); shakeMap();
       B.fx.push({kind:'boom', x:u.x, y:u.y, r:1, col:'#a08de0', t:performance.now()}); sparks(u.x, u.y, 40, '#9a86e0'); adj.forEach(p => hurt(p, roll(2,6)));
@@ -357,7 +366,7 @@ async function aiTurn(u, turnId){
     const swingW = u.hp <= 8 ? 110 : 70; // a badly hurt thing is warier of free swings
     let best = null, bestS = -Infinity;
     reach.forEach(n => {
-      const here = {x:n.x, y:n.y}, tg = opp.filter(p => cheb(here, p) <= u.rng);
+      const here = {x:n.x, y:n.y}, tg = opp.filter(p => cheb(here, p) <= u.rng && canShoot(here, p));
       let s = 0;
       if (tg.length) { s += 100; if (tg.some(p => flanked(u, p, here))) s += 60; }
       else s -= Math.min(...opp.map(p => cheb(here, p))) * 5;
@@ -370,7 +379,7 @@ async function aiTurn(u, turnId){
     if (best && best.d > 0) { if (!await aiWalk(u, best.path, gone)) return; walked = true; }
     else if (!inRange().length) {
       // nothing reachable in range this turn: close the distance along the shortest open path
-      const path = findPath(u.x, u.y, (x,y) => free(x,y,u), (x,y) => opp.some(p => p.hp > 0 && cheb({x,y}, p) <= u.rng));
+      const path = findPath(u.x, u.y, (x,y) => free(x,y,u), (x,y) => opp.some(p => p.hp > 0 && cheb({x,y}, p) <= u.rng && canShoot({x,y}, p)));
       if (path && path.length) { if (!await aiWalk(u, path.slice(0, u.mv), gone)) return; walked = true; }
     }
     if (u.hp <= 0) return done();
@@ -379,7 +388,7 @@ async function aiTurn(u, turnId){
   const tg = inRange().sort((a,b) => (flanked(u,b) - flanked(u,a)) || (a.hp - b.hp))[0];
   if (tg) { attack(u, tg); await wait(650); if (gone()) return;
     for (let i = 1; i < (u.attacks || 1); i++) { if (gone() || B.over || u.hp <= 0) break; // more than one blow a turn
-      const nx = tg.hp > 0 && cheb(u, tg) <= u.rng ? tg : inRange().sort((a,b) => a.hp - b.hp)[0]; if (!nx) break; attack(u, nx, {verb:u.verb2 || 'cuts again at'}); await wait(650); } }
+      const nx = tg.hp > 0 && cheb(u, tg) <= u.rng && canShoot(u, tg) ? tg : inRange().sort((a,b) => a.hp - b.hp)[0]; if (!nx) break; attack(u, nx, {verb:u.verb2 || 'cuts again at'}); await wait(650); } }
   if (gone()) return;
   done();
 }
@@ -457,7 +466,7 @@ function updBattleUI(){
   const mvLeft = B.mvLeft ?? u.mv;
   if (!B.moved && !B.busy) B.reach = reachSafe(u.x, u.y, (x,y) => free(x,y,u), mvLeft, (x,y) => leaveCost(u, x, y));
   // enemies in reach: ringed, with the chance to hit (and whether it flanks)
-  if (!B.acted) foes().forEach(f => { if (cheb(u,f) > u.rng) return; const c = atkCalc(u, f), k = K(f.x,f.y); B.hl.atk.add(k); B.hl.pct.set(k, hitPct(c)); if (c.fl) B.hl.flank.add(k); });
+  if (!B.acted) foes().forEach(f => { if (cheb(u,f) > u.rng || !canShoot(u,f)) return; const c = atkCalc(u, f), k = K(f.x,f.y); B.hl.atk.add(k); B.hl.pct.set(k, hitPct(c)); if (c.fl) B.hl.flank.add(k); });
   // move tiles whose cheapest route still gives an enemy a free swing
   if (B.reach) B.reach.forEach(n => { if (n.d && n.c) B.hl.aoo.add(K(n.x,n.y)); });
   const inReach = B.hl.atk.size > 0, canMove = !!B.reach && B.reach.size > 1;
@@ -470,6 +479,7 @@ function updBattleUI(){
     if (!a.aoe) { hint = `${a.desc()} Tap a highlighted target, or the button again to cancel.`; a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y))); }
     else { for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= abRange(u,a)) B.hl.tgt.add(K(x,y));
       if (!B.aim) hint = `${a.desc()} Tap a tile to aim.`;
+      else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to throw. ${cov.length ? `The smoke covers ${cov.map(v => esc(v.name)).join(', ')}.` : 'The smoke covers empty ground.'} Nobody shoots into it or out of it.`; }
       else { const caught = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe), mine = caught.filter(v => v.side === 'p'), theirs = caught.length - mine.length;
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
   const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : ''].filter(Boolean).join(' · ');
@@ -562,6 +572,11 @@ function drawBattle(t){
     ctx.fillStyle = u.side === 'p' ? (u.ally ? '#8fa6cf' : '#7fb394') : '#d9695a'; ctx.fillRect(px, py, w * u.hp / u.maxhp, Math.max(3, T*.08));
     if (u.stun) { ctx.fillStyle = '#e9dfc9'; ctx.font = `${Math.round(T*.3)}px sans-serif`; ctx.textAlign = 'left'; ctx.fillText('z', cx + T*.3, cy - T*.7 + Math.sin(t/300)*2); }
   });
+  // smoke: grey billows over each smoked tile, thick enough to lose a figure in
+  (B.smoke || []).filter(s => s.until >= B.round).forEach(s => { const px = s.x*T + T/2, py = s.y*T + T/2, fade = s.until === B.round ? .65 : 1;
+    for (let i = 0; i < 4; i++) { const ph = t/(1900 + i*350) + hash(s.x, s.y, i)*6.28, ox = RM ? 0 : Math.sin(ph)*T*.12, oy = RM ? 0 : Math.cos(ph*.8)*T*.08;
+      ell(ctx, px + ox + (i % 2 ? T*.2 : -T*.2), py + oy + (i < 2 ? -T*.16 : T*.14), T*.48, T*.38, `rgba(150,146,138,${.26*fade})`); }
+    ell(ctx, px, py, T*.52, T*.44, `rgba(118,114,108,${.3*fade})`); });
   // darkness: lantern light around the party (the layer covers the headroom band too)
   if (def.dark) {
     const layer = G.darkc || (G.darkc = document.createElement('canvas')), lw = Math.round(8*T*G.dpr), lh = Math.round((10*T + H)*G.dpr);

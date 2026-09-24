@@ -9,6 +9,8 @@ const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 const DIRS = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
 const K = (x, y) => x + ',' + y;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+/* numbers as a soldier says them: 'two', or 'Two' to start a sentence; past twelve, digits */
+const numw = (n, cap) => { const w = ['no','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'][n] ?? String(n); return cap ? w[0].toUpperCase() + w.slice(1) : w; };
 const lerp = (a, b, k) => a + (b - a) * k;
 const ease = k => k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;
 function hash(x, y, s = 0) { let h = (x * 374761393 + y * 668265263 + s * 982451653) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }

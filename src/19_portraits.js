@@ -167,7 +167,7 @@ const POR = {
     [[-20, -22, 3], [-26, -34, 2.2], [20, -14, 3.6], [12, -36, 2]].forEach(([x, y, r], i) => { PR.soft(ctx, x, y, r*2.6, r*1.8, '#140a04', .55, i); if (i%2 === 0) { ell(ctx, x + .4, y, r*.4, r*.3, '#0a0604', i); ctx.strokeStyle = 'rgba(255,150,70,.4)'; ctx.lineWidth = .35; ctx.beginPath(); ctx.ellipse(x + .4, y, r*.4, r*.3, i, 0, 7); ctx.stroke(); } }); // scorch, and a hole or two
     ctx.strokeStyle = PR.lit(ctx, '#3a2616', '#140c06', -20, 30); ctx.lineWidth = 4.2; ctx.beginPath(); ctx.moveTo(-22, -44); ctx.lineTo(28, 2); ctx.stroke(); // the munitions satchel's strap
     [[-8, -30], [-1, -23.5]].forEach(([x, y], i) => { ell(ctx, x, y + 3.4, 3.4, 3.6, PR.rad(ctx, x - 1.2, y + 2, .5, 4, [[0,'#b8a888'], [1,'#4a3e2e']])); ctx.fillStyle = '#6a1e14'; ctx.fillRect(x - 1.4, y - 1, 2.8, 1.6); PR.stroke(ctx, '#2a2018', .5, () => { ctx.moveTo(x, y - 1); ctx.quadraticCurveTo(x + 1.5, y - 3, x + .5, y - 4.4); }); }); // two sharpers, wax-sealed
-    ctx.strokeStyle = '#8a7450'; ctx.lineWidth = .7; for (let i=0;i<4;i++){ ctx.beginPath(); ctx.ellipse(11, -15 + i*.6, 4.6 - i*.4, 2.2, .7, 0, 7); ctx.stroke(); } // a coil of fuse-cord
+    ctx.strokeStyle = '#8a7450'; ctx.lineWidth = .7; for (let i=0;i<4;i++){ ctx.beginPath(); ctx.ellipse(11, -15 + i*.6, 4.6 - i*.4, 2.2, .7, 0, 7); ctx.stroke(); } // a coil of trip-cord
     ctx.fillStyle = '#9a9488'; ctx.save(); ctx.translate(-27, -10); ctx.rotate(-.35); ctx.fillRect(-.5, -7, 1, 7); ell(ctx, 0, -8, 1.3, 1.9, '#9a9488'); ctx.restore(); // the spoon
     ctx.restore();
     PR.neck(ctx, F, 6.6);

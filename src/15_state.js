@@ -9,7 +9,7 @@ let walking = false;
 
 function newState(name){
   return migrate({v:1, name:name||'Hask', scene:'intro', node:null, bg:null, silver:15, xp:0, lvl:1, card:null,
-    inv:{sharper:2, burner:1, cusser:1, salve:2},
+    inv:{sharper:2, burner:1, cusser:1, salve:2, smoker:0},
     loy:{brisk:0,kettle:0,tuft:0,ohl:0}, f:{}, pos:{x:5,y:8},
     trail:[{x:4,y:8},{x:6,y:8},{x:4,y:9},{x:5,y:9}], log:[], ending:null, battle:null, bopt:null});
 }
@@ -19,9 +19,13 @@ function migrate(s){
   s.gear ??= {}; s.picks ??= {}; Object.keys(TPL).forEach(id => { s.gear[id] ??= {}; s.picks[id] ??= []; }); s.squad.forEach(id => { s.loy[id] ??= 0; });
   if (s.ending && !(0 in s.chapters)) s.chapters[0] = s.ending;
   s.dead ??= {};
+  s.inv ??= {}; s.inv.smoker ??= 0; // v3.7.1: smokers. Saves already past Hedge's cellar in Chapter 3 get the two he handed over there.
+  if (!s.f.gotSmokers && (s.chapter > 3 || (s.fxd && s.fxd.c3_work_hedge))) { s.inv.smoker += 2; s.f.gotSmokers = 1; }
   return s;
 }
 const SQUAD = () => S.squad;
+/* a squadmate's abilities: the template's, plus Kettle's smokers once she has ever had any */
+const kitAb = id => { const ab = [...TPL[id].ab]; if (id === 'kettle' && S && ((S.inv && S.inv.smoker > 0) || (S.f && S.f.gotSmokers))) ab.splice(ab.indexOf('cusser') + 1, 0, 'smoker'); return ab; };
 /* a new squadmate. If the squad has already earned its level-3 habits, the recruit picks hers before the next conversation. */
 function recruit(id){ if (!TPL[id] || S.squad.includes(id)) return; S.squad.push(id); S.loy[id] ??= 0; S.gear[id] ??= {}; S.picks[id] ??= [];
   if (S.lvl >= 3 && PICKS[3][id] && !S.picks[id].some(k => PICKS[3][id].some(o => o[0] === k)) && !S.picksDue.includes(3)) S.picksDue.push(3);

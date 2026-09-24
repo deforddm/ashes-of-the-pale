@@ -53,7 +53,7 @@ function showChapterEnd(){
   }
   if (n === 3) {
     if (S.f.c3_lied) extra.push(S.f.c3_lieHeld ? 'You lied to a Claw handler to her face, and she half believed it. She will find out which half.' : 'You lied to a Claw handler to her face. She thanked you for the trouble.');
-    if (S.f.c3_told) extra.push('Madryn knows what is under the intersection. That is a lit fuse with the Fourth\'s name on it.');
+    if (S.f.c3_told) extra.push('Madryn knows what is under the intersection. That is a drop of acid on a wax plug, with the Fourth\'s name on it.');
     if (S.f.c3_wjTold) extra.push('Whiskeyjack said "Good." Once. The squad heard it.');
     if (S.f.c3_kruppe) extra.push('Kruppe said a sentence about the plain and Tuft went white. Nobody else understood it. Tuft has not explained.');
     if (S.f.c3_sorry) extra.push('The sergeant spoke to Sorry. Eleven words came back. They were the wrong shape.');
