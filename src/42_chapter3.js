@@ -109,7 +109,7 @@ Tuft is looking up. She is the only person on the road who is. Out over the lake
           {t:'"Kettle. Count."', go:'c3_start_kettle'},
           {t:'"Ellis. You\'ve been here. What am I looking at?"', req:()=>SQUAD().includes('ellis'), go:'c3_start_ellis'}]}),
     c3_start_kettle:()=>({sp:'Kettle', txt:
-`"${S.inv.sharper} sharper${S.inv.sharper === 1 ? '' : 's'}, ${S.inv.burner} burner${S.inv.burner === 1 ? '' : 's'}, ${S.inv.cusser} cusser${S.inv.cusser === 1 ? '' : 's'}." She doesn't look at the ledger. "And a crate. Bridgeburner property. Sealed. Eleven days on a wagon, Sergeant, over a plain and round a barrow and past a mage burning to death, and I have not opened it, and when we find Whiskeyjack I want you to tell him so in front of me, so I can watch his face."
+`"${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}." She doesn't look at the ledger. "And a crate. Bridgeburner property. Sealed. Eleven days on a wagon, Sergeant, over a plain and round a barrow and past a mage burning to death, and I have not opened it, and when we find Whiskeyjack I want you to tell him so in front of me, so I can watch his face."
 
 She sniffs. Frowns. Sniffs again.
 
@@ -325,11 +325,11 @@ His eyes go past you, once, to the chandler's shutters, and the woman in the gre
       ch:[{t:'"Who is she?"', go:'c3_fiddler_sorry'},
           {t:'Leave him.'}]}),
     c3_fiddler_sorry:()=>({sp:'Fiddler', txt:
-`"Sorry." He lets that sit until you understand it's a name. "Recruit. Fishing village on Itko Kan. Came to us young." A long pause, the kind a sapper leaves while a fuse decides. "She's the best we've got at some things. I don't like the things."
+`"Sorry." He lets that sit until you understand it's a name. "Recruit. Fishing village on Itko Kan. Came to us young." A long pause, the kind a sapper leaves while the acid decides. "She's the best we've got at some things. I don't like the things."
 
 "Look, it's like this. There's a feeling you get, before a cusser goes, when you're too close and you know it. The back of your neck knows it before you do." He rubs his. "I've had that feeling, standing next to her. Standing *behind* her. And she never had a munition on her in her life."
 
-He picks up a coil of fuse-cord and starts to measure it, and that's the conversation over.`,
+He picks up a coil of trip-cord and starts to measure it, and that's the conversation over.`,
       ch:[{t:'Leave him.'}]}),
     c3_hedge:()=>({sp:'Hedge · sapper', txt:
 `${S.f.c3_workDone ? `Hedge is sitting on a crate that you would not personally sit on, eating an onion like an apple. "Four cussers," he says, with his mouth full. "*Four.* Your sapper counted them twice. Tell you something, Sergeant, I've known Moranth quartermasters wouldn't trust themselves with four. She's got the fever. I can see it. Keep her away from this hole after we light it; she'll want to watch."` :
@@ -357,7 +357,7 @@ ${SQUAD().includes('brisk') ? `Brisk stops in front of him. They regard each oth
       ch:[{t:'Leave him.'}]}),
     c3_sorry:()=>({sp:'Sorry', fx:()=>{S.f.c3_sorry=1;}, txt:
 `${S.f.c3_sorry ? `She hasn't moved. You're not sure she has breathed. The squad has gone the long way round the brazier to avoid the line of her eyes, and none of them discussed it.` :
-`You walk over. Behind you, the crossing gets quieter in a way that has nothing to do with sound: Fiddler's hands stop on the fuse-cord, Trotts turns his head, and Hedge, down the hole, stops singing.
+`You walk over. Behind you, the crossing gets quieter in a way that has nothing to do with sound: Fiddler's hands stop on the trip-cord, Trotts turns his head, and Hedge, down the hole, stops singing.
 
 She's young. That's the first thing, and it's wrong; she's young the way a knife is new. A plain face. A grey shawl. Hands folded in front of her like a girl waiting at a well. She looks at you, and you have the feeling, clear as cold water, that she has been looking at you since the Worry Gate.
 
@@ -431,7 +431,7 @@ When it's done, Hedge wipes his hands on his shirt, which makes them dirtier.
 
 "What've you got in the satchel, Falari? Your own kit."
 
-"${S.inv.sharper} sharper${S.inv.sharper === 1 ? '' : 's'}, ${S.inv.burner} burner${S.inv.burner === 1 ? '' : 's'}, ${S.inv.cusser} cusser${S.inv.cusser === 1 ? '' : 's'}."
+"${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}."
 
 "${S.inv.cusser === 0 ? 'No cussers.' : S.inv.cusser === 1 ? 'One cusser.' : `${S.inv.cusser} cussers.`}" Hedge looks at you, the sergeant, with frank contempt. "You've been walking a marine squad around Genabackis with ${S.inv.cusser === 0 ? 'no cussers' : S.inv.cusser === 1 ? 'one cusser' : 'that many cussers'}. What are you, *priests?*"
 
@@ -441,8 +441,12 @@ He reaches into a niche and takes one out, clay-grey and round, and puts it into
 
 Kettle, very quietly: "Hedge."
 
-"*Don't.*"`,
-      fx:()=>{ S.inv.cusser += 1; note('Hedge\'s tip: +1 cusser.','good'); if (SQUAD().includes('kettle')) loy('kettle',1); },
+"*Don't.*"
+
+He's already turned back to the niches, lips moving, counting the Bridgeburners' own: two crates with green wax on the lids, the pair the Green Moranth brought in for Whiskeyjack, packed with everything from cussers all the way down to smokers. At the second he stops, reaches in, and comes out with two small clay pots stoppered with wax, and drops them into Kettle's satchel without looking.
+
+"Smokers. Nobody counts smokers." He pats the lid. "Thirteen to a crate, the Moranth pack them. Twelve and a dud. The thirteenth's empty clay, every crate, every time, and not one of them will tell you why. I asked once. Still waiting." He wipes his hands again, which doesn't help. "Fid and me named half of what's in these, you know. Sharpers, 'cause that's what they do to you if you're stood too close when one goes. Ears bleeding, bits of iron in your cheek." A pause, very nearly fond. "Ask him about the Drum some day. Not down here."`,
+      fx:()=>{ S.inv.cusser += 1; S.inv.smoker = (S.inv.smoker || 0) + 2; S.f.gotSmokers = 1; note('Hedge\'s tip: +1 cusser, and two smokers.','good'); if (SQUAD().includes('kettle')) loy('kettle',1); },
       ch:[{t:'Up the ladder.', go:'c3_work_done'}]}),
     c3_work_done:()=>({sp:'The second night', scene:'city_street', fx:()=>{ S.f.c3_workDone=1; S.f.c3_night2=1; gain('roadleather'); const up = gainXP(60); note('+60 experience. Road crew work.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
 `You sleep on the chandler's roof, all of you in a row under the eaves, and wake at noon to the sound of the city: carts and bells and a man shouting about fish, and under it, if you listen, the hiss. Mallet brings bread. Fiddler throws a crew jerkin at you, oiled leather with a guild mark burned in the back. "Look the part. Nobody looks twice at a man in one of those. Nobody looks *once*."

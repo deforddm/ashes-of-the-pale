@@ -732,7 +732,7 @@ ${SQUAD().includes('tuft') ? `Tuft, on her knees: "Someone had to," she says, to
 
 ${SQUAD().includes('ohl') ? `Ohl has the oilcloth out. He has the charcoal. He looks at it for a long time. Then he puts both away without writing anything. "No," he says, to nobody. "Not her. Not him." He folds the oilcloth along its old creases. "Some lists close from the other side."` : ''}
 
-${SQUAD().includes('kettle') ? `Kettle is staring at the hillside. "She had my fuse-cord," she says. "Two lengths. She never said what for." Her voice cracks on it. "Sergeant, she never *said*."` : ''}
+${SQUAD().includes('kettle') ? `Kettle is staring at the hillside. "She had my trip-cord," she says. "Two lengths. She never said what for." Her voice cracks on it. "Sergeant, she never *said*."` : ''}
 
 On the crest, the puppet laughs, and lifts both wooden hands on their strings, and the hillside *tears* again: lower, wider, a long grey mouth opening across the slope above the fire. And things are coming out of it.`,
       ch:[{t:'"Hold the hillside!"', go:()=>startBattle('the_rent',{})}]}),
@@ -1010,7 +1010,7 @@ She puts it back in the satchel, carefully, the way you'd tuck in a child.
 
 "Somebody finally said yes," she says. "And I had nothing to throw." She laughs, not much. "That's the sapper's life, Sergeant. You spend two years waiting for permission, and when it comes, you're out."`}
 
-${S.f.c5_ellisThrough ? `She's quiet a moment. "She had my fuse-cord. Ellis. Two lengths." A breath. "I hope she's using it on something."` : ''}`,
+${S.f.c5_ellisThrough ? `She's quiet a moment. "She had my trip-cord. Ellis. Two lengths." A breath. "I hope she's using it on something."` : ''}`,
       ch:[{t:'Back to the row.', go:'c5_close'}]}),
     c5_close_ohl:()=>({sp:'Ohl', scene:'hills', txt:
 `He has the oilcloth open on his knee, for once, in daylight. He isn't reading it. He's looking at the space at the bottom, under the last name, where the next one would go.

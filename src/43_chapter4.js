@@ -380,7 +380,7 @@ ${SQUAD().includes('kettle') && S.inv.cusser > 0 ? `Kettle's hand has gone into 
     c4_kettle_no:()=>({sp:'Kettle', txt:
 `"No," says Kettle, before you've finished. She has her hand on the satchel flap and she's holding it shut, as if something inside might open it from the other side.
 
-"Not the cusser. Not up here. Not anything big." Very fast, very low, like a sapper reading a fuse. "It's a *roof*, Sergeant. A cusser takes the roof. The roof's on a house. The house has people in it, asleep, and a gas pipe coming up through the kitchen floor, and the pipe's joined to the one next door, and that one's joined to the street, and the street's joined to the *hole*." She swallows. "Hedge's hole. Fiddler's hole. Our hole. Forty of Hedge's babies sleeping in the mains."
+"Not the cusser. Not up here. Not anything big." Very fast, very low, like a sapper counting drops. "It's a *roof*, Sergeant. A cusser takes the roof. The roof's on a house. The house has people in it, asleep, and a gas pipe coming up through the kitchen floor, and the pipe's joined to the one next door, and that one's joined to the street, and the street's joined to the *hole*." She swallows. "Hedge's hole. Fiddler's hole. Our hole. Forty of Hedge's babies sleeping in the mains."
 
 "I throw that up here and I don't take three knives off a roof. I take the Gadrobi District off the map. Us on it." She lets go of the flap. "I'll use the bow. I'll use my teeth. I'm not throwing a cusser on a roof, and I'm telling you why so you don't think I've gone soft."
 

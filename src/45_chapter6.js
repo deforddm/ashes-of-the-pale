@@ -168,7 +168,7 @@ const CH6 = {
 
   end:{
     bridgeburners:['The garden held','The Tyrant came up out of an old priest in Lady Simtal\'s garden, and the Fourth stood on a lawn gone white with frost beside the Bridgeburners, four rounds, while Quick Ben opened seven warrens and Whiskeyjack\'s leg broke and a sapling became a house and took the Tyrant in. Then a black dragon drew a sword over the city that chains what it kills, and the Fourth was close enough to hear the chains.'],
-    cellars:['Under the crossing','While the Tyrant stood in Lady Simtal\'s garden, the Fourth ran for the vault under the Gadrobi crossing and found grey cloaks laying fuse to forty munitions and four cussers in the city\'s gas, on a standing order older than the night. Kettle pulled every fuse. Nobody in Darujhistan will ever know how close it came, and the order, in a very neat hand, is in the sergeant\'s coat.'],
+    cellars:['Under the crossing','While the Tyrant stood in Lady Simtal\'s garden, the Fourth ran for the vault under the Gadrobi crossing and found grey cloaks setting acid to the wax of forty munitions and four cussers in the city\'s gas, on a standing order older than the night. Kettle stopped every drop. Nobody in Darujhistan will ever know how close it came, and the order, in a very neat hand, is in the sergeant\'s coat.'],
     get alley(){ const s = typeof S !== 'undefined' && S && S.f && S.f.c6_steppedIn;
       return ['The alley', s ? 'The Adjunct walked out of the garden as the Tyrant showed his face, and the Fourth followed her to an alley where a Daru boy with a coin was against a wall, and she told them to hold him. They stood between her and the boy instead, three rounds, in a place where no warren works and whoever falls stays down. A man in a faded crimson cloak finished it. Two women from the Phoenix Inn finished her. Paran carried her away.'
         : 'The Adjunct walked out of the garden as the Tyrant showed his face, and the Fourth followed her to an alley where a Daru boy with a coin was against a wall, and she told them to hold him. They stood aside. A man in a faded crimson cloak stepped out of a doorway and did what they did not. Two women from the Phoenix Inn finished her. Paran carried her away.']; } },
@@ -1011,7 +1011,7 @@ Kettle stares at him. "How do you know what Chub said?"
 
 ${S.f.c6_mammotSeen ? `You tell him about the priest on the terrace in the Jaghut mask, and the wine with ice on it, and Ohl's hands. The smile doesn't move.
 
-"Old priests are cold," he says. "D'rek's a worm. Her priests live in cellars." Then his eyes go to the terrace, once, and stay there a breath longer than the smile would like. "Hm," says Quick Ben.` : `"Everybody's here," he says, to the sapling. "Have you noticed? Everybody who could take this city apart, all in one garden, all being very polite to each other. It's like a room full of cussers with their fuses in each other's pockets."`}
+"Old priests are cold," he says. "D'rek's a worm. Her priests live in cellars." Then his eyes go to the terrace, once, and stay there a breath longer than the smile would like. "Hm," says Quick Ben.` : `"Everybody's here," he says, to the sapling. "Have you noticed? Everybody who could take this city apart, all in one garden, all being very polite to each other. It's like a room full of cussers with the wax scraped thin."`}
 
 ${SQUAD().includes('tuft') ? `He glances at Tuft, and away. "Closed any windows yet?"
 
@@ -1536,7 +1536,7 @@ Up the white steps with the frost coming after you, through the hall, through tw
 
 ${S.f.c6_tuft === 'kept' && SQUAD().includes('tuft') ? `Tuft comes with you. The grey cloak saw to that: "Go with them, Tuft. He'll want to see that too." Her eyes stay open all the way down the hill.` : ''}
 
-${SQUAD().includes('kettle') ? `Kettle, running beside you, already talking, fast and low, the way a sapper reads a fuse: "Forty of Hedge's. Four cussers. At the joints. The big joints, where the pressure's worst. If that cold gets down into the stone the clay'll go brittle, and brittle clay cracks, and if one cracks next to a—" She stops herself. "Sergeant. I carried them down there. I *stacked* them."` : ''}`,
+${SQUAD().includes('kettle') ? `Kettle, running beside you, already talking, fast and low, the way a sapper counts drops: "Forty of Hedge's. Four cussers. At the joints. The big joints, where the pressure's worst. If that cold gets down into the stone the clay'll go brittle, and brittle clay cracks, and if one cracks next to a—" She stops herself. "Sergeant. I carried them down there. I *stacked* them."` : ''}`,
       ch:[{t:'Run.', go:'c6_cellars_run'}]}),
     c6_cellars_run:()=>({sp:'The streets', scene:'fete_street', txt:
 `Down the hill through the Estate District at a run, with the halberds thrown in a gutter somewhere behind you, and the Fete doesn't know yet.
@@ -1558,61 +1558,61 @@ The lantern at the bottom of the ladder is lit. It shouldn't be. Everybody who h
 
 And there are people in it.
 
-Four of them. Grey cloaks, the cut you know, but not clean: mud to the knee and brick-dust to the elbow. One has a lantern. Three have spools of fuse-cord, black, and they're running it from niche to niche along the base of the pipes where Hedge seated the munitions, from cusser to cusser, knotting, not hurrying, laying a line. A long one. Back toward the ladder. Back toward the one with the lantern, who has a slow-match lit in his other hand and is sheltering it the way you'd shelter a candle.
+Four of them. Grey cloaks, the cut you know, but not clean: mud to the knee and brick-dust to the elbow. One has a lantern. Three are working the niches along the base of the pipes where Hedge seated the munitions, cusser by cusser, with small knives and smaller phials: a notch cut into the wax that seals each one, a bead of something that smokes faintly in the cold set into the notch, and on to the next. Not hurrying. Moranth wax is thick. A bead in a notch is a slow clock, and they have set it slow enough to be up the ladder and three streets away when it runs out. Back by the ladder the one with the lantern holds a stoppered phial in his other hand, upright and well away from his body, the way you'd carry a cup filled to the brim.
 
 They look up.
 
-The one with the match doesn't move. He's older than the others. He looks at you with no surprise at all, the way a clerk looks at a man who has come to the wrong window.
+The one with the phial doesn't move. He's older than the others. He looks at you with no surprise at all, the way a clerk looks at a man who has come to the wrong window.
 
 "Standing orders, Sergeant," he says. Pleasant. Tired. "Older than tonight. If the Bridgeburners wouldn't bring the city down, somebody would." He glances at the frost on the pipes. "Tonight seemed a good night. Everybody's looking at the garden." A pause. "Stand aside. You were never here."
 
-${SQUAD().includes('kettle') ? `Kettle makes a sound. It isn't a word. She's looking at the fuse running along the base of the pipes, knotted to Hedge's cussers, to *her* cussers, the ones she carried down the ladder in her own arms. "That's *Hedge's* cord," she says. "You're using *Hedge's cord*."` : ''}
+${SQUAD().includes('kettle') ? `Kettle makes a sound. It isn't a word. She's looking at the notches in the wax, and the beads sitting in them, on Hedge's cussers, on *her* cussers, the ones she carried down the ladder in her own arms. "That's *Hedge's* acid," she says. "You're using *Hedge's acid*."` : ''}
 
-${SQUAD().includes('ellis') ? `Ellis, at the foot of the ladder, very quietly: "I know that knot. They teach it at the green door."` : ''}
+${SQUAD().includes('ellis') ? `Ellis, at the foot of the ladder, very quietly: "I know that cut. They teach it at the green door."` : ''}
 
-${S.f.c6_tuft === 'kept' && SQUAD().includes('tuft') ? `The man with the match looks past you, at Tuft, at her wide still eyes, and for one breath he hesitates. Then he nods to her. Very slightly. The way you'd nod to an officer across a room.` : ''}
+${S.f.c6_tuft === 'kept' && SQUAD().includes('tuft') ? `The man with the phial looks past you, at Tuft, at her wide still eyes, and for one breath he hesitates. Then he nods to her. Very slightly. The way you'd nod to an officer across a room.` : ''}
 
 Nobody throws anything in here. Nobody has to be told.`,
-      ch:[{t:'"Get that match."', go:()=>startBattle('the_mines',{})}]}),
+      ch:[{t:'"Get that phial."', go:()=>startBattle('the_mines',{})}]}),
     c6_after_mines:()=>({sp:'The vault under the crossing', scene:'cellar', txt:
 `It's close and quiet and ugly, the way it has to be in a room full of things that must not be touched. No sharpers. No burners. Nobody so much as draws a spark off a blade on the brick. Knives and shields and bodies in the dark between the pipes.
 
-The man with the match goes down last. The match goes out of his hand and rolls, lit, along the wet floor toward the end of the fuse—
+The man with the phial goes down last. He knows he's going down, and he spends it: he rolls onto his side at the foot of the nearest niche, and gets the stopper out with his thumb, and empties the whole phial over the wax of the cusser beside him. Two drops take ten heartbeats to eat through a Moranth plug. That was a great deal more than two drops—
 
-${SQUAD().includes('kettle') ? `Kettle gets it. She's across the vault before anybody else has moved, down on her knees, and she puts it out with her bare hand: closes her fist on it, and holds it, and you smell her skin burn, and she doesn't open the fist until it's out.
+${SQUAD().includes('kettle') ? `Kettle gets there. She's across the vault before anybody else has moved, down on her knees, and she wipes the acid off the wax with the flat of her bare hand and then presses the hand down over the plug and holds it there, and you smell her skin burn, and she doesn't lift it until the smoking stops.
 
-Then she gets up, and shakes the hand once, and goes to the fuse.` : `You get it. You're on your knees in the wet with the match under your palm before you've thought about it, and it burns, and you hold it till it's out.
+Then she gets up, and shakes the hand once, and goes to the next niche.` : `You get there. You're on your knees in the wet with your palm over the plug before you've thought about it, wiping, pressing, and it burns, and you hold it till the smoking stops.
 
-Nobody here knows how to take the fuse out of forty munitions without waking one. You're going to have to learn.`}`,
-      ch:[{t:SQUAD().includes('kettle') ? 'Kettle.' : 'The fuse.', go:'c6_mines_kettle'}]}),
-    c6_mines_kettle:()=>({sp: SQUAD().includes('kettle') ? 'Kettle' : 'The fuse', scene:'cellar', fx:()=>{ if (SQUAD().includes('kettle')) loy('kettle',2); }, txt: SQUAD().includes('kettle') ?
-`She pulls the fuses.
+There are three more cussers with a bead of acid sitting in a notch in the wax, eating, and forty of Hedge's packed in around them, and nobody here knows how to stop a timer without waking what it's set in. You're going to have to learn.`}`,
+      ch:[{t:SQUAD().includes('kettle') ? 'Kettle.' : 'The timers.', go:'c6_mines_kettle'}]}),
+    c6_mines_kettle:()=>({sp: SQUAD().includes('kettle') ? 'Kettle' : 'The timers', scene:'cellar', fx:()=>{ if (SQUAD().includes('kettle')) loy('kettle',2); }, txt: SQUAD().includes('kettle') ?
+`She stops the timers.
 
-One at a time. She starts at the far end, where the line goes into the last cusser, and works back toward the ladder, and at every niche she kneels, and puts her burned hand flat on the clay for a moment, as if taking its temperature, and then with the other hand, very gently, unpicks the knot. Draws the cord out. Coils it. Moves on.
+One at a time. She starts at the far end, at the last cusser, and works back toward the ladder, and at every niche she kneels, and puts her burned hand flat on the clay for a moment, as if taking its temperature, and then with the other hand, very gently, lifts the bead out of the notch on the point of her knife. Scrapes the notch clean. Packs it with tallow from the tin at her belt, and smooths it with her thumb. Moves on.
 
 Nobody helps her. Nobody would dare. ${SQUAD().includes('brisk') ? `Brisk stands at the foot of the ladder with her shield turned to the vault, as if the dark might try something.` : ''} ${SQUAD().includes('ohl') ? `Ohl tries, once, to look at the hand, and she says "*Later*," without looking up, in a voice he has never heard out of her, and he steps back.` : ''}
 
-The frost on the pipes is thickening. You can hear the clay tick in the cold: small dry sounds, like things thinking about cracking. She doesn't hurry. She has never hurried a knot in her life.
+The frost on the pipes is thickening. You can hear the clay tick in the cold: small dry sounds, like things thinking about cracking. She doesn't hurry. She has never hurried wax in her life.
 
 She counts under her breath as she goes, the way she counted in the hills, the way priests count.
 
-"You keep pointing me at things," she says, halfway down the line, to nobody, "and I'll keep making them stop being things. That's love, in the sapper trade." A knot. A coil. "Nobody ever says the other half. Sometimes you point me at a thing and I make it *not* go. I make it stay a cusser. Sitting in a hole. Doing nothing. For ever." Another knot. "That's the hard half. Chub never told me that half. I don't think Chub *knew* that half."
+"You keep pointing me at things," she says, halfway down the line, to nobody, "and I'll keep making them stop being things. That's love, in the sapper trade." A notch. A thumb of tallow. "Nobody ever says the other half. Sometimes you point me at a thing and I make it *not* go. I make it stay a cusser. Sitting in a hole. Doing nothing. For ever." Another notch. "That's the hard half. Chub never told me that half. I don't think Chub *knew* that half."
 
-When she gets to the last one, by the ladder, she sits down on the wet brick beside it with the coiled fuse in her lap, and puts her burned hand on the clay, and leaves it there.
+When she gets to the last one, by the ladder, she sits down on the wet brick beside it with the tallow tin in her lap, and puts her burned hand on the clay, and leaves it there.
 
 "Four," she says. "Sir. I *told* them." You don't know which *sir* she means. You don't think she does.
 
 Then she cries, for the first time since you've known her, without making any sound at all.` :
-`You pull the fuses. There's nobody else to do it.
+`You stop the timers. There's nobody else to do it.
 
-You've watched Kettle do it a hundred times without understanding what you were watching, and you understand now: one at a time, from the far end, a hand flat on the clay first, as if taking its temperature, and then the knot, very gently, unpicked. Draw the cord out. Coil it. Move on.
+You've watched Kettle work wax a hundred times without understanding what you were watching, and you understand now: one at a time, from the far end, a hand flat on the clay first, as if taking its temperature, and then the bead lifted out of the notch on a knife point, very gently. Scrape the notch. Pack it with tallow from the sapper's tin. Smooth it. Move on.
 
 The frost on the pipes is thickening. You can hear the clay tick in the cold. You don't hurry. You're more frightened than you have ever been in your life, and your hands are perfectly steady, and you think that is probably what sappers are.
 
-Forty. Four. You count them the way she would have, like prayers. When you get to the last one, by the ladder, you sit down beside it with the fuse in your lap and your burned hand on the clay, and you leave it there for a while.`,
-      ch:[{t:'The man with the match.', go:'c6_mines_order'}]}),
+Forty. Four. You count them the way she would have, like prayers. When you get to the last one, by the ladder, you sit down beside it with the tallow tin in your lap and your burned hand on the clay, and you leave it there for a while.`,
+      ch:[{t:'The man with the phial.', go:'c6_mines_order'}]}),
     c6_mines_order:()=>({sp:'A standing order', scene:'cellar', fx:()=>{ S.f.c6_orders=1; }, txt:
-`He's lying where he fell, at the foot of the ladder: grey cloak, mud to the knee, the burned-out match beside his hand. Inside his coat, folded small, a slip of paper.
+`He's lying where he fell, at the foot of the niche: grey cloak, mud to the knee, the empty phial beside his hand. Inside his coat, folded small, a slip of paper.
 
 Good paper. A few lines. A neat hand, very neat: small and square and without a flourish anywhere, the hand of somebody who has written a great many orders and never once had to write one twice.
 
@@ -1645,7 +1645,7 @@ Then the pale thing is gone. Not dead. *Gone*.
 
 And the frost on the cobbles, which has been creeping down the street toward the hole all this time, stops. Just stops, a hand's breadth from the stakes, as if something up on the hill had closed a door on it.
 
-${SQUAD().includes('kettle') ? `Kettle is sitting at the top of the ladder with the coiled fuse still in her lap. "Did we— Sergeant, did we do *that*?"
+${SQUAD().includes('kettle') ? `Kettle is sitting at the top of the ladder with the tallow tin still in her lap and her burned hand held against her chest. "Did we— Sergeant, did we do *that*?"
 
 "No."
 
@@ -1906,7 +1906,7 @@ Whiskeyjack is on a bench by the fountain with his leg out in front of him, spli
 
 "No," says Whiskeyjack.
 
-${S.f.c6_wjLeg ? `You were there when it broke. You heard it.` : S.f.c6_key === 'cellars' ? `He broke it on the lawn in the night, holding the garden, while you were under the city pulling fuses. You didn't hear it. You'd have liked to have been there to hear it, which is a strange thing to want.` : `He broke it on the lawn in the night, holding the garden, while you were in an alley. You weren't there.`}
+${S.f.c6_wjLeg ? `You were there when it broke. You heard it.` : S.f.c6_key === 'cellars' ? `He broke it on the lawn in the night, holding the garden, while you were under the city scraping acid out of wax. You didn't hear it. You'd have liked to have been there to hear it, which is a strange thing to want.` : `He broke it on the lawn in the night, holding the garden, while you were in an alley. You weren't there.`}
 
 Paran is standing at the edge of the yard of mounds with a sword through his belt beside his own. It isn't his. ${S.f.c6_lornEnd ? `You know whose.` : `He sees you looking. "The Adjunct's dead," he says, when you come level with him. One sentence, flat, like weather, the way he told you his own death in the hills. He doesn't give you another.`}
 
@@ -1926,11 +1926,11 @@ ${dead.length ? `You count. You get the number you got in the alley. You'll get 
 
 "Report."
 
-You give it to him the way he taught you, in order, without anything in it that isn't so. ${S.f.c6_key === 'bridgeburners' ? `The lawn, and the line, and the rime-dead. Seven doors. The sword that drank the lance. Hedge running. The roots. The sky.` : S.f.c6_key === 'cellars' ? `The run down the hill with the frost in the cobbles. The lantern at the bottom of the ladder that shouldn't have been lit. Four grey cloaks and a slow-match. The fuse. The sky, from the crossing.` : `The gate, and the streets, and the thing that went up over the roofs. The alley. The boy against the wall and the order: *hold him*. What you did. The man in crimson. The two women from the Phoenix. The captain, kneeling. The sky.`}${dead.length ? (dead.length === 1 ? ` The name.` : ` The names.`) : ''}
+You give it to him the way he taught you, in order, without anything in it that isn't so. ${S.f.c6_key === 'bridgeburners' ? `The lawn, and the line, and the rime-dead. Seven doors. The sword that drank the lance. Hedge running. The roots. The sky.` : S.f.c6_key === 'cellars' ? `The run down the hill with the frost in the cobbles. The lantern at the bottom of the ladder that shouldn't have been lit. Four grey cloaks and a phial. The wax. The sky, from the crossing.` : `The gate, and the streets, and the thing that went up over the roofs. The alley. The boy against the wall and the order: *hold him*. What you did. The man in crimson. The two women from the Phoenix. The captain, kneeling. The sky.`}${dead.length ? (dead.length === 1 ? ` The name.` : ` The names.`) : ''}
 
 He listens with his face doing nothing.
 
-${S.f.c6_key === 'bridgeburners' ? `"You held," he says, when you've finished. "With us. On the lawn." He looks down at the leg. "I'd rather have had the leg. I'll take the squad." And then, because he's Whiskeyjack, and because it's true: "Good."` : S.f.c6_key === 'cellars' ? `"Quick says you sat on the crates," he says. "I heard the frost stop going down. On the lawn. It stopped, and I didn't know why." He looks east, toward the crossing. "Now I do." He doesn't ask what you took off the man with the match. He looks at your coat, once, where the paper is. "Keep whatever you found," he says. "Somewhere I'll never find it." A beat. "Good."` : S.f.c6_steppedIn ? `"Paran says you were in the alley," he says. "Between her and the boy." He closes his eyes, for a moment, the only time you've ever seen him do it in front of anyone. "Hood's breath, Sergeant." He opens them. "Good."` : `"Paran says you were in the alley," he says. He doesn't ask what you did there. He looks at your face${SQUAD().includes('brisk') ? `, and at Brisk's,` : ','} and files what he finds, and doesn't say which drawer.`}
+${S.f.c6_key === 'bridgeburners' ? `"You held," he says, when you've finished. "With us. On the lawn." He looks down at the leg. "I'd rather have had the leg. I'll take the squad." And then, because he's Whiskeyjack, and because it's true: "Good."` : S.f.c6_key === 'cellars' ? `"Quick says you sat on the crates," he says. "I heard the frost stop going down. On the lawn. It stopped, and I didn't know why." He looks east, toward the crossing. "Now I do." He doesn't ask what you took off the man with the phial. He looks at your coat, once, where the paper is. "Keep whatever you found," he says. "Somewhere I'll never find it." A beat. "Good."` : S.f.c6_steppedIn ? `"Paran says you were in the alley," he says. "Between her and the boy." He closes his eyes, for a moment, the only time you've ever seen him do it in front of anyone. "Hood's breath, Sergeant." He opens them. "Good."` : `"Paran says you were in the alley," he says. He doesn't ask what you did there. He looks at your face${SQUAD().includes('brisk') ? `, and at Brisk's,` : ','} and files what he finds, and doesn't say which drawer.`}
 
 ${dead.length === 1 ? `Then he says the name. ${NAME(dead[0])}. The way he'd say it to Dujek. He knew ${C6H.her(dead)}. You didn't know he knew ${C6H.her(dead)}.` : dead.length ? `Then he says their names. ${C6H.names(dead)}. ${dead.length === 2 ? 'Both of them' : 'All of them'}, in order, the way he'd say them to Dujek. He knew them. You didn't know he knew them. He knew every one.` : ''}
 

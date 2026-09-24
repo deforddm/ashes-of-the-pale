@@ -123,7 +123,7 @@ ${S.f.c1_key === 'line' ? `Nobody has said the words *cadre row* since the Pale.
           {t:'"Kettle. Count."', go:'c2_start_kettle'},
           {t:'"Tuft. You sleeping out here?"', go:'c2_start_tuft'}]}),
     c2_start_kettle:()=>({sp:'Kettle', fx:()=>{S.f.c2_startKettle=1;}, txt:
-`"${S.inv.sharper} sharper${S.inv.sharper === 1 ? '' : 's'}, ${S.inv.burner} burner${S.inv.burner === 1 ? '' : 's'}, ${S.inv.cusser} cusser${S.inv.cusser === 1 ? '' : 's'}. Same as the Pale. Same as I'll say tomorrow. You could write it down, Sergeant, and save us both the conversation."
+`"${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}. Same as the Pale. Same as I'll say tomorrow. You could write it down, Sergeant, and save us both the conversation."
 
 She pats the oilcloth. "The Bridgeburners left a crate. I haven't opened it. I want that noted. I want it noted that I've walked beside an unopened Moranth crate for three days and haven't so much as looked at the seals."
 
@@ -941,7 +941,7 @@ ${S.f.c2_key === 'light' ? `Tuft walks beside the wagon, where you can see her. 
 
 ${SQUAD().includes('ellis') ? `Ellis is out ahead, on foot, where the ruts go up into the hills, with her bow strung and her burned hand gloved. She looks back once. Counts. Arrives at six, and checks it.` : S.f.c2_ellisRefused ? `Somewhere ahead, a scout with one eye is riding after an Adjunct with a woman who could have been the Fourth's, and Ohl has not mentioned it, and will not, and the not-mentioning has a shape.` : ``}
 
-Kettle: "${S.inv.sharper} sharper${S.inv.sharper === 1 ? '' : 's'}, ${S.inv.burner} burner${S.inv.burner === 1 ? '' : 's'}, ${S.inv.cusser} cusser${S.inv.cusser === 1 ? '' : 's'}, and a crate I still haven't opened. I want that in the ledger."
+Kettle: "${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}, and a crate I still haven't opened. I want that in the ledger."
 
 Brisk: "It's in."
 
