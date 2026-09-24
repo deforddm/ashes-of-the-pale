@@ -5,7 +5,7 @@ const CH3 = {
     paras:[
 `The road comes down out of the Gadrobi Hills in switchbacks, the way a drunk comes down a stair, and the wagon comes down it the same way, with Brisk at the brake and Pell the mule expressing an opinion at every turn. There are goats on the slopes and goatherds who do not look up at Malazans, and a shrine to a god whose face somebody has chiselled off with care. Kettle has stopped counting munitions. She is counting chimneys.`,
 `Then the hills open, and there is the lake, flat and grey as a slate, and on the near shore a city so large that the eye refuses it and goes looking for its edges, and does not find them. Walls inside walls. Domes, towers, a hill with palaces on it like teeth. Smoke from ten thousand kitchens. You are Sergeant {sgt}, Fourth Squad, and you have seen Pale and Genabaris and Nathilog, and you have never seen anything that made you feel so precisely the size of one wagon.`,
-`Dusk comes on, and the city lights itself. Not with fire. Blue, cold, all at once and street by street, as if something beneath it were breathing out. And over the water, not far, not high, a mountain of black stone hangs in the air with nothing under it, where it has hung since Pale. It does not move. It casts no light. Down in the streets, nobody looks up at it any more, and that, Ohl says, is how you know it is a very old city.`],
+`Dusk comes on, and the city lights itself. Not with fire. Blue, cold, street by street, as if something beneath it were breathing out. And over the water, not far, not high, a mountain of black stone hangs in the air with nothing under it, where it has hung since Pale. It does not move. It casts no light. Down in the streets, nobody looks up at it any more, and that, Ohl says, is how you know it is a very old city.`],
     go:'Into the city', node:'c3_start'},
 
   areas:[
@@ -23,7 +23,7 @@ const CH3 = {
             "#.......,,.....#",
             "#L.....,.....L.#",
             "################" ],
-      walk:'.,DH><', triggers:{W:'c3_wagon', '>':'c3_to_cross'}, start:{x:2,y:6},
+      walk:'.,DH><', triggers:{W:'c3_wagon', '>':'c3_to_cross'}, start:{x:3,y:5},
       npcs:[ {id:'pallick', name:'Pallick', kind:'guard', x:13, y:7, node:()=>S.f.c3_gate?'c3_pallick_again':'c3_pallick', fresh:()=>!S.f.c3_gate} ] },
 
     /* . cobbles  , gutter  # wall  D the Phoenix Inn's door  H the dig  x stakes  W the crew's wagon  F brazier  B barrels  L lamp  > alley east to Daru */
@@ -40,14 +40,14 @@ const CH3 = {
             "#.W.....F....B.#",
             "#L,,.........,L#",
             "################" ],
-      walk:'.,DH><', triggers:{H:'c3_dig_tile', D:'c3_inn_door', '>':'c3_to_daru', W:'c3_crew_wagon'}, start:{x:2,y:6},
+      walk:'.,DH><', triggers:{H:'c3_dig_tile', D:'c3_inn_door', '>':'c3_to_daru', W:'c3_crew_wagon'}, start:{x:2,y:7},
       npcs:[ {id:'wj', name:'Whiskeyjack', kind:'wj', x:8, y:3, node:()=>S.f.c3_reported?'c3_wj_again':'c3_wj', fresh:()=>!S.f.c3_reported},
              {id:'fiddler', name:'Fiddler', kind:'fiddler', x:6, y:6, node:()=>'c3_fiddler', fresh:()=>!!S.f.c3_reported && !S.f.c3_fid},
              {id:'hedge', name:'Hedge', kind:'hedge', x:8, y:5, node:()=>'c3_hedge'},
              {id:'mallet', name:'Mallet', kind:'mallet', x:10, y:9, node:()=>'c3_mallet'},
              {id:'trotts', name:'Trotts', kind:'trotts', x:3, y:6, node:()=>'c3_trotts', still:true},
              {id:'sorry', name:'Sorry', kind:'sorry', x:13, y:5, node:()=>'c3_sorry', still:true},
-             {id:'kruppe', name:'A fat man in a red waistcoat', kind:'kruppe', x:11, y:8, node:()=>S.f.c3_kruppeMet?'c3_kruppe_again':'c3_kruppe', show:()=>!!S.f.c3_reported && !S.f.c3_inn, fresh:()=>!S.f.c3_kruppeMet},
+             {id:'kruppe', name:'A fat man in a red waistcoat', kind:'kruppe', x:11, y:8, node:()=>S.f.c3_kruppeMet?'c3_kruppe_again':'c3_kruppe', show:()=>!!S.f.c3_reported && !S.f.c3_inn && !S.f.c3_kruppeMet, fresh:()=>!S.f.c3_kruppeMet},
              {id:'urchin', name:'A Gadrobi child', kind:'urchin', x:4, y:9, node:()=>'c3_urchin', show:()=>!!S.f.c3_workDone && !SQUAD().includes('ellis') && !S.f.c3_msg, fresh:()=>true},
              {id:'qb', name:'Quick Ben', kind:'qb', x:12, y:3, node:()=>'c3_qb', show:()=>!!S.f.c3_night2, fresh:()=>!S.f.c3_qb},
              {id:'kalam', name:'Kalam', kind:'kalam', x:13, y:3, node:()=>'c3_kalam', show:()=>!!S.f.c3_night2, fresh:()=>!S.f.c3_kal} ] },
@@ -66,7 +66,7 @@ const CH3 = {
             "#..###....###..#",
             "#..,,......,,..#",
             "################" ],
-      walk:'.,DH><', triggers:{D:'c3_dye_door', '<':'c3_back_west'}, start:{x:1,y:5},
+      walk:'.,DH><', triggers:{D:'c3_dye_door', '<':'c3_back_west'}, start:{x:2,y:6},
       npcs:[ {id:'guard1', name:'City Watch', kind:'guard', x:7, y:6, node:()=>S.f.c3_guards?'c3_guard_again':'c3_guard', fresh:()=>!S.f.c3_guards},
              {id:'guard2', name:'City Watch', kind:'guard', x:8, y:6, node:()=>S.f.c3_guards?'c3_guard_again':'c3_guard'} ] } ],
 
@@ -104,12 +104,12 @@ The lamps along the wall are coming on one at a time. Not lit. *Coming on*, a li
 
 ${S.f.c2_late ? `Brisk has not said *a day late* since the hills. She has said it with the brake, and with the way she's set the wagon's pace, and with the back of her neck.` : `Brisk, at the brake: "Seven days. On the nose." She says it to the mule. The mule does not care. Brisk does, enormously, and would die before you saw it.`}
 
-Tuft is looking up. She is the only person on the road who is. Out over the lake, black against the last of the light, the mountain hangs where it has always hung, and she looks at it the way you'd look at a man across a room who once hit you.`,
+Tuft is looking up. She is the only person on the road who is. Out over the lake, black against the last of the light, the mountain hangs as if it had always hung there, and she looks at it the way you'd look at a man across a room who once hit you.`,
       ch:[{t:'Walk the wagon up to the gate.', go:()=>startExplore()},
           {t:'"Kettle. Count."', go:'c3_start_kettle'},
           {t:'"Ellis. You\'ve been here. What am I looking at?"', req:()=>SQUAD().includes('ellis'), go:'c3_start_ellis'}]}),
     c3_start_kettle:()=>({sp:'Kettle', txt:
-`"${S.inv.sharper} sharper${S.inv.sharper === 1 ? '' : 's'}, ${S.inv.burner} burner${S.inv.burner === 1 ? '' : 's'}, ${S.inv.cusser} cusser${S.inv.cusser === 1 ? '' : 's'}." She doesn't look at the ledger. "And a crate. Bridgeburner property. Sealed. Eleven days on a wagon, Sergeant, over a plain and through a barrow and past a mage burning to death, and I have not opened it, and when we find Whiskeyjack I want you to tell him so in front of me, so I can watch his face."
+`"${S.inv.sharper} sharper${S.inv.sharper === 1 ? '' : 's'}, ${S.inv.burner} burner${S.inv.burner === 1 ? '' : 's'}, ${S.inv.cusser} cusser${S.inv.cusser === 1 ? '' : 's'}." She doesn't look at the ledger. "And a crate. Bridgeburner property. Sealed. Eleven days on a wagon, Sergeant, over a plain and round a barrow and past a mage burning to death, and I have not opened it, and when we find Whiskeyjack I want you to tell him so in front of me, so I can watch his face."
 
 She sniffs. Frowns. Sniffs again.
 
@@ -128,7 +128,7 @@ She points, without meaning to, the way you'd point at a scar on your own hand. 
 
 "That one goes up to a dye-shop. Indigo and madder, and a courtyard where they dry the cloth, and a room over it with a good lock." Her hand comes down. "The green door's the house, Sergeant. That street's where the house sends you when it doesn't want you at the house."
 
-Then she stops, and you watch her hear herself, and wish she hadn't.
+Then she stops, and you watch her hear herself and wish she hadn't.
 
 "Forget I pointed. I'd like that in the ledger too."`,
       ch:[{t:'"Forgotten."', fx:()=>{loy('ellis',1);}, go:()=>startExplore()},
@@ -170,7 +170,7 @@ He waits. So does the ink.`,
     c3_pallick_paid:()=>({sp:'Pallick', fx:()=>{S.f.c3_gate=1;}, txt:
 `He counts the coins without touching them, with his eyes, and then touches them, once each, as if confirming they exist. They go into a box. The box goes under the desk. His pen writes *road crew, one wagon, paid* and nothing else.
 
-"No name," he says. "The Council will be bereft." "I'd keep the purse inside the coat, Sergeant. Silver makes a noise in this city. People with no silver have very good ears."`,
+"No name," he says. "The Council will be bereft. I'd keep the purse inside the coat, Sergeant. Silver makes a noise in this city. People with no silver have very good ears."`,
       ch:[{t:'On to the gate.', go:()=>startExplore()}]}),
     c3_pallick_brisk:()=>({sp:'Brisk', fx:()=>{S.f.c3_gate=1; S.f.c3_briskVoice=1; loy('brisk',1);}, txt:
 `Brisk steps up to the desk. She doesn't lean on it. She stands at it, the way the heavy infantry stand at a thing they're about to go through, and uses a voice you have heard exactly once before, at Nathilog, on a quartermaster who had tried to short the company's rations and did not try again.
@@ -240,7 +240,7 @@ Pell the mule, as if understanding, tries to bite him.`,
 
 One of the thin ones has left his knife behind, on the cobbles, under the wagon. It's a duelling knife, long and fine, with a brass-wire basket round the grip. No cutpurse ever bought it. ${SQUAD().includes('ellis') ? `Ellis picks it up, weighs it, and hands it to you hilt first. "Daru noble's. Stolen from a man who'll have had the thief killed by now. It's a lovely thing. Don't wear it where a noble can see."` : `Brisk picks it up and hands it to you hilt first. "Pretty. Too long for a lane. Somebody's going to miss that."`}
 
-${S.f.c3_gate && !S.f.c3_paid ? `At the gate, Pallick has not looked up from his ledger once.` : `At the gate, Pallick has not looked up from his ledger once. You get the feeling he has written *the gas* already.`}`,
+At the gate, Pallick has not looked up from his ledger once. You get the feeling he has written *the gas* already.`,
       ch:[{t:'Down into the Gadrobi District.', go:()=>{ startExplore('gadrobi_cross'); talk('c3_cross_arrive'); }}]}),
 
     /* ---- the Gadrobi crossroads: arrival ---- */
@@ -456,7 +456,7 @@ Somebody has come back. Two somebodies. There's a dark long-fingered man sitting
     c3_qb:()=>({sp:'Quick Ben · squad mage', fx:()=>{S.f.c3_qb=1;}, txt:
 `He smiles when you come up, the way he smiled at the Pale: at something just past you, which you have learned is where he keeps the joke.
 
-"Sergeant. The baggage. Kettle opened the crate? Good. Whiskeyjack's been unbearable. He's been saying *they'll be on time* for a week in a tone of voice that meant he didn't believe it, and now he has to find something else to not believe."
+"Sergeant. The baggage. Kettle opened the crate? Good. Whiskeyjack's been unbearable. He's been saying *they'll be on time* for a week in a tone of voice that meant he didn't believe it, ${S.f.c2_late ? `and then you were a day late, and he was right, which is worse` : `and now he has to find something else to not believe`}."
 
 ${S.f.c2_croneSaw ? `He looks at you properly then, which he doesn't often do to anyone.
 
@@ -471,7 +471,7 @@ Where they were last night, he doesn't say. You don't ask. There's a cut on the 
 
 He finally looks at you.
 
-"You've got a Claw's scout in your squad${SQUAD().includes('ellis') ? '' : ' in your future'}." ${SQUAD().includes('ellis') ? `A nod, barely, at Ellis. "Cut loose. So she says. So Toc says." His voice doesn't change at all. "The Claw doesn't cut loose. It ties a longer string. Watch who pulls it, Sergeant. It won't be her."` : `"No? Then you've a Claw's interest in your squad instead. Same thing, with fewer arrows." His voice doesn't change at all. "They'll come to you before they come to us. They always go to the baggage first. It talks."`}
+${SQUAD().includes('ellis') ? `"You've got a Claw's scout in your squad." A nod, barely, at Ellis. "Cut loose. So she says. So Toc says." His voice doesn't change at all. "The Claw doesn't cut loose. It ties a longer string. Watch who pulls it, Sergeant. It won't be her."` : `"No Claw scout in your squad." It isn't quite a question. "Then you've a Claw's interest in it instead. Same thing, with fewer arrows." His voice doesn't change at all. "They'll come to you before they come to us. They always go to the baggage first. It talks."`}
 
 He goes back to the rooftops.`,
       ch:[{t:'Leave him.'}]}),
@@ -480,9 +480,9 @@ He goes back to the rooftops.`,
     c3_kruppe:()=>({sp:'A fat man in a red waistcoat', fx:()=>{S.f.c3_kruppeMet=1;}, txt:
 `He is standing in the middle of the crossing, where no one stands, eating a pastry, and he has placed himself precisely where you will walk into him, and you walk into him.
 
-"Ah!" Crumbs. A small, round, sticky hand flutters up and dusts them off your crew jerkin, and then off his own waistcoat, which is red, and embroidered, and strains. "Kruppe begs pardon of the honest labourer, who is doubtless weary from honest labour, as Kruppe is weary from observing it. Such digging! Such diligence! The Gadrobi District has never seen a hole so lovingly attended."
+"Ah!" Crumbs. A small, round, sticky hand flutters up and dusts them off your sleeve, and then off his own waistcoat, which is red, and embroidered, and strains. "Kruppe begs pardon of the honest labourer, who is doubtless weary from honest labour, as Kruppe is weary from observing it. Such digging! Such diligence! The Gadrobi District has never seen a hole so lovingly attended."
 
-He beams. His eyes are small and brown and extremely friendly, and they have, in the time it took him to dust your jerkin, counted your squad, priced your boots, noted Kettle's satchel and the way she holds it, and moved on to Tuft, and stopped there, for exactly one blink, and moved on again.
+He beams. His eyes are small and brown and extremely friendly, and they have, in the time it took him to dust your sleeve, counted your squad, priced your boots, noted Kettle's satchel and the way she holds it, and moved on to Tuft, and stopped there, for exactly one blink, and moved on again.
 
 "Kruppe is merely a humble citizen of this great city, a man of modest appetites and immodest waistcoats. Kruppe drinks at the Phoenix, yonder, where the painted bird is. Kruppe finds that road crews are thirsty. Kruppe finds that thirsty road crews, from the *hills*," he lingers on the word, lovingly, like a man smelling a wine he knows to be forged, "are the most delightful company in all Darujhistan, having so many stories and so few of them true."`,
       ch:[{t:'"We\'re from the hills."', go:'c3_kruppe_hills'},
@@ -544,7 +544,7 @@ ${SQUAD().includes('ellis') ? `Ellis has taken the stool nearest the door withou
 
 He sips. He sets the cup down precisely in the ring it came from.
 
-"Kruppe will say only this, as a friend, to friends, who are strangers, which are the best kind of friend, having not yet been disappointed. There is a mountain over the lake. The city does not look at it. The city has decided that a thing one does not look at cannot, in fairness, fall on one; Darujhistan is *very* fair-minded. And there is a hole in the Gadrobi crossing, and the city does not look at *that* either, for the same reason, and Kruppe finds it curious, only curious, that the two things one must not look at in this city have lately become two, where for so long they were one."
+"Kruppe will say only this, as a friend, to friends, who are strangers, which are the best kind of friend, having not yet been disappointed. There is a mountain over the lake. The city does not look at it. The city has decided that a thing one does not look at cannot, in fairness, fall on one; Darujhistan is *very* fair-minded. And there is a hole in the Gadrobi crossing, and the city does not look at *that* either, for the same reason, and Kruppe finds it curious, only curious, that the things one must not look at in this city have lately become two, where for so long they were one."
 
 He dabs his lips with a napkin that is cleaner than anything else in the room.
 
@@ -570,7 +570,7 @@ The coin falls. Crokus catches it without looking. For a moment, Tuft is watchin
     c3_inn_coll:()=>({sp:'Coll', fx:()=>{S.f.c3_innColl=1;}, txt:
 `The big man looks at you over the jug for a long time, as if you were a long way off.
 
-"Malazans." Not loud. The table goes quiet around it anyway. "Don't. Kruppe can pretend. Kruppe can pretend a dog's a duchess. I'm too drunk to pretend and not drunk enough to stop noticing." He drinks. "You stand like the Genabaris garrison stood, the year before they took the city. I sold them wine."
+"Malazans." Not loud. The table goes quiet around it anyway. "Don't. Kruppe can pretend. Kruppe can pretend a dog's a duchess. I'm too drunk to pretend and not drunk enough to stop noticing." He drinks. "You stand like the Genabaris garrison stood, the year of the treaty, when they came down here to look at us. I sold them wine."
 
 He puts the jug down.
 
@@ -596,7 +596,7 @@ He looks at the jug. It's empty. He looks at it as if that too were something th
 
 He turns his shoulder. It's a very big shoulder.
 
-Murillio, softly, to you, as if passing a note in church: "He tells it to people who don't ask. That's the trick. You asked."`,
+Murillio, softly, to you, as if passing a note in temple: "He tells it to people who don't ask. That's the trick. You asked."`,
       ch:[{t:'Back to the table.', go:'c3_inn'}]}),
     c3_coll_take:()=>({sp:'Coll', txt:
 `It's heavy in your hand. Heavier than gold should be; that's the history.
@@ -622,7 +622,7 @@ Tuft's hand goes to the cadre badge. It doesn't take it off.
 "To somebody who's dead," she says.
 
 Murillio's smile goes away entirely, and what's under it is kinder and older. "Ah," he says. "Then it's the only honest thing at this table. Keep it on."` :
-  `"Forgive me," says the man in silk, to Tuft, with a small inclination of the head that a Daru lady would have paid for. "You have the look of a girl who's been told to wear a thing and taken it off. There's a mark on your collar where a badge was, and the cloth's less faded." He smiles. "Murillio notices collars. It's a professional failing."
+  `"Forgive me," says the man in silk, to Tuft, with a small inclination of the head that a Daru lady would have paid for. "You have the look of a girl who's been told to wear a thing and taken it off. There's a mark on your collar where a badge was, and the cloth's less faded." He smiles. "I notice collars. It's a professional failing."
 
 Tuft looks at him for a long moment.
 
@@ -674,7 +674,7 @@ At the door he stops. He isn't looking at you. He's looking at Tuft, and his fac
 
 "Kruppe once heard it said, little mage, that on the plain to the north the grass took a thing out of a fire that was a woman when it went into the fire, and is a child now in a blanket, and will be a woman again sooner than any child should, and will *remember*, and that the Rhivi carry her very carefully, as one carries a thing that is heavier every day." A pause, delicate as a knife laid on a plate. "Kruppe merely repeats. Kruppe knows nothing of plains. Kruppe does not care for grass."
 
-Nobody at the table understands a word of it. Kettle frowns. Brisk looks at the fat man as if he'd spoken Rhivi.
+Nobody else understands a word of it. Kettle frowns. Brisk looks at the fat man as if he'd spoken Rhivi.
 
 Tuft has gone white. Not pale: *white*, the colour of a candle with no flame in it, and her hand is on the doorframe, and she's holding it.
 
@@ -708,13 +708,13 @@ ${S.f.c3_msg && !S.f.c3_key ? `Then, as you turn to go, very quietly, to his pla
 
 She holds the paper out and doesn't let go of it when you take it.
 
-"She's got blue hands," the child says. "Right up to here." She touches her own wrist. "Nice voice. Give me a honey-cake once. I didn't eat it." A pause. "I'd like another coin to forget your face, sergeant. I'm good at forgetting. It's the most of what I'm good at."`,
+"She's got blue hands," the child says. "Right up to here." She touches her own wrist. "Nice voice. Give me a honey-cake once. I didn't eat it." A pause. "I'd like another coin to forget your face, Sergeant. I'm good at forgetting. It's the most of what I'm good at."`,
       ch:[{t:'Give her a coin.', tag:'1 silver', req:()=>S.silver>=1, fx:()=>{ S.silver-=1; AUDIO.play('coin'); }, go:'c3_msg_read'},
           {t:'"Keep the one you\'ve got. Go home."', go:'c3_msg_read'}]}),
     c3_msg_ellis:()=>({sp:'Ellis', fx:()=>{ S.f.c3_msg=1; S.f.c3_ellisMsg=1; }, txt:
 `She doesn't get up. She holds the paper out without looking at it.
 
-"There was a boy at the Gadrobi well. Nineteen, now. He was eleven when I knew him, in the training yards at Genabaris, and he cried every night for a year and then one night he stopped, and they gave him a grey cloak for it." Her voice is exactly level. "He found me at the well at noon. He didn't say my name. He said *pretty*, the way the man at the green door said it, and put this in my hand, and walked off, and I let him."
+"There was a boy at the Gadrobi well. Nineteen, now. He was thirteen when I knew him, in the training yards at Genabaris, and he cried every night for a year and then one night he stopped, and they gave him a grey cloak for it." Her voice is exactly level. "He found me at the well at noon. He didn't say my name. He said *pretty*, the way the man at the green door said it, and put this in my hand, and walked off, and I let him."
 
 Sealed with blue wax. Your name on the front, in a small square hand.
 
@@ -743,7 +743,9 @@ The alley at the east end of the crossing runs up into the Daru District. It's t
 `The alley climbs out of the Gadrobi crossing between two blind walls, and at the top of it the lamps are closer together and the doors have brass on them. Daru. After the eleventh bell.`,
       ch:[{t:'Up into the Daru District.', go:()=>{ startExplore('daru_street'); talk('c3_daru_arrive'); }},
           {t:'Not yet.'}]} : {sp:'The alley east', txt:
-`The alley climbs toward the Daru District, where road crews have no business after dark. Not yet. You've no reason to be up there, and Whiskeyjack would ask what the reason was.`,
+`The alley climbs toward the Daru District, where road crews have no business after dark. Not yet. You've no reason to be up there, and Whiskeyjack would ask what the reason was.${S.f.c3_workDone && SQUAD().includes('ellis') ? `
+
+Ellis isn't at your shoulder, where she usually is. The last you saw of her, she was sitting on the lip of the dig.` : ''}`,
       ch:[{t:'Not yet.'}]},
 
     /* ---- the Daru District ---- */
@@ -759,7 +761,7 @@ At the corner, under a lamp, two men in the city's grey-and-blue watch colours h
     c3_guard:()=>({sp:'City Watch', txt:
 `There are two of them: an older one with a paunch and a pike he uses to lean on, and a younger one with a pike he holds as if it might be asked a question.
 
-"Evening." The older one. "Road crew." He's read the jerkins. "Gadrobi crossing, that'll be. Long way up from the Gadrobi crossing, this. Long way up after dark." He looks at Brisk's shield, at Kettle's satchel, at the whole shape of you. "You're a lot of road crew for a small hole."
+"Evening." The older one. "Road crew." He's read the guild mark. "Gadrobi crossing, that'll be. Long way up from the Gadrobi crossing, this. Long way up after dark." He looks at Brisk's shield, at Kettle's satchel, at the whole shape of you. "You're a lot of road crew for a small hole."
 
 The young one says nothing. His hand has moved an inch down the pike-haft, and you see him notice that it has.`,
       ch:[{t:'"Paviors\' Guild. Sent up to look at the drains by the dye-works. They\'re running blue into the Gadrobi mains."', check:['guile',12], go:'c3_guard_ok', fail:'c3_guard_fail'},
@@ -777,7 +779,7 @@ The young one watches you all the way up the street.`,
 
 The young one has both hands on the pike now. Behind you, Brisk's weight has shifted the way it does before she does something that can't be taken back.
 
-"It's a cold night," he says, "and my knees are bad, and I'm going to walk round that corner and look at a wall for a while. I'd like the street empty when I come back. I'd like it empty *up*, not down."`,
+"It's a cold night," he says, "and my knees are bad, and I'm going to walk round that corner and look at a wall for a while. I'd like the street empty when I come back. I'd like it empty *down*, not up."`,
       ch:[{t:'Three silver, and he looks at the wall longer.', tag:'3 silver', req:()=>S.silver>=3, fx:()=>{ S.silver-=3; AUDIO.play('coin'); }, go:'c3_guard_paid'},
           {t:'Let Brisk tell them.', req:()=>SQUAD().includes('brisk'), go:'c3_guard_brisk'},
           {t:'Wait until they\'re round the corner. Go up anyway.', fx:()=>{ S.f.c3_guards=1; S.f.c3_watchSaw=1; }, go:()=>startExplore()}]}),
@@ -815,13 +817,13 @@ ${SQUAD().includes('ellis') ? `Ellis has stopped at the foot of the stair. "I'll
       ch:[{t:'Up the stair.', go:'c3_madryn'},
           {t:'Not yet.'}]},
     c3_madryn:()=>({sp:'Madryn', scene:'room', fx:()=>{S.f.c3_madryn=1;}, txt:
-`A long low room over the courtyard, with the dyeing-frames stacked against one wall and bolts of cloth on shelves, indigo and madder and a grey so fine it looks like smoke. A table. A kettle on a small fire. Cups, set out already. You count them without meaning to: ${SQUAD().length + 1}. One for each of you, and one for her.
+`A long low room over the courtyard, with the dyeing-frames stacked against one wall and bolts of cloth on shelves, indigo and madder and a grey so fine it looks like smoke. A table. A kettle on a small fire. Cups, set out already. You count them without meaning to: ${SQUAD().length === 6 ? 'seven' : 'six'}. One for each of you, and one for her.
 
 She's sitting at the table, and she doesn't get up. Grey hair pinned up plainly. A dark wool dress with the sleeves rolled. A face that is kind in the way a well-kept tool is kind: it has been used for a long time, carefully, for one purpose. Her hands, folded on the table, are blue to the wrist. Not painted. *Stained*, deep in the skin, in the creases of the knuckles, under the nails. Eleven years of vats.
 
 "Sergeant {sgt}." A gentle voice. A voice for telling children a story they'll remember. "Sit, please. All of you. The tea's hot; I made it when you turned into the street. My name is Madryn. I have kept this shop for eleven years, and in eleven years I have never once had to raise my voice in it, and I don't expect to start tonight."
 
-${S.f.marked ? `She turns over a paper on the table. You can't read it upside down. You don't need to; you know the hand. Neat. "You'll have met our friend at the Pale," she says. "He writes a lovely report. He was very taken with your squad. He said you had a way of *carrying* things."` : S.f.c3_trueName ? `"Pallick sends his regards," she says. "He doesn't know he does. He keeps such a careful ledger, and he leaves it open on the desk at night, and the Worry Gate has a very small window." A smile. "Unta, from the vowels. He was right."` : `"You didn't give your name at the gate. Or in the crossing. Or at the Phoenix." She pours. "That was well done, Sergeant. I'd like you to know that it was noticed, and that it didn't matter."`}
+${S.f.marked ? `She turns over a paper on the table. You can't read it upside down. You don't need to; you know the hand. Neat. "You'll have met our friend at the Pale," she says. "He writes a lovely report. He was very taken with your squad. He said you had a way of *carrying* things."` : S.f.c3_trueName ? `"Pallick sends his regards," she says. "He doesn't know he does. He keeps such a careful ledger, and he leaves it open on the desk at night, and the Worry Gate has a very small window." A smile. "Unta, from the vowels. He was right."` : S.f.c3_falseName ? `"You gave the gate a name that isn't yours. Off a headstone, I'd think; it had that sort of spelling." She pours. "That was well done, Sergeant. I'd like you to know that it was noticed, and that it didn't matter."` : `"You didn't give your name at the gate. Or in the crossing. Or at the Phoenix." She pours. "That was well done, Sergeant. I'd like you to know that it was noticed, and that it didn't matter."`}
 
 ${SQUAD().includes('ellis') ? `Her eyes go past you, to the door, where Ellis is standing with her back to the frame.
 
@@ -856,13 +858,13 @@ She folds her blue hands.
 ${SQUAD().includes('ellis') ? `At the door, Ellis has gone completely still. Not the stillness of a scout. The stillness of a girl in a training yard, waiting to hear which way her name will be read.` : SQUAD().includes('tuft') ? `Tuft is looking at the purse. Not at the silver: at the purse, the leather, the drawstring, as if she has seen purses like it before, on a staff, in a tent, and knows what they are for.` : ''}`,
       ch:[{t:'Tell her everything. The mains, the count, the two men at night.', go:'c3_report_all'},
           {t:'Tell her some of it. The mains. Not Quick Ben and Kalam.', go:'c3_report_some'},
-          {t:'"No." Stand up. Walk out.', go:'c3_refuse'},
+          {t:S.f.c3_tea ? '"No." Stand up. Walk out.' : '"No." Walk out.', go:'c3_refuse'},
           {t:'Lie to her. Give her a count that\'s wrong and a direction that\'s nowhere.', check:['guile',14], go:'c3_lie_ok', fail:'c3_lie_fail'}]}),
 
     /* ---- report ---- */
     c3_report_all:()=>({sp:'Madryn', fx:()=>{ S.f.c3_key='report'; S.f.c3_told=1; S.f.c3_toldAll=1; S.f.clawFavour=1; S.silver+=40; AUDIO.play('coin'); note('+40 silver.','good');
         if (SQUAD().includes('brisk')) loy('brisk',-2); if (SQUAD().includes('ellis')) loy('ellis',-2); if (SQUAD().includes('tuft')) loy('tuft',1); if (SQUAD().includes('ohl')) loy('ohl',-1); }, txt:
-`You tell her. The vault under the crossing. The pipes, and where they join. How many crates you carried down the ladder, and how many were already there, and how Hedge seats a cusser against a joint. The two men who leave at night and come back before dawn with clean cuts on their hands. You don't know where they go. You tell her that too, and she writes it down, and it seems to matter to her as much as the rest.
+`You tell her. The vault under the crossing. The pipes, and where they join. How many crates you carried down the ladder, and how many were already there, and how Hedge seats a cusser against a joint. The two men who leave at night and come back before dawn${S.f.c3_qb ? `, and the clean cut on the back of the mage's hand` : ''}. You don't know where they go. You tell her that too, and she writes it down, and it seems to matter to her as much as the rest.
 
 She doesn't interrupt. She doesn't hurry. She listens the way Ohl listens to a chest, and when you've finished she sits for a moment with her pen above the paper, and then she writes one more line, and blots it, and pushes the purse across the table to you with two blue fingers.
 
@@ -887,7 +889,7 @@ She writes it down. When you stop, she waits, pen lifted, for exactly as long as
 
 ${SQUAD().includes('brisk') ? `Brisk walks beside you for a whole street before she speaks, and when she speaks she doesn't look at you.
 
-"That's the squad's sergeant, Sergeant." Flat. "That's whose they are. Not ours. *Theirs.* I heard every word, and every one of them was about somebody who's going to be under that crossing when it goes, and you sold them for forty and a cup of tea." A long breath through the nose. "I'll put it in the ledger. Forty silver, received. I won't write what for. I'll know."` : ''}
+"That's the squad's sergeant, Sergeant." Flat. "That's whose they are. Not ours. *Theirs.* I heard every word, and every one of them was about somebody who's going to be under that crossing when it goes, and you sold them for forty and a cup of tea${S.f.c3_tea ? '' : ` you didn't even drink`}." A long breath through the nose. "I'll put it in the ledger. Forty silver, received. I won't write what for. I'll know."` : ''}
 
 ${SQUAD().includes('tuft') ? `Tuft falls into step on your other side, which she hasn't done since the Pale. "You kept a door open," she says quietly. "I've watched a lot of people shut them. They all thought they were being brave. Most of them are dead." She doesn't say anything else. She doesn't need to; she's walking where you can see her.` : ''}
 
@@ -902,13 +904,13 @@ Then she drops back again, and doesn't come forward for the rest of the night.` 
 
     /* ---- refuse ---- */
     c3_refuse:()=>({sp:'Madryn', fx:()=>{ S.f.c3_key='refuse'; S.f.marked=1; if (SQUAD().includes('brisk')) loy('brisk',1); if (SQUAD().includes('ellis')) loy('ellis',2); }, txt:
-`You stand up. The stool scrapes. The squad is already standing; they were standing, you realise, before you were.
+`${S.f.c3_tea ? `You stand up. The stool scrapes. The squad is already standing; they were standing, you realise, before you were.` : `You've been standing since the door. So has the squad, and they've already turned toward it; they turned, you realise, before you'd decided.`}
 
 "No."
 
 She doesn't move. She looks up at you from the table with her blue hands folded and her face exactly as kind as it was, and she nods, slowly, as if you'd told her the price of wool.
 
-"No," she agrees. "I thought perhaps not. You have a very Malazan face, Sergeant, for a Malazan who won't help the Empire." She pours herself more tea. "Well. You've drunk my tea, and you've been in my room, and now you'll go down my stair, and I'll sit here and think about you. That's all. Go on."
+"No," she agrees. "I thought perhaps not. You have a very Malazan face, Sergeant, for a Malazan who won't help the Empire." She pours herself more tea. "Well. ${S.f.c3_tea ? `You've drunk my tea, and you've been in my room` : `You've stood in my room and let my tea go cold`}, and now you'll go down my stair, and I'll sit here and think about you. That's all. Go on."
 
 ${SQUAD().includes('ellis') ? `At the door, as you pass, Ellis says one sentence, low, to you and not to Madryn, and it's the right one.
 
@@ -934,13 +936,13 @@ ${SQUAD().includes('ellis') ? `On the stair, Ellis says one sentence, low, and i
 
 She puts the pen down. She puts it down exactly parallel to the edge of the paper.
 
-"Sergeant," she says, gently, the way you'd tell a child its dog has died. "There is Moranth clay in the *Gadrobi* well. Not the lakefront. I told you so myself not ten minutes ago." She folds her hands. "It's a kind thing, to lie to someone. It means you think they're worth the trouble. I'm touched. I truly am."
+"Sergeant," she says, gently, the way you'd tell a child its dog has died. "There is Moranth clay in the *Gadrobi* well. Not under the street you've just drawn me. I told you so myself not ten minutes ago." She folds her hands. "It's a kind thing, to lie to someone. It means you think they're worth the trouble. I'm touched. I truly am."
 
 She doesn't raise her voice. She said she wouldn't, and she doesn't.
 
 "Go on down, Sergeant. Mind the stair."
 
-${SQUAD().includes('ellis') ? `On the stair, Ellis says one sentence, and it's the right one. "She's already sent them; she sent them when you sat down."` : `On the stair, Kettle, very quietly, feeling in her satchel: "Sergeant, I think we should stop being on this stair."`}`,
+${SQUAD().includes('ellis') ? `On the stair, Ellis says one sentence, and it's the right one. "She's already sent them; she sent them when you came up the stair."` : `On the stair, Kettle, very quietly, feeling in her satchel: "Sergeant, I think we should stop being on this stair."`}`,
       ch:[{t:'Down the stair.', go:'c3_alley'}]}),
     c3_alley:()=>({sp:'The alley behind the dye-shop', scene:'city_street', txt:
 `The stair comes down into the courtyard, and the courtyard gate lets out, not onto the street, but into the alley behind it, because the street gate has been locked while you were upstairs. Nobody heard it lock.
@@ -953,7 +955,7 @@ Three shapes come off the racks, low, with the Daru knife-grip. And a fourth, wh
 
 ${SQUAD().includes('ellis') ? `Ellis, very quietly: "The one at the end is Claw. The others are money. Kill the money if you have to. Don't let the Claw get behind anyone."` : `Tuft, very quietly: "The one at the end isn't hired. He's the one who pays."`}`,
       ch:[{t:'"Shields. Close up."', go:()=>startBattle('knives', S.f.c3_lieHeld ? {surprise:'p'} : S.f.c3_lied ? {surprise:'e'} : {})},
-          {t:'Kettle rolls a sharper down the alley.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('knives',{pre:true})}]}),
+          {t:'Kettle rolls a sharper down the alley.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('knives', S.f.c3_lieHeld ? {pre:true, surprise:'p'} : S.f.c3_lied ? {pre:true, surprise:'e'} : {pre:true})}]}),
     c3_after_knives:()=>({sp:'The alley behind the dye-shop', scene:'city_street', fx:()=>{ S.f.c3_knivesFought=1; gain('lampchip'); }, txt:
 `The hired ones don't die well or badly. Two of them run, and one of them doesn't get up, and wet indigo runs over his hand and into the gutter, and the gutter takes it down to the street where it will go blue into somebody's well.
 
@@ -1019,11 +1021,11 @@ ${SQUAD().includes('brisk') ? `Brisk, when you've gone past, not looking at you:
     c3_close:()=>({sp:'The chandler\'s roof', scene:'roof', txt:
 `Dawn, from the flat roof over the chandler's, above the dig. The Fourth is in a row under the eaves where Whiskeyjack put you, and nobody is asleep, and everybody is pretending to be.
 
-The city goes out lamp by lamp. Not all at once, the way it came on; one at a time, street by street, the blue shrinking back into the glass and then gone, as if something beneath the city were breathing in.
+The city goes out lamp by lamp: one at a time, street by street, the blue shrinking back into the glass and then gone, as if something beneath the city were breathing in.
 
-And above the haze, the Moon's Spawn. The light is coming up behind it now and it doesn't catch any; the sun goes round it the way water goes round a stone. Black. Silent. Close enough, in this light, to see that it is not smooth: that there are towers on it, and windows in the towers, and no light in the windows.
+And above the haze, the Moon's Spawn. The light is coming up now, and it doesn't catch any; the sun goes round it the way water goes round a stone. Black. Silent. Close enough, in this light, to see that it is not smooth: that there are towers on it, and windows in the towers, and no light in the windows.
 
-${S.f.c3_key === 'refuse' ? `${SQUAD().includes('brisk') ? `Brisk is sitting against the parapet with her arm bound and her shield across her knees. She hasn't said anything since the alley. She doesn't need to; she's put the shield on the side of the roof that faces the Daru District.` : ''}
+${S.f.c3_key === 'refuse' ? `${SQUAD().includes('brisk') ? `Brisk is sitting against the parapet with her arm bound and her shield across her knees. She hasn't said much since the alley. She doesn't need to; she's put the shield on the side of the roof that faces the Daru District.` : ''}
 
 ${S.f.c3_wjTold ? `Down below, Whiskeyjack has moved his bucket. He's put it where he can see the mouth of the alley to Daru. He hasn't said why, and he isn't going to.` : `Down below, Whiskeyjack is on his bucket, looking at the lake. He doesn't know. You don't know yet whether that was the right thing, and you're beginning to understand that you won't, for a long time.`}` :
 `${SQUAD().includes('brisk') ? `Brisk is sitting at the far end of the row, as far as the roof allows, with the ledger on her knee. It's closed. She has written one line in it tonight, and you know exactly what the line says, and exactly what it doesn't.` : ''}
@@ -1043,7 +1045,7 @@ On the rooftops. Across the Daru District, along the ridge of the tanneries, on 
 
 ${SQUAD().includes('ellis') ? `Ellis is on her feet. You didn't hear her get up. "That's not the Claw," she says. "The Claw doesn't come in *numbers*. That's something that lives here."` : `Tuft is on her feet. "Sergeant," she says. "Did you see—" and then stops, because you did.`}
 
-Behind you, from the ladder-head, where you didn't hear him come up either, Kalam's low unhurried voice:
+Behind you, from the ladder-head, where you didn't hear him come up${SQUAD().includes('ellis') ? ' either' : ''}, Kalam's low unhurried voice:
 
 "Go to sleep, Sergeant. You didn't see that. Nobody sees that."
 

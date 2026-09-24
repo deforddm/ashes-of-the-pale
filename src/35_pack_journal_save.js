@@ -7,7 +7,8 @@ function openModal(tab){
       <span>Squad level</span><span>${S.lvl} (${S.xp}/${LEVELS[S.lvl] ?? '—'} xp)</span>${S.card ? `<span>Deck reading</span><span>${CARDS[S.card].name}</span>` : ''}</div>
       ${S.card ? `<div class="cardinline" style="margin-top:12px"><canvas id="icard" width="240" height="360"></canvas></div><p class="fine" style="text-align:center">${CARDS[S.card].fx}</p>` : ''}
       <p class="fine" style="margin-top:10px">Moranth munitions hit everything in the blast, your own squad included. Warren magic builds strain; past ${STR_MAX}, the caster pays in blood.</p>`,
-    journal:()=>`<p class="fine">${S.chapter === 0 ? 'Prologue' : `Chapter ${CHAPTERS[S.chapter] ? CHAPTERS[S.chapter].number : S.chapter}`}${Object.keys(S.chapters).length ? ` · done: ${Object.keys(S.chapters).map(n => n === '0' ? 'prologue' : 'chapter ' + n).join(', ')}` : ''}</p><ul class="jl">${[
+    journal:()=>`${journalHead()}<h4 class="jh">Notes</h4><ul class="jl">${[
+      ...[7,6,5,4,3,2].filter(n => n <= S.chapter && CHAPTERS[n] && CHAPTERS[n].journal).map(n => { try { return CHAPTERS[n].journal() || []; } catch(e) { return []; } }), // optional: a chapter module may add journal:()=>[lines]; newest chapter first
       S.chapter >= 1 ? [
         S.f.c1_reported ? `Whiskeyjack: the Fourth rides south overland with the baggage. Darujhistan.` : `Report to Whiskeyjack at the Bridgeburners' fire.`,
         S.f.c1_paran ? `Captain Paran walked the lines. Noble-born. Trying.` : '',
@@ -19,7 +20,7 @@ function openModal(tab){
       S.f.quest ? `Recover Varrow's satchel from the north sapper tunnels and bring it to Tattersail. ${S.ending ? '(Done.)' : ''}` : `Answer the cadre's summons.`,
       S.f.knowStakes ? `Tattersail says the journal records who ordered what the night the Second Army died.` : '',
       S.f.knowDeserters ? `Garrow: Moreau's section deserted into the north tunnels. "The Fist is still counting heads."` : '',
-      S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak at the crater is paying attention to your squad.`) : '',
+      S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak is paying attention to your squad.`) : '',
       S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
       `Brisk's brother, Second Army: not yet found.`, S.f.c1_plant ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>`,
     save:()=>`<p class="fine">The game saves itself on this device as you play. To move it to another device, or protect it from a cleared browser, copy this code somewhere safe.</p>
@@ -27,14 +28,17 @@ function openModal(tab){
       <label class="fine" for="imp">Paste a save code to load it</label><textarea id="imp" placeholder="Paste code here"></textarea>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="bLoad">Load code</button></div><p class="fine" id="impMsg"></p>`,
   };
-  m.innerHTML = `<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
+  m.innerHTML = smartq(`<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
     <div class="tabs">${S ? `<button class="tab" data-t="squad">Squad</button>` : ''}${tabs.map(k => `<button class="tab ${k === tab ? 'on' : ''}" data-t="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
-    <div>${body[tab]()}</div></div>`;
+    <div>${body[tab]()}</div></div>`);
   m.querySelectorAll('.tab').forEach(b => b.onclick = () => { AUDIO.play('click'); if (b.dataset.t === 'squad') { m.hidden = true; openChars(0); } else openModal(b.dataset.t); });
   $('#bClose').onclick = () => { AUDIO.play('click'); m.hidden = true; };
   if (tab === 'pack' && S.card) inlineCard($('#icard'), S.card, false);
   if (tab === 'save') {
-    if ($('#bCopy')) $('#bCopy').onclick = () => { const ta = $('#exp'); ta.select(); try { navigator.clipboard.writeText(ta.value); $('#bCopy').textContent = 'Copied'; } catch(e) { $('#bCopy').textContent = 'Select and copy'; } };
+    if ($('#bCopy')) $('#bCopy').onclick = () => { const ta = $('#exp'), b = $('#bCopy'); ta.focus(); ta.select(); AUDIO.play('click');
+      const done = ok => { b.textContent = ok ? 'Copied' : 'Selected: copy it by hand'; };
+      const old = () => { try { done(document.execCommand('copy')); } catch(e) { done(false); } }; // older browsers, and pages without clipboard permission
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(() => done(true), old); else old(); };
     $('#bLoad').onclick = () => { try { const s = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim())))); if (!s || s.v !== 1) throw 0; S = migrate(s); save(); m.hidden = true; resume(); }
       catch(e) { $('#impMsg').textContent = 'That code didn\'t load. Check that it was copied in full.'; } };
   }
@@ -42,3 +46,10 @@ function openModal(tab){
 }
 function saveCode(){ return btoa(unescape(encodeURIComponent(JSON.stringify(S)))); }
 
+/* the journal's head: where the chapter stands now, and the road so far (the ending each chapter took) */
+function journalHead(){
+  const CH = CHAPTERS[S.chapter], a = AREAS[S.area], safe = f => { try { return f() || ''; } catch(e) { return ''; } };
+  const now = S.scene === 'explore' ? (a ? safe(() => a.quest ? a.quest() : QUESTS[a.id] ? QUESTS[a.id]() : '') : '') : '';
+  const road = Object.keys(S.chapters).map(Number).sort((x, y) => x - y).map(n => { const e = (CHEND[n] || {})[S.chapters[n]]; return e ? `<li><span>${n === 0 ? 'Prologue' : `Chapter ${CHAPTERS[n] ? CHAPTERS[n].number : n}${CHAPTERS[n] ? ' · ' + CHAPTERS[n].title : ''}`}</span><b>${e[0]}</b></li>` : ''; }).join('');
+  return `<p class="jk">${S.chapter === 0 ? 'The prologue' : `Chapter ${CH ? CH.number : S.chapter}${CH ? ` · ${CH.title}` : ''}`}</p>${now ? `<p class="jnow">${now}</p>` : ''}${road ? `<h4 class="jh">The road so far</h4><ol class="fin-road">${road}</ol>` : ''}`;
+}

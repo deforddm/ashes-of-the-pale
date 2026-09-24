@@ -7,10 +7,10 @@ const CHEND = {
     claw:['Taken','The journal went to the Claw. Tayschrenn will know by morning who carried it up out of the dark.'] },
   1:{
     line:['The line held','When the tents burned the Fourth went where Tattersail pointed, and stood there until the Hounds decided the cadre row was not worth the price. The cadre will remember which squad that was. So will a man with clean boots.'],
-    claw:['The crate held','When the tents burned the Fourth sealed the cadre tent on a grey cloak\'s word and let the mage shout. The Hounds broke on Claw knives instead of marine shields. Tuft has not spoken since. The Empire, in the person of a man with clean boots, is pleased.'] },
+    claw:['The crate held','When the tents burned the Fourth sealed the cadre tent on a grey cloak\'s word and let the mage shout. The Hounds broke on Claw knives instead of marine shields. Tuft has said one thing since, with her back to the fire. The Empire, in the person of a man with clean boots, is pleased.'] },
   2:{
     light:['You rode to the light','A mage died on the plain and the Fourth went to see it, against orders and against the clock. The Rhivi were there first and carried something away. Tuft knows what. The wagon arrives in Darujhistan a day late, and Whiskeyjack will have counted the day.'],
-    road:['You kept the road','A mage died on the plain and the Fourth watched the light and counted rations. The timetable held. Three tall figures with silver hair came out of the dark to ask one question, and were afraid, and that is the thing nobody in the squad is talking about.'] },
+    road:['You kept the road','A mage died on the plain and the Fourth watched the light and counted rations. The timetable held. Three tall figures with silver hair came out of the dark to ask one question, and answered none, and that is the thing nobody in the squad is talking about.'] },
   3:{
     report:['You told the Claw','A grey-haired woman in a dye-shop asked what the Bridgeburners were doing under the city, and the Fourth told her, for silver and the Empire\'s regard. Whiskeyjack does not know. Brisk does. So does the sergeant, every time the crew goes down the hole.'],
     refuse:['You walked out','A grey-haired woman in a dye-shop asked what the Bridgeburners were doing under the city, and the Fourth gave her nothing, and paid for it in an alley. The Claw has the sergeant\'s name in a neat hand now. Whiskeyjack, told or not, has the squad.'] },
@@ -18,7 +18,7 @@ const CHEND = {
     shield:['You held the roof','A Guild boy came over the parapet with a Tiste Andii behind him and the Fourth stood in between, which is what a line is for, and held three rounds against something that does not lose. Something in Quick Ben\'s sack laughed, and the silver-haired shapes went elsewhere. The boy is alive. The Guild knows which squad did that.'],
     aside:['You stepped aside','A Guild boy came over the parapet with a Tiste Andii behind him and the Fourth let it through. It killed him in one motion, looked at the sergeant, and nodded. Tuft looked into Kurald Galain and it looked back. Ohl\'s list has a name on it he did not put there.'] },
   5:{
-    through:['Into the grey','A puppet opened the world on a hillside and Toc the Younger went through it, and the Fourth let someone follow. The rent closed. The Hounds came for the puppet and not for you. Something under the hill turned over in its sleep, and Paran rode for the city at dawn with a face like a man who has read the end of the book.'],
+    through:['Into the grey','A puppet opened the world on a hillside and Toc the Younger went through it, and when someone in the Fourth moved to follow him, the sergeant said go. The rent closed. The Hounds came for the puppet and not for you. Something under the hill turned over in its sleep, and Paran rode for the city at dawn with a face like a man who has read the end of the book.'],
     hold:['You held the line','A puppet opened the world on a hillside and Toc the Younger went through it, and the Fourth held on to its own. The rent closed on nothing. The Hounds came for the puppet and not for you. Something under the hill turned over in its sleep. Somebody in the squad has not forgiven the sergeant, and says so with silence.'] },
 };
 const CHTEASE = {
@@ -46,27 +46,29 @@ function showChapterEnd(){
     if (SQUAD().includes('ellis')) extra.push('Ellis rides with the Fourth. Toc\'s word, and yours.'); if (S.f.c2_ellisRefused) extra.push('Ellis stayed on the plain. Toc\'s word was not enough.');
     if (S.f.c2_late) extra.push('The wagon is a day late. Whiskeyjack does not forget days.');
     if (S.f.c2_outFought) extra.push('Rhivi blood on the grass. They will remember the squad that spilled it.');
+    if (S.f.c2_andiiFear) extra.push('The Andii were afraid of something on the plain. The sergeant saw it. Tuft would like it written down somewhere.');
+    if (S.f.c2_outSeth) extra.push('Sethand spent his word on the Rhivi for the Fourth. You owe him a thing you will not be able to pay.');
     if (S.f.c2_badge) extra.push('A Second Army badge from the barrow. Wrong regiment. Brisk keeps it anyway.');
     if (S.f.c2_croneSaw) extra.push('A Great Raven knows the sergeant\'s name now. That is not a comfort.');
   }
   if (n === 3) {
-    if (S.f.c3_lied) extra.push('You lied to a Claw handler to her face. She may or may not have believed it. She will find out.');
-    if (S.f.c3_told) extra.push('Madryn knows what is under the intersection. That is a loaded gun with the Fourth\'s name on the grip.');
+    if (S.f.c3_lied) extra.push(S.f.c3_lieHeld ? 'You lied to a Claw handler to her face, and she half believed it. She will find out which half.' : 'You lied to a Claw handler to her face. She thanked you for the trouble.');
+    if (S.f.c3_told) extra.push('Madryn knows what is under the intersection. That is a lit fuse with the Fourth\'s name on it.');
     if (S.f.c3_wjTold) extra.push('Whiskeyjack said "Good." Once. The squad heard it.');
     if (S.f.c3_kruppe) extra.push('Kruppe said a sentence about the plain and Tuft went white. Nobody else understood it. Tuft has not explained.');
     if (S.f.c3_sorry) extra.push('The sergeant spoke to Sorry. Eleven words came back. They were the wrong shape.');
     if (S.f.c3_coll) extra.push('Coll\'s signet is in the sergeant\'s pocket. It opens doors in this city that Coll no longer walks through.');
     if (S.f.c3_ellisMsg) extra.push('The Claw\'s message came through Ellis. She brought it anyway. Remember that.');
-    if (S.f.c3_paid) extra.push('The Fourth\'s real name is in a gate-clerk\'s ledger, for five silver.');
+    if (S.f.c3_trueName) extra.push('The sergeant\'s real name is in a gate-clerk\'s ledger, spelled correctly. Somebody reads that ledger.'); else if (S.f.c3_falseName) extra.push('A dead man\'s name off an Untan headstone is in a gate-clerk\'s ledger. It is the name this city knows the sergeant by.'); else if (S.f.c3_paid) extra.push('Five silver kept the Fourth\'s name out of a gate-clerk\'s ledger. It did not keep it out of anyone else\'s.');
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
   }
   if (n === 4) {
     if (S.f.c4_vell) extra.push('Vell is alive. A Guild journeyman owes the Fourth his life, and the Guild pays its debts, one way or the other.');
-    if (S.f.c4_guildKnows) extra.push('Ocelot knows a Malazan squad held a roof for one of his. Rallick told him. Rallick tells him everything, eventually.');
-    if (S.f.c4_seen) extra.push('A Tiste Andii knows the Fourth\'s faces. That is a Rake thing now.');
+    if (S.f.c4_guildKnows) extra.push('Ocelot knows a Malazan squad held a roof for one of his. Vell told him, and then told the rest of the clan.');
+    if (S.f.c4_seen) extra.push('A Tiste Andii knows the Fourth\'s faces. That is Rake\'s business now.');
     if (S.f.c4_tuftDark) extra.push('Tuft has not slept. She says the dark was polite. She says it the way you say a thing you are trying not to say.');
     if (S.f.c4_kalamLook) extra.push('Kalam looked at the sergeant a beat too long before he went up. He knows something was told. He does not know by whom. Yet.');
-    if (S.f.c4_reprisalFought) extra.push('Guild blood in the alley. Ocelot sent three and got none back, and will count that.');
+    if (S.f.c4_reprisalFought) extra.push('Guild blood in the alley. Ocelot sent three and got two back, one of them holding his ribs, and will count that.');
     if (S.f.c4_sawSorry) extra.push('A girl in a doorway who did not move at all. Kettle has not stopped talking about it, which is how Kettle is afraid.');
     if (S.f.c4_rallick) extra.push('Rallick Nom told the Fourth to go home. He is the first person in this city to say it as a kindness.');
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
@@ -84,7 +86,7 @@ function showChapterEnd(){
   if (n === 1) {
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
     if (S.f.c1_accFought) extra.push('Three of the Claw\'s people did not walk away from the picket line.');
-    if (S.f.c1_accBluffed) extra.push('Kettle has a cusser named after a Claw now.');
+    if (S.f.c1_accBluffed) extra.push('Kettle introduced her cusser to three of the Claw\'s people, by name. They left.');
     if (S.f.cadreTrust) extra.push('Tattersail knows what the Fourth is for.'); if (S.f.clawFavour) extra.push('The Claw remembers a favour. That is not the same as owing one.');
     if (S.f.c1_refusedKnife) extra.push('You turned down a Claw\'s knife. Brisk noticed.');
   }
@@ -93,7 +95,7 @@ function showChapterEnd(){
   const next = CHAPTERS[n + 1], epi = n === 7; // there is no Chapter Eight: the last end screen opens the epilogue
   const title = n === 0 ? 'End of the prologue' : `End of Chapter ${CH ? CH.number : n}`;
   const cap = n === 0 ? 'The Fourth comes up out of the dark. All five.' : CH && CH.endCap ? safe(() => CH.endCap(), 'Morning finds the Fourth still standing, which is the whole of the job.') : 'Morning finds the Fourth still standing, which is the whole of the job.';
-  $('#app').innerHTML = `<div class="end">
+  $('#app').innerHTML = smartq(`<div class="end">
     <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>
     <div class="sub" style="margin-top:12px">${title}</div>
     <h2>${E[0]}</h2>
@@ -102,7 +104,7 @@ function showChapterEnd(){
     <div class="kv" style="margin:16px 0">${SQUAD().slice(1).map(id => `<span>${TPL[id].name}</span><span class="pips">${loyLabel(S.loy[id])}</span>`).join('')}
       <span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.card ? `<span>Card drawn</span><span>${CARDS[S.card].name}</span>` : ''}</div>
     <p class="fine">${CHTEASE[n] || ''}</p>
-    <div class="row" style="margin-top:14px">${epi ? `<button class="btn primary" id="bEpi">Epilogue</button>` : next ? `<button class="btn primary" id="bNext">Chapter ${next.number}: ${next.title}</button>` : ''}<button class="btn" id="bSq">Squad</button><button class="btn" id="bSet2">Settings</button><button class="btn" id="bAgain">Title</button></div></div>`;
+    <div class="row" style="margin-top:14px">${epi ? `<button class="btn primary" id="bEpi">Epilogue</button>` : next ? `<button class="btn primary" id="bNext">Chapter ${next.number}: ${next.title}</button>` : ''}<button class="btn" id="bSq">Squad</button><button class="btn" id="bSet2">Settings</button><button class="btn" id="bAgain">Title</button></div></div>`);
   G.sceneKind = (CH && CH.endScene) || (n === 6 ? 'fete_garden' : n === 7 ? 'quorl_hill' : 'camp');
   if (epi) $('#bEpi').onclick = () => { AUDIO.play('click'); showFinale(0); };
   else if (next) $('#bNext').onclick = () => { AUDIO.play('click'); startChapter(n + 1); };
@@ -191,12 +193,12 @@ const QUESTS = {
   ridge:()=> S.f.c2_lightDone ? 'Dawn. East, to the hills' : S.f.c2_light ? 'The light in the west' : 'The fourth camp. Talk to Sethand.',
   hills_edge:()=> 'The Gadrobi Hills. Darujhistan beyond.',
   worry_gate:()=> S.f.c3_gateFought ? 'East, into the Gadrobi District' : S.f.c3_gate ? 'The wagon through the gate. East.' : 'The Worry Gate. Talk to the gate-clerk.',
-  gadrobi_cross:()=> S.f.c3_key ? 'Dawn. The roof above the dig.' : S.f.c3_msg ? 'The Daru District. A dye-shop. East.' : S.f.c3_workDone ? (S.f.c3_inn ? 'The second night. Somebody is looking for you.' : 'The Phoenix Inn, or the second night') : S.f.c3_reported ? 'Crates down the hole. Whiskeyjack\'s orders.' : 'Report to Whiskeyjack at the barrier',
+  gadrobi_cross:()=> S.f.c3_key ? 'Dawn. The roof above the dig.' : S.f.c3_msg ? 'The Daru District. A dye-shop. East.' : S.f.c3_workDone ? (SQUAD().includes('ellis') ? 'The second night. Ellis is waiting at the dig.' : 'The second night. A Gadrobi child is looking for you.') : S.f.c3_reported ? 'Crates down the hole. Whiskeyjack\'s orders.' : 'Report to Whiskeyjack at the barrier',
   hills_ridge:()=> S.f.c5_seth ? 'East, to the barrow. Don\'t be seen.' : 'Talk to the Rhivi on the ridge',
   barrow_vale:()=> S.f.c5_key ? 'Dawn. Paran rides for the city.' : S.f.c5_night ? 'Night. Something on the next hill. East.' : S.f.c5_wardsFought ? 'Two riders coming up the vale' : 'The Adjunct and the Imass. Watch.',
   roofs_gadrobi:()=> S.f.c4_key ? 'Down. The dig, and Whiskeyjack.' : S.f.c4_roofsFought ? 'East across the planks, to Kalam\'s roof' : 'Two roofs over. Watch. Do not help.',
   roofs_daru:()=> S.f.c4_key ? 'Down, west. The street.' : S.f.c4_meet ? 'The parapet' : 'Kalam\'s roof. Watch.',
-  daru_street:()=> S.f.c3_key ? 'Back west, to the dig' : S.f.c3_madryn ? 'The dye-shop. Decide.' : 'The dye-shop door, Daru District',
+  daru_street:()=> S.f.c3_key ? 'Back west, to the dig' : S.f.c3_madryn ? 'The dye-shop. Decide.' : S.f.c3_guards ? 'The dye-shop. The outside stair.' : 'The dye-shop. The Watch is on the corner.',
   pale_night:()=> S.f.c1_done ? 'Get some sleep. Somebody should.' : S.f.c1_hounds ? 'Hounds in the tent lines' : !S.f.c1_reported ? 'Report to Whiskeyjack at the Bridgeburners\' fire (east)' : !S.f.c1_tent ? 'Tattersail\'s tent, cadre row (north)' : 'Walk the lines. Something is coming.',
 };
 /* ability picks: shown before the next conversation after a level 3/5/7 */

@@ -1,4 +1,7 @@
 /* ============ chapter 1: Pale ============ */
+/* Kettle's count, in words: "Two sharpers, one burner, no cussers" */
+const c1Count = () => { const w = n => ['no','one','two','three','four','five','six','seven','eight','nine','ten'][n] || String(n), p = (n, s) => `${w(n)} ${s}${n === 1 ? '' : 's'}`;
+  const t = `${p(S.inv.sharper, 'sharper')}, ${p(S.inv.burner, 'burner')}, ${p(S.inv.cusser, 'cusser')}`; return t[0].toUpperCase() + t.slice(1); };
 const CH1 = {
   title:'Pale', number:'One',
   intro:{loc:'The Pale', sub:'Genabackis · two nights later', cap:'The tent lines under a bruised sky. Somewhere north, the cadre row has one lamp lit.',
@@ -10,7 +13,7 @@ const CH1 = {
 
   area:{ id:'pale_night', title:'The Pale · the camp at night', sub:'Bridgeburners\' fire to the east · cadre row north',
     hint:'Tap ground to move · tap a figure to talk',
-    // 16 columns x 12 rows. # rubble  . ground  , ash  = tent  C cadre tent (Tattersail's; walking onto it = talk)  F fire  W wagon (Pell)  P burial pit  x picket stake  B Bridgeburners' fire (walk onto = Whiskeyjack)
+    // 16 columns x 12 rows. # rubble  . ground  , ash  = tent  C cadre tent (Tattersail's; walking onto it = talk)  F fire (the Fourth's by the start; the other feeds the Bridgeburners')  W wagon (Pell)  P burial pit  x picket stake  B Bridgeburners' fire (walk onto = Whiskeyjack)
     map:[ "################",
           "#..C..=..=....P#",
           "#.....=..=...PP#",
@@ -19,14 +22,15 @@ const CH1 = {
           "#..=......,....#",
           "#....W.....,...#",
           "#..=.......=..,#",
-          "#..=...,...=B..#",
+          "#..=...,F..=B..#",
           "#.....,....,F..#",
           "#..,......,....#",
           "################" ],
     walk:'.,P', triggers:{C:'c1_tent', B:'c1_wj', W:'c1_pell', P:'c1_pits'},
     start:{x:8,y:9},
     npcs:[
-      {id:'paran', name:'Captain Paran', kind:'paran', x:6, y:5, node:()=>S.f.c1_paran?'c1_paran_again':'c1_paran', show:()=>!S.f.c1_hounds, fresh:()=>!S.f.c1_paran},
+      // once he has said good night he walks on toward the cadre row: he stays on the map only while you are talking to him
+      {id:'paran', name:'Captain Paran', kind:'paran', x:6, y:5, node:()=>S.f.c1_paran?'c1_paran_again':'c1_paran', show:()=>!S.f.c1_hounds && (!S.f.c1_paran || /^c1_paran/.test(S.node || '')), fresh:()=>!S.f.c1_paran},
       {id:'wj', name:'Whiskeyjack', kind:'wj', x:12, y:8, node:()=>S.f.c1_wj?'c1_wj_again':'c1_wj', fresh:()=>!S.f.c1_wj},
       {id:'qb', name:'Quick Ben', kind:'qb', x:13, y:8, node:()=>S.f.c1_wj?'c1_wj_again':'c1_wj'},
       {id:'kalam', name:'Kalam', kind:'kalam', x:13, y:9, node:()=>S.f.c1_wj?'c1_wj_again':'c1_wj'},
@@ -37,20 +41,20 @@ const CH1 = {
   battles:{
     hounds_line:{title:'The cadre row', warrenText:'Shadow bleeds through the tent lines · Meanas howls', warren:{meanas:1.4,denul:0.8}, dark:true, music:'dark',
       map:["#......#","..#..#..","........","#......#","........",".#....#.","........","........","#......#","........"],
-      party:[[3,8],[4,8],[2,9],[5,9],[3,9]],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['hound',3,1]], xp:180, after:'c1_after_line',
       objective:{type:'survive', rounds:4, text:'Hold the cadre row for four rounds.'},
       waves:[{round:2, foes:[['hound',6,0]], text:'A second Hound comes over the tents. Rood.'}] },
     hounds_claw:{title:'The cadre tent', warrenText:'Shadow bleeds through the tent lines · Meanas howls', warren:{meanas:1.4,denul:0.8}, dark:true, music:'dark',
       map:["#......#","........","..#..#..","........","........","#......#","........",".#....#.","........","........"],
-      party:[[3,7],[4,7],[2,8],[5,8],[3,8]],
+      party:[[3,7],[4,7],[2,8],[5,8],[3,8],[4,8]],
       foes:[['hound',3,1]], xp:150, after:'c1_after_claw',
       objective:{type:'survive', rounds:3, text:'Seal the cadre tent. Hold the crate for three rounds.'},
       allies:[['assassin',1,9],['assassin',6,9]],
       waves:[{round:2, foes:[['hound',6,0]], text:'A second Hound comes over the tents. Rood. The grey cloaks do not look up.'}] },
     accounting:{title:'The picket line', warrenText:'Warrens quiet · the stakes cast two shadows each', warren:{meanas:1.1,denul:1}, music:'battle',
       map:["........","..#..#..","........","#......#","........","........",".#....#.","........","........","........"],
-      party:[[3,8],[4,8],[2,9],[5,9],[3,9]],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['assassin',1,1],['assassin',4,0],['assassin',6,2]], xp:120, after:'c1_after_accounting'} },
 
   foes:{ hound:{name:'Hound of Shadow', sig:'H', hp:44, ac:15, atk:6, dmg:[2,6,2], rng:1, mv:6, init:4, boss:true, verb:'tears at'},
@@ -75,29 +79,31 @@ Tuft is at the edge of the light with her back to the tent lines. She has been t
 
 "Sergeant." Brisk, not looking up. "Bridgeburners want you. Runner said *when you're ready*, which means now."
 
-Kettle snaps the ledger shut. "Two sharpers, one burner, one cusser. Same as this morning. Same as two nights ago. The cusser's called Maud, if anyone's asking." Nobody is.`,
+${S.f.decoy ? `Kettle finishes on her fingers, since a grey cloak has her ledger.` : `Kettle snaps the ledger shut.`} "${c1Count()}. Same as this morning.${S.inv.sharper === 2 && S.inv.burner === 1 && S.inv.cusser === 1 ? ` Same as two nights ago.` : ``}${S.inv.cusser ? ` The cusser's called Maud, if anyone's asking." Nobody is.` : ` Maud went off under the north quarter, if anyone's asking." Nobody is.`}`,
       ch:[{t:'Walk the lines.', go:()=>startExplore()},
-          {t:'"Tuft. You sleeping?"', go:'c1_start_tuft'},
-          {t:'"Ohl. How long is it tonight?"', go:'c1_start_ohl'}]}),
+          {t:'"Tuft. You sleeping?"', fx:()=>{S.f.c1_askedTuft=1;}, go:'c1_start_tuft'},
+          {t:'"Ohl. How long is it tonight?"', fx:()=>{S.f.c1_askedOhl=1;}, go:'c1_start_ohl'}]}),
     c1_start_tuft:()=>({sp:'Tuft', txt:
 `She doesn't turn round. "There's a lamp in the cadre row that's been lit three nights. Same tent. Nobody goes in and nobody comes out."
 
 ${S.loy.tuft >= 2 ? `"I'd tell you if it mattered, Sergeant. I'm telling you now. It matters, and I don't know why yet."` : `"It's not our business." She says it the way people say things they've decided, not things they believe.`}`,
-      ch:[{t:'Walk the lines.', go:()=>startExplore()}]}),
+      ch:[{t:'Walk the lines.', go:()=>startExplore()},
+          {t:'"Ohl. How long is it tonight?"', req:()=>!S.f.c1_askedOhl, fx:()=>{S.f.c1_askedOhl=1;}, go:'c1_start_ohl'}]}),
     c1_start_ohl:()=>({sp:'Ohl', txt:
 `He folds the oilcloth along its old creases. "Two hundred and eleven. I counted again by the fire. It doesn't get shorter when you count it, but I keep hoping."
 
 ${S.loy.ohl >= 2 ? `"None of ours, Sergeant. I mention it because you'd never ask."` : `"Go on. The Bridgeburners don't like waiting, and they're worse at it than we are."`}`,
-      ch:[{t:'Walk the lines.', go:()=>startExplore()}]}),
+      ch:[{t:'Walk the lines.', go:()=>startExplore()},
+          {t:'"Tuft. You sleeping?"', req:()=>!S.f.c1_askedTuft, fx:()=>{S.f.c1_askedTuft=1;}, go:'c1_start_tuft'}]}),
 
     /* ---- the Bridgeburners' fire ---- */
-    c1_wj:()=>({sp:'Whiskeyjack · Bridgeburners', scene:'fire', txt:
-`The Bridgeburners' fire is bigger than yours and has fewer people around it. Whiskeyjack sits on a saddle with his boots to the coals and his sword across his knees, not for show; he is oiling it. The one beside him, dark and long-fingered and smiling at something, would be Quick Ben. The big one standing just outside the light, not leaning on anything, would be Kalam.
+    c1_wj:()=> S.f.c1_wj ? CH1.dlg.c1_wj_again() : ({sp:'Whiskeyjack · Bridgeburners', scene:'fire', txt:
+`The Bridgeburners' fire is bigger than yours, and quieter. Whiskeyjack sits on a saddle with his boots to the coals and his sword across his knees, not for show; he is oiling it. The one beside him, dark and long-fingered and smiling at something, would be Quick Ben. The big one standing just outside the light, not leaning on anything, would be Kalam.
 
 "Sergeant {sgt}." Whiskeyjack doesn't stand. "Fourth Squad. You were in the north tunnels two nights ago. Tell me how that went."
 
-Kalam's eyes go to Kettle's satchel and stay there. Quick Ben's go to Tuft, and don't.`,
-      ch:[{t:'"All five up. Varrow\'s satchel went where it was sent. Deserters in the first hundred paces, something older at the end."', go:'c1_wj_honest'},
+Kalam's eyes go to Kettle's satchel and stay there. Quick Ben's go everywhere except Tuft.`,
+      ch:[{t:`"All five up. ${S.ending === 'claw' ? 'Varrow\'s satchel went to a grey cloak at the tunnel mouth.' : 'Varrow\'s satchel went where it was sent.'} Deserters in the first hundred paces, something older at the end."`, go:'c1_wj_honest'},
           {t:'"Grave detail, sir. Nothing to report."', go:'c1_wj_evasive'},
           {t:'"Tunnels, sir. Nothing your Bridgeburners couldn\'t have done faster."', go:'c1_wj_boast'}]}),
     c1_wj_honest:()=>({sp:'Whiskeyjack', fx:()=>{S.f.wjRegard=1; S.f.c1_reported=1;}, txt:
@@ -108,7 +114,7 @@ Kalam's eyes go to Kettle's satchel and stay there. Quick Ben's go to Tuft, and 
 "Kurald Galain, leaked down from the Spawn." The mage says it the way other men say *rain*. "It'll be gone in a month. The thing that was living in it won't." He is still not looking at Tuft.`,
       ch:[{t:'Wait for the rest.', go:'c1_brief'}]}),
     c1_wj_evasive:()=>({sp:'Whiskeyjack', fx:()=>{S.f.wjRegard=0; S.f.c1_reported=1;}, txt:
-`"Grave detail." He says it back to you flat, the way you'd hand a man back a coin that's been clipped. "That's a grey cloak's phrase, Sergeant. You've been talking to grey cloaks."
+`"Grave detail." He says it back to you flat, the way you'd hand a man back a coin that's been clipped. "That's what people say to grey cloaks, Sergeant. You've been talking to grey cloaks."
 
 Quick Ben laughs, once, softly. Kalam doesn't.
 
@@ -117,21 +123,23 @@ Quick Ben laughs, once, softly. Kalam doesn't.
     c1_wj_boast:()=>({sp:'Whiskeyjack', fx:()=>{S.f.wjRegard=-1; S.f.c1_reported=1; loy('brisk',-1);}, txt:
 `He stops oiling the sword.
 
-"Don't do that." Not loud. "I've got thirty-eight Bridgeburners left out of fourteen hundred and I'm not going to spend the evening being told how good they are by a marine who came out of a hole with all five of his squad. That's a better thing than fast. Try saying that next time."
+"Don't do that." Not loud. "I've got thirty-eight Bridgeburners left out of fourteen hundred and I'm not going to spend the evening being told how good they are by a sergeant who walked all five out of a hole. That's a better thing than fast. Try saying that next time."
 
-Behind you Brisk shifts her weight, which is as close as she comes to a comment.`,
+Behind you, Brisk shifts her weight, which is as close as she comes to a comment.`,
       ch:[{t:'"Sir."', go:'c1_brief'}]}),
-    c1_brief:()=>({sp:'Whiskeyjack', txt:
+    // the full briefing the first time; coming back to it from a side question, a short recap instead of the whole speech again
+    c1_brief:()=>({sp:'Whiskeyjack', fx:()=>{S.f.c1_briefed=1;}, txt: S.f.c1_briefed ?
+`Whiskeyjack has gone back to the sword. "Darujhistan," he says, to the blade. "Overland, with the baggage, a week behind us. Anything else, Sergeant, ask it now."` :
 `"Darujhistan." He lets the word sit in the fire a moment. "The last free city. Dujek's orders are to take it from the inside, and the Empress's orders are for the Bridgeburners to do it, and the new captain's orders are to command the Bridgeburners while they do it. You'll have seen the captain. Tall. Polite. Wearing his commission like a coat that hasn't been rained on yet."
 
-"The Black Moranth fly us south. Five squads. Their quorls carry five squads, and I've asked, and the answer was a noise I've decided was a no. So the Fourth goes overland with the baggage train and a Rhivi guide and whatever the Host can spare, which is nothing. You'll be a week behind us. You'll come into the city from the plain, and you'll be the only Malazans in it that nobody's watching for."
+"The Black Moranth fly us south. Five squads. The quorls carry five, and I've asked about a sixth, and the answer was a noise I've decided was a no. So the Fourth goes overland with the baggage train and a Rhivi guide and whatever the Host can spare, which is nothing. You'll be a week behind us. You'll come into the city from the plain, and you'll be the only Malazans in it that nobody's watching for."
 
 ${S.ending === 'claw' ? `Quick Ben, mildly: "A grey cloak walked out of the north quarter two nights ago with a satchel under his arm. Half the camp saw it. The other half was paid not to." He is smiling. It isn't at you.` :
   S.ending === 'burned' ? `Quick Ben, mildly: "Tattersail burned a candle for an hour that night. Not for reading by." He is smiling. It isn't at you.` :
   S.ending === 'told' ? `Quick Ben, mildly: "Tattersail's sleeping less than usual, which was none. Whatever you carried up, Sergeant, it didn't get lighter when she read it." He is smiling. It isn't at you.` :
   `Quick Ben, mildly: "The cadre tent smelled of oilcloth this morning. Somebody delivered something and didn't stay to read it. That's rarer than you'd think." He is smiling. It isn't at you.`}`,
-      ch:[{t:'Watch the mage. He\'s watching someone.', check:['wits',12], req:()=>!S.f.c1_qb, fx:()=>S.f.c1_qb=1, go:'c1_qb_tuft', fail:'c1_qb_miss'},
-          {t:'"And the captain? Off the record."', check:['guile',13], req:()=>!S.f.c1_kal, fx:()=>S.f.c1_kal=1, go:'c1_kalam_ok', fail:'c1_kalam_no'},
+      ch:[{t:'Watch the mage, and where he isn\'t looking.', check:['wits',12], req:()=>!S.f.c1_qb, fx:()=>S.f.c1_qb=1, go:'c1_qb_tuft', fail:'c1_qb_miss'},
+          {t:'"And the captain, Kalam? Off the record."', check:['guile',13], req:()=>!S.f.c1_kal, fx:()=>S.f.c1_kal=1, go:'c1_kalam_ok', fail:'c1_kalam_no'},
           {t:'Tuft has the Deck out. She\'s looking at you.', req:()=>!S.f.c1_drawn, go:'c1_deck'},
           {t:'"Understood, sir."', go:'c1_wj_end'}]}),
     c1_qb_tuft:()=>({sp:'Quick Ben', txt:
@@ -179,7 +187,7 @@ Quick Ben has looked up from the coals. "Interesting deck," he says, and means t
     c1_wj_end:()=>({sp:'Whiskeyjack', fx:()=>{S.f.c1_wj=1;}, txt:
 `He sheathes the sword.
 
-"Sleep if you can. Report to the quartermaster in the morning for the wagon. If the captain walks your lines tonight, be a marine at him; he's new, and he's trying, and the ones who try are the ones you get to keep." He looks at the cadre row, where the one lamp is still lit. "And if Tattersail asks for you, go. She doesn't ask twice. She just stops asking."
+"Sleep if you can. Report to the quartermaster in the morning for the wagon." ${S.f.c1_paran ? `A glance down the lines. "The captain's been round yours, I hear. Good. He's new, and he's trying, and the ones who try are the ones you get to keep."` : `"If the captain walks your lines tonight, be a marine at him; he's new, and he's trying, and the ones who try are the ones you get to keep."`} He looks at the cadre row, where the one lamp is still lit. ${S.f.c1_tent ? `"And you've seen Tattersail. Good. She doesn't ask twice. She just stops asking."` : `"And if Tattersail asks for you, go. She doesn't ask twice. She just stops asking."`}
 
 ${S.f.wjRegard > 0 ? `"Sergeant." As you turn. "All five. Keep doing that."` : S.f.wjRegard < 0 ? `He doesn't say anything as you turn. Kalam does, to nobody: "Fourth Squad."` : `Quick Ben lifts two fingers from his knee, which might be a farewell and might be a ward.`}`,
       ch:[{t:'Walk the lines.', go:()=>{ if (S.f.c1_tent) talk('c1_night'); else startExplore(); }}]}),
@@ -221,7 +229,7 @@ Brisk, behind you, makes a sound that in another woman would be approval.`,
 "Five," he says quietly. "Good." And then, as if it cost him: "I'm sorry. I'm not yet sure how to talk to marines. I'll learn it or I won't."`,
       ch:[{t:'"Sir."', go:'c1_paran_go'}]}),
     c1_paran_tea:()=>({sp:'Captain Paran', fx:()=>{loy('ohl',1); S.f.c1_paranTea=1;}, txt:
-`Ohl has a cup in his hand before anyone sees him make it. He holds it out to the captain the way he holds it out to everyone, as if refusal is a medical question.
+`Ohl has a cup in his hand before anyone sees him make it. He holds it out to the captain the way he holds it out to everyone, as if refusal were a medical question.
 
 Paran takes it. Drinks. His face does the thing every face does.
 
@@ -243,7 +251,7 @@ ${S.loy.kettle >= 2 ? `Kettle, quietly: "He walks like a man who doesn't know th
     c1_paran_again:()=>({sp:'Captain Paran', txt:`He's gone north along the tent lines, toward the cadre row. You can still see the pale cloak, and then you can't.`, ch:[{t:'Leave'}]}),
 
     /* ---- Tattersail's tent ---- */
-    c1_tent:()=>({sp:'Tattersail · cadre mage', scene:'tent', fx:()=>{S.f.c1_tentIn=1;}, txt:
+    c1_tent:()=> S.f.c1_tent ? CH1.dlg.c1_tent_again() : ({sp:'Tattersail · cadre mage', scene:'tent', fx:()=>{S.f.c1_tentIn=1;}, txt:
 `The tent smells of candle smoke and something under it, dry and sweet, like a cellar where fruit has been left too long. Tattersail is at her table with the cards out and a cup she isn't drinking from. She looks older than two nights ago. Everyone does, but she has managed it faster.
 
 ${S.ending === 'claw' ? `"Sergeant {sgt}. Sit, since you're here." She doesn't offer a stool. "The High Mage has Varrow's hand by now, and what I have is a squad that carried it up out of the dark and then carried it somewhere else. Don't explain. I've had the explanation from the cards. It was a short reading."` :
@@ -253,10 +261,10 @@ ${S.ending === 'claw' ? `"Sergeant {sgt}. Sit, since you're here." She doesn't o
 
 On a crate against the far wall, where the light doesn't quite reach, something sits with its legs out in front of it. A doll. A puppet. Its head is a carved wooden thing, and there is a smell of resin and old bandage about it, and the cellar sweetness is coming from there.`,
       ch:[{t:'Look at the puppet.', check:['wits',12], go:'c1_hairlock', fail:'c1_hairlock_miss'},
-          {t:'"The new captain\'s coming to see you tonight."', go:'c1_tent_captain'},
+          {t: S.f.c1_paran ? '"The new captain\'s coming to see you tonight."' : '"There\'s a new captain in camp."', go:'c1_tent_captain'},
           {t:'"Ma\'am."', go:'c1_tuft_still'}]}),
     c1_tent_captain:()=>({sp:'Tattersail', fx:()=>{S.f.c1_tentCaptain=1;}, txt:
-`"He is." She doesn't look up. "Whiskeyjack asked me to look at him. I've looked. He's got the Deck all over him and doesn't know it, which is the worst way to have it."
+`${S.f.c1_paran ? `"He is."` : `"There is. He's coming to see me tonight."`} She doesn't look up. "Whiskeyjack asked me to look at him. I've looked. He's got the Deck all over him and doesn't know it, which is the worst way to have it."
 
 "Somebody's put a piece on the board, Sergeant. It's him. I'd like to know who, and I'd like the answer not to be the one I think it is."`,
       ch:[{t:'Look at the puppet.', check:['wits',12], go:'c1_hairlock', fail:'c1_hairlock_miss'},
@@ -277,22 +285,26 @@ Nobody in the tent moved. The candle didn't gutter. Tattersail's hand has stoppe
 It doesn't do anything. You are not sure why you thought it would.`,
       ch:[{t:'"Ma\'am."', go:'c1_tuft_still'}]}),
     c1_tuft_still:()=>({sp:'Tattersail', txt:
-`Tattersail looks past you, at the tent flap, where Tuft is standing exactly as far inside as she has to be to count as present.
+`${S.f.c1_namedHairlock ? `She doesn't answer that, which is its own kind of answer.
+
+` : ``}Tattersail looks past you, at the tent flap, where Tuft is standing exactly as far inside as she has to be to count as present.
 
 Tuft has gone still. Not the stillness of a soldier waiting; the stillness of a small animal that has heard the hawk. Her grey cloak is doing the thing it does, where it is there and then not quite.
 
 Tattersail's face changes. It's a small change, and it's not unkind, and it's the face of a woman who has just recognised a badge on a collar that isn't wearing one.
 
-"Sergeant," she says. "Step outside with me. Bring the cold. Leave the girl."`,
+"Sergeant," she says. "Step outside with me. Mind the cold. Leave the girl."`,
       ch:[{t:'Step outside.', go:'c1_tuft_plant'}]}),
     c1_tuft_plant:()=>({sp:'Tattersail', scene:'camp_night', fx:()=>{S.f.c1_plant=1;}, txt:
 `Outside, the cold is the real thing. Tattersail pulls her shawl round and doesn't look at you; she looks at the cadre row, the way you'd look at a line of graves you knew the names on.
 
-"Your mage carries a cadre badge she doesn't wear. I know the badge. I sewed one like it onto a girl's collar sixteen months ago, on the High Mage's staff, and I watched her take it off four months later and ask for a marine squad with a letter that said nothing."
+"Your mage carries a cadre badge she doesn't wear. I know the badge. I sewed one like it onto a girl's collar eighteen months ago, on the High Mage's staff, and I watched her take it off four months later and ask for a marine squad with a letter that said nothing."
 
-${S.f.knowTruth ? `"She stopped breathing at the underlined line. You saw her. *Moved before the Spawn attacked, not after.* Somebody on his staff relayed that order, Sergeant. Somebody carried it. She was on his staff."` :
+${S.ending === 'told' ? `"You read the underlined line with her at your shoulder. I'd wager she stopped breathing. *Moved before the Spawn attacked, not after.* Somebody on his staff relayed that order, Sergeant. Somebody carried it. She was on his staff."` :
   S.f.partial ? `"You've heard the name now. Tayschrenn. She hears it and she stops moving. I've seen soldiers do that at the name of a place. I've never seen one do it at the name of a man."` :
-  `"She goes still when someone says *High Mage*. You'll have noticed. She'll go stiller. There are things a person carries out of that staff that don't fit in a satchel."`}
+  `"She goes still when someone says *High Mage*. You'll have noticed. She'll go stiller. There are things a person carries out of that staff that don't fit in a satchel."${S.f.knowTruth ? `
+
+You think of a line in a small careful hand, underlined twice, and of Tuft behind you in the lantern light, not breathing. You don't say so.` : ``}`}
 
 "He doesn't let people leave, Sergeant. He let her. I'd like to know what he thinks he still has of hers." She finally looks at you. "I'm not asking you to find out. I'm telling you what I'd want to know, if I were her sergeant, before somebody else found out for me."`,
       ch:[{t:'"What badge? I\'ve never seen a badge."', go:'c1_plant_badge'},
@@ -321,7 +333,9 @@ ${S.ending === 'told' || S.ending === 'given' ? `Tattersail puts something in yo
   `Tattersail sits. "Pell's restocked," she says, which is a dismissal. "Buy the sapper something that goes off. Somebody should have something tonight that does what it's told."`}
 
 She's back to her cards before you reach the flap. "Sergeant. If you hear dogs tonight, they aren't."`,
-      ch:[{t:'Leave the tent', go:()=>{ if (S.f.c1_wj) talk('c1_night'); else startExplore(); }}]}),
+      // with Whiskeyjack already seen, leaving the tent starts the Hounds: one last chance at Pell's wagon first
+      ch:[{t:'Leave the tent', go:()=>{ if (S.f.c1_wj) talk('c1_night'); else startExplore(); }},
+          {t:'Stop at Pell\'s wagon on the way.', req:()=>!!S.f.c1_wj && S.silver >= 3, go:()=>{ sceneShell('camp_night'); talk('c1_pell'); }}]}),
     c1_tent_again:()=>({sp:'Tattersail', txt:
 `"Sergeant." She doesn't look up. "The cards haven't got better. Neither has the puppet. Go and sleep, or go and pretend to."`,
       ch:[{t:'Leave', go:()=>startExplore()}]}),
@@ -337,7 +351,7 @@ You carry ${S.silver} silver.`,
         {t:'Healing salve, 3 silver', tag:`have ${S.inv.salve}`, req:()=>S.silver>=3, fx:()=>{S.silver-=3;S.inv.salve++;note('Bought a salve.','good');AUDIO.play('coin');}, go:'c1_pell'},
         {t:'Cusser, 14 silver', tag:`have ${S.inv.cusser}`, req:()=>S.silver>=14 && !S.f.c1_cusserSold, fx:()=>{S.silver-=14;S.inv.cusser++;S.f.c1_cusserSold=1;note('Bought a cusser. Pell looks at Kettle the way a man looks at weather.','good');AUDIO.play('coin');}, go:'c1_pell_cusser'},
         {t:'"You\'ve got a cusser."', req:()=>S.silver<14 && !S.f.c1_cusserSold && !S.f.c1_askedCusser, fx:()=>S.f.c1_askedCusser=1, go:'c1_pell_broke'},
-        {t:'Leave'}]}),
+        {t:'Leave', go:()=>{ if (S.f.c1_wj && S.f.c1_tent && !S.f.c1_hounds) talk('c1_night'); }}]}), // on the way back from the tent, the night goes wrong
     c1_pell_cusser:()=>({sp:'Quartermaster Pell', txt:
 `Kettle takes it in both hands like an infant she has been told is hers. She turns it once to the light.
 
@@ -397,7 +411,7 @@ ${S.f.decoy ? `He holds out a satchel. Kettle's. "Your sapper's ledger. Every st
   S.f.gaveClaw ? `"The High Mage sends his regards." A beat. "He doesn't, in fact. But it's the form, and you were helpful, and I like to see helpful people rewarded with the form."` :
   S.f.marked ? `"I know the name now. {sgt}. It's a good name." He lets that sit. "Try to keep it attached."` :
   S.f.clawFooled ? `"Grave detail," he says, pleasantly. "You'd be surprised how much of the camp has been on grave detail this week. Whole squads of it. Nobody's dug anything."` :
-  `"You'll have heard we're flying south. Not you. You're the wagon. I find I approve. Wagons see the country."`}`,
+  `"Another time, I said, at the tunnel mouth. This is another time." He lets you look at his empty hands. "You'll have heard we're flying south. Not you. You're the wagon. I find I approve. Wagons see the country."`}`,
       ch:[{t:'"Who are you?"', go:'c1_claw_who'},
           {t:'"What do you want with the cadre tent?"', check:['wits',13], go:'c1_claw_tent', fail:'c1_claw_tent_fail'},
           {t:'Say nothing. Keep walking.', fx:()=>loy('brisk',1), go:'c1_claw_silent'}]}),
@@ -448,7 +462,8 @@ Tattersail, from her tent, through the canvas, hoarse: *"Sergeant! The line. Hol
 
 And from the dark to your left, the grey cloak, unhurried, close enough to touch: "Leave the mage, Sergeant. She'll live or she won't. Seal the cadre tent and hold the crate. My people will hold with you. Three rounds. Then we're gone and so are you."
 
-${S.loy.tuft >= 2 ? `Tuft, at your shoulder, so quiet only you hear it: "Her. Please."` : `Tuft is looking at the grey cloak the way she looks at the deck when it's about to say something.`}
+${S.loy.tuft >= 2 ? `Tuft, at your shoulder, so quiet only you hear it: "Her. Please."` : `Tuft is looking at the grey cloak the way she looks at the Deck when it's about to say something.`}
+
 ${S.loy.brisk >= 2 ? `Brisk: "Your call, Sergeant. I'll tell you after if it was stupid."` : `Brisk is waiting. Brisk is always waiting.`}`,
       ch:[{t:'"The line. On Tattersail. Hold the cadre row."', go:'c1_line_go'},
           {t:'"The crate. Seal the tent. Grey cloak, your people had better be worth it."', go:'c1_claw_go'}]}),
@@ -470,7 +485,8 @@ The first Hound comes through the tents like a wave through a fence. It's the co
       ch:[{t:'Seal the tent.', go:()=>startBattle('hounds_claw',{surprise:'e'})}]}),
 
     /* ---- after: the line ---- */
-    c1_after_line:()=>({sp:'The cadre row', scene:'camp_night', fx:()=>{ const up = gainXP(180); note('+180 experience. You held. Nobody holds against Hounds. Nobody has to know that.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); gain('houndtooth'); }, txt:
+    // win() has already awarded the battle's xp and noted any level-up; these nodes only add the flavour note
+    c1_after_line:()=>({sp:'The cadre row', scene:'camp_night', fx:()=>{ note('You held. Nobody holds against Hounds. Nobody has to know that.','good'); gain('houndtooth'); }, txt:
 `It ends the way weather ends. The Hounds are there and then they are elsewhere, and the elsewhere is Shadow, and the tent lines are on fire and quiet.
 
 The big one, Gear, goes last. It goes slowly. There's a wound down its shoulder that steams, a sword-wound, and it looks back once, at the cadre tent, and the look is not an animal's. Then it limps into a dark that isn't the camp's dark and is gone.
@@ -495,10 +511,10 @@ ${S.f.c1_sawHairlock ? `The puppet is where it was. Its head has turned to look 
 
 "Three," she says. "No. Three I can see."
 
-They come out from between the stakes without hurrying: grey, hooded, knives low. Not the two who would have held with you. Different ones. The kind sent when a name has been written in a neat hand and the line under it is due.
+They come out from between the stakes without hurrying: grey, hooded, knives low. Not the ones who would have held with you. Different ones. The kind sent when a name has been written in a neat hand and the line under it is due.
 
 One of them speaks. It isn't the grey cloak's voice, but it's his phrasing. "Sergeant {sgt}. There's a ledger. You're in it. We'd like to close the entry."`,
-      ch:[{t:'"You\'ve got the wrong squad. The Fourth held for Tattersail tonight. Ask her whose ledger you\'re in."', check:['guile',14], go:'c1_acc_slip', fail:'c1_acc_fight'},
+      ch:[{t:'"Wrong night. The Fourth held the cadre row for Tattersail. Ask her whose ledger you\'re in."', check:['guile',14], go:'c1_acc_slip', fail:'c1_acc_fight'},
           {t:'Kettle steps forward with the cusser in both hands.', req:()=>S.inv.cusser>0, go:'c1_acc_bluff'},
           {t:'"Brisk. Shield."', go:'c1_acc_fight'}]}),
     c1_acc_slip:()=>({sp:'The picket line', fx:()=>{S.f.c1_accAvoided=1; loy('tuft',1);}, txt:
@@ -526,7 +542,7 @@ Brisk, from very far behind the shield: "Never. Again."`,
     c1_acc_fight:()=>({sp:'The picket line', txt:
 `"Shield," you say, and Brisk's is already up, and the first knife rings off it.`,
       ch:[{t:'Fight', go:()=>startBattle('accounting',{})}]}),
-    c1_after_accounting:()=>({sp:'The picket line', scene:'camp_night', fx:()=>{ const up = gainXP(120); note('+120 experience. The ledger stays open. That is not nothing.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); S.f.c1_accFought=1; }, txt:
+    c1_after_accounting:()=>({sp:'The picket line', scene:'camp_night', fx:()=>{ note('The ledger stays open. That is not nothing.','good'); S.f.c1_accFought=1; }, txt:
 `When it's done, none of them are there. Not dead there; not there. The ground where they fell is ground. Ohl stares at it a long time.
 
 "They don't leave their own," Tuft says. "Ever. It's the only rule they keep."
@@ -535,7 +551,7 @@ There's blood on Brisk's spear. That much is real. She wipes it on the nearest s
       ch:[{t:'Find Whiskeyjack.', go:'c1_wj_last'}]}),
 
     /* ---- after: the crate ---- */
-    c1_after_claw:()=>({sp:'The cadre tent', scene:'camp_night', fx:()=>{ const up = gainXP(150); note('+150 experience. You held the crate. Somebody else held the row.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
+    c1_after_claw:()=>({sp:'The cadre tent', scene:'camp_night', fx:()=>{ note('You held the crate. Somebody else held the row.','good'); }, txt:
 `It ends the way weather ends. The Hounds are there and then they are elsewhere, and the two grey figures who held with you are elsewhere too, at the same moment, as if they'd all left by the same door.
 
 The big one, Gear, goes last. It goes slowly. There's a wound down its shoulder that steams, a sword-wound, and it looks back once at the cadre tent, and the look is not an animal's.
@@ -548,7 +564,7 @@ ${S.ending === 'given' || S.ending === 'told' ? `It's a page. One page, oilcloth
 "Three rounds, Sergeant. You held them. That's been noted, and by better people than me." He puts something in your hand: a short knife, no maker's mark. "For the road. The wagon's a long way round, and the plain's not friendly."`,
       ch:[{t:'Take it.', fx:()=>{gain('clawknife');}, go:'c1_after_claw_tat'},
           {t:'"Keep it."', fx:()=>{loy('brisk',1); S.f.c1_refusedKnife=1;}, go:'c1_after_claw_tat'}]}),
-    c1_after_claw_tat:()=>({sp:'Tattersail', scene:'tent', txt:
+    c1_after_claw_tat:()=>({sp:'Tattersail', scene:'camp_night', txt:
 `Tattersail is standing in the wreck of the cadre row with her shawl gone and her hands shaking, and she's letting them. The captain is behind her on a cot dragged out of the tent, shirt open, a wound in him that should have been the end of the conversation, and it isn't.
 
 "He's alive." She doesn't look at you. "Somebody put a knife in him before the Hounds came. Then he put a sword in one of them. He should have died twice tonight and he's done neither, and I've stopped asking the cards because they laugh."
@@ -557,7 +573,7 @@ Then she does look at you. It isn't anger. It's an estimate, revised.
 
 "You held the crate, Sergeant. For him. I heard the order and I heard you take it." A pause. "The cadre will remember that too. There aren't many of us left, and we have long memories, and nothing else to do with them."
 
-${S.f.c1_sawHairlock ? `Behind her, in the open tent, the puppet sits on its crate with no lid. Its head is turned toward you. It stays turned.` : `Behind her, in the open tent, the puppet has fallen off its crate and lies with its face to the canvas. Nobody rights it.`}
+${S.f.c1_sawHairlock ? `Behind her, in the open tent, the puppet sits on its crate${S.ending === 'given' || S.ending === 'told' ? `` : ` with no lid`}. Its head is turned toward you. It stays turned.` : `Behind her, in the open tent, the puppet has fallen off its crate and lies with its face to the canvas. Nobody rights it.`}
 
 Tuft won't look at you. She's looking at the place between the tents where the grey figures stood, as if learning it.`,
       ch:[{t:'Find Whiskeyjack.', go:'c1_wj_last'}]}),
@@ -566,7 +582,7 @@ Tuft won't look at you. She's looking at the place between the tents where the g
     c1_wj_last:()=>({sp:'Whiskeyjack', scene:'fire', txt:
 `The Bridgeburners' fire has more people round it now and none of them are talking. Whiskeyjack is standing, which you haven't seen him do. Quick Ben is sitting with his back to a saddle and his eyes shut, and his lips are moving, and Kalam is standing over him the way Brisk stands over a fire.
 
-"Sergeant." Whiskeyjack looks you over: five, and counts it. "Captain's alive. Tattersail says. Nobody's happy about how. Hounds of Shadow in an Imperial camp and the only thing in it that could put a sword in one was a noble-born captain who's been here half a day." He rubs his face. "I've stopped asking what that means. Quick's asking. Quick's welcome to it."
+"Sergeant." Whiskeyjack looks the squad over, counting, and gets to five. "Captain's alive. Tattersail says. Nobody's happy about how. Hounds of Shadow in an Imperial camp and the only thing in it that could put a sword in one was a noble-born captain who's been here half a day." He rubs his face. "I've stopped asking what that means. Quick's asking. Quick's welcome to it."
 
 ${S.f.c1_key === 'line' ? `"You held the row. For the cadre. That's going to matter more than you think and less than you'd like. The Host doesn't love the cadre, Sergeant, and the Claw don't love anybody who does." ${S.f.wjRegard > 0 ? `"But I do. Noted."` : S.f.wjRegard < 0 ? `"It's a start."` : `"Noted."`}` :
   `"You held the tent. For the grey cloaks." He says it without weight, and that's the weight. "I won't ask what they took. I'll know by morning anyway. But you'll want to remember that people who help the Claw once get asked twice, and the second time it isn't a request." ${S.f.wjRegard > 0 ? `"You came out of a hole with all five. Keep it five. That's the whole of my advice."` : S.f.wjRegard < 0 ? `"Fourth Squad." Nothing else.` : `"Go and sleep."`}`}
@@ -579,7 +595,7 @@ ${S.f.c1_key === 'line' ? `"You held the row. For the cadre. That's going to mat
 Tuft is at the edge of the light with her back to the cadre row.
 
 ${S.f.c1_key === 'line' ? `"Sergeant." She doesn't turn round. "Thank you." It's the first time she's said it. She doesn't say for what, and you don't ask, and after a while she comes and sits down by the fire, on the side where you can see her.` :
-  `"Sergeant." She doesn't turn round. "The grey cloaks. When they held with us. One of them knew my name." A long silence. "Not the one you'd think. The other one." She doesn't come to the fire. She stays where she is, in the dark, where you can't see her cast.`}
+  `"Sergeant." She doesn't turn round. "The grey cloak. At the tent, when his people held with us. He called me by my name." A long silence. "Not the one you'd think. The other one." She doesn't come to the fire. She stays where she is, in the dark, where you can't see her cast.`}
 
 Somewhere north, the cadre row is still burning. Somewhere south, a long way, a city with blue fire in its streets that has never heard of you. The wagon leaves at dawn.`,
       ch:[{t:'Dawn.', go:()=>chapterEnd(1, S.f.c1_key || 'line')}]}),
