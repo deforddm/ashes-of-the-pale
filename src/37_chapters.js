@@ -23,7 +23,7 @@ const CHEND = {
 };
 const CHTEASE = {
   0:'Next: Captain Paran arrives at the Pale, the Hounds of Shadow come hunting, and the Fourth is told where it is going.',
-  1:'Next: the Black Moranth will not carry a sixth squad. The Fourth rides south across the Rhivi Plain, and something is riding the same way.',
+  1:'Next: the Black Moranth will not carry a second squad. The Fourth rides south-east across the Rhivi Plain, and something is riding the same way.',
   2:'Next: Darujhistan, the city of blue fire. The Bridgeburners are a week ahead and already under it.',
   3:'Next: assassins on the rooftops, a war nobody in the city admits is being fought, and a name said quietly at the Phoenix Inn: Rallick Nom.',  4:'Next: the Gadrobi Hills. An Adjunct with a T\'lan Imass at her side is digging for something that should stay buried, and the Fourth is sent to watch the wrong hill.',
   5:'Next: the Fete. Darujhistan throws a party the size of a city while a Tyrant walks toward it, and everyone the Fourth has met is going to be at Lady Simtal\'s.',
@@ -192,7 +192,7 @@ const QUESTS = {
   hound_site:()=> S.f.c2_tocGone ? 'East, to the fourth camp' : 'Dead horses, and two people who are not dead',
   ridge:()=> S.f.c2_lightDone ? 'Dawn. East, to the hills' : S.f.c2_light ? 'The light in the west' : 'The fourth camp. Talk to Sethand.',
   hills_edge:()=> 'The Gadrobi Hills. Darujhistan beyond.',
-  worry_gate:()=> S.f.c3_gateFought ? 'East, into the Gadrobi District' : S.f.c3_gate ? 'The wagon through the gate. East.' : 'The Worry Gate. Talk to the gate-clerk.',
+  worry_gate:()=> S.f.c3_gateFought ? 'Into the city, down to the Gadrobi District' : S.f.c3_gate ? 'The wagon through the gate.' : 'The Worry Gate. Talk to the gate-clerk.',
   gadrobi_cross:()=> S.f.c3_key ? 'Dawn. The roof above the dig.' : S.f.c3_msg ? 'The Daru District. A dye-shop. East.' : S.f.c3_workDone ? (SQUAD().includes('ellis') ? 'The second night. Ellis is waiting at the dig.' : 'The second night. A Gadrobi child is looking for you.') : S.f.c3_reported ? 'Crates down the hole. Whiskeyjack\'s orders.' : 'Report to Whiskeyjack at the barrier',
   hills_ridge:()=> S.f.c5_seth ? 'East, to the barrow. Don\'t be seen.' : 'Talk to the Rhivi on the ridge',
   barrow_vale:()=> S.f.c5_key ? 'Dawn. Paran rides for the city.' : S.f.c5_night ? 'Night. Something on the next hill. East.' : S.f.c5_wardsFought ? 'Two riders coming up the vale' : 'The Adjunct and the Imass. Watch.',

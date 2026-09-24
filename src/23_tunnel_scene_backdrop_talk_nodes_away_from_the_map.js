@@ -14,6 +14,8 @@ function sceneLayer(key, W, H, paint){ const dpr = Math.min(2, window.devicePixe
   if (!c) { c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W*dpr)); c.height = Math.max(1, Math.round(H*dpr)); const x = c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); paint(x, W, H); if (SCENE_CACHE.size > 12) SCENE_CACHE.clear(); SCENE_CACHE.set(k, c); }
   return c; }
 const sceneSquad = () => (typeof SQUAD === 'function' && S ? SQUAD() : PORDER);
+/* a column walking right, drawn left to right: the rest behind, then Brisk, then the sergeant in the lead */
+const marchOrder = sq => { const lead = ['brisk','sgt'].filter(id => sq.includes(id)); return [...sq.filter(id => !lead.includes(id)), ...lead]; };
 /* the sapper tunnels under the Pale: timber frames going back into the dark, a lantern on the nearest, rubble; or, deeper, Kurald Galain seeping in */
 function paintTunnel(x, W, H, dark, barrow = false){ // barrow: a Rhivi barrow on the plain, dry-laid stone instead of timber shoring
   const vx = W*.56, vy = H*.42, N = 7, fr = i => { const k = Math.pow(.64, i); return {l:vx - W*.66*k, r:vx + W*.66*k, t:vy - H*.6*k, b:vy + H*.66*k, k}; };
@@ -120,7 +122,7 @@ function drawPlain(cv, kind, t){
   if (hills && tod === 'night') { const hx = W*.72, hy = hz - 2; drawFigure(ctx, 'hairlock', hx, hy, 1.2, t, {still:true, alpha:.55}); // on the next hill, the size of a child and not one
     if (S && S.f && S.f.c5_night && !S.f.c5_rentFought) { glow(ctx, hx - 20, hy - 14, 70, '#9a86e0', .28 + Math.sin(t/200)*.08*mo); ctx.strokeStyle = `rgba(210,205,230,${.7 + Math.sin(t/90)*.2*mo})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hx - 26, hy - 44); ctx.quadraticCurveTo(hx - 12, hy - 18, hx - 24, hy + 6); ctx.stroke(); } } // the rent
   ctx.lineWidth = 1.2; for (let i=0;i<46;i++){ const px = hash(i,61)*W, yy = H*(.9 + hash(i,62)*.12), h = 10 + hash(i,63)*14, sw = Math.sin(t/900 + i*.7)*3*mo; ctx.strokeStyle = tod === 'night' ? 'rgba(40,56,34,.8)' : tod === 'dusk' ? 'rgba(90,64,34,.8)' : 'rgba(84,100,52,.85)'; ctx.beginPath(); ctx.moveTo(px, yy); ctx.quadraticCurveTo(px + sw*.3, yy - h*.6, px + sw, yy - h); ctx.stroke(); } // the near grass, moving
-  const sq = sceneSquad(); sq.forEach((id, i) => drawFigure(ctx, id, W*.1 + i*Math.min(36, W*.6/sq.length), H*.93 + (i%2)*3, 2.1, t, {phase:i, dir:1}));
+  const sq = marchOrder(sceneSquad()); sq.forEach((id, i) => drawFigure(ctx, id, W*.1 + i*Math.min(36, W*.6/sq.length), H*.93 + (i%2)*3, 2.1, t, {phase:i, dir:1}));
   vign(ctx, W, H, tod === 'night' ? .82 : tod === 'dusk' ? .62 : .5);
 }
 
@@ -153,7 +155,7 @@ function drawCity(cv, kind, t){
     ell(ctx, W*.3, H*.2, 60, 14, '#000'); ctx.fillStyle = 'rgba(90,140,210,.12)'; ell(ctx, W*.3, H*.2, 50, 10, 'rgba(90,140,210,.12)');
     ell(ctx, W*.22, H*.72, 5, 10, '#e8d8a8'); glow(ctx, W*.22, H*.66, W*.35, '#e8923a', .35*fl);
     [['fiddler', W*.4, H*.9, -1], ['hedge', W*.5, H*.84, 1]].forEach(([k,x,y,d], i) => drawFigure(ctx, k, x, y, 2.3, t, {still:true, dir:d, phase:i}));
-    squad.slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.1 + i*34, H*.97, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad.slice(0,3)).forEach((id, i) => drawFigure(ctx, id, W*.1 + i*34, H*.97, 2.1, t, {phase:i, dir:1}));
   } else if (kind === 'room') {
     const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#120e0c'); g.addColorStop(1,'#080606'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
     // skeins hung to dry, blue and madder
@@ -165,7 +167,7 @@ function drawCity(cv, kind, t){
     ctx.fillStyle = '#2a1e12'; ctx.fillRect(W*.66, H*.56, W*.06, H*.3); ctx.fillRect(W*.66, H*.56, W*.1, H*.03);
     ell(ctx, W*.5, H*.56, 4, 8, '#e8d8a8'); glow(ctx, W*.5, H*.5, W*.32, '#ffb060', .4*fl);
     drawFigure(ctx, 'claw', W*.7, H*.9, 2.5, t, {still:true, dir:-1});
-    squad.slice(0,3).forEach((id, i) => drawFigure(ctx, id, W*.18 + i*36, H*.97, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad.slice(0,3)).forEach((id, i) => drawFigure(ctx, id, W*.18 + i*36, H*.97, 2.1, t, {phase:i, dir:1}));
   } else {
     // the street or the roof: night sky, Moon's Spawn over the lake, roofs, blue lamps
     const dawn = kind === 'roof', roofN = kind === 'roof_night';
@@ -189,7 +191,7 @@ function drawCity(cv, kind, t){
       drawFigure(ctx, 'assassin', W*.9, H*.66, 1.6, t, {still:true, dir:-1, alpha:.55});
     } else { ctx.fillStyle = '#16161a'; ctx.fillRect(0, H*.62, W, H*.38); ctx.strokeStyle = 'rgba(0,0,0,.45)'; for (let i=0;i<40;i++){ ctx.beginPath(); ctx.ellipse(hash(i,19)*W, H*.66 + hash(i,20)*H*.34, 9, 4, 0, 0, 7); ctx.stroke(); }
       for (let i=0;i<4;i++){ const x = W*.1 + i*W*.27, y = H*.62; ctx.fillStyle = '#1a1a1c'; ctx.fillRect(x-2, y-46, 4, 46); ctx.fillStyle = '#2e2e32'; ctx.fillRect(x-6, y-54, 12, 10); ctx.fillStyle = `rgba(160,210,255,${.7 + Math.sin(t/230 + i)*.2})`; ctx.fillRect(x-3, y-52, 6, 6); glow(ctx, x, y-48, 60, '#6aa8ff', .3*fl); ctx.fillStyle = 'rgba(90,140,210,.08)'; ell(ctx, x, y+10, 40, 10, 'rgba(90,140,210,.08)'); } }
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.92, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.12 + i*36, H*.92, 2.1, t, {phase:i, dir:1}));
   }
   const v = ctx.createRadialGradient(W/2, H*.55, H*.3, W/2, H*.55, W*.72); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.8)'); ctx.fillStyle = v; ctx.fillRect(0,0,W,H);
 }
@@ -273,7 +275,7 @@ function drawEstate(cv, kind, t){
     // masked revellers, far and near
     [[.12,5],[.3,4],[.55,4],[.8,3]].forEach(([d, n], j) => { const yy = lerp(H*.58, H*.96, d), sc = lerp(.7, 2.3, d), half = lerp(W*.13, W*.5, d);
       for (let i=0;i<n;i++){ const k = ((hash(i, j + 20) + t/(40000 - d*20000)*(i%2 ? 1 : -1)) % 1 + 1) % 1, xx = vx - half*.9 + k*half*1.8; if (d > .7 && xx < W*.34) continue; drawFigure(ctx, 'reveller', xx, yy, sc, t, {phase:i*3 + j*7 + 1, dir: i%2 ? 1 : -1}); } });
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.06 + i*30, H*.95, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.06 + i*30, H*.95, 2.1, t, {phase:i, dir:1}));
     confetti(ctx, W, H, t, 26, .55);
     vign(ctx, W, H, .75);
   } else if (kind === 'fete_hall') {
@@ -298,7 +300,7 @@ function drawEstate(cv, kind, t){
     drawFigure(ctx, 'kruppe', W*.8, H*.86, 2.3, t, {still:true, dir:-1});
     // masked dancers, turning in pairs
     for (let p=0;p<4;p++){ const cx = W*(.22 + p*.17), cy = H*(.86 + (p%2)*.06), a = t/1400 + p*1.7; [0, Math.PI].forEach((o, j) => { const x = cx + Math.cos(a + o)*12, depth = Math.sin(a + o); drawFigure(ctx, 'reveller', x, cy + depth*3, 2 + depth*.1, t, {phase:p*2 + j + 2, dir: Math.cos(a + o + Math.PI/2) > 0 ? 1 : -1}); }); }
-    squad.slice(0, 3).forEach((id, i) => drawFigure(ctx, id, 22 + i*Math.min(24, W*.07), H*.99, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad.slice(0, 3)).forEach((id, i) => drawFigure(ctx, id, 22 + i*Math.min(24, W*.07), H*.99, 2.1, t, {phase:i, dir:1}));
     vign(ctx, W, H, .8);
   } else if (kind === 'fete_garden') {
     const dawn = feteDawn(), az = !!(S && S.f && S.f.c6_azath), vx = W*.5, vy = H*.5;
@@ -343,7 +345,7 @@ function drawEstate(cv, kind, t){
       glow(ctx, ax + 19, ay - 32, 30, '#9ad8a0', .16 + p*.12); glow(ctx, ax, ay - 40, 90, '#7ad0a0', .04 + p*.05);
     } else { ell(ctx, ax, ay + 2, 30, 8, '#1e140e'); for (let i=0;i<12;i++) ell(ctx, ax + (hash(i,3)-.5)*50, ay + (hash(3,i)-.5)*9, 3.4, 2, '#2e2016'); glow(ctx, ax, ay - 16, 50, p > .5 ? '#7ad0a0' : '#9a86e0', .1 + p*.1);
       ctx.strokeStyle = '#040304'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.bezierCurveTo(ax - 8, ay - 16, ax + 9, ay - 26, ax - 3, ay - 46); ctx.stroke(); ctx.lineWidth = 2; [[-2,-38,-16,-52],[1,-30,16,-42],[0,-20,-12,-26],[-2,-44,5,-60],[1,-34,10,-30]].forEach(([a,b,c,d]) => { ctx.beginPath(); ctx.moveTo(ax + a, ay + b); ctx.quadraticCurveTo(ax + (a+c)/2, ay + (b+d)/2 - 5, ax + c, ay + d); ctx.stroke(); }); ctx.lineCap = 'butt'; }
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.06 + i*30, H*.97, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.06 + i*30, H*.97, 2.1, t, {phase:i, dir:1}));
     if (!dawn) confetti(ctx, W, H, t, 16, .5); else { ctx.fillStyle = 'rgba(255,190,140,.06)'; ctx.fillRect(0,0,W,H); for (let i=0;i<30;i++){ ctx.fillStyle = `rgba(230,240,255,${.2 + Math.sin(t/400 + i)*.15})`; ctx.fillRect(hash(i,77)*W, vy + hash(i,78)*H*.5, 1, 1); } } // dew
     vign(ctx, W, H, dawn ? .6 : .8);
   } else if (kind === 'garden_storm') {
@@ -397,7 +399,7 @@ function drawEstate(cv, kind, t){
     ctx.fillStyle = 'rgba(90,140,210,.12)'; ctx.fillRect(0, H*.7, W, H*.3); glow(ctx, W*.5, H*1.05, W*.6, '#6aa8ff', .2);
     skyline(ctx, W, H*.92, H*.2, '#07080e', (x) => `rgba(${hash(Math.floor(x*40),2) > .5 ? '140,190,255' : '255,200,120'},.6)`, 5);
     ctx.fillStyle = '#040408'; ctx.fillRect(0, H*.9, W, H*.1); poly(ctx, [[0, H],[0, H*.84],[W*.3, H*.86],[W*.34, H]], '#08070a');
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.03 + i*18, H*.9, 1.5, t, {phase:i, dir:1, still:true}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.03 + i*18, H*.9, 1.5, t, {phase:i, dir:1, still:true}));
     vign(ctx, W, H, .75, .45);
   } else if (kind === 'alley_night') {
     // a narrow wet alley: high walls close on both sides, a strip of sky, one blue lamp, a doorway, and somebody in it who is only faintly there
@@ -427,7 +429,7 @@ function drawEstate(cv, kind, t){
     const sh = ctx.createLinearGradient(dx0, 0, dx1, 0); sh.addColorStop(0, 'rgba(4,3,6,.92)'); sh.addColorStop(.55, 'rgba(4,3,6,.5)'); sh.addColorStop(1, 'rgba(4,3,6,0)'); ctx.fillStyle = sh; ctx.fillRect(dx0 - 10, dyt(dx0) - 10, dx1 - dx0 + 10, dyb(dx0) - dyt(dx0) + 20); // the shadow takes half of him
     glow(ctx, dx1, dyt(dx1) + 30, 20, '#6aa8ff', .08);
     for (let i=0;i<30;i++){ const x = hash(i,81)*W, y = ((hash(i,82)*H) + t*.25) % H; ctx.strokeStyle = 'rgba(160,190,230,.16)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 1, y + 6); ctx.stroke(); } // a fine rain
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.36 + i*28, H*.99, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.36 + i*28, H*.99, 2.1, t, {phase:i, dir:1}));
     vign(ctx, W, H, .85, .5);
   } else if (kind === 'lakefront_dawn') {
     // the docks at dawn: the lake, a ship at the pier, gulls, the city behind; and the sky has nothing in it
@@ -448,7 +450,7 @@ function drawEstate(cv, kind, t){
     ctx.fillStyle = '#1a1a1e'; ctx.fillRect(W*.5, H*.8, 12, 16); ell(ctx, W*.5 + 6, H*.8, 7, 3, '#3a3a40'); ctx.fillStyle = '#2a1e12'; ctx.fillRect(W*.86, H*.74, 34, 26); ctx.fillStyle = '#3a2c1c'; ctx.fillRect(W*.9, H*.66, 26, 22); ctx.fillStyle = '#8fa38a'; ctx.fillRect(W*.915, H*.72, 10, 6);
     [[W*.1, H*.52],[W*.28, H*.5],[W*.44, H*.52]].forEach(([x, y], i) => { const f = hash(Math.floor(t/120), i) > .9 ? .1 : .35 + Math.sin(t/300 + i)*.1; ctx.fillStyle = `rgba(140,190,255,${f})`; ctx.fillRect(x - 1.5, y - 8, 3, 3); glow(ctx, x, y - 7, 12, '#6aa8ff', f*.4); }); // the last lamps going out
     gulls(ctx, W, H, t, 6, .08, .3);
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.08 + i*32, H*.97, 2.1, t, {phase:i, dir:1}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.08 + i*32, H*.97, 2.1, t, {phase:i, dir:1}));
     ctx.fillStyle = 'rgba(255,190,140,.05)'; ctx.fillRect(0,0,W,H); vign(ctx, W, H, .55);
   } else if (kind === 'quorl_hill' || kind === 'road_east') {
     const road = kind === 'road_east';
@@ -472,7 +474,7 @@ function drawEstate(cv, kind, t){
       [[W*.62, H*.78],[W*.6, H*.8],[W*.8, H*.8]].forEach(([x, y], i) => drawFigure(ctx, ['fiddler','hedge','mallet'][i], x, y, 1.5, t, {phase:i, dir:1})); }
     ctx.fillStyle = vgrad(ctx, H*.78, H, [[0,'#5a4a30'],[1,'#2e2416']]); ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(0, H*.82); ctx.quadraticCurveTo(W*.2, H*.76, W*.42, H*.88); ctx.quadraticCurveTo(W*.7, H*1.0, W, H*.96); ctx.lineTo(W, H); ctx.fill();
     ctx.strokeStyle = 'rgba(140,130,80,.5)'; ctx.lineWidth = 1; for (let i=0;i<50;i++){ const x = hash(i,51)*W*.42, y = H*.84 + hash(i,52)*H*.16, h = 3 + hash(i,53)*6; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.sin(t/900 + i)*2, y - h*.6, x + Math.sin(t/700 + i)*3, y - h); ctx.stroke(); }
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.05 + i*28, H*.95, 2.1, t, {phase:i, dir:1, still:road}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.05 + i*28, H*.95, 2.1, t, {phase:i, dir:1, still:road}));
     ctx.fillStyle = 'rgba(255,220,160,.05)'; ctx.fillRect(0,0,W,H); vign(ctx, W, H, .5);
   } else if (kind === 'ship') {
     // a deck, a rail, a sail; grey water all round, and the city going small behind
@@ -489,7 +491,7 @@ function drawEstate(cv, kind, t){
     ctx.fillStyle = '#3a2c1e'; poly(ctx, [[-40, H],[-40, H*.72],[W + 40, H*.72],[W + 40, H]], '#3a2c1e'); ctx.strokeStyle = 'rgba(0,0,0,.4)'; for (let i=0;i<7;i++){ ctx.beginPath(); ctx.moveTo(-40, H*.74 + i*H*.04); ctx.lineTo(W + 40, H*.74 + i*H*.04); ctx.stroke(); }
     ctx.fillStyle = '#4a3624'; ctx.fillRect(-40, H*.6, W + 80, 6); for (let i=0;i<22;i++) ctx.fillRect(i*W/20 - 2, H*.6, 4, H*.13); ctx.fillStyle = 'rgba(255,240,220,.12)'; ctx.fillRect(-40, H*.6, W + 80, 1.5);
     ctx.restore();
-    squad.forEach((id, i) => drawFigure(ctx, id, W*.5 + i*Math.min(30, (W*.5 - 24)/Math.max(1, squad.length - 1)), H*.96, 2.1, t, {phase:i, dir:1, still:true}));
+    marchOrder(squad).forEach((id, i) => drawFigure(ctx, id, W*.5 + i*Math.min(30, (W*.5 - 24)/Math.max(1, squad.length - 1)), H*.96, 2.1, t, {phase:i, dir:1, still:true}));
     for (let i=0;i<12;i++){ const k = ((t/1400 + i/12) % 1); ctx.fillStyle = `rgba(230,235,240,${(1-k)*.35})`; ctx.fillRect(hash(i,91)*W, H*.6 - k*H*.3, 1.4, 1.4); } // spray
     vign(ctx, W, H, .55);
   }

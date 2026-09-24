@@ -283,7 +283,7 @@ It comes out of the bone, or out of the air over it: thin, and far, full of wind
     c7_sending_dujek:()=>{ const d = C7H.dead(); return {sp:'Dujek Onearm · a long way north', scene:'fete_garden', fx:()=>{ S.f.c7_dujek=1; }, txt:
 `You know the voice. You'd know it at the bottom of a well: you heard it for three years across parade grounds and burning towns, while its one arm pointed you at whatever came next. High Fist Dujek. Onearm. The Host.
 
-"Here it is, then. The Empress has outlawed the Host. Me by name, the rest of you by the usual courtesy. There's a price on my head. I've seen the figure. I'd be insulted by anything lower." The wind comes through the bone and takes a word away and gives it back. "Seven Cities is sharpening its knives. The Empire's got more map than soldiers. So the Host is going its own way, and the first place it's going is to have a talk with Caladan Brood, and don't ask me what about, because I haven't decided yet what I'm going to lie about."
+"Here it is, then. The Empress has outlawed the Host. Me by name, the rest of you by the usual courtesy. There's a price on my head. I've seen the figure. I'd be insulted by anything lower." The wind comes through the bone and takes a word away and gives it back. "Seven Cities is sharpening its knives. The Empire's got more map than soldiers. So the Host is going its own way, and the first place it's going is to have a talk with Caladan Brood, and don't ask me what about, because I haven't decided yet what I'm going to lie about." A pause, and the voice goes flat, which is how you know it isn't lying now. "Here's what I won't lie about. There's a prophet in a tower in the south who calls himself the Pannion Seer. His priests are eating cities, and he doesn't care whose flag was on them. Brood's going to have to care. So am I."
 
 "The Black Moranth are with me. The rest of the Moranth are thinking about it, which with the Moranth takes a generation."
 
@@ -586,7 +586,7 @@ Then he laughs. Not much. Once, down his nose: the laugh of a man hit somewhere 
     c7_paran_horse:()=>({sp:'Captain Paran', fx:()=>{ S.f.c7_tocHorse=1; if (C7H.has('ellis')) loy('ellis',1); }, txt:
 `"Toc's horse." He knows before you've finished. ${S.f.c5_toc && (S.f.c2_ellisJoined || S.f.c7_ellisBack) ? `He looks past you at Ellis${S.f.c7_ellisBack ? `, and the grey in her hair, and doesn't ask` : ''}.` : `He looks past you at Ellis. "His scout," he says. "He told me about you. He said you'd tell me your eye was bad, and it isn't."`}
 
-"It's in the stable at the Gadrobi gate. I led it all the way in from the hills. It stood by my fire every night because it had nowhere else to stand." He takes one hand off the pommel of the sword that isn't his. "It's yours, if you want it. He'd want it ridden."
+"It's in the stable at the Worry Gate. I led it all the way in from the hills. It stood by my fire every night because it had nowhere else to stand." He takes one hand off the pommel of the sword that isn't his. "It's yours, if you want it. He'd want it ridden."
 
 Ellis doesn't say anything for a moment. Then she nods, once, the way you'd nod at a number you'd been waiting to hear.
 
@@ -927,7 +927,7 @@ ${C7H.has('brisk') ? `Brisk hasn't moved. "We don't leave people," she says. "Yo
 
 She pulls her glove tight at the wrist, finger by finger.
 
-You tell her about the horse: that it came back out of the hills riderless, on the captain's lead rein, and is standing in a stable at the Gadrobi gate with nobody to ride it. She listens with her head down.
+You tell her about the horse: that it came back out of the hills riderless, on the captain's lead rein, and is standing in a stable at the Worry Gate with nobody to ride it. She listens with her head down.
 
 "Then I'll go and see if it remembers me," she says.
 
@@ -1103,7 +1103,7 @@ The man in the grey cloak is still on the step by the green door. He hasn't move
 
     /* ---- the quorl hill ---- */
     c7_hill_arrive:()=>{ const pend = C7H.pendingTell(); return {sp:'The Gadrobi road · a hill east of the city', scene:'quorl_hill', fx:()=>{ S.f.c7_hill=1; }, txt:
-`East along the quay and up through the Gadrobi District, out through the Gadrobi Gate you came in by from the hills, past the tanneries and the goat-pens and the shrine to a god whose face somebody chiselled off with care. The road climbs into brown hills. An hour out, from the top of a rise, you see them.
+`East along the quay and out through the Worry Gate you came in by from the hills, through Worrytown, past the tanneries and the goat-pens and the shrine to a god whose face somebody chiselled off with care. The road climbs into brown hills. An hour out, from the top of a rise, you see them.
 
 Quorls.
 
@@ -1614,7 +1614,7 @@ She takes the hand away. "That's the last thing I can do for her. It's a good on
 "${C7H.Num(C7H.lc())}," he says, of the list, because you haven't asked. ${d.length ? `"${C7H.names(d)}. I meant to die before I wrote one of you. I didn't manage it."` : `"None of you. I intend to die first. I'm more confident of it than I was."`}${S.f.c7_ohlTat ? ` "Tattersail's crossed out. She went east."` : ''}`,
       ch:[{t:'Back to the squad.', go:'c7_close'}]}; },
     c7_close_ellis:()=>{ const k = S.f.c7_key || 'outlaw', fol = C7H.follows('ellis', k), horse = !!S.f.c7_tocHorse, held = !!S.f.c5_ellisHeld && !S.f.c7_ellisSpoke; return {sp:'Ellis', scene:'quorl_hill', fx:()=>{ if (held) S.f.c7_ellisSpoke=1; }, txt:
-`${k === 'disband' ? `"He kept riding," she says. "Somebody should see where." ${horse ? `"I've a horse that knows the way, or thinks it does."` : ''}` : k === 'outlaw' && fol ? `"North," she says. ${horse ? `"On a horse. I'm not going up on one of those things with a horse at the Gadrobi gate that nobody's riding." She looks at Paran. "He'll let me ride ahead. It's where a scout rides."` : `"I'll ride ahead, where a scout rides. On anything they'll give me."`}` : k === 'outlaw' ? `"No," she says. "Not north. Not with the Host." She pulls her glove tight. "He kept riding. Somebody should see where."` : k === 'empire' && fol ? `"Genabaris," she says. "The river quarter. Where a man who never gave his name took me off a dock." She pulls her glove tight. "I'll walk past the dock. I'd like to see if I can."` : k === 'empire' ? (S.f.c7_clawDeal === 'took' ? `"You took his paper," she says. "I'm not going home to be written."` : S.f.c7_ledger === 'retained' ? `"They wrote *useful*," she says. "I'm not going home to be useful."` : `"No," she says. "Not west. I've been west."`) : fol ? `"My mother sold horses at the Fete," she says. "Gadrobi. There's a horse-market outside the Gadrobi gate every tenth day." She almost smiles. "I'll see if they cheat the woman with the glove."` : `"No," she says. "Not here. It's a lovely city. It had my name in a book."`}
+`${k === 'disband' ? `"He kept riding," she says. "Somebody should see where." ${horse ? `"I've a horse that knows the way, or thinks it does."` : ''}` : k === 'outlaw' && fol ? `"North," she says. ${horse ? `"On a horse. I'm not going up on one of those things with a horse at the Gadrobi gate that nobody's riding." She looks at Paran. "He'll let me ride ahead. It's where a scout rides."` : `"I'll ride ahead, where a scout rides. On anything they'll give me."`}` : k === 'outlaw' ? `"No," she says. "Not north. Not with the Host." She pulls her glove tight. "He kept riding. Somebody should see where."` : k === 'empire' && fol ? `"Genabaris," she says. "The river quarter. Where a man who never gave his name took me off a dock." She pulls her glove tight. "I'll walk past the dock. I'd like to see if I can."` : k === 'empire' ? (S.f.c7_clawDeal === 'took' ? `"You took his paper," she says. "I'm not going home to be written."` : S.f.c7_ledger === 'retained' ? `"They wrote *useful*," she says. "I'm not going home to be useful."` : `"No," she says. "Not west. I've been west."`) : fol ? `"My mother sold horses at the Fete," she says. "Gadrobi. There's a horse-market outside the Worry Gate every tenth day." She almost smiles. "I'll see if they cheat the woman with the glove."` : `"No," she says. "Not here. It's a lovely city. It had my name in a book."`}
 
 ${held ? `Then she looks at you, and says one sentence, the first she has said to you since the hillside that wasn't an answer to an order; and it's the right one.
 
@@ -1751,7 +1751,7 @@ The Host's lines are a city of tents with no Empire in it. The Fourth Regiment i
     const p1 = rides ? `${k === 'empire' && f.c7_clawDeal === 'took' ? `"You took his paper," she said, on the hill. "I'm not going home to be written." ` : ''}Ellis rides.${horse ? ` On Toc's horse, which has decided she will do.` : ''} North, some days; east, most. *He kept riding. Somebody should see where.* She looks at the ground more than the sky. Once in a long while, where the grass is pressed flat in a way grass shouldn't be, she gets down and puts her gloved hand flat on the prints and counts the days.` :
       k === 'outlaw' ? `Ellis goes north with the Host and scouts for it, out ahead where a scout rides${horse ? `, on Toc's horse, which has decided she will do` : ''}. She looks back once a day and counts. The number is right more often than it isn't.` :
       k === 'empire' ? `Ellis goes home to Genabaris, the river quarter, where a man who never gave his name took her off a dock at eighteen. She walks past the dock. She doesn't look at it. Then she goes back and looks at it, for a long time, and walks on, and that's the end of that.` :
-      `Ellis stays in Darujhistan. Her mother was Gadrobi and sold horses at the Fete, and there's a horse-market outside the Gadrobi gate every tenth day, and by midsummer the Gadrobi traders have stopped trying to cheat the woman with the glove, which in that market is a kind of citizenship.${horse ? ` She keeps Toc's horse. She never sells it.` : ''}`;
+      `Ellis stays in Darujhistan. Her mother was Gadrobi and sold horses at the Fete, and there's a horse-market outside the Worry Gate every tenth day, and by midsummer the Gadrobi traders have stopped trying to cheat the woman with the glove, which in that market is a kind of citizenship.${horse ? ` She keeps Toc's horse. She never sells it.` : ''}`;
     const said = f.c7_ledgerBurnt ? `something the fire had half of` : lc === 'retained' ? `*retained, useful through the Fourth*` : lc === 'lost' ? `*lost, entry closed*` : `*not retained*`;
     const did = act === 'struck' ? `She struck it through, neatly. They'd want it neat.` : act === 'burned' ? `She gave it to the fire, which was where it was going.` : act === 'kept' ? `She keeps it folded small in the cuff of her glove, against the burned hand. When she's dead properly, somebody can send it back to them.` : '';
     const p2 = lc ? `Her line in the ledger behind the green door said ${said}. ${did}` : `She never went through the green door. "I know which way it's written," she says, if anybody asks. "It's written the way I walk."`;
@@ -1814,7 +1814,7 @@ C7H.gone = (id, key) => {
   const lc = f.c7_ledger, act = f.c7_ledgerAct, horse = !!f.c7_tocHorse;
   if (f.c7_ellisLeft) return {title:'He kept riding', txt:C7H.join([
 `She came back out of the grey on the Lakefront at dawn, with ash in her hair and Kettle's cord on her wrist, and the sergeant told her she could go where she liked, and she did.`,
-`There was a horse in the stable at the Gadrobi gate that nobody was riding. It remembered her. She rides. North, some days; east, most. She looks at the ground more than the sky, and once in a long while, where the grass is pressed flat in a way grass shouldn't be, she gets down and puts her gloved hand flat on the prints and counts the days.`,
+`There was a horse in the stable at the Worry Gate that nobody was riding. It remembered her. She rides. North, some days; east, most. She looks at the ground more than the sky, and once in a long while, where the grass is pressed flat in a way grass shouldn't be, she gets down and puts her gloved hand flat on the prints and counts the days.`,
 `"He kept riding," she says, to the horse. "So will we."`,
 C7H.has('ohl') ? `Ohl crossed out her space anyway. "She's not dead," he said. "She's only not ours. Those are different lists."` : ''])};
   if (f.c2_ellisRefused) {

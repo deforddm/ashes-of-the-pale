@@ -245,7 +245,7 @@ At the gate, Pallick has not looked up from his ledger once. You get the feeling
 
     /* ---- the Gadrobi crossroads: arrival ---- */
     c3_cross_arrive:()=>({sp:'The Gadrobi crossroads', scene:'city_street', fx:()=>{S.f.c3_cross=1;}, txt:
-`Four streets meet here, badly, the way streets meet in a district nobody planned: a tannery on one corner, a shuttered chandler's on another, a tavern with a painted bird over the door on the third, and on the fourth nothing but a wall with a lamp on it. In the middle of the crossing somebody has taken up the cobbles in a square and put a ring of sharpened stakes round the hole, and a sign on the stakes that says, in Daric, *By order of the District Warden: Works*.
+`Four streets meet here, badly, the way streets meet where two districts do and neither will admit it: a tannery on one corner, a shuttered chandler's on another, and on the third, across the line where the cobbles change and the Daru District begins, a tavern with a painted bird over the door. On the fourth, nothing but a wall with a lamp on it. In the middle of the crossing somebody has taken up the cobbles in a square and put a ring of sharpened stakes round the hole, and a sign on the stakes that says, in Daric, *By order of the District Warden: Works*.
 
 A lantern burns down inside the hole. Voices come up out of it, arguing, in Malazan.
 
@@ -346,7 +346,7 @@ Kettle, rigid: "No."
 
 "Your healer." He nods at Ohl. "Denul?" Ohl nods back. It's a long nod, the kind two old dogs give each other across a yard. "Good. Then there's two of us. I don't know what's down that hole, Sergeant, and neither does anyone who's been down it, but I know the smell, and it's the smell of a thing that stops people needing healers."
 
-${S.f.c3_inn ? `"Been to the Phoenix?" A faint smile. "Coll still buying? He'll buy for anyone who'll listen and he'll listen to anyone who won't talk about the Empire. You'll have failed that. Everyone does."` : `"If your lot are thirsty there's a tavern on the corner. The Phoenix. It's full of thieves." He considers. "They're the best people in the district. Don't tell them I said."`}
+${S.f.c3_inn ? `"Been to the Phoenix?" A faint smile. "Coll still buying? He'll buy for anyone who'll listen and he'll listen to anyone who won't talk about the Empire. You'll have failed that. Everyone does."` : `"If your lot are thirsty there's a tavern across the crossing, on the Daru side. The Phoenix. It's full of thieves." He considers. "They're the best people in Daru. Don't tell them I said."`}
 
 Ohl, when you've moved on: "He knows. About the list. I don't know how." Then, mildly: "Healers."`,
       ch:[{t:'Leave him.'}]}),
@@ -488,7 +488,7 @@ He goes back to the rooftops.`,
 
 He beams. His eyes are small and brown and extremely friendly, and they have, in the time it took him to dust your sleeve, counted your squad, priced your boots, noted Kettle's satchel and the way she holds it, and moved on to Tuft, and stopped there, for exactly one blink, and moved on again.
 
-"Kruppe is merely a humble citizen of this great city, a man of modest appetites and immodest waistcoats. Kruppe drinks at the Phoenix, yonder, where the painted bird is. Kruppe finds that road crews are thirsty. Kruppe finds that thirsty road crews, from the *hills*," he lingers on the word, lovingly, like a man smelling a wine he knows to be forged, "are the most delightful company in all Darujhistan, having so many stories and so few of them true."`,
+"Kruppe is merely a humble citizen of this great city, a man of modest appetites and immodest waistcoats. Kruppe drinks at the Phoenix, yonder, where the painted bird is, on the Daru side of the cobbles, for Kruppe is a Daru man, though his heart is broad enough for both districts and his waistcoat very nearly so. Kruppe finds that road crews are thirsty. Kruppe finds that thirsty road crews, from the *hills*," he lingers on the word, lovingly, like a man smelling a wine he knows to be forged, "are the most delightful company in all Darujhistan, having so many stories and so few of them true."`,
       ch:[{t:'"We\'re from the hills."', go:'c3_kruppe_hills'},
           {t:'"Who are you?"', go:'c3_kruppe_hills'},
           {t:'Step round him.', go:'c3_kruppe_hills'}]}),

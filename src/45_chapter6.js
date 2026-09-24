@@ -14,7 +14,7 @@ const CH6 = {
   title:'The Fete', number:'Six',
   intro:{loc:'Darujhistan', sub:'The Gedderone Fete · the morning after the hills', cap:'Paper lanterns in every colour but blue strung over the streets, masks on every door, and over the lake a black mountain that nobody has dressed.',
     paras:[
-`Three days west out of the hills on foot, with the barrow's *thud* still in the soles of your boots, and on the third morning the Gadrobi Gate, and a clerk at it who does not ask your name, because nobody at any gate in Darujhistan is asking anybody anything today. Paran's horse passed you on the road the first morning, with Toc's on a lead rein behind it, and did not stop. You did not expect it to.`,
+`Three days west out of the hills on foot, with the barrow's *thud* still in the soles of your boots, and on the third morning the Worry Gate, and a clerk at it who does not ask your name, because nobody at any gate in Darujhistan is asking anybody anything today. Paran's horse passed you on the road the first morning, with Toc's on a lead rein behind it and a big man slumped across Toc's saddle, bound on, one arm hanging, and did not stop. You did not expect it to.`,
 `The city is dressing. Paper lanterns strung across every street from eave to eave, red and green and amber, every colour but blue, as if the city had got tired of its own light for one night. Masks on the doors. Masks on the carthorses. Masks tied with ribbon on the statues in the squares, a bird's face on a dead councillor, a fox on a god. The Gedderone Fete, a Gadrobi woman tells Kettle, and when Kettle asks who Gedderone is, the woman looks at her the way you'd look at somebody who asked what spring was.`,
 `And over the lake, where it has hung since before any of you came to this city, the Moon's Spawn. Black. Lampless. Nobody has strung a lantern on it. Nobody has tied a mask on it. Down in the streets, with the whole city looking up at its own paper lights, nobody looks at it at all, and you have learned enough about Darujhistan by now to know that this is how the city says it is afraid.`],
     go:'Down to the crossing', node:'c6_start'},
@@ -446,7 +446,7 @@ Tuft doesn't answer him. Her hand is at her collar, and she doesn't take it away
 `He's where he was, against the wall, with his arms folded, looking at the house. ${S.f.c6_collRing ? `Every so often he turns the ring on his finger, as if checking it's still there.` : `He doesn't look round.`}` :
 `A very big man in plain brown clothes is standing across the street from Lady Simtal's gate with his back to a wall and his arms folded, looking at the house the way you'd look at a dog that used to be yours and has since been taught to bite you.
 
-${S.f.c3_innColl ? `You know him, and then you don't. The Phoenix. The jug. The ruined soldier's shoulders. The shoulders are still a soldier's; the rest has been put back. He's sober. He's been sober, you'd guess, for weeks, and it's been hard, and it shows in how still he stands: like a man standing on something that might not hold.` : `He's sober, and it looks new on him, and hard.`}
+${S.f.c3_innColl ? `You know him, and then you don't. The Phoenix. The jug. The ruined soldier's shoulders. The shoulders are still a soldier's; the rest has been put back. He's sober. He's been sober, you'd guess, for weeks, and it's been hard, and it shows in how still he stands: like a man standing on something that might not hold.` : `He's sober, and it looks new on him, and hard.`}${S.f.c5_collDown ? ` He stands a little crooked, favouring his left side, the way a man stands round a wound that has closed and hasn't yet agreed to it. The last time you saw a man that size, he was going sideways into the grass of a hillside with the Adjunct's sword in him.` : ''}
 
 "Malazans," he says. ${S.f.c3_innColl ? `"Kruppe's road-menders. In Simtal's blue." He doesn't smile. "Of course you are. Kruppe arranges everything, and never where anybody can see him do it."` : `"In Simtal's blue. Hood's breath." He doesn't smile.`}
 
@@ -1364,7 +1364,11 @@ She hasn't left the squad. She'll walk back to the crossing with you in the morn
 
     /* ---- the Tyrant ---- */
     c6_tyrant:()=>({sp:'The old priest', scene:'garden_storm', fx:()=>{ if (!S.f.c6_tuft) S.f.c6_tuft='kept'; S.f.c6_tyrantUp=1; }, txt:
-`The old priest in the Jaghut mask has come down the white steps. You didn't see him come. Nobody did. He walks across the lawn slowly, an old man's walk, with his hands folded in his sleeves, and the couples on the gravel step out of his way without looking at him, the way you'd step out of a draught.
+`You're looking at the sky when it starts, which is why you miss the rest.
+
+Over the lake, the Moon's Spawn lets something fall. A shape drops off its black underside, opens, and catches itself on the air; then another, and another. Five. Winged, long-necked, bigger than any bird has a right to be, and the first of them is red where the lanterns catch it. They go east over the city, low and fast and without a sound, toward the Gadrobi Hills and the barrow. Nobody in the garden sees them but you.
+
+The old priest in the Jaghut mask has come down the white steps. You didn't see him come. Nobody did. He walks across the lawn slowly, an old man's walk, with his hands folded in his sleeves, and the couples on the gravel step out of his way without looking at him, the way you'd step out of a draught.
 
 He goes to the sapling.
 
@@ -1894,6 +1898,8 @@ Paran gets up. He puts her sword through his belt beside his own. He gathers her
 
 The frost is gone. The lawn is wet and trampled and black in rings where it froze. The lanterns hang dead in the trees, and the paper from the broken ones lies all over the grass like the petals of some enormous flower that came out in the night and went over. The fountain is running. Somebody has fished a mask out of it and left it on the rim.
 
+Beyond the wall the bells have started, and under the bells, a sound like a hunt: the priestesses of Gedderone running the streets at first light the way they do every year, barefoot, with strips of grey wolf fur in their fists, beating Fander the She-Wolf out of the doorways so that winter will leave the city for another year. Last night winter came into this garden on its own feet. Nobody here laughs at the ritual.
+
 ${S.f.c6_key === 'bridgeburners' ? `And the house is still there.` : `And there's a house.`}
 
 At the far end of the lawn, where the flowerbed was, where the Adjunct knelt and a black stick grew, ${S.f.c6_key === 'bridgeburners' ? `there's the house you watched come up out of the lawn in the night, with the Tyrant going into it. In daylight it's worse.` : `there's a house that wasn't there last night.`} It isn't large. Squat and dark, made of wood that is still growing, you'd swear, if you stood and watched it long enough: a peaked roof, a door, one small window with a light in it that isn't any colour a lamp makes. Round it, a yard. And in the yard, mounds. Low grassed mounds, a dozen or more, as if the house had arrived with its graves already dug. One of them is fresh. Bare earth, still dark with the wet.
@@ -2041,7 +2047,7 @@ ${SQUAD().includes('tuft') ? (S.f.c6_tuft === 'glove' ? `He looks across at Tuft
 
 ${S.f.c6_key === 'cellars' ? `"That paper," she says, to the lake. "In your coat. They'll know it's gone by noon. They'll know who by supper." A pause. "Don't keep it anywhere you sleep."` : S.f.c6_key === 'alley' ? (S.f.c6_steppedIn ? `"You stepped in," she says, to the lake. "I saw." That's all. It isn't forgiveness. You can hear it not being forgiveness. It isn't nothing, either.` : `She doesn't say anything at all. She's said her sentence, in the alley, and it was the right one, and she isn't going to say another.`) : `"The captain's sword drank that lance," she says, to the lake. "Toc would have given his other eye to see that." A pause. "He'd have been insufferable about it for a year."`}
 
-${S.f.c6_horses ? `After a long time: "The old man with the ponies. He'll be at the horse fair in the spring, by the Gadrobi Gate." She pulls her glove tight at the wrist. "I might go."` : ''}
+${S.f.c6_horses ? `After a long time: "The old man with the ponies. He'll be at the horse fair in the spring, outside the Worry Gate." She pulls her glove tight at the wrist. "I might go."` : ''}
 
 She doesn't look at you. You sit there until the sun is properly up, and she lets you, and that's the whole of it.`,
       ch:[{t:'Back to the steps.', go:'c6_close'}]}),

@@ -3,7 +3,7 @@ const CH5 = {
   title:'The Gadrobi Hills', number:'Five',
   intro:{loc:'The Gadrobi Hills', sub:'East of Darujhistan · the third day', cap:'Brown hills folded on each other like blankets on a sickbed, and barrow-stones on every crest, and no smoke anywhere.',
     paras:[
-`Out through the Gadrobi Gate before the lamps go off, past the tanneries and the goat-pens and the last shrine to a god whose name has worn off the lintel, and then the road east stops pretending. Ruts. A cairn. A dead fire nobody claims. The city is behind you, blue and loud, and in front of you there is nothing, and the nothing goes up and down.`,
+`Out through the Worry Gate before the lamps go off, through Worrytown, past the tanneries and the goat-pens and the last shrine to a god whose name has worn off the lintel, and then the road east stops pretending. Ruts. A cairn. A dead fire nobody claims. The city is behind you, blue and loud, and in front of you there is nothing, and the nothing goes up and down.`,
 `The Gadrobi Hills are brown in autumn and brown the rest of the year. They fold into each other the way old men's hands fold, and on the crests there are stones, set upright, older than the Gadrobi, older than the city, older than anybody the Gadrobi can think of to blame. Sheep won't graze near them. The Gadrobi shepherds won't say why. They say *sheep know*, and spit, and walk the long way round.`,
 `Three days ago Whiskeyjack said a thing to you in the vault, over the hiss of the pipes, that you have been turning over since like a stone in a boot. *You found her once without meaning to. Find her again on purpose.* You remember the dust-line on the Rhivi Plain, and now you know what raised it: a woman on a horse riding badly and fast, and something beside her, walking, keeping up. Sethand would not cross its line. You are being sent to stand on it.`],
     go:'Into the hills', node:'c5_start'},
@@ -143,7 +143,7 @@ ${S.inv.cusser > 0 ? `Kettle doesn't say anything. She puts her face down agains
 
 "Lorn," she says. Only that, at first. Then: "I carried a letter to her once. Genabaris, three years ago. She took it without looking at me and read it standing, and when she'd read it she looked at me for the first time, and I understood that she was deciding whether I'd read it too." A breath. "I hadn't. She believed me. I've never been so glad to be believed." She goes up the ladder ahead of you. "She has a sword. You'll know it when you're near it. Everyone does."
 
-` : ''}Three days of it, then. Out through the Gadrobi Gate, east, on foot, with the packs and no wagon, because a wagon is a thing an Adjunct can see from a hill.
+` : ''}Three days of it, then. Out through the Worry Gate, east, on foot, with the packs and no wagon, because a wagon is a thing an Adjunct can see from a hill.
 
 The first day the hills are just hills. The second day the stones start: one on a crest, then three, then a line of them along a ridge like the back of a buried animal. The sheep go round them. The squad goes round them too, after Brisk watches the sheep for a while and says nothing and leads the way the sheep went.
 
@@ -595,7 +595,30 @@ ${SQUAD().includes('ohl') ? `Ohl has been standing a pace behind you, listening.
 
 Night comes down fast in the hills. It comes down like a lid.
 
-You watch the Adjunct go. She saddles her own horse. She strikes her own tent. The T'lan Imass climbs up out of the dig one last time and stands by her stirrup, and she mounts, and they go west, along the vale, past the ridge of small barrows, torn open, and past the Fourth, close enough to spit on. She doesn't look at you. The thing beside her doesn't look at anything. And then the dark has them, and there's only the sound of one horse walking, and then there isn't that.
+You watch the Adjunct go. She saddles her own horse. She strikes her own tent. The T'lan Imass climbs up out of the dig one last time and stands by her stirrup, and she mounts, and they go west, along the vale, past the ridge of small barrows, torn open, and past the Fourth, close enough to spit on. She doesn't look at you. The thing beside her doesn't look at anything.`,
+      ch:[{t:'Watch her go.', go:'c5_lorn_ride'}]}),
+    c5_lorn_ride:()=>({sp:'The barrow vale', scene:'hills_night', fx:()=>{ S.f.c5_collDown=1; }, txt:
+`On the long slope to the north-west, where the old road goes over the hills toward the city, there are riders on the skyline. Four of them, small with distance, black against the last green of the afterglow, sitting their ponies the way townsfolk sit ponies: as if the pony were a chair that might at any moment disagree. They've been there a while, watching the vale the way you've been watching it. ${S.f.c3_inn ? `One of them is very round. You know the shape before you know you know it: a table in the Phoenix, and a cup raised to you through the smoke.` : `One of them is very round, on a very small pony.`} One of them is very big.
+
+The Adjunct sees them.
+
+She doesn't change pace. She turns her horse off the vale road and up the slope toward them at the same walk, and the Imass doesn't follow; it stands in the road and waits, the way a spear waits against a wall. Halfway up the slope the walk becomes a canter.
+
+The riders break. Too late, and the wrong way: downhill, into each other. All but the big man. The big man turns his pony round, back into her road, between her and the others, with something in his hand that catches the last of the light. It's brave. It's the bravest thing you'll see in these hills, and it's worth exactly what bravery is worth against a woman with that sword.
+
+${SQUAD().includes('brisk') ? `Brisk is up on one knee with the shield already coming round. ` : ''}Paran's hand closes on your shoulder, hard. "*No*," he says, very low. "Stay down, Sergeant. That's an order. She'd kill every one of you and not be late for the city."
+
+So you watch. It was Whiskeyjack's order before it was Paran's: watch.
+
+The sword goes in. You see it go in. You don't hear it; it's three hundred paces, and it makes no sound at all. The big man sits his pony for a moment longer, as if he were thinking something over, and then goes sideways into the grass, and the pony runs.
+
+The Adjunct doesn't look down. She turns her horse and comes back down the slope at a walk, and takes the road again with the Imass beside her. The other riders have gone over the crest. The one in the grass doesn't move.
+
+${S.f.c3_innColl ? `You know the shoulders. The Phoenix, and the jug, and a ruined soldier's back. The big man in the grass is Coll.
+
+` : ''}"Remember where he fell," Paran says, and takes his hand off your shoulder. It's all he says.
+
+And then the dark has her, and there's only the sound of one horse walking, and then there isn't that.
 
 ${SQUAD().includes('tuft') ? `Tuft lets out a breath like someone surfacing. "Gone," she says. "She's gone. Oh, it's *back*." She holds up her hand and the shadow comes to it, thick as smoke, and wraps her fingers, and she presses the hand against her mouth.` : ''}
 
@@ -903,7 +926,42 @@ Paran hasn't sat down. He's standing at the edge of the fold with his back to th
 
 ${SQUAD().includes('ohl') ? `Ohl has the oilcloth on his knee. He hasn't opened it. "I won't write him," he says, to nobody, to Paran's back. "I don't know where he went. Nobody's dead until I know where they went." He puts it away. "That's a rule. I've just made it. I'm old enough to make rules."` : ''}
 
-Nobody sleeps. The stars go round. Somewhere before dawn there's a sound of hooves, slow and uneven, coming down into the fold from the west, and Toc's horse walks into the last of the firelight dragging its reins, lathered and shaking, and stops by the fire because it has nowhere else to stop.`,
+Nobody sleeps. The stars go round.`,
+      ch:[{t:'Keep watch.', go:'c5_hounds'}]}),
+    c5_hounds:()=>({sp:'The fold below the far hill', scene:'hills_night', fx:()=>{ S.f.c5_rakeNight=1; }, txt:
+`Past the middle of the night Paran goes out of the firelight. Not far: to the lip of the fold, twenty paces, where he can see the next hill and the pale litter of strings on it. He stands there with his back to the fire. You watch him go. You're the only one who does.
+
+So you see them come back.
+
+No baying this time. No grey. Two shapes on the slope above him where a heartbeat ago there were none, low to the grass, the size of horses, and the lamp-eyes are on him and only on him. They aren't passing anything tonight.
+
+Paran draws. You hear the sword come out, a thin clean sound, and you're up and running, ${SQUAD().includes('brisk') ? `Brisk beside you with the shield, ` : ''}and twenty paces is too far. It's much too far.
+
+Then the dark behind the Hounds stands up.
+
+A man. Taller than any man. Hair to his waist, white, gone silver under the stars. And a sword, a great two-handed sword, black, that doesn't take the starlight: the air round the blade smokes, the way air smokes round an iron bar left out in a hard frost.
+
+The first Hound turns to meet him, faster than anything you've ever seen move, and dies anyway. The black sword takes it across the shoulders. It doesn't fall the way things fall. It drops, all at once, as if whatever held it up had been taken somewhere else.
+
+And you hear chains.
+
+Not near. A long way off, and all round, and under your boots: a great many chains, heavy, dragging over stone, as if the sword were a door and on the far side of it something had just taken up the slack. It goes on for a long moment. Then it stops.
+
+The second Hound is on Paran. He's down under it, with his sword in it to the hilt and its jaws at his shoulder, and the tall man walks the three paces to it without hurrying and brings the black sword down across its back. The chains again. Louder. Closer. The Hound slumps across Paran like a dropped tent, and its blood comes out over him, black in the starlight, over his chest and his arms and his hands.
+
+The tall man stands over them. He looks down at Paran under the dead Hound. He looks for a long time at the sword in Paran's hand, the ordinary-looking sword, the way you'd look at a coin somebody had just tossed. Then he looks up, across the fold, at the fire, and at you.
+
+He says nothing. The black sword goes over his shoulder, and the sound of chains goes with it, dwindling, and he walks back into the dark he came out of, and the dark closes.
+
+${SQUAD().includes('tuft') ? `Tuft has both hands over her ears, and it isn't the chains she's keeping out. "There are people in it," she says. "In the sword. Sergeant, there are *people* in that sword, pulling."
+
+` : ''}${SQUAD().includes('ohl') ? `Ohl, on his knees by the fire, very quietly: "Hood didn't get those two. Something else did. Something that keeps what it takes."
+
+` : ''}It takes ${SQUAD().includes('brisk') ? `Brisk and you` : `three of you`} to get the Hound off him. It's heavier than it should be, and cold, and it doesn't smell of anything at all. Paran gets up on his own. He stands in the starlight with his sword in one hand and his hands black to the wrist, and he looks at them, and then at the dark where the tall man went.
+
+"Not this time," he says again. He doesn't sound disappointed now. He doesn't sound like anything.
+
+Nobody sleeps. Somewhere before dawn there's a sound of hooves, slow and uneven, coming down into the fold from the west, and Toc's horse walks into the last of the firelight dragging its reins, lathered and shaking, and stops by the fire because it has nowhere else to stop.`,
       ch:[{t:'Dawn.', go:'c5_dawn'}]}),
 
     /* ---- dawn ---- */
@@ -912,13 +970,15 @@ Nobody sleeps. The stars go round. Somewhere before dawn there's a sound of hoov
 
 Paran is on his horse. He's grey in the face, grey the way Tuft went grey near the Adjunct, as if something had been drawn out of him in the night and not put back. He has Toc's horse on a lead rein. He sat with it, you think, the last hour before light. Behind its saddle, rolled tight and strapped with a scout's knot, a Second Army cloak; he unstraps it without a word and holds it down to you, and you take it.
 
+His hands are still black to the wrist. You saw him wash them in the spring, twice, and it hasn't come off, and he's stopped trying. Where the Hounds died there's nothing: torn turf, and a dark stain the frost won't settle on, and nothing else. Nobody saw anyone take them.
+
 "The Adjunct's gone to the city," he says. "With the Imass. I'm to follow." He looks west, along the vale, toward Darujhistan. "I'm going to find Whiskeyjack first."
 
 He's quiet for a moment.
 
 "Tell Whiskeyjack I'm coming," he says. "Tell him —" And stops, and you watch him look at whatever he was going to say, and put it down. "No. I'll tell him."
 
-He turns the horse; not west, yet, but up the slope toward the next hill, where the strings are lying in the grass. "I'm going to look at what's left of him before I go. Somebody who knew him should." A pause. "I'll pass you on the road. But when you get there, tell Whiskeyjack about Toc. I'd rather he heard it from someone who saw."
+He turns the horse; not west, yet, but up the slope toward the next hill, where the strings are lying in the grass. "I'm going to look at what's left of him before I go. Somebody who knew him should." A pause. "Then the man the Adjunct rode down, on the north slope. If he's alive he'll need a horse more than I need a spare one." Another pause. "I'll pass you on the road. But when you get there, tell Whiskeyjack about Toc. I'd rather he heard it from someone who saw."
 
 ${S.f.c5_toolSaw ? `As he goes: "The Imass spoke to you. I saw it from the head of the vale." He doesn't turn round. "It hasn't spoken to me once, in a month. I'd think about that, Sergeant."` : ''}
 
@@ -943,7 +1003,7 @@ It's the right sentence. You'll think about it for a long time, and you won't fi
     c5_dawn_ridge:()=>({sp:'The long ridge', scene:'hills', txt:
 `Up the fall, in the grey light, with the scree going out from under you and nobody caring now how loud it is.
 
-The Rhivi are still on the ridge. They've been there all night; you can see it in how they're lying. They watched the frost go out round the long barrow. They watched the grey light on the far hill, and the two shapes that came out of it. They watched the Adjunct go by in the dark with the thing beside her, and did not shoot, and are still alive because they did not.
+The Rhivi are still on the ridge. They've been there all night; you can see it in how they're lying. They watched the frost go out round the long barrow. They watched the grey light on the far hill, and the two shapes that came out of it, and the tall one that came after them out of the dark, and went back into it. They watched the Adjunct go by in the dark with the thing beside her, and did not shoot, and are still alive because they did not.
 
 The woman with the bundle is standing, below the crest, among the horses. She has it in both arms now, against her chest, the good red Rhivi wool, and she's looking west, toward the city, the way the Adjunct went. The bundle is very still.
 

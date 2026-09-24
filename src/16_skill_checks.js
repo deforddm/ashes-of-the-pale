@@ -75,7 +75,7 @@ const SCENES = {
   hills_dusk:{loc:'The Gadrobi Hills', sub:'Dusk', cap:'The hills go red and then brown and then nothing. The opened barrow breathes cold up out of the ground.', amb:'explore'},
   hills_night:{loc:'The Gadrobi Hills', sub:'Night', cap:'No stars over the barrow. There should be. Something on the next hill is the size of a child and is not one.', amb:'dark'},
   city_street:{loc:'Darujhistan', sub:'The city of blue fire', cap:'Gas lamps burning blue down every street, and a black mountain hanging over the lake that nobody looks at any more.', amb:'explore'},
-  inn:{loc:'The Phoenix Inn', sub:'The Gadrobi crossroads', cap:'Low beams, spilled wine, a fat man in a red waistcoat, and every thief in the city pretending not to watch the door.', amb:'explore'},
+  inn:{loc:'The Phoenix Inn', sub:'The Daru District', cap:'Low beams, spilled wine, a fat man in a red waistcoat, and every thief in the city pretending not to watch the door.', amb:'explore'},
   cellar:{loc:'Under the intersection', sub:'The gas conduits', cap:'Cut stone, a lantern, a smell like a struck match, and crates with Moranth seals stacked where no crate should be.', amb:'tunnel'},
   room:{loc:'The dye-shop', sub:'An upstairs room, Daru District', cap:'Skeins of blue and madder hung to dry, one lamp, one chair, and a woman who has been expecting you.', amb:'explore'},
   roof_night:{loc:'Darujhistan', sub:'The rooftops · night', cap:'Flat roofs and planks, chimneys, the lake mist coming up between the buildings, and a black mountain over all of it. Nothing moves. Something is moving.', amb:'explore'},

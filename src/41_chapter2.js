@@ -5,9 +5,9 @@ function c2LeaveBarrow(fx){ if (S.f.c2_barrowLeft) return; S.f.c2_barrowLeft = 1
 const c2Mule = (cap) => S.f.c2_wagon ? 'Pell' : cap ? 'The mule' : 'the mule';
 const CH2 = {
   title:'The Rhivi Plain', number:'Two',
-  intro:{loc:'The Rhivi Plain', sub:'Genabackis · three days south of Pale', cap:'Grass to every horizon, and one wagon on it, and the sky empty of quorls.',
+  intro:{loc:'The Rhivi Plain', sub:'Genabackis · three days south-east of Pale', cap:'Grass to every horizon, and one wagon on it, and the sky empty of quorls.',
     paras:[
-`The Black Moranth went south on the second morning, five squads riding things that should not fly, and the sky over the Pale was full of them for the time it takes to say a name, and then it was not. Whiskeyjack did not wave. Nobody expected him to. Kettle watched until there was nothing to watch, and then she counted the munitions.`,
+`The Black Moranth went south on the second morning, nine Bridgeburners riding things that should not fly, bound for the north shore of Lake Azur and a boat across it by night. Hedge was still complaining about the boat when the quorl lifted him. The sky over the Pale was full of wings for the time it takes to say a name, and then it was not. Whiskeyjack did not wave. Nobody expected him to. Kettle watched until there was nothing to watch, and then she counted the munitions.`,
 `You are Sergeant {sgt}, Fourth Squad, Seventh Company marines, and you are the baggage. One wagon, one mule, eighteen days of hardtack, the Bridgeburners' spare kit under an oilcloth, and a Rhivi guide who has said eleven words in three days and rationed them. The grass is chest-high on Brisk and taller than Tuft. It does not end. Sethand says it ends at the Gadrobi Hills, and says it the way you'd tell a child the sea has a far side.`,
 `Day four. Somewhere ahead, a city with blue fire in its streets. Somewhere behind, a camp that has stopped burning. Somewhere on the same road, though nobody has said so, a captain who should have died twice.`],
     go:'Ride', node:'c2_start'},
