@@ -250,7 +250,7 @@ For the writers of Chapter 6 (The Fete) and Chapter 7 (Outlaws). The sources are
   - Rhivi outriders: `c2_outTalked` (Guile 13), `c2_outSeth` (needs `sethTrust≥2`; spends Sethand's word for a year) or `c2_outFought` (the Rhivi remember).
   - **The ashes**: black glass, Bellurdan and Tattersail. The Mhybe carries away the bundle. Ellis: "It moved."
   - Tuft wears the badge from then on.
-  - Ch3: Whiskeyjack says "Eight days… I said seven." (`wjRegard −1`).
+  - Ch3: Whiskeyjack says "Twelve days… I said eleven." (`wjRegard −1`).
   - Ch5: Sethand says "The Mhybe says you may live."
 - **road**: keep the timetable. brisk +1, tuft −2, ohl −1, ellis −1.
   - Three **Tiste Andii** walk in before dawn: "Did you go to it?" A Wits 12 check (`c2_andiiFear`) shows they are afraid.
@@ -530,7 +530,7 @@ Oaths: "Hood's breath / teeth". Warrens are physical sensations: Kurald Galain i
 5. **CHEND 4 `c4_guildKnows`** says "Rallick told him". In the dialogue Vell promises to tell; Rallick isn't involved.
 6. **Ch1 after-battle nodes call `gainXP` again** (`c1_after_line` 180, `c1_after_claw` 150, `c1_after_accounting` 120), so XP is double-counted.
 7. **`c1_plant` is always set**, because the tent scene is mandatory. The "She sewed a badge on my collar once… I'm going to start" branch in `c2_ashes_tuft` and the "Kettle snores" branch in `c2_start_tuft` are unreachable.
-8. **Numbers and days.** Whiskeyjack's "Five squads" fly south (Ch1), but Crone and `c2_close` say "nine" Bridgeburners. Ch2 is "six days south of Pale" in the intro but "Day three" in its paragraphs. The crate is "eleven days" on a wagon against a seven-day timetable. Avoid precise counts.
+8. **Numbers and days.** Settled in v3.7.3: the road from Pale to the Worry Gate is eleven days (twelve with the light detour, `c2_late`; `tripDays()` in 37_chapters.js), Ch2 opens on day four, "a week behind us" is the lag behind the Bridgeburners, who are eight (Whiskeyjack, Quick Ben, Kalam, Fiddler, Hedge, Mallet, Trotts, Sorry). The Moranth crate the Fourth hauls is a full one: thirteen slots, twelve cussers and a dud; the vault holds forty of Hedge's and those twelve.
 9. **Refused-path Ellis.** She rode off with Toc in Ch2, yet in Ch5 Toc "wondered" where she was.
 10. **Tuft's through path in Ch5.** CHEND says "the Fourth let someone follow", but nobody followed. CHEND also has Tuft call things "polite" (Ch4 and Ch5 extras); she never does in dialogue.
 11. **Chub's cusser** is "the size of a big man's fist" in Ch5; the cussers in Ch3 are "the size of a man's head".
