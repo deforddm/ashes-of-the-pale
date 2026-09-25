@@ -233,7 +233,7 @@ Then it opens its beak and laughs.
 
 It shifts from foot to foot on the stone, settling its feathers. The Rhivi on the crest don't look round. They have decided, collectively and without discussion, that there is no raven.
 
-"${S.f.c2_croneSaw ? `You remember my name, and I remember yours. That is how it is with ravens and soldiers, except that we go on remembering, and we are *so* good at remembering what you were called.` : `Crone, little soldiers, in case you had forgotten. You told me to get off your wagon, on the plain, and I got off it. I have been wondering ever since what you would tell me to get off on a hill.`}"`,
+"${S.f.c2_croneSaw ? `You remember my name, and I remember yours. That is how it is with ravens and soldiers, except that we go on remembering, and we are *so* good at remembering what you were called.` : `Crone, little soldiers, in case you had forgotten. ${S.f.c2_key === 'light' ? `You told me to get off the dead man, on the plain, and I got off him` : `You told me to get off your wagon, on the plain, and I got off it`}. I have been wondering ever since what you would tell me to get off on a hill.`}"`,
       ch:[{t:'"What\'s in the hill?"', go:'c5_crone_rake'},
           {t:'"What does your lord want here?"', go:'c5_crone_rake'},
           {t:'"Get off the stone. You\'ll give us away."', fx:()=>{ if (SQUAD().includes('brisk')) loy('brisk',1); }, go:'c5_crone_off'}]}),
@@ -931,9 +931,9 @@ Nobody sleeps. The stars go round.`,
     c5_hounds:()=>({sp:'The fold below the far hill', scene:'hills_night', fx:()=>{ S.f.c5_rakeNight=1; }, txt:
 `Past the middle of the night Paran goes out of the firelight. Not far: to the lip of the fold, twenty paces, where he can see the next hill and the pale litter of strings on it. He stands there with his back to the fire. You watch him go. You're the only one who does.
 
-So you see them come back.
+So you see them come.
 
-No baying this time. No grey. Two shapes on the slope above him where a heartbeat ago there were none, low to the grass, the size of horses, and the lamp-eyes are on him and only on him. They aren't passing anything tonight.
+No baying this time. No grey. Two shapes on the slope above him where a heartbeat ago there were none, low to the grass, the size of horses: not the pair from the rent, you'd swear to that, but two more of the same kind, and the lamp-eyes are on him and only on him. They aren't passing anything tonight.
 
 Paran draws. You hear the sword come out, a thin clean sound, and you're up and running, ${SQUAD().includes('brisk') ? `Brisk beside you with the shield, ` : ''}and twenty paces is too far. It's much too far.
 

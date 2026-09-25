@@ -12,7 +12,7 @@ const C6H = {
 };
 const CH6 = {
   title:'The Fete', number:'Six',
-  intro:{loc:'Darujhistan', sub:'The Gedderone Fete · the morning after the hills', cap:'Paper lanterns in every colour but blue strung over the streets, masks on every door, and over the lake a black mountain that nobody has dressed.',
+  intro:{loc:'Darujhistan', sub:'The Gedderone Fete · three days out of the hills', cap:'Paper lanterns in every colour but blue strung over the streets, masks on every door, and over the lake a black mountain that nobody has dressed.',
     paras:[
 `Three days west out of the hills on foot, with the barrow's *thud* still in the soles of your boots, and on the third morning the Worry Gate, and a clerk at it who does not ask your name, because nobody at any gate in Darujhistan is asking anybody anything today. Paran's horse passed you on the road the first morning, with Toc's on a lead rein behind it and a big man slumped across Toc's saddle, bound on, one arm hanging, and did not stop. You did not expect it to.`,
 `The city is dressing. Paper lanterns strung across every street from eave to eave, red and green and amber, every colour but blue, as if the city had got tired of its own light for one night. Masks on the doors. Masks on the carthorses. Masks tied with ribbon on the statues in the squares, a bird's face on a dead councillor, a fox on a god. The Gedderone Fete, a Gadrobi woman tells Kettle, and when Kettle asks who Gedderone is, the woman looks at her the way you'd look at somebody who asked what spring was.`,
@@ -168,7 +168,7 @@ const CH6 = {
 
   end:{
     bridgeburners:['The garden held','The Tyrant came up out of an old priest in Lady Simtal\'s garden, and the Fourth stood on a lawn gone white with frost beside the Bridgeburners, four rounds, while Quick Ben opened seven warrens and Whiskeyjack\'s leg broke and a sapling became a house and took the Tyrant in. Then a black dragon drew a sword over the city that chains what it kills, and the Fourth was close enough to hear the chains.'],
-    cellars:['Under the crossing','While the Tyrant stood in Lady Simtal\'s garden, the Fourth ran for the vault under the Gadrobi crossing and found grey cloaks setting acid to the wax of forty munitions and four cussers in the city\'s gas, on a standing order older than the night. Kettle stopped every drop. Nobody in Darujhistan will ever know how close it came, and the order, in a very neat hand, is in the sergeant\'s coat.'],
+    cellars:['Under the crossing','While the Tyrant stood in Lady Simtal\'s garden, the Fourth ran for the vault under the Gadrobi crossing and found grey cloaks setting acid to the wax of forty munitions and twelve cussers in the city\'s gas, on a standing order older than the night. Kettle stopped every drop. Nobody in Darujhistan will ever know how close it came, and the order, in a very neat hand, is in the sergeant\'s coat.'],
     get alley(){ const s = typeof S !== 'undefined' && S && S.f && S.f.c6_steppedIn;
       return ['The alley', s ? 'The Adjunct walked out of the garden as the Tyrant showed his face, and the Fourth followed her to an alley where a Daru boy with a coin was against a wall, and she told them to hold him. They stood between her and the boy instead, three rounds, in a place where no warren works and whoever falls stays down. A man in a faded crimson cloak finished it. Two women from the Phoenix Inn finished her. Paran carried her away.'
         : 'The Adjunct walked out of the garden as the Tyrant showed his face, and the Fourth followed her to an alley where a Daru boy with a coin was against a wall, and she told them to hold him. They stood aside. A man in a faded crimson cloak stepped out of a doorway and did what they did not. Two women from the Phoenix Inn finished her. Paran carried her away.']; } },
@@ -198,7 +198,7 @@ const CH6 = {
   dlg:{
     /* ---- the vault under the crossing: noon on the day of the Fete ---- */
     c6_start:()=>({sp:'Whiskeyjack · Bridgeburners', scene:'cellar', fx:()=>{ S.f.c6_started=1; }, txt:
-`The vault under the Gadrobi crossing, at noon on the day of the Fete. Down the ladder-hole comes the city: drums three streets off, a crowd laughing at something, a man selling masks in a voice like a gull. Down here the pipes hiss on every side the way they always have, and the lantern is on its crate, and forty Moranth munitions sleep in the walls with four cussers among them, and none of them is going to the Fete.
+`The vault under the Gadrobi crossing, at noon on the day of the Fete. Down the ladder-hole comes the city: drums three streets off, a crowd laughing at something, a man selling masks in a voice like a gull. Down here the pipes hiss on every side the way they always have, and the lantern is on its crate, and forty Moranth munitions sleep in the walls with twelve cussers beside them, and none of them is going to the Fete.
 
 Whiskeyjack is sitting on the crate with the broken seal. He looks up when you come down the ladder, and counts. ${SQUAD().length === 6 ? 'Six' : 'Five'}. ${S.f.c5_ellisThrough ? `You watch him arrive at it, and check it, and find the place where the sixth isn't. He doesn't ask. He knows he's about to be told.` : `You watch him arrive at it, and check it, and let it be right.`}
 
@@ -275,7 +275,7 @@ Paran nods, slowly, as if she'd made a report. "Yes," he says. "He would."` : ''
       ch:[{t:'"Toc gave me something to tell you, sir. On the plain."', req:()=>!S.f.c6_paranToc, go:'c6_paran_toc'},
           {t:'"Sir."', go:'c6_vault'}]}),
     c6_paran_toc:()=>({sp:'Captain Paran', scene:S.f.c6_up ? 'fete_garden' : 'cellar', fx:()=>{ S.f.c6_paranToc=1; if (SQUAD().includes('ohl')) loy('ohl',1); }, txt:
-`You tell him. The plain, the morning after the mage burned. Toc on his pony at the edge of the flattened grass, stopping once to look back at the place where the spiral ended, and deciding something about it, and putting it away.
+`You tell him. The plain, the afternoon before the mage burned. Toc on his pony at the edge of the flattened grass, stopping once to look back at the place where the spiral ended, and deciding something about it, and putting it away.
 
 "*Tell him Toc kept riding.*" You say it the way Toc said it. "He said you'd know what it means. He said he didn't, yet."
 
@@ -378,7 +378,7 @@ You remember a cadre mage in the cold outside a tent at the Pale, looking at the
 
 Now you know.
 
-${S.f.c2_key === 'light' ? `Tuft's hand has gone to her collar. "I put it on for her," she says. Her voice is perfectly level. "For Tattersail. On the plain, after." She doesn't take the hand away. "I've been wearing a window since the plain. I've been wearing it *for her*."` : `Tuft's hand has gone to the strap of her pack. "I never wore it," she says. Her voice is perfectly level. "Sixteen months. I never once *wore* it. I carried it because throwing it away felt like—" She stops. "I didn't know what it felt like. Now I do."`}
+${S.f.c2_key === 'light' ? `Tuft's hand has gone to her collar. "I put it on for her," she says. Her voice is perfectly level. "For Tattersail. On the plain, after." She doesn't take the hand away. "I've been wearing a window since the plain. I've been wearing it *for her*."` : `Tuft's hand has gone to the strap of her pack. "I haven't worn it," she says. Her voice is perfectly level. "Fourteen months. Not since the staff. Not once. I carried it because throwing it away felt like—" She stops. "I didn't know what it felt like. Now I do."`}
 
 ${SQUAD().includes('brisk') ? `"Take it off," says Brisk, from the back. "Throw it in the lake."` : `"Throw it in the lake," says Kettle.`}
 
@@ -446,13 +446,13 @@ Tuft doesn't answer him. Her hand is at her collar, and she doesn't take it away
 `He's where he was, against the wall, with his arms folded, looking at the house. ${S.f.c6_collRing ? `Every so often he turns the ring on his finger, as if checking it's still there.` : `He doesn't look round.`}` :
 `A very big man in plain brown clothes is standing across the street from Lady Simtal's gate with his back to a wall and his arms folded, looking at the house the way you'd look at a dog that used to be yours and has since been taught to bite you.
 
-${S.f.c3_innColl ? `You know him, and then you don't. The Phoenix. The jug. The ruined soldier's shoulders. The shoulders are still a soldier's; the rest has been put back. He's sober. He's been sober, you'd guess, for weeks, and it's been hard, and it shows in how still he stands: like a man standing on something that might not hold.` : `He's sober, and it looks new on him, and hard.`}${S.f.c5_collDown ? ` He stands a little crooked, favouring his left side, the way a man stands round a wound that has closed and hasn't yet agreed to it. The last time you saw a man that size, he was going sideways into the grass of a hillside with the Adjunct's sword in him.` : ''}
+${S.f.c3_innColl ? `You know him, and then you don't. The Phoenix. The jug. The ruined soldier's shoulders. The shoulders are still a soldier's; the rest has been put back. He's sober. He's been sober, you'd guess, for days, and every one of them hard, and it shows in how still he stands: like a man standing on something that might not hold.` : `He's sober, and it looks new on him, and hard.`}${S.f.c5_collDown ? ` He stands a little crooked, favouring his left side, the way a man stands round a wound that has closed and hasn't yet agreed to it. The last time you saw a man that size, he was going sideways into the grass of a hillside with the Adjunct's sword in him.` : ''}
 
 "Malazans," he says. ${S.f.c3_innColl ? `"Kruppe's road-menders. In Simtal's blue." He doesn't smile. "Of course you are. Kruppe arranges everything, and never where anybody can see him do it."` : `"In Simtal's blue. Hood's breath." He doesn't smile.`}
 
 "That's my house." He says it to the gate, not to you. "Was. There's a councillor in it tonight who took it with my wife's help, and my wife, who helped, and half the city, drinking my cellar." A breath. "Kruppe says *tonight*. Kruppe says a great many things. I stopped drinking to find out whether he's right."
 
-${ring ? `His eyes go to ${rw ? (rw === 'sgt' ? 'your hand' : `${NAME(rw)}'s hand`) : 'your belt-pouch, where the shape of it shows through the leather'}. To the ring. His face does nothing at all, very deliberately. "You've still got it," he says. "It didn't get lost in a ditch."` : S.f.c3_collTalk && !S.f.c3_coll ? `He turns a heavy gold ring on his finger: the one you pushed back across the table at the Phoenix. "Still got it," he says. "You wouldn't take it, and I couldn't lose it. It's been a long month for the pair of us."` : ''}`,
+${ring ? `His eyes go to ${rw ? (rw === 'sgt' ? 'your hand' : `${NAME(rw)}'s hand`) : 'your belt-pouch, where the shape of it shows through the leather'}. To the ring. His face does nothing at all, very deliberately. "You've still got it," he says. "It didn't get lost in a ditch."` : S.f.c3_collTalk && !S.f.c3_coll ? `He turns a heavy gold ring on his finger: the one you pushed back across the table at the Phoenix. "Still got it," he says. "You wouldn't take it, and I couldn't lose it. It's been a long week for the pair of us."` : ''}`,
       ch:[{t:'Give him back his ring.', req:()=>S.kit.includes('collsignet') && !S.f.c6_collRing, go:'c6_coll_ring'},
           {t:'Leave him to his house.'}]}; },
     c6_coll_ring:()=>({sp:'Coll', fx:()=>{ S.f.c6_collRing=1; S.kit = S.kit.filter(k => k !== 'collsignet'); Object.keys(S.gear).forEach(w => { if (S.gear[w].trinket === 'collsignet') delete S.gear[w].trinket; }); if (SQUAD().includes('ohl')) loy('ohl',1); if (SQUAD().includes('brisk')) loy('brisk',1); }, txt:
@@ -942,7 +942,7 @@ And at the far end of the garden, where the lawn runs down to the east wall and 
 
 No mask. A dark cloak, a plain grey tunic, riding boots. One hand gloved and one bare. She crosses the lawn to the little iron gate in the west wall without hurrying and without looking at anyone, and goes through it, and it swings shut behind her.
 
-You'd know her anywhere. You were three hundred paces from her in the hills, on your belly in the grass, and that was as close as anybody in the Fourth was ever going to get and live. ${gw === 'brisk' ? `The glove on Brisk's belt is suddenly, very obviously, the other half of a pair.` : `The glove in your belt is suddenly, very obviously, the other half of a pair.`}
+You'd know her anywhere. You lay on your belly in the grass three hundred paces from her in the hills and felt that sword the whole way, and when she rode past the Fourth in the dark, nobody breathed. ${gw === 'brisk' ? `The glove on Brisk's belt is suddenly, very obviously, the other half of a pair.` : `The glove in your belt is suddenly, very obviously, the other half of a pair.`}
 
 ${SQUAD().includes('tuft') ? `Tuft has stopped on the bottom step with both hands pressed flat to her stomach, as if she'd been punched. "The hole," she whispers. "It went *past*. It went right past us." The shadow comes back round her fingers, thin and shaking. "She was *here*."` : ''}
 
@@ -1207,7 +1207,7 @@ You've heard her laugh at exactly one thing, and it's Kettle. This isn't that la
 
 She puts it inside her tunic, against her chest, the way Brisk keeps her letter.
 
-Then she looks at the grey cloak, and her face changes. ${S.f.c2_key === 'light' ? `Her hand goes up to her collar, and unpins the badge: silver and enamel, a hand on a flame.` : `She reaches into the pack and takes out a stocking, and out of the stocking a badge, silver and enamel, a hand on a flame, that hasn't seen a lamp in sixteen months.`}
+Then she looks at the grey cloak, and her face changes. ${S.f.c2_key === 'light' ? `Her hand goes up to her collar, and unpins the badge: silver and enamel, a hand on a flame.` : `She reaches into the pack and takes out a stocking, and out of the stocking a badge, silver and enamel, a hand on a flame, that hasn't seen a lamp in fourteen months.`}
 
 "This is his," she says. "The card's mine. This isn't." She holds it out on her open palm where you can all see it. It doesn't look like anything. It looks like a pin.
 
@@ -1227,7 +1227,7 @@ A plain riding glove. The Adjunct's, left on a stone where her tent stood in the
 
 Tuft looks at it.
 
-She has not stood on the same side of a fire as that glove since the hills. She has walked round it and slept away from it and turned her back on it, and you've watched her do it for a week and never said anything, because what would you say.
+She has not stood on the same side of a fire as that glove since the hills. She has walked round it and slept away from it and turned her back on it, and you've watched her do it for days and never said anything, because what would you say.
 
 She walks up to it now.
 
@@ -1401,7 +1401,7 @@ Up on the terrace somebody screams, and the music stops in the middle of a bar.`
 
 Whiskeyjack's voice from the fountain, the voice that carries across a battlefield and makes horses stop: "*Bridgeburners!*" And they come, out of the hedges and off the steps and over the walls, in Lady Simtal's blue with the armbands torn off: Fiddler with a crossbow that was never a halberd, Hedge with his satchel open. "On me! *On me!*"
 
-Quick Ben has your arm. You didn't see him cross the lawn. His hand is cold and hard and his face is the face from the ladder, with nothing on it. "It's going into the *ground*," he says. "Sergeant. Listen. What he's doing, it's going down. Into the stone. Into the pipes. Forty of ours and four Moranth cussers are sitting in the gas mains under the Gadrobi crossing, and if that cold finds them there's no city. There's no *lake*." His grip tightens. "Somebody sit on those crates."
+Quick Ben has your arm. You didn't see him cross the lawn. His hand is cold and hard and his face is the face from the ladder, with nothing on it. "It's going into the *ground*," he says. "Sergeant. Listen. What he's doing, it's going down. Into the stone. Into the pipes. Forty of ours and twelve Moranth cussers are sitting in the gas mains under the Gadrobi crossing, and if that cold finds them there's no city. There's no *lake*." His grip tightens. "Somebody sit on those crates."
 
 And at the little iron gate in the west wall, the gate the Adjunct used an hour ago, a woman in a dark cloak with no mask is standing with her hand on the latch, looking back. Not at the Tyrant. At the lawn, at the frost, at the sapling, as if checking them against a list. She knew. She's the only person in the garden who isn't surprised.
 
@@ -1411,7 +1411,7 @@ ${S.f.c6_kalamAsked ? `*If she walks out before the party's over*, Kalam said, *
 
 ${SQUAD().includes('brisk') ? `Brisk is at your shoulder with her shield up. "Sergeant." Waiting for the word.` : ''}
 
-${SQUAD().includes('kettle') ? `Kettle has gone white under the soot. She heard Quick Ben. She's looking east, toward the crossing, toward the vault she carried the crates down into in her own arms, and her lips are moving. She's counting.` : ''}
+${SQUAD().includes('kettle') ? `Kettle has gone white under the soot. She heard Quick Ben. She's looking down the hill, toward the crossing, toward the vault she carried the cussers down into in her own arms, and her lips are moving. She's counting.` : ''}
 
 Three places to stand, and one of you to choose.`,
       ch:[{t:'With the Bridgeburners. Line on the sergeant.', fx:()=>{ S.f.c6_key='bridgeburners'; }, go:'c6_bb'},
@@ -1459,7 +1459,7 @@ He's gone somewhere. You can see it. His body is here, standing, and he is not. 
 
 ${SQUAD().includes('kettle') && S.inv.cusser > 0 && !S.f.c6_hedgeCusser ? `He's beside Kettle, with his hand out, open. "Mine," he says. "Falari. Give it back."
 
-And she does. She takes Hedge's cusser out of the satchel, the one he put into her arms in the vault like a baby a month ago, the one she's carried to the hills and back and never thrown, and she puts it in his hand. He grins at her, all his missing teeth.
+And she does. She takes Hedge's cusser out of the satchel, the one he put into her arms in the vault like a baby not ten days ago, the one she's carried to the hills and back and never thrown, and she puts it in his hand. He grins at her, all his missing teeth.
 
 "*This* one," he says. "You'll know, Chub said." And he turns and runs at the Tyrant with it.` : `He has a cusser in his hand, clay-grey, the size of a man's head, and he's running at the Tyrant with it, laughing, the way a man runs into the sea.`}
 
@@ -1507,7 +1507,7 @@ Mallet looks at the leg for a long time. He doesn't say what he sees. He looks a
     c6_bb_sky:()=>({sp:'The sky over Darujhistan', scene:'dragon_sky', txt:
 `The garden is quiet for the space of ten breaths. Then ${SQUAD().includes('kettle') ? `Kettle says "Sergeant," in a voice you've never heard her use,` : `somebody on the terrace says "*Look*," in a voice you've never heard anybody use,`} and points up.
 
-Over the roofs to the west, over the Daru District, where the Adjunct went, something is going up into the sky. Pale. Enormous. Wrong. It unfolds as it rises the way a sheet unfolds when you shake it out of a window: too many joints, too many edges, wings that aren't the shape of wings, a long pale neck and a head at the end of it that is almost a dragon's and isn't. It's the size of a ship. It's bigger than a ship.
+Over the roofs down the hill, over the Daru District, where the Adjunct went, something is going up into the sky. Pale. Enormous. Wrong. It unfolds as it rises the way a sheet unfolds when you shake it out of a window: too many joints, too many edges, wings that aren't the shape of wings, a long pale neck and a head at the end of it that is almost a dragon's and isn't. It's the size of a ship. It's bigger than a ship.
 
 And at the terrace balustrade above you, where the tall guest stood with his untouched wine: the glass, on the rail. Nobody beside it.
 
@@ -1540,7 +1540,7 @@ Up the white steps with the frost coming after you, through the hall, through tw
 
 ${S.f.c6_tuft === 'kept' && SQUAD().includes('tuft') ? `Tuft comes with you. The grey cloak saw to that: "Go with them, Tuft. He'll want to see that too." Her eyes stay open all the way down the hill.` : ''}
 
-${SQUAD().includes('kettle') ? `Kettle, running beside you, already talking, fast and low, the way a sapper counts drops: "Forty of Hedge's. Four cussers. At the joints. The big joints, where the pressure's worst. If that cold gets down into the stone the clay'll go brittle, and brittle clay cracks, and if one cracks next to a—" She stops herself. "Sergeant. I carried them down there. I *stacked* them."` : ''}`,
+${SQUAD().includes('kettle') ? `Kettle, running beside you, already talking, fast and low, the way a sapper counts drops: "Forty of Hedge's. Twelve cussers. At the joints. The big joints, where the pressure's worst. If that cold gets down into the stone the clay'll go brittle, and brittle clay cracks, and if one cracks next to a—" She stops herself. "Sergeant. I carried them down there. I *stacked* them."` : ''}`,
       ch:[{t:'Run.', go:'c6_cellars_run'}]}),
     c6_cellars_run:()=>({sp:'The streets', scene:'fete_street', txt:
 `Down the hill through the Estate District at a run, with the halberds thrown in a gutter somewhere behind you, and the Fete doesn't know yet.
@@ -1587,7 +1587,7 @@ ${SQUAD().includes('kettle') ? `Kettle gets there. She's across the vault before
 
 Then she gets up, and shakes the hand once, and goes to the next niche.` : `You get there. You're on your knees in the wet with your palm over the plug before you've thought about it, wiping, pressing, and it burns, and you hold it till the smoking stops.
 
-There are three more cussers with a bead of acid sitting in a notch in the wax, eating, and forty of Hedge's packed in around them, and nobody here knows how to stop a timer without waking what it's set in. You're going to have to learn.`}`,
+There are eleven more cussers with a bead of acid sitting in a notch in the wax, eating, and forty of Hedge's packed in around them, and nobody here knows how to stop a timer without waking what it's set in. You're going to have to learn.`}`,
       ch:[{t:SQUAD().includes('kettle') ? 'Kettle.' : 'The timers.', go:'c6_mines_kettle'}]}),
     c6_mines_kettle:()=>({sp: SQUAD().includes('kettle') ? 'Kettle' : 'The timers', scene:'cellar', fx:()=>{ if (SQUAD().includes('kettle')) loy('kettle',2); }, txt: SQUAD().includes('kettle') ?
 `She stops the timers.
@@ -1604,7 +1604,7 @@ She counts under her breath as she goes, the way she counted in the hills, the w
 
 When she gets to the last one, by the ladder, she sits down on the wet brick beside it with the tallow tin in her lap, and puts her burned hand on the clay, and leaves it there.
 
-"Four," she says. "Sir. I *told* them." You don't know which *sir* she means. You don't think she does.
+"Twelve," she says. "Sir. I *told* them." You don't know which *sir* she means. You don't think she does.
 
 Then she cries, for the first time since you've known her, without making any sound at all.` :
 `You stop the timers. There's nobody else to do it.
@@ -1613,7 +1613,7 @@ You've watched Kettle work wax a hundred times without understanding what you we
 
 The frost on the pipes is thickening. You can hear the clay tick in the cold. You don't hurry. You're more frightened than you have ever been in your life, and your hands are perfectly steady, and you think that is probably what sappers are.
 
-Forty. Four. You count them the way she would have, like prayers. When you get to the last one, by the ladder, you sit down beside it with the tallow tin in your lap and your burned hand on the clay, and you leave it there for a while.`,
+Forty. Twelve. You count them the way she would have, like prayers. When you get to the last one, by the ladder, you sit down beside it with the tallow tin in your lap and your burned hand on the clay, and you leave it there for a while.`,
       ch:[{t:'The man with the phial.', go:'c6_mines_order'}]}),
     c6_mines_order:()=>({sp:'A standing order', scene:'cellar', fx:()=>{ S.f.c6_orders=1; }, txt:
 `He's lying where he fell, at the foot of the niche: grey cloak, mud to the knee, the empty phial beside his hand. Inside his coat, folded small, a slip of paper.
@@ -1712,7 +1712,7 @@ ${SQUAD().includes('brisk') ? `Brisk is looking at you. She's always looking at 
     c6_alley_step:()=>({sp:'The alley', scene:'alley_night', fx:()=>{ if (SQUAD().includes('brisk')) loy('brisk',1); if (SQUAD().includes('kettle')) loy('kettle',1); if (SQUAD().includes('ellis')) loy('ellis',1); }, txt:
 `You step in.
 
-${S.f.c4_key === 'aside' ? `On the roof you stepped aside, and a boy called Vell looked at you over his shoulder, and you've carried the look for a month. You're not carrying another.` : `On the roof you stood. You find, in an alley, with the Empress's own hand on the other side of the gap, that you're going to stand again, and that you'd known it since the gate.`}
+${S.f.c4_key === 'aside' ? `On the roof you stepped aside, and a boy called Vell looked at you over his shoulder, and you've carried the look all week. You're not carrying another.` : `On the roof you stood. You find, in an alley, with the Empress's own hand on the other side of the gap, that you're going to stand again, and that you'd known it since the gate.`}
 
 ${SQUAD().includes('brisk') ? `Brisk is on your left before your foot is down. Her shield comes up beside yours, the rims overlapping a hand's width, the way they did at Nathilog, the way they did on the roof.` : `The squad closes up round you before your foot is down, without being told.`}
 
@@ -1936,7 +1936,7 @@ You give it to him the way he taught you, in order, without anything in it that 
 
 He listens with his face doing nothing.
 
-${S.f.c6_key === 'bridgeburners' ? `"You held," he says, when you've finished. "With us. On the lawn." He looks down at the leg. "I'd rather have had the leg. I'll take the squad." And then, because he's Whiskeyjack, and because it's true: "Good."` : S.f.c6_key === 'cellars' ? `"Quick says you sat on the crates," he says. "I heard the frost stop going down. On the lawn. It stopped, and I didn't know why." He looks east, toward the crossing. "Now I do." He doesn't ask what you took off the man with the phial. He looks at your coat, once, where the paper is. "Keep whatever you found," he says. "Somewhere I'll never find it." A beat. "Good."` : S.f.c6_steppedIn ? `"Paran says you were in the alley," he says. "Between her and the boy." He closes his eyes, for a moment, the only time you've ever seen him do it in front of anyone. "Hood's breath, Sergeant." He opens them. "Good."` : `"Paran says you were in the alley," he says. He doesn't ask what you did there. He looks at your face${SQUAD().includes('brisk') ? `, and at Brisk's,` : ','} and files what he finds, and doesn't say which drawer.`}
+${S.f.c6_key === 'bridgeburners' ? `"You held," he says, when you've finished. "With us. On the lawn." He looks down at the leg. "I'd rather have had the leg. I'll take the squad." And then, because he's Whiskeyjack, and because it's true: "Good."` : S.f.c6_key === 'cellars' ? `"Quick says you sat on the crates," he says. "I heard the frost stop going down. On the lawn. It stopped, and I didn't know why." He looks down the hill, toward the crossing. "Now I do." He doesn't ask what you took off the man with the phial. He looks at your coat, once, where the paper is. "Keep whatever you found," he says. "Somewhere I'll never find it." A beat. "Good."` : S.f.c6_steppedIn ? `"Paran says you were in the alley," he says. "Between her and the boy." He closes his eyes, for a moment, the only time you've ever seen him do it in front of anyone. "Hood's breath, Sergeant." He opens them. "Good."` : `"Paran says you were in the alley," he says. He doesn't ask what you did there. He looks at your face${SQUAD().includes('brisk') ? `, and at Brisk's,` : ','} and files what he finds, and doesn't say which drawer.`}
 
 ${dead.length === 1 ? `Then he says the name. ${NAME(dead[0])}. The way he'd say it to Dujek. He knew ${C6H.her(dead)}. You didn't know he knew ${C6H.her(dead)}.` : dead.length ? `Then he says their names. ${C6H.names(dead)}. ${dead.length === 2 ? 'Both of them' : 'All of them'}, in order, the way he'd say them to Dujek. He knew them. You didn't know he knew them. He knew every one.` : ''}
 
@@ -1965,7 +1965,7 @@ ${SQUAD().length > 1 ? `The squad is awake. You could talk to any of them. It's 
 
 A pause.
 
-"We don't leave people. I said it on the lawn when I picked him up. I didn't mean to say it. It came out." She sights along the rim. "I've been saying it about the Fourth for a month. I didn't know I meant *him* too. I didn't know it went out that far."` : S.f.c6_key === 'cellars' ? `She has the ration ledger open on her knee. She's written one line. You can read it upside down: *One vault. Forty and four. Not fired.*
+"We don't leave people. I said it on the lawn when I picked him up. I didn't mean to say it. It came out." She sights along the rim. "I've been saying it about the Fourth for as long as there's been a Fourth. I didn't know I meant *him* too. I didn't know it went out that far."` : S.f.c6_key === 'cellars' ? `She has the ration ledger open on her knee. She's written one line. You can read it upside down: *One vault. Forty and twelve. Not fired.*
 
 "We sat on crates," she says. "While they fought the thing on the lawn, we sat on crates in a hole." She closes the ledger. "Best thing we've ever done. Nobody will ever know." A beat. "That's how you know it was the best thing. Nobody knows."` : S.f.c6_steppedIn ? `She has her shield across her knees, and ${S.f.c4_key === 'shield' ? `the rim has two bends in it now, side by side` : `there's a new bend in the rim, fresh and bright`}.
 
@@ -1989,7 +1989,7 @@ She puts her hand flat on her gorget, over the place where the letter is. Still 
 
 "It's going to scar," she says. "Chub lost three fingers. I've got a scar." She almost smiles. "I'm catching him up."
 
-"Forty and four. Nobody'll ever know. Hedge'll know. I'll tell him. He'll cry, and he'll pretend it's the onion." She lowers the hand. "Sergeant. I made them *not* go. All of them. That's the hard half. I did the hard half."` : `She's sitting with the satchel in her lap and her crossbow across it.
+"Forty and twelve. Nobody'll ever know. Hedge'll know. I'll tell him. He'll cry, and he'll pretend it's the onion." She lowers the hand. "Sergeant. I made them *not* go. All of them. That's the hard half. I did the hard half."` : `She's sitting with the satchel in her lap and her crossbow across it.
 
 ${S.f.c6_steppedIn ? `"Everything died in that alley," she says. "Every warren.${SQUAD().includes('tuft') ? ` Tuft's shadow.` : ''}${SQUAD().includes('ohl') ? ` Ohl's hands.` : ''} And the satchel never noticed. There's no warren in a sharper. There's just a sharper." She pats the satchel. "That's why I love them."` : `"My hand kept going to the satchel," she says. "In the alley. You said step aside, and I stepped, and my hand kept going to the satchel the whole time." She looks down at it. "It still does."`}${dead.length ? `
 

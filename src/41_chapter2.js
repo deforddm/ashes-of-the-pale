@@ -7,7 +7,7 @@ const CH2 = {
   title:'The Rhivi Plain', number:'Two',
   intro:{loc:'The Rhivi Plain', sub:'Genabackis · three days south-east of Pale', cap:'Grass to every horizon, and one wagon on it, and the sky empty of quorls.',
     paras:[
-`The Black Moranth went south on the second morning, nine Bridgeburners riding things that should not fly, bound for the north shore of Lake Azur and a boat across it by night. Hedge was still complaining about the boat when the quorl lifted him. The sky over the Pale was full of wings for the time it takes to say a name, and then it was not. Whiskeyjack did not wave. Nobody expected him to. Kettle watched until there was nothing to watch, and then she counted the munitions.`,
+`The Black Moranth went south on the second morning, eight Bridgeburners riding things that should not fly, bound for the north shore of Lake Azur and a boat across it by night. Hedge was still complaining about the boat when the quorl lifted him. The sky over the Pale was full of wings for the time it takes to say a name, and then it was not. Whiskeyjack did not wave. Nobody expected him to. Kettle watched until there was nothing to watch, and then she counted the munitions.`,
 `You are Sergeant {sgt}, Fourth Squad, Seventh Company marines, and you are the baggage. One wagon, one mule, eighteen days of hardtack, the Bridgeburners' spare kit under an oilcloth, and a Rhivi guide who has said eleven words in three days and rationed them. The grass is chest-high on Brisk and taller than Tuft. It does not end. Sethand says it ends at the Gadrobi Hills, and says it the way you'd tell a child the sea has a far side.`,
 `Day four. Somewhere ahead, a city with blue fire in its streets. Somewhere behind, a camp that has stopped burning. Somewhere on the same road, though nobody has said so, a captain who should have died twice.`],
     go:'Ride', node:'c2_start'},
@@ -127,7 +127,7 @@ ${S.f.c1_key === 'line' ? `Nobody has said the words *cadre row* since the Pale.
 
 She pats the oilcloth. "The Bridgeburners left a crate. I haven't opened it. I want that noted. I want it noted that I've walked beside an unopened Moranth crate for three days and haven't so much as looked at the seals."
 
-${S.loy.kettle >= 2 ? `Then, lower: "It's cussers. Four. I can hear them." She can't. She's right anyway.` : `Brisk, from the far side of the wagon: "She looked at the seals."`}`,
+${S.loy.kettle >= 2 ? `Then, lower: "It's cussers. A full crate. Twelve, and the dud. I can hear them." She can't. She's right anyway.` : `Brisk, from the far side of the wagon: "She looked at the seals."`}`,
       ch:[{t:'"Tuft. You sleeping out here?"', req:()=>!S.f.c2_startTuft, go:'c2_start_tuft'},
           {t:'Ride on.', go:()=>startExplore()}]}),
     c2_start_tuft:()=>({sp:'Tuft', fx:()=>{S.f.c2_startTuft=1;}, txt:
@@ -161,7 +161,7 @@ ${S.loy.tuft >= 2 ? `"The quorls went south-east. Not south. I watched them till
 
 He looks along the line of the wagon-ruts, which are not a road either, only the memory of other wagons.
 
-"Six days. Your sergeant with the sword across his knees said seven. He was being kind to the mule."
+"Six days more. Your sergeant with the sword across his knees said eleven from the Pale, which is seven more. He was being kind to the mule."
 
 ${S.f.wjRegard > 0 ? `"He said also: *the Fourth will be on time.* He said it to me, not to you, so that I would know it mattered to him. I am telling you so you will know too."` : `"He did not say anything else about you. I noticed."`}`,
       ch:[{t:'Ask something else.', go:'c2_sethand_again'},
@@ -203,7 +203,7 @@ ${S.f.c2_muleNamed ? `"Pell," Kettle says to the mule, as you pass. It flicks an
       ch:[{t:'Leave'}]} : {sp:'The wagon', fx:()=>{S.f.c2_wagon=1;}, txt:
 `Brisk is at the tailboard with the ration sacks open, counting aloud, which she does the way other people pray.
 
-"Eighteen days hardtack, five. Fourteen if the mule eats. Eleven if Kettle does." She reties a sack. "Whiskeyjack said a week. I've heard *a week* before. A week's a thing officers say instead of a number."
+"Eighteen days hardtack, five. Fourteen if the mule eats. Eleven if Kettle does." She reties a sack. "Whiskeyjack said eleven days, and a week behind him. I've heard *a week* before. A week's a thing officers say instead of a number."
 
 Kettle, from the mule's head: "It's a good mule, Sergeant. I've named it."
 
@@ -623,7 +623,7 @@ ${SQUAD().includes('ellis') ? `"Six." He says it to the list. "I've had five in 
 `${S.f.c2_lightDone ? `The wagon's loaded and ${c2Mule()} is in the traces. Brisk is at the tailboard with the ledger shut, waiting, which is a thing she can make sound like a remark.` : S.f.c2_wagonNight ? `Brisk is asleep against the wheel, or doing a very good impression. Her spear is across her knees. ${S.f.c2_wagon ? 'Pell the mule' : 'The mule'} is asleep too, and looks, for once, like it doesn't hate anyone.` :
 `Brisk is at the wagon with her back to the wheel and the ration ledger open on her knee, though it's too dark to read and she isn't reading it.
 
-"${SQUAD().includes('ellis') ? 'Fifteen days, six.' : 'Eighteen days, five.'}" She says it the way you'd say goodnight.
+"${SQUAD().includes('ellis') ? 'Fourteen days, six.' : 'Seventeen days, five.'}" She says it the way you'd say goodnight.
 
 ${S.f.c2_badge ? `She has the badge out. Ninth Regiment. She turns it over in her fingers the way she'd turn a coin she was deciding not to spend. "Sergeant. If Tav's dead, I want to have known it before somebody tells me. I don't know how that works. I'm working on it."` : `"Sethand's at the fire," she says. "First time. He's frightened of something, and he's not a man who frightens, and I've been trying to work out if that's better or worse than him not being frightened, and I've decided it's worse."`}`}`,
       fx:()=>{S.f.c2_wagonNight=1;},
@@ -842,7 +842,7 @@ The voice is a crow's voice, cracked and dry, and the words are as clear as a la
 ${S.f.c2_key === 'light' ? `"I saw a fat woman on a bad horse run four days from a man who loved her, and turn, and burn them both, and I saw what the fire made, and so did the Rhivi, and so, I think, did your little mage. Ask *her* what she saw. I am too old to tell children the ends of stories."` :
   `"A mage. Burning. Two mages; one who ran and one who followed, and neither of them wanted to be there, and both of them were sent." The eye fixes on Tuft. "You know the word *sent*, child. You have the look of the sent. I have seen it on Tiste Andii. I have seen it on my lord. It is not a look that ends well, and it does not end at all."`}
 
-"And a woman with a thing walking beside her that is not a man, going to the hills, going to *wake* something. And a captain, gone into the ground with a Hound, and not dead, which is annoying; I had the eyes marked. And nine soldiers who went south by quorl and have gone under a city like rats under a floor." The head cocks. "Your friends. You'll be a week behind them. You'll be *late*, Malazan. Everyone is going to be late to what is coming, and you will be the latest, and it may be that that is the only reason you'll live through it."
+"And a woman with a thing walking beside her that is not a man, going to the hills, going to *wake* something. And a captain, gone into the ground with a Hound, and not dead, which is annoying; I had the eyes marked. And eight soldiers who went south by quorl and have gone under a city like rats under a floor." The head cocks. "Your friends. You'll be a week behind them. You'll be *late*, Malazan. Everyone is going to be late to what is coming, and you will be the latest, and it may be that that is the only reason you'll live through it."
 
 The head cocks the other way, and the black eye takes you in, all of you, the way a clerk takes in a page. "Sergeant {sgt}," it says. Nobody told it. "There. Now I have it."`,
       ch:[{t:S.f.c2_key === 'light' ? '"Get off him."' : '"Get off my wagon."', go:'c2_crone_off'}]}),
@@ -858,7 +858,7 @@ ${SQUAD().includes('ellis') ? `Ellis, quietly: "It was counting us. Not our head
     c2_dawn:()=>({sp:'The fifth morning', scene:'plain', fx:()=>{S.f.c2_lightDone=1;}, txt:
 `${S.f.c2_key === 'light' ? `It's full day by the time you're back at the ridge, and the ridge is a ridge, and the tents are where you left them, and Brisk strikes them without a word and without looking at anyone and loads the wagon and hitches ${c2Mule()} and stands by the tailboard waiting, and the waiting is a sentence with your name in it.
 
-"A day," she says, when you're close enough. "That's what that cost. Whiskeyjack's *week* is eight days now, and he'll know, because he's the kind that knows, and he'll ask, and I'll tell him."
+"A day," she says, when you're close enough. "That's what that cost. Whiskeyjack's *eleven days* are twelve now, and he'll know, because he's the kind that knows, and he'll ask, and I'll tell him."
 
 Tuft has not spoken since the glass. She walks. She doesn't walk in the tall grass any more; she walks beside the wagon where everyone can see her, and it's the first time, and nobody says so.` :
 `It's full day. The ridge is a ridge. In the west, where the light was, there's nothing: grass, sky, a low smudge that could be smoke and could be cloud. Sethand looks at it once and then doesn't.
@@ -889,7 +889,7 @@ And to the south-east, past the hills, low on the horizon, a smudge. Blue. Not s
 
 ${SQUAD().includes('ellis') ? `Ellis has stopped too. She's looking at the blue the way Toc looked at the place where the spiral stopped.
 
-` : ``}${S.f.c2_key === 'light' ? `Brisk, at the wagon: "A week, he said. It'll be a week and a day. You can tell him why or I can, Sergeant, and you'll do it better, and I'll do it first."` : `Brisk, at the wagon: "A week, he said. It's a week. Somebody write that down."`}`,
+` : ``}${S.f.c2_key === 'light' ? `Brisk, at the wagon: "Eleven days, he said. It'll be twelve. You can tell him why or I can, Sergeant, and you'll do it better, and I'll do it first."` : `Brisk, at the wagon: "Eleven days, he said. It'll be eleven. Somebody write that down."`}`,
       ch:[{t:'"Sethand. The dust-line. What was it?"', go:'c2_hills_dust'},
           {t:'"Ellis. You\'ve seen it before."', req:()=>SQUAD().includes('ellis') && !S.f.c2_hillsEllis, go:'c2_hills_ellis'},
           {t:'The road. The city.', go:()=>startExplore()}]}),
@@ -923,7 +923,7 @@ ${S.loy.ellis >= 1 ? `Then, drier: "Also, the fish is good. Lakefront. Say I sen
     c2_wagon_last:()=>({sp:'The wagon', txt:
 `Brisk has the ledger open and is writing in it, in daylight, which she does when she wants something on paper before somebody argues.
 
-"${SQUAD().includes('ellis') ? 'Nine days, six.' : 'Twelve days, five.'} ${S.f.c2_muleNamed ? `Mule's Pell.` : `One mule.`}${S.f.c2_badge ? ' One badge, Ninth Regiment, Second Army, unclaimed.' : ''}${S.f.c2_key === 'light' ? ' One day lost, west, on the sergeant\'s order.' : ' No days lost.'}"
+"${SQUAD().includes('ellis') ? (S.f.c2_late ? 'Eleven days, six.' : 'Twelve days, six.') : (S.f.c2_late ? 'Fourteen days, five.' : 'Fifteen days, five.')} ${S.f.c2_muleNamed ? `Mule's Pell.` : `One mule.`}${S.f.c2_badge ? ' One badge, Ninth Regiment, Second Army, unclaimed.' : ''}${S.f.c2_key === 'light' ? ' One day lost, west, on the sergeant\'s order.' : ' No days lost.'}"
 
 She closes it. "That's the plain, Sergeant. Whiskeyjack can read it or not."
 
@@ -932,7 +932,7 @@ ${S.f.c2_key === 'light' && S.loy.brisk <= -1 ? `She doesn't look at you when sh
 
     /* ---- chapter close ---- */
     c2_close:()=>({sp:'The road into the hills', txt:
-`The ruts go up between two brown shoulders of hill and out of sight. Somewhere past them, a lake, and a city on it, and nine Bridgeburners under its streets who have been waiting a week for a wagon.
+`The ruts go up between two brown shoulders of hill and out of sight. Somewhere past them, a lake, and a city on it, and eight Bridgeburners under its streets who have been waiting for a wagon since the quorls set them down.
 
 Sethand has turned his horse west. He has not said goodbye. He said, three days ago, that he would not go into the city, and a Rhivi does not say a thing twice.
 

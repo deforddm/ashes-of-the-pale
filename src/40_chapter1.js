@@ -129,10 +129,10 @@ Behind you, Brisk shifts her weight, which is as close as she comes to a comment
       ch:[{t:'"Sir."', go:'c1_brief'}]}),
     // the full briefing the first time; coming back to it from a side question, a short recap instead of the whole speech again
     c1_brief:()=>({sp:'Whiskeyjack', fx:()=>{S.f.c1_briefed=1;}, txt: S.f.c1_briefed ?
-`Whiskeyjack has gone back to the sword. "Darujhistan," he says, to the blade. "Overland, with the baggage, a week behind us. Anything else, Sergeant, ask it now."` :
+`Whiskeyjack has gone back to the sword. "Darujhistan," he says, to the blade. "Overland, with the baggage. Eleven days, and a week behind us. Anything else, Sergeant, ask it now."` :
 `"Darujhistan." He lets the word sit in the fire a moment. "The last free city. Dujek's orders are to take it from the inside, and the Empress's orders are for the Bridgeburners to do it, and the new captain's orders are to command the Bridgeburners while they do it. You'll have seen the captain. Tall. Polite. Wearing his commission like a coat that hasn't been rained on yet."
 
-"The Black Moranth fly us to the north shore of Lake Azur. One squad, nine of us, and then a boat across the lake by night, which Hedge has already started complaining about. I've asked about a second squad, and the answer was a noise I've decided was a no. So the Fourth goes overland with the baggage train and a Rhivi guide and whatever the Host can spare, which is nothing. You'll be a week behind us. You'll come into the city from the plain, and you'll be the only Malazans in it that nobody's watching for."
+"The Black Moranth fly us to the north shore of Lake Azur. One squad, eight of us, and then a boat across the lake by night, which Hedge has already started complaining about. I've asked about a second squad, and the answer was a noise I've decided was a no. So the Fourth goes overland with the baggage train and a Rhivi guide and whatever the Host can spare, which is nothing. Eleven days, if the Rhivi's any good. You'll be a week behind us. You'll come into the city from the plain, and you'll be the only Malazans in it that nobody's watching for."
 
 ${S.ending === 'claw' ? `Quick Ben, mildly: "A grey cloak walked out of the north quarter two nights ago with a satchel under his arm. Half the camp saw it. The other half was paid not to." He is smiling. It isn't at you.` :
   S.ending === 'burned' ? `Quick Ben, mildly: "Tattersail burned a candle for an hour that night. Not for reading by." He is smiling. It isn't at you.` :
@@ -587,7 +587,7 @@ Tuft won't look at you. She's looking at the place between the tents where the g
 ${S.f.c1_key === 'line' ? `"You held the row. For the cadre. That's going to matter more than you think and less than you'd like. The Host doesn't love the cadre, Sergeant, and the Claw don't love anybody who does." ${S.f.wjRegard > 0 ? `"But I do. Noted."` : S.f.wjRegard < 0 ? `"It's a start."` : `"Noted."`}` :
   `"You held the tent. For the grey cloaks." He says it without weight, and that's the weight. "I won't ask what they took. I'll know by morning anyway. But you'll want to remember that people who help the Claw once get asked twice, and the second time it isn't a request." ${S.f.wjRegard > 0 ? `"You came out of a hole with all five. Keep it five. That's the whole of my advice."` : S.f.wjRegard < 0 ? `"Fourth Squad." Nothing else.` : `"Go and sleep."`}`}
 
-"Wagon leaves at dawn. Baggage, Rhivi guide, the Fourth. South, then east, then Darujhistan. We'll be there a week before you. Try not to be interesting on the way."`,
+"Wagon leaves at dawn. Baggage, Rhivi guide, the Fourth. South, then east, then Darujhistan. Eleven days. We'll be there a week before you. Try not to be interesting on the way."`,
       ch:[{t:'"Sir."', go:'c1_close'}]}),
     c1_close:()=>({sp:'The Fourth\'s fire', scene:'camp_night', fx:()=>{S.f.c1_done=1;}, txt:
 `Back at your own fire, which is smaller and still there. Brisk is standing over it. Kettle is counting. Ohl has the oilcloth open on his knee and has not added a name, and closes it, and you watch him decide not to say so.

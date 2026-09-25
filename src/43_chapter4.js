@@ -1,7 +1,7 @@
 /* ============ chapter 4: Assassins ============ */
 const CH4 = {
   title:'Assassins', number:'Four',
-  intro:{loc:'Darujhistan', sub:'The rooftops · the second night', cap:'Slate and chimney-pots under a blue haze, and above them a black mountain with no light in its windows.',
+  intro:{loc:'Darujhistan', sub:'The rooftops · two nights on', cap:'Slate and chimney-pots under a blue haze, and above them a black mountain with no light in its windows.',
     paras:[
 `Two nights since the dye-shop. Two nights of hauling nothing, guarding a hole, and pretending to be a road crew for a city that has stopped pretending not to notice. The Gadrobi crossing has a new brazier and an old silence. Hedge sings in the hole. Trotts stands at the stakes. Whiskeyjack sits on his bucket, and looks at the lake, and does not say what he is waiting for, which is how you know he is waiting for something.`,
 `The city has started dying on its roofs. Not in its streets; its streets are as loud as ever, fish and bells and blue lamps. On the roofs. A body on the tannery ridge at dawn, face-down, knives still in the sheaths. Two on the Gadrobi temple dome, the morning after. A man in a guild jerkin found hanging by one foot from a gutter on the Street of Tanners' Daughters, and nobody on the street will say which guild. The Watch go up with ladders and come down with sheets and say *the gas*. Everyone in Darujhistan knows it is not the gas. Nobody in Darujhistan says what it is.`,
@@ -10,7 +10,7 @@ const CH4 = {
 
   areas:[
     /* 16 columns x 12 rows.  . roof tile  , slate  # drop / open air  p plank  C chimney  S skylight  x washing-line post  > exit east (to the Daru roofs) */
-    { id:'roofs_gadrobi', title:'Darujhistan · the Gadrobi roofs', sub:'Night · the second night', hint:'Tap roof to move · tap a figure to talk · the planks hold · the way on is east', decor:'roof_night',
+    { id:'roofs_gadrobi', title:'Darujhistan · the Gadrobi roofs', sub:'Night · two nights on', hint:'Tap roof to move · tap a figure to talk · the planks hold · the way on is east', decor:'roof_night',
       map:[ "################",
             "#..C..#,,,,#...#",
             "#.....#,,C,#.x.#",
