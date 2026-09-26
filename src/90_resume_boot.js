@@ -29,6 +29,7 @@ function loop(t){
   if (view === 'finale' && finAnim) finAnim(t);
   if (charAnim) charAnim(t);
   if (cardAnim) cardAnim();
+  if (MG.anim) MG.anim(t);
   requestAnimationFrame(loop);
 }
 function start(data){
@@ -47,7 +48,7 @@ window.claude?.hot?.snapshot?.(() => (S ? {S: JSON.parse(JSON.stringify(S))} : {
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 /* Android Back (and Escape): an open overlay (the squad sheets, pack/journal/save, settings) holds one history entry,
    and Back closes it instead of leaving the app. The level-up picks can't be backed out of. */
-const OVERLAYS = ['#chars', '#settings', '#modal'];
+const OVERLAYS = ['#chars', '#settings', '#modal', '#mg'];
 const ovOpen = () => OVERLAYS.some(s => !$(s).hidden), picksOpen = () => !$('#modal').hidden && !!$('#modal .picks');
 let ovT = 0, ovBack = 0; // one check per burst of changes, and one Back at a time (a second would leave the page)
 function ovSync(){ clearTimeout(ovT); ovT = setTimeout(() => { if (Date.now() - ovBack < 1500) return; const open = ovOpen(), mine = !!(history.state && history.state.ov);
@@ -57,9 +58,11 @@ window.addEventListener('popstate', () => {
   const ours = ovBack; ovBack = 0; if (ours) { if (ovOpen()) ovSync(); return; } // our own Back, after a close: something may have opened since
   if (!ovOpen()) return;
   if (picksOpen()) { history.pushState({ov:1}, ''); return; }
+  const other = !$('#chars').hidden || !$('#settings').hidden || !$('#modal').hidden;
   if (!$('#chars').hidden) closeChars();
   if (!$('#settings').hidden) { $('#settings').hidden = true; $('#settings').innerHTML = ''; }
   $('#modal').hidden = true;
+  if (!other && mgOpenNow()) { if (MG.leave) MG.leave(); if (mgOpenNow()) history.pushState({ov:1}, ''); } // a game: Back is its Leave (which may ask first)
 });
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && ovOpen() && !picksOpen() && history.state && history.state.ov) history.back(); });
 /* the keyboard, for a PC. Talking: 1-9 pick a choice, Space or Enter takes the only one (or hurries the die). The map: the arrow keys or WASD

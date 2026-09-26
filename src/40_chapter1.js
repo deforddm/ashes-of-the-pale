@@ -36,6 +36,9 @@ const CH1 = {
       {id:'kalam', name:'Kalam', kind:'kalam', x:13, y:9, node:()=>S.f.c1_wj?'c1_wj_again':'c1_wj'},
       {id:'tat', name:'Tattersail', kind:'tat', x:4, y:1, node:()=>S.f.c1_tent?'c1_tent_again':'c1_tent', show:()=>!S.f.c1_hounds, fresh:()=>!S.f.c1_tent},
       {id:'pell', name:'Quartermaster Pell', kind:'pell', x:6, y:6, node:()=>'c1_pell'},
+      // Hedge and Fiddler, on the dark side of the Bridgeburners' fire with a blanket and two bones
+      {id:'fiddler', name:'Fiddler', kind:'fiddler', x:11, y:10, node:()=>'c1_bones', show:()=>!S.f.c1_hounds, fresh:()=>!S.f.c1_bones},
+      {id:'hedge', name:'Hedge', kind:'hedge', x:12, y:10, node:()=>'c1_bones', show:()=>!S.f.c1_hounds, fresh:()=>!S.f.c1_bones},
       {id:'claw', name:'Grey cloak', kind:'claw', x:9, y:3, node:()=>S.f.c1_claw?'c1_claw_again':'c1_claw', show:()=>!S.f.c1_hounds && !!S.f.c1_wj, fresh:()=>!S.f.c1_claw} ] },
 
   battles:{
@@ -366,6 +369,30 @@ Kettle has not stopped looking at the crate.`,
       ch:[{t:'Back', go:'c1_pell'}]}),
 
     /* ---- the burial field ---- */
+    /* ---- bones at the Bridgeburners' fire ---- */
+    c1_bones:()=>({sp:'Hedge and Fiddler · Bridgeburners', txt: !S.f.c1_bones ?
+`Two Bridgeburners have a blanket spread on the dark side of the fire, two knucklebones between them yellow with handling, and a small pile of silver that keeps changing sides. One is a wiry man with his cap pushed back and an onion in his fist. The other has a fiddle case on his back and the face of a man who has never once been surprised and holds it against the world.
+
+"Marines!" says the one with the onion. "Hedge. That's Fiddler. He cheats."
+
+"I count," says Fiddler, not looking up. "It looks like cheating to people who can't."
+
+Hedge rattles the bones at you. "Two bones. Throw as often as you like, bank when you're scared. A skull wipes the throw. Two skulls, that's Hood's eyes, wipes everything you've banked. A pair counts double. First to thirty takes the pot." He points the onion at Fiddler. "Fid'll play you. I'm on a losing streak and I'm letting it rest."
+
+${SQUAD().includes('kettle') ? `Kettle has gone very still, the way she does near a crate she isn't allowed to open. "Two dice," she says. "Thirty-six outcomes. Eleven of them have a skull." Fiddler looks at her properly for the first time. "Oh, I like this one," he says.` : ''}` :
+`${S.f.c1_bones === 'won' ? `"Here's trouble," says Hedge. Fiddler moves the silver pile an inch closer to his own knee.` : S.f.c1_bones === 'lost' ? `"Back for more?" Hedge makes room on the blanket. "Fid's buying. With your silver."` : `The blanket, the bones, the pile of silver that keeps changing sides. Hedge makes room without being asked.`}`,
+      ch:[{t:'Sit in against Fiddler.', tag:'Bones', req:()=>S.silver >= 1 && (S.f.c1_bonesNet || 0) < 15, go:()=>playBones({opp:'fiddler', chat:'hedge', stakes:[1,3,5], place:'c1', cap:15, after:r => { if (r.games) S.f.c1_bones = r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even'; else S.f.c1_bones ||= 'looked'; S.f.c1_bonesLast = r.games ? (r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even') : 'left'; talk('c1_bones_after'); }})},
+          {t:'"You\'ve had enough of my silver."', req:()=>(S.f.c1_bonesNet || 0) >= 15, go:'c1_bones_after'},
+          {t:'Leave them to it.', fx:()=>{ S.f.c1_bones ||= 'looked'; }}]}),
+    c1_bones_after:()=>({sp:'Hedge and Fiddler', txt:
+`${(S.f.c1_bonesNet || 0) >= 15 ? `"We're cleaned out," Fiddler says, with the calm of a man who has been cleaned out before and expects to be again. "Go and buy something with our silver, Sergeant. Something we'd hate."` :
+  S.f.c1_bonesLast === 'won' ? `Fiddler counts your silver across the blanket without a word, and then, as you get up, one word: "Hands." He nods at them. "Good hands. Wasted on a marine."
+
+Hedge is delighted. "He *lost!* Fid lost to a marine. I'm telling everyone. I'm telling Whiskeyjack."` :
+  S.f.c1_bonesLast === 'lost' ? `Hedge sweeps your silver onto his side of the blanket, then, thinking about it, onto Fiddler's. "His, technically." He beams. "Come back when you've got more silver and less sense, Sergeant. We'll be here. We're always here. That's the Bridgeburners."` :
+  S.f.c1_bonesLast === 'even' ? `"Square," says Fiddler, and sounds, for the first time tonight, almost pleased.` :
+  `Hedge shrugs. "Suit yourself. The bones'll keep. So will Fid. Nothing hurts him."`}`,
+      ch:[{t:'Back to the fire.'}]}),
     c1_pits:()=> S.f.c1_pits ? {sp:'The Second\'s burial field', txt:
 `The pits are where they were. Brisk doesn't come this way twice in a night, and doesn't ask why you did.`,
       ch:[{t:'Leave'}]} : {sp:'The Second\'s burial field', fx:()=>{S.f.c1_pits=1;}, txt:

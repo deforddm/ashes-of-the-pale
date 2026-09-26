@@ -22,6 +22,7 @@ function openModal(tab){
       S.f.knowDeserters ? `Garrow: Moreau's section deserted into the north tunnels. "The Fist is still counting heads."` : '',
       S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak is paying attention to your squad.`) : '',
       S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
+      S.f.c3_kruppeRumour ? `Kruppe, caught palming a coin at the Phoenix: the Guild's roof watchers sweep on a count of eight, and never look straight down.` : '',
       S.f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : `Brisk's brother, Second Army: not yet found.`, S.f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>${glossHTML()}`,
     save:()=>`${S ? `<p class="fine">Playing as <b class="who">Sergeant ${esc(S.name)}</b>. The game saves itself on this device as you play, under your sergeant's name. Anyone else can start their own sergeant from the title, and each keeps a save of their own.</p>
       <div class="row" style="margin:8px 0 16px"><button class="btn" id="bSwitch">Switch sergeant</button></div>
@@ -102,6 +103,9 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.9.0', ['Bones at the fire: a dice game of nerve against Fiddler at the Pale, Kettle at the Rhivi Plain fire (for first watch), and Hedge at the Gadrobi crossing once the crates are down. Two bones, throw or bank, and beware Hood\'s eyes.',
+             'Kruppe\'s cups at the Phoenix Inn: follow the coin for three rounds. Kruppe cheats in the last one. Catch him at it and he pays double, and tells you something about the roofs.',
+             'Laying the charges: in the vault under the crossroads, lay the twelve cussers yourself, three runs of a sapper\'s puzzle with Hedge watching. Clean work is rewarded.']],
   ['3.8.2', ['The credits now name Ian C. Esslemont beside Steven Erikson as co-creator of the Malazan world: on the title, at the finale and in the README.']],
   ['3.8.1', ['On a PC the game now uses the whole screen: the scene fills the left side, as tall as the window allows, and the text sits against the right edge. On a big monitor the text is a size larger too.',
              'Settings \u203a Text size now makes the story text and the choices bigger or smaller, on a phone as well. Before, it only changed the buttons.']],

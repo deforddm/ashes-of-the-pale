@@ -299,6 +299,30 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .jh{margin:14px 0 8px;font-family:var(--label);font-weight:700;font-size:.78rem;letter-spacing:.14em;color:var(--brass);display:flex;align-items:center;gap:8px}
 .jh::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
 @media (max-width:379px){.tab{padding:8px 6px;font-size:.9rem;letter-spacing:.03em}}
+/* ============ minigames: the table overlay ============ */
+#mg{position:fixed;inset:0;z-index:35;background:radial-gradient(ellipse at 50% 30%,rgba(40,28,18,.96),rgba(4,3,3,.98) 70%);overflow:auto;overscroll-behavior:contain;padding:max(12px,env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start}
+.mgbox{width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px}
+.mghead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:1px solid var(--line2);padding-bottom:8px}
+.mgstage{position:relative;border:1px solid var(--line2);background:#060505;box-shadow:0 0 0 1px #000,0 12px 40px rgba(0,0,0,.7)}
+#mgcv{display:block;width:100%;height:clamp(220px,38vh,380px);touch-action:manipulation}
+.mgpanel{display:flex;flex-direction:column;gap:9px}
+.mgsay{font-family:var(--prose);font-size:1.06rem;line-height:1.45;margin:0}
+.mgsay b{font-family:var(--label);color:var(--brass2);font-weight:600;letter-spacing:.04em;margin-right:4px}
+.mgbtns{gap:8px}.mgbtns .btn{flex:1 1 auto;min-height:46px}
+.mgpanel .dim{color:var(--mute);font-size:.9em}
+.bscore{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bs{position:relative;border:1px solid var(--line2);padding:6px 12px 9px;background:rgba(0,0,0,.35);overflow:hidden}
+.bs.on{border-color:var(--brass);box-shadow:0 0 12px rgba(201,151,63,.25)}
+.bs span{font-family:var(--label);font-size:.8rem;letter-spacing:.06em;color:var(--mute)}
+.bs b{display:block;font-family:var(--display);font-size:1.7rem;line-height:1.1;color:var(--ink);font-weight:400}
+.bs i{position:absolute;left:0;bottom:0;height:3px;background:linear-gradient(90deg,#a97b2c,#e8c073)}
+.bs em{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--brass2);font-family:var(--display);font-size:1.4rem}
+.bgoal{margin:0}
+.cpbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--label);font-size:.82rem;letter-spacing:.06em;color:var(--mute);border-bottom:1px solid var(--line);padding-bottom:6px}
+.mgpanel .warnc{color:#f08a7c}.mgpanel .jc{color:#9fe0b8}.mgpanel .ac{color:#e0b28a}
+.mgcheck{margin:0;font-family:var(--label);font-size:.8rem;letter-spacing:.04em;padding:5px 10px;border-left:2px solid var(--moss);background:rgba(111,159,130,.09);color:#cfe8d8}
+.mgcheck.bad{border-color:var(--blood2);background:rgba(168,51,42,.12);color:#f0c9c2}
+@media (min-width:1000px) and (min-height:560px){.mgbox{max-width:980px}#mgcv{height:min(50vh,540px)}}
 /* ============ a wide screen (a PC, or a tablet on its side): the map, the battlefield or the backdrop on the left,
    everything to read and press on the right. The same query is WIDEQ in the utilities. ============ */
 kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:3px;font-family:var(--label);font-size:.72rem;line-height:1.35;text-align:center;color:var(--ash);background:rgba(0,0,0,.3)}

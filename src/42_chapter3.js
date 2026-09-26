@@ -343,7 +343,27 @@ His eyes go past you, once, to the chandler's shutters, and the woman in the gre
 
 "And Sergeant. Her." He doesn't point. He doesn't need to. "Don't talk to her. Don't look at her long enough for her to notice." He smiles, and it isn't a joke, and he knows you know. "Squad advice. Free. First and only."`,
       ch:[{t:'"Who is she?"', go:'c3_fiddler_sorry'},
+          {t:'"Bones?"', tag:'Bones', req:()=>!!S.f.c3_workDone && S.silver >= 1 && (S.f.c3_bonesNet || 0) < 15, go:'c3_bones'},
           {t:'Leave him.'}]}),
+    c3_bones:()=>({sp:'Fiddler', txt:
+`"Bones." Fiddler considers the word as if it were a fuse. Then he whistles, two notes, and Hedge comes out of the dark from the direction of the crates with his onion. "Sergeant wants a game."
+
+"*Does* she." Hedge is already sitting. "Does he. Does the Sergeant." He produces the bones from somewhere under his cap. "My deal. Fid keeps the count. Fid, keep the count honest, the Sergeant's watching."
+
+"I always keep it honest," says Fiddler. "That's why you always lose."
+
+${S.f.c1_bones === 'won' ? `Hedge squints at you. "Wait. Pale. The blanket. You're the one took Fid's silver." He looks at Fiddler with dawning joy. "*You* sit out. I'll get it back for you."` : S.f.c1_bones === 'lost' ? `Hedge squints at you. "Pale. The blanket. You're the one Fid cleaned out." He beams. "Welcome back."` : ''}`,
+      ch:[{t:'Deal.', tag:'Bones', go:()=>playBones({opp:'hedge', chat:'fiddler', stakes:[1,3,5], place:'c3', cap:15, after:r => { S.f.c3_bonesLast = r.games ? (r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even') : 'left'; talk('c3_bones_after'); }})},
+          {t:'"Another time."'}]}),
+    c3_bones_after:()=>({sp:'Hedge and Fiddler', txt:
+`${(S.f.c3_bonesNet || 0) >= 15 ? `"That's the crate money," says Hedge, faintly. "That was the crate money, Fid." Fiddler, very calm: "There isn't any crate money." Hedge: "There *was.*"` :
+  S.f.c3_bonesLast === 'won' ? `Hedge hands over your silver one coin at a time, as if each one were a tooth. "Fine. *Fine.* Your sapper counts and you throw. That's not a squad, that's a con." He bites his onion. "I like it."` :
+  S.f.c3_bonesLast === 'lost' ? `"Onion," says Hedge, holding it up, reverently. "Never doubt the onion."
+
+Fiddler, pocketing his share of your silver: "He'll tell that story for a month. Your name's not in it. You're welcome."` :
+  S.f.c3_bonesLast === 'even' ? `"Square," says Fiddler. "That's the worst result there is. Nobody learns anything."` :
+  `Hedge puts the bones back under his cap. "Suit yourself. We'll be here. We're always here, lately."`}`,
+      ch:[{t:'Leave them to it.'}]}),
     c3_fiddler_sorry:()=>({sp:'Fiddler', txt:
 `"Sorry." He lets that sit until you understand it's a name. "Recruit. Fishing village on Itko Kan. Came to us young." A long pause, the kind a sapper leaves while the acid decides. "She's the best we've got at some things. I don't like the things."
 
@@ -443,9 +463,16 @@ Kettle comes down the ladder behind you with the first cusser in both arms, very
 "Oh," she says softly. "Oh, *Sergeant*."
 
 ${SQUAD().includes('ohl') ? `Ohl, halfway down the ladder, has stopped. "There are forty thousand people in this district," he says, to nobody. "I asked the clerk." Then he comes down the rest of the way and takes a cusser from Brisk's arms, because he is a soldier, and he doesn't say it again.` : ''}`,
-      ch:[{t:'Stack them where Hedge says.', go:'c3_work_hedge'}]}),
+      ch:[{t:'"Show me where they go, Hedge. I\'ll lay them."', tag:'Sapper\'s puzzle', go:()=>playCharges({after:r => { S.f.c3_charges = r.solved ? (r.clean ? 'clean' : 'solved') : r.runs ? 'part' : 'hedge'; if (r.solved) mgDeed(r.clean ? 'chargesClean' : 'chargesLaid'); talk('c3_work_hedge'); }})},
+          {t:'Stack them where Hedge says.', go:'c3_work_hedge'}]}),
     c3_work_hedge:()=>({sp:'Hedge', scene:'cellar', txt:
-`It takes three hours. Nobody drops anything. Nobody sneezes. Brisk carries cussers down the ladder, one at a time, with the same face she uses for rations, and Tuft holds the lantern and says nothing and watches the dark past the pipes, where the vault goes on further than the lantern does.
+`${S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved' ? `Twelve cussers, three runs, and not one of them where Hedge would have moved it. He walks the vault twice with the lantern, touching each one the way Fiddler does, and comes back, and looks at you for a long moment with his cap pushed back.
+
+"${S.f.c3_charges === 'clean' ? 'First go, every run' : 'You got there'}," he says. "I've had sappers ten years in the trade couldn't lay the junction run without taking the arch out. You're wasted on the marines, Sergeant. Everyone's wasted on the marines. That's what marines are for."
+
+` : S.f.c3_charges === 'part' ? `You lay what you can before Hedge takes the chalk back, not unkindly, and finishes the rest himself in about four minutes, whistling.
+
+` : ''}It takes three hours. Nobody drops anything. Nobody sneezes. Brisk carries cussers down the ladder, one at a time, with the same face she uses for rations, and Tuft holds the lantern and says nothing and watches the dark past the pipes, where the vault goes on further than the lantern does.
 
 When it's done, Hedge wipes his hands on his shirt, which makes them dirtier.
 
@@ -466,7 +493,8 @@ Kettle, very quietly: "Hedge."
 He's already turned back to the niches, lips moving, counting the Bridgeburners' own: four crates with green wax on the lids, the ones the Green Moranth brought in for Whiskeyjack, packed with everything from cussers all the way down to smokers. At the last he stops, reaches in, and comes out with two small clay pots stoppered with wax, and drops them into Kettle's satchel without looking.
 
 "Smokers. Nobody counts smokers." He pats the lid. "Thirteen to a crate, the Moranth pack them. Twelve and a dud. The thirteenth's empty clay, every crate, every time, and not one of them will tell you why. I asked once. Still waiting." He wipes his hands again, which doesn't help. "Fid and me named half of what's in these, you know. Sharpers, 'cause that's what they do to you if you're stood too close when one goes. Ears bleeding, bits of iron in your cheek." A pause, very nearly fond. "Ask him about the Drum some day. Not down here."`,
-      fx:()=>{ S.inv.cusser += 1; S.inv.smoker = (S.inv.smoker || 0) + 2; S.f.gotSmokers = 1; note('Hedge\'s tip: +1 cusser, and two smokers.','good'); if (SQUAD().includes('kettle')) loy('kettle',1); },
+      fx:()=>{ S.inv.cusser += 1; S.inv.smoker = (S.inv.smoker || 0) + 2; S.f.gotSmokers = 1; note('Hedge\'s tip: +1 cusser, and two smokers.','good'); if (SQUAD().includes('kettle')) loy('kettle',1);
+        if (S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved') { S.inv.sharper += S.f.c3_charges === 'clean' ? 2 : 1; const up = gainXP(S.f.c3_charges === 'clean' ? 30 : 20); note(`Hedge's respect: +${S.f.c3_charges === 'clean' ? 2 : 1} sharper${S.f.c3_charges === 'clean' ? 's' : ''}, and +${S.f.c3_charges === 'clean' ? 30 : 20} experience.`, 'good'); if (up) note(`The squad reaches level ${S.lvl}.`, 'good'); } },
       ch:[{t:'Up the ladder.', go:'c3_work_done'}]}),
     c3_work_done:()=>({sp:'The second night', scene:'city_street', fx:()=>{ S.f.c3_workDone=1; S.f.c3_night2=1; gain('roadleather'); const up = gainXP(60); note('+60 experience. Road crew work.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
 `You sleep on the chandler's roof, all of you in a row under the eaves, and wake at noon to the sound of the city: carts and bells and a man shouting about fish, and under it, if you listen, the hiss. Mallet brings bread. Fiddler throws a crew jerkin at you, oiled leather with a guild mark burned in the back. "Look the part. Nobody looks twice at a man in one of those. Nobody looks *once*."
@@ -560,6 +588,7 @@ ${SQUAD().includes('ellis') ? `Ellis has taken the stool nearest the door withou
           {t:'The man in silk is looking at Tuft.', req:()=>!S.f.c3_innMur, go:'c3_inn_murillio'},
           {t:'Ohl has gone very quiet.', req:()=>!S.f.c3_innOhl && SQUAD().includes('ohl'), go:'c3_inn_ohl'},
           {t:'Tuft has gone to the back table.', req:()=>!S.f.c3_drawn && !S.f.c3_noCard && SQUAD().includes('tuft'), go:'c3_inn_tuft'},
+          {t:'Kruppe has produced three cups and a coin.', tag:'Kruppe\'s cups', req:()=>!!S.f.c3_innKruppe && S.silver >= 1 && (S.f.c3_cupsSits || 0) < 3, go:()=>playKruppeCups('c3_inn')},
           {t:'Finish your cup and go.', go:'c3_inn_leave'}]}),
     c3_inn_kruppe:()=>({sp:'Kruppe', fx:()=>{S.f.c3_innKruppe=1;}, txt:
 `Kruppe sets down his fork, which is a thing he does, you gather, with ceremony, like a herald setting down a trumpet.
@@ -716,13 +745,21 @@ Tuft doesn't let go of the frame for a long moment. When she does, she doesn't s
 
 ${S.loy.tuft >= 2 ? `Then, very quietly: "She's not gone. That's what he meant. That's all I'm going to say, because if I say more I'll have to believe it."` : `And she walks on.`}`,
       ch:[{t:'Back to the crossing.', go:()=>startExplore('gadrobi_cross')}]}),
+    /* ---- Kruppe's cups ---- */
+    c3_cups_after:()=>({sp:'Kruppe', scene:'inn', txt:
+`${S.f.c3_cupsLast === 'caught' ? `Kruppe is still delighted. He tells Murillio about it, in detail, with the Sergeant as the hero and Kruppe as a tragic figure of great charm. Murillio looks at you over his cup with something like respect, which on Murillio looks like indigestion.` :
+  S.f.c3_cupsLast === 'up' ? `"The Sergeant leaves richer," Kruppe tells the table, "and Kruppe leaves wiser, which is the better bargain, though it doesn't feel like it." He pats his waistcoat where the silver used to be. "It will feel like it tomorrow."` :
+  S.f.c3_cupsLast === 'down' ? `Kruppe stacks your silver in a neat little tower beside his plate and does not touch it, which is somehow worse. "For the next round," he says, "whenever the Sergeant feels lucky. Kruppe keeps it warm."` :
+  `"Another time, then." Kruppe puts the cups away inside his waistcoat, one inside the other, and the waistcoat does not change shape at all.`}`,
+      ch:[{t:'Back to the table.', go:()=>talk(S.f.c3_cupsFrom || 'c3_inn')}]}),
     c3_inn_again:()=>({sp:'The Phoenix Inn', scene:'inn', txt:
 `Kruppe's table. Kruppe at it. ${S.f.c3_coll ? `Coll, without his ring, drinking as if there were more of it in the jug.` : `Coll, with his ring, drinking as if the jug might argue.`} Murillio has changed his rings. Crokus isn't there; Kruppe says he is out *walking*, in a tone that says he is up on a roof somewhere with a sack.
 
 "The road-menders return!" Kruppe beams. "Kruppe knew they would. The wine is still not very good. Kruppe has had words with it."
 
 ${S.f.c3_msg && !S.f.c3_key ? `Then, as you turn to go, very quietly, to his plate: "The Daru District is lovely at night, Kruppe hears. Such fine shops. So many of them open late. Kruppe would go in threes, himself. Or sixes."` : ''}`,
-      ch:[{t:'Back to the crossing.', go:()=>startExplore('gadrobi_cross')}]}),
+      ch:[{t:'Kruppe has the cups out again.', tag:'Kruppe\'s cups', req:()=>S.silver >= 1 && (S.f.c3_cupsSits || 0) < 3, go:()=>playKruppeCups('c3_inn_again')},
+          {t:'Back to the crossing.', go:()=>startExplore('gadrobi_cross')}]}),
 
     /* ---- the message ---- */
     c3_urchin:()=>({sp:'A Gadrobi child', fx:()=>{S.f.c3_msg=1;}, txt:

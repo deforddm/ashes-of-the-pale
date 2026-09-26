@@ -582,8 +582,11 @@ ${!(S.f.c2_drawn || S.f.c2_noCard) ? `He nods, very slightly, at Tuft, and the D
       ch:[{t:'Leave the fire.'}]} : S.f.c2_drawn || S.f.c2_noCard ? {sp:'The fire', txt:
 `The fire's low. Brisk feeds it a stick at a time, which is how Brisk feeds anything.
 
-${S.f.c2_noCard ? `Tuft has the Deck in her sleeve and is not touching it. She hasn't said anything about it. That's how you know.` : `Tuft has put the Deck away. She's looking west, over the tents, at nothing.`}`,
-      ch:[{t:'Leave the fire.'}]} : {sp:'The fire', fx:()=>{S.f.c2_fireSeen=1;}, txt:
+${S.f.c2_noCard ? `Tuft has the Deck in her sleeve and is not touching it. She hasn't said anything about it. That's how you know.` : `Tuft has put the Deck away. She's looking west, over the tents, at nothing.`}
+
+${SQUAD().includes('kettle') && !S.f.c2_bones ? `Kettle has two knucklebones out and is throwing them against her own knee, left hand against right, keeping score in the dirt with a stick. "Hedge taught me," she says, without looking up. "Well. Hedge took four silver off me and I watched how." She holds them up. "Loser takes first watch, Sergeant?"` : S.f.c2_bones === 'won' ? `Kettle is on first watch, out by the stakes, counting stars under her breath and losing count on purpose.` : S.f.c2_bones === 'lost' ? `Kettle is asleep already, curled round her satchel, with the bones in her fist.` : ''}`,
+      ch:[{t:'"Loser takes first watch. Throw."', tag:'Bones', req:()=>SQUAD().includes('kettle') && !S.f.c2_bones, go:()=>playBones({opp:'kettle', chat:SQUAD().includes('brisk') ? 'brisk' : null, stakes:null, stakeText:'first watch', place:'c2', after:r => { if (r.games) S.f.c2_bones = r.last === 'me' ? 'won' : 'lost'; talk('c2_bones_after'); }})},
+          {t:'Leave the fire.'}]} : {sp:'The fire', fx:()=>{S.f.c2_fireSeen=1;}, txt:
 `Tuft has the Deck out. She has it face-down on her knee, one hand flat on it, the way you'd hold a door shut.
 
 "One card, Sergeant. I don't want to. I think I have to." She doesn't look at Sethand, who is not looking at her with great skill. "Something's happening tonight. I can feel it in the warren like a draught under a door, and the Deck's warm, and it's never warm."
@@ -599,6 +602,15 @@ ${SQUAD().includes('ellis') ? `Ellis, from the dark beyond the stakes, not loudl
 
 Sethand has not looked at the card. He has looked at Tuft's face while she looked at it, which is where a Rhivi reads a Deck.`,
       ch:[{t:'Put the cards away.', go:()=>{ if (S.f.c2_sethNight) talk('c2_light'); else startExplore(); }}]}; },
+    c2_bones_after:()=>({sp:'The fire', txt: S.f.c2_bones === 'won' ?
+`Kettle stares at the bones for a while as if they might explain themselves. Then she gets up, picks up her crossbow, and goes out to the stakes for first watch without a word, which from Kettle is a speech.
+
+${SQUAD().includes('brisk') ? `Brisk, feeding the fire a stick at a time: "She let you win." A pause. "She didn't. But she'll say she did. Let her."` : `She's still muttering odds at the dark when you fall asleep.`}` : S.f.c2_bones === 'lost' ?
+`"First watch," says Kettle, and is asleep before you've finished standing up, curled round her satchel with the bones in her fist.
+
+The stars over the Rhivi Plain are very large and very many, and there is a long time to look at them.` :
+`Kettle puts the bones away. "Another night," she says. "I've been working on a system."`,
+      ch:[{t:'The camp.'}]}),
     c2_fire_no:()=>({sp:'Tuft', txt:
 `She puts the Deck back in her sleeve. She does it slowly, which is a thing she does with her hands when the rest of her wants to do something fast.
 
