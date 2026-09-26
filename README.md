@@ -4,7 +4,7 @@ A non-commercial Malazan Book of the Fallen fan RPG for personal play: an origin
 
 Play: https://deforddm.github.io/ashes-of-the-pale/ (installable as an app).
 
-The Malazan world and its canon characters belong to Steven Erikson. This is fan work and is not affiliated with the author or publisher.
+The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. This is fan work and is not affiliated with the authors or publisher.
 
 ## Building
 
@@ -27,6 +27,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 - v3.4.0 — Chapter Five: The Gadrobi Hills. Lorn and Tool, the barrow, Hairlock's rent, Toc, the Hounds, the Herald card.
 - v3.6.0 — Chapters Six and Seven: The Fete, Outlaws — the end of the book. Estate and lakefront maps, the Tyrant, the Adjunct, otataral and mortal fights, the finale and a page per squadmate.
 - v3.7.0 — The polish pass. Every chapter proofread and checked for continuity, including every combination of the dead after the alley. Painted portraits, reworked sprites, tiles, backdrops and cards. A rebuilt procedural score and place-by-place ambience. Sturdier battles with hit chances, clearer turns and no clipped sprites. A close-up explore map that follows the sergeant. Proper curly quotes. Updates now wait for a tap instead of reloading mid-fight, and the fonts work offline.
+- v3.8.2 — Credits: Ian C. Esslemont named beside Steven Erikson as co-creator of the Malazan world (title, finale, README).
 - v3.8.1 — The PC layout uses the whole screen: the picture runs from the left edge and the text column sits hard against the right. Backdrops fill their side as tall as the window allows (down to a phone's 1.4:1, the same drawing bigger) instead of a 2:1 strip. Text is a step larger on big screens (1600, 1900 and 2400 pixels wide). Settings › Text size now scales all the story text and choices, not just the buttons.
 - v3.8.0 — Full screen on a PC: no browser bars and no taskbar. A button in the top corner of the title and beside Settings in every header, or F, turns it on and off (the browser's Esc leaves it). Settings › Full screen On makes every visit go full screen at the first click or key (browsers only allow it from one). Phones unchanged.
 - v3.7.9 — Install it as a desktop app. On a PC, when Chrome or Edge can install the game, the title offers it (Install, or Not now for two weeks); Safari on a Mac gets the File › Add to Dock directions once; Firefox, which can't install web apps, gets nothing; the installed app never asks. Settings always has Install as an app while the browser offers it, on a phone too. The manifest carries wide and narrow screenshots for the browsers' richer install dialog.
