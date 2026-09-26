@@ -24,12 +24,14 @@ function blog(m){ B.log.unshift(m); B.log = B.log.slice(0,5); const el = $('#blo
 function float(u, txt, col, big){ const now = performance.now(), n = B.fx.filter(f => f.kind === 'txt' && f.x === u.x && f.y === u.y && now - f.t < 350).length;
   B.fx.push({kind:'txt', x:u.x, y:u.y, txt, col, big, t:now + n*140}); }
 function hurt(u, n, crit){ if (u.hp <= 0) return; // already down: a second blast or a late blow does nothing
+  if (u.side === 'p' && !u.ally && DIFF().dmg !== 1) n = Math.max(1, Math.round(n * DIFF().dmg)); // the difficulty, on every wound the squad takes
   if (u.side === 'p' && !u.ally && S.card === 'herald' && u.hp - n <= 0 && !B.used.herald) { B.used.herald = true; n = u.hp - 1; blog(`<em>The Herald turns its head.</em> ${u.name} stays standing at 1 health.`); float(u, 'spared', '#8fa38a'); }
   if (u.immortal && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'holds', '#bfe8ff'); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // it does not fall
-  u.hp = Math.max(0, u.hp - n); if (!(u.immortal && u.hp === 1)) float(u, '−' + n + (crit ? '!' : ''), crit ? '#ffcf7a' : '#f08a7c', crit); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
+  if (u.side === 'e') tally('dealt', Math.min(n, u.hp)); else if (!u.ally) tally('taken', Math.min(n, u.hp));
+  u.hp = Math.max(0, u.hp - n); if (u.hp === 0 && u.side === 'e') tally('kills'); if (!(u.immortal && u.hp === 1)) float(u, '−' + n + (crit ? '!' : ''), crit ? '#ffcf7a' : '#f08a7c', crit); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
   if (u.side === 'p' && !u.ally) redFlash(); if (n >= 8 || crit) shakeMap();
   if (u.hp === 0) { u.deadAt = performance.now(); AUDIO.play('death'); sparks(u.x, u.y, 14, u.side === 'p' ? '#d6a24a' : '#9a3a30', .6); blog(u.side === 'p' ? `<em>${u.name} goes down!</em>` : `${u.name} falls.`); } else AUDIO.play('hurt'); }
-function heal(u, n){ const before = u.hp; u.hp = Math.min(u.maxhp, u.hp + n); if (u.hp > before) float(u, '+'+(u.hp-before), '#9fe0b8'); u.healed = performance.now(); }
+function heal(u, n){ const before = u.hp; u.hp = Math.min(u.maxhp, u.hp + n); if (u.side === 'p' && !u.ally) tally('healed', u.hp - before); if (u.hp > before) float(u, '+'+(u.hp-before), '#9fe0b8'); u.healed = performance.now(); }
 function sparks(x, y, n, col, spd = 1){ if (REDUCE()) return; for (let i=0;i<n;i++){ const a = Math.random()*7, s = (Math.random()*.6 + .3)*spd; B.parts.push({x:x + .5, y:y + .5, vx:Math.cos(a)*s, vy:Math.sin(a)*s - .3, life:1, decay:.02 + Math.random()*.03, col, size:1 + Math.random()*2}); } }
 
 function mkParty(id, x, y){
@@ -43,7 +45,7 @@ function mkParty(id, x, y){
   if (B && B.def.nomagic && u.magic) { u.rng = 1; if (id === 'tuft') { u.dmg = [1,4,1]; u.verb = 'jabs a knife at'; } } // otataral: a knife, or the cudgel
   u.hp = u.maxhp; return u;
 }
-function mkFoe(k, x, y, extra=0){ const f = FOES[k]; return {id:k, kind:k, side:'e', ...f, maxhp:f.hp+extra, hp:f.hp+extra, col:'#d9695a', x, y}; }
+function mkFoe(k, x, y, extra=0){ const f = FOES[k], hp = Math.max(1, Math.round((f.hp + extra) * DIFF().hp)); return {id:k, kind:k, side:'e', ...f, atk:(f.atk || 0) + DIFF().atk, maxhp:hp, hp, col:'#d9695a', x, y}; }
 function mkAlly(k, x, y){ const f = FOES[k]; return {id:'ally_' + k, kind:k, side:'p', ally:true, ...f, name:f.name + ' (ally)', maxhp:f.hp, hp:f.hp, col:'#9fb3d9', x, y, ab:[]}; }
 /* the nearest free tile to x,y (itself if free), ring by ring out to 4, the straight neighbours first */
 function freeNear(x, y, self){ if (free(x,y,self)) return {x,y};
@@ -134,7 +136,7 @@ function endBeat(won){
 }
 function win(){
   if (!B) return;
-  const up = gainXP(B.def.xp), head = `${B.def.objective ? 'Held' : 'Victory'}. +${B.def.xp} experience.`;
+  tally('won'); const up = gainXP(B.def.xp), head = `${B.def.objective ? 'Held' : 'Victory'}. +${B.def.xp} experience.`;
   if (B.def.mortal) { // the fallen stay down: the sergeant gets up with a scar, everyone else is dead
     const fallen = B.units.filter(u => u.side === 'p' && !u.ally && u.hp <= 0).map(u => u.id);
     if (fallen.includes('sgt')) S.f.sgtScar = 1;
@@ -148,12 +150,12 @@ function win(){
   talk(B.def.after);
 }
 function lose(){
-  AUDIO.play('lose');
+  AUDIO.play('lose'); tally('retries'); save();
   const sh = $('#sheet'); sh.hidden = false;
   sh.innerHTML = `<div class="sp">The squad goes down in the dark</div><div class="txt"><p>Hood's gate is a long walk, and no one in the Fourth is in a hurry to make it. Try it again.</p></div>
     <div class="choices"><button class="choice" id="bRetry">Retry the fight</button></div>`;
   const snap = B.snap; // the save as it stood when the fight began: items, health, the lot
-  $('#bRetry').onclick = () => { AUDIO.play('click'); sh.hidden = true; S = migrate(JSON.parse(snap)); startBattle(S.battle, S.bopt || {}); };
+  $('#bRetry').onclick = () => { AUDIO.play('click'); sh.hidden = true; const st = S.stats; S = migrate(JSON.parse(snap)); if (st) S.stats = st; startBattle(S.battle, S.bopt || {}); }; // the count remembers the lost fight
 }
 
 /* abilities */
@@ -249,7 +251,7 @@ function hitPct(c){ let n = 0; for (let r = 1; r <= 20; r++) if (r >= c.critOn |
 function attack(a, t, o={}){
   const nat = d20(), mine = a.side === 'p';
   const {bonus, ac, critOn, fl} = atkCalc(a, t, o);
-  const crit = nat >= critOn;
+  const crit = nat >= critOn; if (crit && mine && !a.ally) tally('crits');
   const hit = crit || (nat !== 1 && nat + bonus >= ac);
   const verb = o.verb || a.verb;
   const ranged = cheb(a, t) > 1;
@@ -317,7 +319,7 @@ async function opportunity(u, to){
 }
 function useAb(k, x, y){
   const u = B.cur, a = AB[k];
-  if (a.item) S.inv[a.item]--;
+  if (a.item) { S.inv[a.item]--; tally('thrown_' + a.item); }
   B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.mode = 'act'; B.aim = null; B.busy = true;
   a.run(u, x, y); castStrain(u, a.strain && u.id === 'tuft' && S.card === 'magi' ? a.strain - 1 : a.strain);
   if (a.aoe) { updBattleUI(); return; } // blast() resumes the turn when it lands

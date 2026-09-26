@@ -30,6 +30,13 @@ function migrate(s){
   if (s.area === 'gadrobi_cross' && s.pos && s.pos.x === 5 && s.pos.y === 1) s.pos = {x:5, y:2};
   return s;
 }
+/* difficulty, per sergeant: Story (gentler foes, easier checks), Soldier (as written), Bridgeburner (harder). Changeable any time. */
+const DIFFS = {story:{name:'Story', hp:.75, dmg:.7, atk:-1, dc:-2, blurb:'Softer fights and easier checks. For the story.'},
+  soldier:{name:'Soldier', hp:1, dmg:1, atk:0, dc:0, blurb:'The book as written.'},
+  bridgeburner:{name:'Bridgeburner', hp:1.25, dmg:1.2, atk:1, dc:1, blurb:'Tougher foes that hit harder, and less forgiving checks.'}};
+const DIFF = () => DIFFS[(S && S.diff) || 'soldier'] || DIFFS.soldier;
+/* the count, kept on the save: the finale and the Deeds page read it */
+function tally(k, n = 1){ if (!S) return; S.stats ??= {}; S.stats[k] = (S.stats[k] || 0) + n; }
 const SQUAD = () => S.squad;
 /* a squadmate's abilities: the template's, plus Kettle's smokers once she has ever had any */
 const kitAb = id => { const ab = [...TPL[id].ab]; if (id === 'kettle' && S && ((S.inv && S.inv.smoker > 0) || (S.f && S.f.gotSmokers))) ab.splice(ab.indexOf('cusser') + 1, 0, 'smoker'); return ab; };
@@ -58,7 +65,7 @@ const sameName = (a, b) => String(a || '').trim().toLowerCase() === String(b || 
 const newSid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 /* what the title shows for a sergeant without opening their save: chapter, where they stand, level, when last played */
 function rosterMeta(s){ const a = typeof AREAS !== 'undefined' && AREAS[s.area], t = a && a.title ? splitTitle(a.title)[1] : '';
-  return {id:s.sid, name:s.name || 'Hask', ch:s.chapter || 0, lvl:s.lvl || 1, where:t, done:!!(s.chapters && s.chapters[7] != null), upd:Date.now()}; }
+  return {id:s.sid, name:s.name || 'Hask', ch:s.chapter || 0, lvl:s.lvl || 1, where:t, done:!!(s.chapters && s.chapters[7] != null), diff:s.diff && s.diff !== 'soldier' ? s.diff : undefined, upd:Date.now()}; }
 function roster(){
   let r = null; try { r = JSON.parse(localStorage.getItem(RKEY)); } catch(e) { return {list:[]}; }
   if (r && Array.isArray(r.list)) return r;
@@ -69,7 +76,8 @@ function roster(){
   return r;
 }
 const sidFor = name => { const e = roster().list.find(e => sameName(e.name, name)); return e ? e.id : newSid(); };
-function save(){ if (!S) return; try { S.sid ??= sidFor(S.name); localStorage.setItem(slotKey(S.sid), JSON.stringify(S));
+function save(){ if (!S) return; S.stats ??= {}; if (S.stats.silverSeen == null) S.stats.silverSeen = S.silver; else if (S.silver !== S.stats.silverSeen) { const d = S.silver - S.stats.silverSeen; S.stats[d > 0 ? 'silverIn' : 'silverOut'] = (S.stats[d > 0 ? 'silverIn' : 'silverOut'] || 0) + Math.abs(d); S.stats.silverSeen = S.silver; }
+  try { S.sid ??= sidFor(S.name); localStorage.setItem(slotKey(S.sid), JSON.stringify(S));
   const r = roster(); r.list = [rosterMeta(S), ...r.list.filter(e => e.id !== S.sid)]; localStorage.setItem(RKEY, JSON.stringify(r)); } catch(e) {} }
 function loadSlot(id){ try { const s = localStorage.getItem(slotKey(id)); if (!s) return null; const o = JSON.parse(s); o.sid = id; return o; } catch(e) { return null; } }
 function loadSave(){ const e = roster().list[0]; return e ? loadSlot(e.id) : null; }

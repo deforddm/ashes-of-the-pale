@@ -68,7 +68,7 @@ function exploreTap(x, y){
 }
 async function walk(path, done){
   walking = true; if (G.cam) G.cam.pan = false; // a walk brings the camera back to the sergeant
-  for (const st of path) { S.trail.unshift({x:S.pos.x, y:S.pos.y}); S.trail = S.trail.slice(0,6); S.pos = {x:st.x, y:st.y}; AUDIO.play('step'); await wait(150); }
+  for (const st of path) { S.trail.unshift({x:S.pos.x, y:S.pos.y}); S.trail = S.trail.slice(0,6); S.pos = {x:st.x, y:st.y}; tally('steps'); AUDIO.play('step'); await wait(150); }
   walking = false; save(); if (done) done();
 }
 function drawFireAt(ctx, T, fx, fy, t, scale = 1){

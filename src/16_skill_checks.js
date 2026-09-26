@@ -1,12 +1,12 @@
 /* ============ skill checks ============ */
 function roller(stat, who){ const ids = who ? [who] : SQUAD(); let best = ids[0]; ids.forEach(id => { if (statOf(id, stat) > statOf(best, stat)) best = id; }); return best; }
 function check(stat, dc, who){
-  const best = roller(stat, who);
+  dc += DIFF().dc; const best = roller(stat, who);
   const crown = S.card === 'crown', r1 = d20(), r2 = crown ? d20() : 0; // the Crown: two dice, keep the better
   const nat = Math.max(r1, r2), mod = statOf(best, stat) + (S.card === 'oponn' ? 1 : 0), tot = nat + mod, ok = tot >= dc;
   const label = stat[0].toUpperCase() + stat.slice(1), cr = crown ? (SET.dice ? ` (the Crown: best of two, ${r1} and ${r2})` : ' (the Crown: best of two)') : '';
   note(SET.dice ? `${label} check (DC ${dc}): ${NAME(best)} rolls ${nat} + ${mod} = ${tot}${cr} · ${ok ? 'success' : 'failure'}` : `${label} check: ${NAME(best)}${cr} · ${ok ? 'success' : 'failure'}`, ok ? 'good' : 'bad');
-  return {ok, nat, mod, tot, dc, who:best, label};
+  tally(ok ? 'checksOk' : 'checksFail'); return {ok, nat, mod, tot, dc, who:best, label};
 }
 /* the die: a d20 tumbles in the sheet, settles on the roll, then the story goes on. Tap to hurry it. */
 function rollDice(r, done){
@@ -40,7 +40,7 @@ function talk(id){
   curCh = n.ch.filter(c => !c.req || c.req());
   sh.innerHTML = `<div class="sp">${esc(n.sp || '')}</div>${noteHtml}<div class="txt">${fmt(n.txt)}</div>${n.html || ''}${n.after ? `<div class="txt">${fmt(n.after)}</div>` : ''}
     <div class="choices">${curCh.map((c,i) => {
-      const tag = c.check ? `<span class="tagk">${c.check[0]} ${c.check[1]} · ${esc(NAME(roller(c.check[0], c.check[2])))}</span>` : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
+      const tag = c.check ? `<span class="tagk">${c.check[0]} ${c.check[1] + DIFF().dc} · ${esc(NAME(roller(c.check[0], c.check[2])))}</span>` : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
       return `<button class="choice" id="ch${i}" data-i="${i}">${tag}${smartq(esc(c.t).replace(/&quot;/g,'"'))}</button>`; }).join('')}</div>`;
   sh.scrollTop = 0;
   if (n.oncard) inlineCard($('#icard'), n.oncard[0], n.oncard[1]);
