@@ -102,6 +102,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.8.2', ['The credits now name Ian C. Esslemont beside Steven Erikson as co-creator of the Malazan world: on the title, at the finale and in the README.']],
   ['3.8.1', ['On a PC the game now uses the whole screen: the scene fills the left side, as tall as the window allows, and the text sits against the right edge. On a big monitor the text is a size larger too.',
              'Settings \u203a Text size now makes the story text and the choices bigger or smaller, on a phone as well. Before, it only changed the buttons.']],
   ['3.8.0', ['Full screen on a PC: no browser bars, no taskbar, just the game. Press F, or the button in the top corner of the title and beside the settings gear in the game. Esc leaves it.',

@@ -173,7 +173,7 @@ function showFinale(i = 0){
         <h3>The dead</h3>${dead.length ? `<ul class="fin-dead">${dead.map(id => `<li><b>${esc(NAME(id))}</b>${S.dead[id].where ? ` — ${esc(S.dead[id].where)}` : ''}</li>`).join('')}</ul>` : `<p class="fine">None of the Fourth. Every one of them came up out of the dark.</p>`}
         <div class="kv"><span>Ohl's list</span><span>${listCount()} names</span><span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span></div></div>
       <div class="fin-endline">The End of <em>Gardens of the Moon</em></div>
-      <p class="fine fin-credit">The Malazan world and its canon characters belong to Steven Erikson. With thanks to him for the book, the Bridgeburners, and the long road; the Fourth only walked beside it.</p>`; }
+      <p class="fine fin-credit">The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. With thanks to Steven Erikson for the book, the Bridgeburners, and the long road, and to Ian C. Esslemont for the world they built together; the Fourth only walked beside it.</p>`; }
   const last = i === P.length - 1;
   toTop(); $('#app').innerHTML = `<div class="fin" id="fin">${body}
     <div class="fin-nav ${last ? 'last' : ''}"><button class="btn" id="fBack">Back</button><span class="fin-pg">${i + 1} / ${P.length}</span>${last ? `<button class="btn" id="fSq">The squad</button><button class="btn primary" id="fTitle">Title</button>` : `<button class="btn primary" id="fNext">Next</button>`}</div></div>`;
