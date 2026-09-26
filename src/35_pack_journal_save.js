@@ -102,6 +102,8 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.7.9', ['On a PC the game can install itself as a desktop app: its own window with no browser bars, and a shortcut on your desktop and taskbar. The title offers it when your browser can do it (Chrome and Edge), and Settings always has Install as an app. Your sergeants come with it.',
+             'Safari on a Mac gets the directions instead (File \u203a Add to Dock). The Dock app keeps its own saves, so bring your sergeant over with a save code.']],
   ['3.7.8', ['Plays properly on a PC. On a wide screen the map, the battlefield or the scene fills the left side as big as the window allows, and everything to read and press sits in a column on the right: the conversation, the unit bar, the log. No more scrolling to reach the buttons in a fight.',
              'The keyboard works: 1 to 9 pick a dialogue choice or an ability, Space ends a turn or talks to whoever is beside you, the arrow keys or WASD walk, J, P and C open the journal, pack and squad, Esc opens settings, and Enter presses a page\'s main button. The full list is in Settings.',
              'With a mouse, the tile under the cursor is outlined, choices and abilities show their number keys, and the game says click instead of tap. On a phone nothing has changed.']],

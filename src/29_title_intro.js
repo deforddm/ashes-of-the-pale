@@ -1,4 +1,30 @@
 /* ============ title / intro ============ */
+/* installing the game as an app on a PC. Chrome and Edge offer it with beforeinstallprompt, which is held here and fired from our own
+   button (the title offers it once in a while; Settings always has it). Safari on a Mac has File > Add to Dock and no event, so it gets
+   the directions. Firefox on a PC can't install web apps, so it gets nothing. Never offered inside the installed app itself. */
+const INSTKEY = 'ashes-of-the-pale-install';
+let installEvt = null;
+const asApp = () => { try { return window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui)').matches || navigator.standalone === true; } catch(e) { return false; } };
+const macSafari = () => { const u = navigator.userAgent; return /Macintosh/.test(u) && /Version\/(1[7-9]|[2-9]\d)\b.*Safari\//.test(u) && !/Chrome|Chromium|Edg|OPR|Firefox/.test(u) && !('ontouchend' in document); };
+const installWay = () => asApp() ? '' : installEvt ? 'prompt' : macSafari() ? 'dock' : '';
+function installLater(way){ let v = ''; try { v = localStorage.getItem(INSTKEY) || ''; } catch(e) { return true; }
+  if (way === 'dock' && v === 'dock-seen') return true; // Safari's directions, once; Settings keeps them after that
+  const m = /^later:(\d+)$/.exec(v); return !!m && Date.now() - +m[1] < 14 * 864e5; } // Chrome only asks while the app isn't installed, so an old 'installed' mark means nothing here
+const installMark = v => { try { localStorage.setItem(INSTKEY, v === 'later' ? 'later:' + Date.now() : v); } catch(e) {} };
+window.addEventListener('beforeinstallprompt', e => { if (FINE()) e.preventDefault(); installEvt = e; offerInstall(); }); // a phone keeps its own install banner
+window.addEventListener('appinstalled', () => { installEvt = null; installMark('installed'); const o = $('#instOffer'); if (o) o.remove(); });
+async function runInstall(){ const ev = installEvt; if (!ev) return false; installEvt = null; try { ev.prompt(); const r = await ev.userChoice; installMark(r && r.outcome === 'accepted' ? 'installed' : 'later'); return r && r.outcome === 'accepted'; } catch(e) { return false; } }
+/* the title's offer, on a PC only, and not again for two weeks after "Not now" */
+function offerInstall(){
+  const slot = $('#instSlot'); if (!slot || view !== 'title' || !FINE()) return;
+  const way = installWay(); if (!way || installLater(way)) { slot.innerHTML = ''; return; }
+  slot.innerHTML = way === 'prompt'
+    ? `<div class="inst" id="instOffer"><div><b>Play it as a desktop app</b><small>Its own window with no browser bars, and a shortcut on your desktop and taskbar. Your sergeants come with it.</small></div><div class="row"><button class="btn primary" id="bInst">Install</button><button class="btn" id="bInstNo">Not now</button></div></div>`
+    : `<div class="inst" id="instOffer"><div><b>Play it as a Mac app</b><small>In Safari's menu bar: File › Add to Dock. The Dock app keeps its own saves, so copy your sergeant's save code first (Squad › Save) and load it there.</small></div><div class="row"><button class="btn" id="bInstNo">Got it</button></div></div>`;
+  if ($('#bInst')) $('#bInst').onclick = async () => { AUDIO.play('click'); const ok = await runInstall();
+    slot.innerHTML = ok ? `<p class="fine inst-ok">Installed. It opens in its own window from your desktop, taskbar or Start menu; this tab can close.</p>` : ''; };
+  $('#bInstNo').onclick = () => { AUDIO.play('click'); installMark(way === 'dock' ? 'dock-seen' : 'later'); slot.innerHTML = ''; };
+}
 /* the title: the sergeants saved on this device, last played first; tap one to play. The name prompt only shows for a new sergeant. */
 const agoText = t => { if (!t) return ''; const d = Math.floor((new Date().setHours(0,0,0,0) - new Date(t).setHours(0,0,0,0)) / 864e5);
   return d <= 0 ? 'today' : d === 1 ? 'yesterday' : d < 7 ? `${d} days ago` : new Date(t).toLocaleDateString(undefined, {month:'short', day:'numeric'}); };
@@ -18,6 +44,7 @@ function showTitle(fresh){
     : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
     <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
       <div class="row2"><button class="btn" id="bImp">Load a save code</button></div></div>`}
+    <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
   startTitleBackdrop($('#titlecv'));
   $('#bSet').onclick = () => { AUDIO.play('click'); openSettings(); };
@@ -45,7 +72,7 @@ function showTitle(fresh){
       el.dataset.arm = 1; el.classList.add('warn'); ld.classList.add('warn'); const was = ld.innerHTML; ld.innerHTML = `<b>${tapWord('Tap')} × again to erase Sergeant ${esc(e.name)}</b><small>Their save on this device is gone for good. A save code brings them back.</small>`; ld.disabled = true;
       setTimeout(() => { if (el.isConnected) { delete el.dataset.arm; el.classList.remove('warn'); ld.classList.remove('warn'); ld.innerHTML = was; ld.disabled = false; } }, 4000); });
   }
-  maybeNotes(list.length > 0);
+  maybeNotes(list.length > 0); offerInstall();
 }
 function showIntro(){
   view = 'intro'; S.scene = 'intro'; save(); titleAnim = null; AUDIO.setScene('explore');

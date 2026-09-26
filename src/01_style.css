@@ -256,6 +256,13 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .tmsg{margin:-8px 0 0;color:#f0c9c2;text-shadow:0 1px 4px #000}
 .tbtns .btn.warn{background:linear-gradient(180deg,#4a1d19,#2c1210);font-weight:700}
 .tmsg:empty{display:none}
+/* the title's offer to install the game as a desktop app */
+.inst{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;padding:10px 12px;border:1px solid rgba(201,151,63,.45);background:linear-gradient(180deg,rgba(40,31,22,.92),rgba(22,17,13,.92));box-shadow:0 8px 24px rgba(0,0,0,.6)}
+.inst > div:first-child{flex:1 1 240px;display:flex;flex-direction:column;gap:2px}
+.inst b{font-family:var(--label);font-weight:700;letter-spacing:.06em;color:var(--brass2)}
+.inst small{color:var(--ash);font-size:.84rem;line-height:1.35}
+.inst .row{flex:0 0 auto;gap:8px}
+.inst-ok{color:#9fe0b8}
 /* the title's roster: one row per sergeant on this device, last played first */
 .roster{display:flex;flex-direction:column;gap:8px}
 .roster .rh{font-family:var(--label);font-size:.8rem;color:var(--mute);letter-spacing:.08em;text-shadow:0 1px 4px #000}
