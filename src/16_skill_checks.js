@@ -65,7 +65,7 @@ function closeSheet(){
 const SCENES = {
   tunnel:{loc:'Under the Pale', sub:'North sapper tunnels', cap:'Lantern light, cold air, and the smell of old stone.', amb:'tunnel'},
   dark:{loc:'Under the Pale', sub:'Kurald Galain leaks through the stone', warren:true, cap:'The lantern light has to push through the dark like water.', amb:'dark'},
-  camp_night:{loc:'The Pale', sub:'The camp at night', cap:'Tent lines under a bruised sky. The cadre row has one lamp lit.', amb:'explore'},
+  camp_night:{loc:'The Pale', sub:'The camp at night', get cap(){ return typeof S !== 'undefined' && S && S.f && S.f.c1_hounds && S.chapter === 1 ? 'Tent lines under a bruised sky, and the cadre row still burning.' : 'Tent lines under a bruised sky. The cadre row has one lamp lit.'; }, amb:'explore'},
   tent:{loc:'Tattersail\'s tent', sub:'The cadre row', cap:'Candle smoke, wet canvas, and cards that will not lie still.', amb:'explore'},
   fire:{loc:'The Bridgeburners\' fire', sub:'East picket', cap:'A fire bigger than yours, and soldiers who do not look up when you arrive, which is how you know they saw you coming.', amb:'explore'},
   plain:{loc:'The Rhivi Plain', sub:'Grass to every horizon', cap:'The wagon, the guide, and six days of grass.', amb:'explore'},

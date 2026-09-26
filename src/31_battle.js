@@ -169,7 +169,7 @@ const AB = {
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => { blast(pt, [[1,6,0],[1,6,0]], '#ff7a3a'); AUDIO.play('burner'); sparks(pt.x, pt.y, 30, '#ff9a3a', .6);
       for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(pt.x+dx, pt.y+dy)) B.fires.push({x:pt.x+dx, y:pt.y+dy, until:B.round+2}); });
       blog(`${u.name} throws a burner. The ${placeWord(B.def)} fills with orange light.`); }},
-  cusser:{name:'Cusser', item:'cusser', boom:true, aoe:2, range:3, desc:()=>'Fired from the crossbow\'s cradle, range 3: nobody throws a cusser by hand twice. 3d8 to the centre and everything next to it, 1d8 one step further. Scatters on a 1–2.',
+  cusser:{name:'Cusser', item:'cusser', boom:true, aoe:2, range:3, desc:()=>'Fired from the crossbow\'s cradle, range 3: nobody throws a cusser by hand twice. 3d8 to the centre and everything next to it, 1d8 one step further. Scatters on a 1–2.' + (maudKept() ? ' Maud, Chub\'s cusser, stays in the satchel: Kettle is keeping her for the one that matters.' : ''),
     run(u,x,y){ const pt = scatter(u,x,y,2,R(2)+1); throwArc(u, pt, () => { blast(pt, [[3,8,0],[3,8,0],[1,8,0]], '#fff1c2'); AUDIO.play('boom', 1.6); sparks(pt.x, pt.y, 60, '#fff1c2', 1.6); shakeMap(); const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }); blog(`${u.name} cradles a cusser on the crossbow and looses it. The ${placeWord(B.def) === 'tunnel' || placeWord(B.def) === 'vault' ? 'ceiling' : 'ground'} thinks about it.`); }},
   smoker:{name:'Smoker', item:'smoker', boom:true, aoe:1, range:4, smoke:true, desc:()=>'Throw, range 4. A 3×3 of smoke for 2 rounds: nobody shoots into it or out of it. Blades still work. A natural 1 scatters it.',
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => { AUDIO.play('burner', .5); sparks(pt.x, pt.y, 18, '#9a968e', .35);
@@ -205,7 +205,10 @@ const AB = {
     run(u,x,y){ const t = B.units.find(p => p.side === 'p' && !p.ally && p.hp <= 0 && p.x === x && p.y === y); if (!t) return; const at = freeNear(t.x, t.y, t); if (!at) return; // someone may be standing over the body
       B.used.argument = 1; AUDIO.play('heal'); t.x = at.x; t.y = at.y; t.hp = 6; t.deadAt = null; t.healed = performance.now(); sparks(t.x, t.y, 20, '#9fe0b8', .5); blog(`${u.name} argues with Hood in Ehrlii. ${t.name} gets up, which settles it for now.`); }},
 };
-function abOk(u, k){ const a = AB[k]; if (!a) return false; if (a.strain && B && B.def.nomagic) return false; if (a.boom && B && B.def.nothrow) return false; if (a.item === 'cusser' && B && B.def.style === 'roof') return false; /* Fiddler's order: no cussers on the roofs */ if (a.item === 'burner' && B && B.def.nomagic) return false; /* burners and otataral: Kettle won't */ if (a.item && !(S.inv[a.item] > 0)) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
+/* Chub's cusser, Maud: Kettle carries her "for the one that matters" and won't fire her in an ordinary fight. The story spends her (the barrow in Chapter 5, or Ch'kess in Chapter 7). */
+const maudKept = () => !!(S && S.f && !S.f.c5_cusserUsed && S.f.c7_debt !== 'paid');
+const itemLeft = k => Math.max(0, (S.inv[k] || 0) - (k === 'cusser' && maudKept() ? 1 : 0));
+function abOk(u, k){ const a = AB[k]; if (!a) return false; if (a.strain && B && B.def.nomagic) return false; if (a.boom && B && B.def.nothrow) return false; if (a.item === 'cusser' && B && B.def.style === 'roof') return false; /* Fiddler's order: no cussers on the roofs */ if (a.item === 'burner' && B && B.def.nomagic) return false; /* burners and otataral: Kettle won't */ if (a.item && !(itemLeft(a.item) > 0)) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
 function scatter(u, x, y, failOn, dist){
   const nat = d20() + (S.card === 'oponn' ? 1 : 0);
   if (nat <= failOn && !has(u.id,'longfuse')) { const [dx,dy] = DIRS[R(8)]; let nx = x, ny = y;
@@ -486,7 +489,7 @@ function updBattleUI(){
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="bhint">${hint}</div>
-    <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? `<small>×${S.inv[a.item] || 0}</small>` : ''; const dis = B.acted || !abOk(u,k);
+    <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? `<small>×${itemLeft(a.item)}</small>` : ''; const dis = B.acted || !abOk(u,k);
       return `<button class="btn ${B.mode === k ? 'on' : ''}" id="ab_${k}" data-k="${k}" ${dis ? 'disabled' : ''}>${a.name}${cnt}</button>`; }).join('')}
       <button class="btn ${endHot ? 'primary' : ''}" id="bEnd">End turn</button></div>`;
   ub.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {

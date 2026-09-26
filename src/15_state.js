@@ -22,6 +22,11 @@ function migrate(s){
   s.inv ??= {}; s.inv.smoker ??= 0; // v3.7.1: smokers. Saves already past Hedge's cellar in Chapter 3 get the two he handed over there.
   if (!s.f.gotSmokers && (s.chapter > 3 || (s.fxd && s.fxd.c3_work_hedge))) { s.inv.smoker += 2; s.f.gotSmokers = 1; }
   // v3.7.3: the Phoenix's door moved off the crossing, up the alley into the Daru District; a save standing in its old doorway steps back into the street
+  // v3.7.4: Kettle never fires Chub's cusser (Maud) in an ordinary fight. A save that spent her before the barrow gets her back, so the barrow and Ch'kess still have her.
+  if (!s.f.maudBack && (s.chapter || 0) <= 5 && !s.f.c5_cusserUsed && !(s.inv.cusser > 0)) { s.inv.cusser = 1; s.f.maudBack = 1; }
+  // v3.7.4: the Worry Gate map was mirrored so the gate is west, the way you walk in from the hills; a save standing there is mirrored with it
+  if (s.area === 'worry_gate' && s.pos && !s.f.gateMirrored) { s.pos = {x:15 - s.pos.x, y:s.pos.y}; s.trail = (s.trail || []).map(p => ({x:15 - p.x, y:p.y})); }
+  s.f.gateMirrored = 1;
   if (s.area === 'gadrobi_cross' && s.pos && s.pos.x === 5 && s.pos.y === 1) s.pos = {x:5, y:2};
   return s;
 }

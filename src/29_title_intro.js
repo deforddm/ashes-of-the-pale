@@ -7,7 +7,7 @@ function showTitle(){
     <div class="field"><label for="nm">Your sergeant's name</label><input type="text" id="nm" maxlength="18" value="${esc(has?.name || 'Hask')}" autocomplete="off"></div>
     <div class="tbtns">${has ? '<button class="btn primary" id="bCont">Continue</button>' : '<button class="btn primary" id="bNew">Begin</button>'}<button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
       <div class="row2">${has ? '<button class="btn" id="bNew">New game</button>' : ''}<button class="btn" id="bImp">Load a save code</button></div></div>
-    <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. <span class="ver">v${VERSION}</span></p></div>`;
+    <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
   startTitleBackdrop($('#titlecv'));
   // a new game over a saved one asks twice: the first tap says what it will cost
   $('#bNew').onclick = () => { const b = $('#bNew'); AUDIO.play('click');
@@ -17,6 +17,8 @@ function showTitle(){
   if (has) $('#bCont').onclick = () => { AUDIO.play('click'); S = has; resume(); };
   $('#bImp').onclick = () => { AUDIO.play('click'); openModal('save'); };
   $('#bSet').onclick = () => { AUDIO.play('click'); openSettings(); };
+  $('#bVer').onclick = () => { AUDIO.play('click'); openNotes(null); };
+  maybeNotes(!!has);
 }
 function showIntro(){
   view = 'intro'; S.scene = 'intro'; save(); titleAnim = null; AUDIO.setScene('explore');
@@ -42,6 +44,9 @@ function drawCamp(cv, t, night){ // intro backdrop: the pits and the camp under 
   for (let i=0;i<7;i++){ const x = W*.08 + i*W*.12, y = H*.66 + hash(i,2)*H*.2; ell(ctx, x, y, 30, 8, '#060504'); ctx.fillStyle = 'rgba(200,190,170,.35)'; for (let j=0;j<4;j++) ctx.fillRect(x - 20 + hash(i,j)*40, y - 3 + hash(j,i)*5, 2, 2); }
   for (let i=0;i<4;i++){ const x = W*.6 + i*W*.1, y = H*.6; poly(ctx, [[x-24,y+12],[x,y-24],[x+24,y+12]], i%2 ? '#2a2016' : '#3a2c1c'); poly(ctx, [[x,y-24],[x+24,y+12],[x+8,y+12]], '#1a1410'); }
   const fl = .8 + Math.sin(t/120)*.15; ell(ctx, W*.75, H*.7, 6*fl, 3, '#ffb060'); glow(ctx, W*.75, H*.7, 40, '#ffb060', .4*fl);
+  if (night && S && S.f && S.f.c1_hounds && S.chapter === 1) for (let i=0;i<3;i++){ // after the Hounds: the cadre row still burning, over on the left
+    const x = W*(.2 + i*.13), f2 = .7 + Math.sin(t/(90 + i*17) + i)*.3; glow(ctx, x, H*.58, W*.14, '#ff7a2a', .32*f2);
+    poly(ctx, [[x - W*.03, H*.62],[x - W*.008 + Math.sin(t/80 + i)*3, H*.5 - H*.06*f2],[x + W*.03, H*.62]], 'rgba(255,150,60,.72)'); poly(ctx, [[x - W*.015, H*.62],[x + Math.sin(t/70 + i)*2, H*.55 - H*.03*f2],[x + W*.015, H*.62]], 'rgba(255,220,140,.8)'); }
   // the gravedigger back at his pits, then the squad walking in to the lamplight: the rest behind, Brisk, and the sergeant in the lead
   if (!S || !S.chapter) drawFigure(ctx, 'garrow', W*.07, H*.72, 1.7, t, {still:true});
   const col = marchOrder(sceneSquad()), n = col.length, x0 = W*.66, st = Math.min(42, (x0 - 34)/Math.max(1, n - 1));

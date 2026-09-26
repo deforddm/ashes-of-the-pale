@@ -22,7 +22,7 @@ function openModal(tab){
       S.f.knowDeserters ? `Garrow: Moreau's section deserted into the north tunnels. "The Fist is still counting heads."` : '',
       S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak is paying attention to your squad.`) : '',
       S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
-      `Brisk's brother, Second Army: not yet found.`, S.f.c1_plant ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>`,
+      S.f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : `Brisk's brother, Second Army: not yet found.`, S.f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>${glossHTML()}`,
     save:()=>`<p class="fine">The game saves itself on this device as you play. To move it to another device, or protect it from a cleared browser, copy this code somewhere safe.</p>
       ${S ? `<textarea id="exp" readonly aria-label="Save code">${saveCode()}</textarea><div class="row" style="margin:8px 0 16px"><button class="btn" id="bCopy">Copy code</button></div>` : ''}
       <label class="fine" for="imp">Paste a save code to load it</label><textarea id="imp" placeholder="Paste code here"></textarea>
@@ -52,4 +52,67 @@ function journalHead(){
   const now = S.scene === 'explore' ? (a ? safe(() => a.quest ? a.quest() : QUESTS[a.id] ? QUESTS[a.id]() : '') : '') : '';
   const road = Object.keys(S.chapters).map(Number).sort((x, y) => x - y).map(n => { const e = (CHEND[n] || {})[S.chapters[n]]; return e ? `<li><span>${n === 0 ? 'Prologue' : `Chapter ${CHAPTERS[n] ? CHAPTERS[n].number : n}${CHAPTERS[n] ? ' · ' + CHAPTERS[n].title : ''}`}</span><b>${e[0]}</b></li>` : ''; }).join('');
   return `<p class="jk">${S.chapter === 0 ? 'The prologue' : `Chapter ${CH ? CH.number : S.chapter}${CH ? ` · ${CH.title}` : ''}`}</p>${now ? `<p class="jnow">${now}</p>` : ''}${road ? `<h4 class="jh">The road so far</h4><ol class="fin-road">${road}</ol>` : ''}`;
+}
+
+/* the glossary at the foot of the journal: the words the book throws at you, unlocked as the story reaches them */
+const GLOSS = [
+  [0, 'The Malazan Empire', 'The Empire the Fourth serves: an Empress on the throne in Unta, armies on three continents, and a habit of taking cities.'],
+  [0, "Onearm's Host", "The Second Army on Genabackis, under High Fist Dujek Onearm. The Fourth are marines in it."],
+  [0, 'Marines', 'Small squads with their own sapper, mage and healer, sent where a regiment would be noticed.'],
+  [0, 'The Bridgeburners', "Whiskeyjack's company: veterans and sappers, the Empire's best, and the Empress's least trusted."],
+  [0, 'The cadre', "The army's battle-mages. After the Pale, there are very few of them left."],
+  [0, 'The Claw', "The Empress's assassins and spies. Grey cloaks. They keep lists."],
+  [0, 'Warrens', 'The paths sorcery is drawn from. Tuft draws on Meanas, shadow and illusion; Ohl on Denul, healing. Draw too hard and it costs strain, and then blood.'],
+  [0, 'Moranth munitions', 'Clay grenados from the Moranth alchemists: sharpers throw iron, burners throw fire, smokers throw cover, and cussers take down walls. Thirteen to a crate: twelve and a dud.'],
+  [0, "The Moon's Spawn", 'A mountain of black stone that floats, and hangs over whatever it chooses.'],
+  [0, 'The Deck of Dragons', 'A deck of cards whose Houses are the powers of the world. A reading shows who is watching you.'],
+  [0, 'Hood', 'The Lord of Death. Soldiers swear by his breath, his teeth and his gate.'],
+  [0, 'Pale', 'The city the Second Army took, at the price of most of itself.'],
+  [1, 'The Moranth', 'A people in chitin armour who sort themselves by colour and ride quorls, flying things like enormous dragonflies. The Black Moranth fly for Onearm.'],
+  [1, 'The Hounds of Shadow', "Shadowthrone's hunting beasts, the size of horses, with eyes like lamps seen through smoke."],
+  [2, 'The Rhivi', 'Herders and riders of the central plains, who fight beside the Empire\'s enemies and carry their dead a long way.'],
+  [2, 'Great Ravens', 'Ravens as big as a man, who remember everything and serve a lord they talk about far too much. Crone is the eldest.'],
+  [3, 'Darujhistan', 'The City of Blue Fire: the last free city on Genabackis, lit by gas drawn up from the caverns beneath it.'],
+  [3, 'Daru and Gadrobi', 'The city\'s two peoples. The Daru hold its money and its Council; the Gadrobi do its work, and give their name to the poorer districts and the hills to the east.'],
+  [3, 'Oponn', 'The Twins of chance: the Lady pulls, the Lord pushes. A spinning coin is their business.'],
+  [4, 'The Tiste Andii', "An old, long-lived people, tall and dark-skinned, who keep to the night. The Moon's Spawn is theirs."],
+  [4, 'The Guild', "Darujhistan's assassins. They work the rooftops, and they do not like company up there."],
+  [5, 'The Jaghut', 'An ancient race of solitary sorcerers, masters of ice. A few of them made themselves tyrants, and were buried for it.'],
+  [5, "T'lan Imass", 'Undying warriors of bone and flint, bound to hunt the Jaghut for ever. They fight beside the Empire.'],
+  [5, 'Otataral', 'A red ore that kills sorcery near it. Nobody with a warren wants to stand close to it.'],
+  [5, 'The Adjunct', "The Empress's own hand, answerable to nobody below the throne."],
+  [6, "Gedderone's Fete", "Darujhistan's spring festival: masks, paper lanterns, and winter chased out of the doorways at dawn."],
+  [6, 'Omtose Phellack', 'The Jaghut warren: ice, and the cold that keeps.'],
+  [6, 'The Azath', 'Houses that grow out of the ground where they are needed, and keep what is put in them.'],
+];
+function glossHTML(){
+  const ch = S ? S.chapter || 0 : 0, rows = GLOSS.filter(g => g[0] <= ch);
+  return `<details class="gloss"><summary>Words you'll hear</summary><dl>${rows.map(([, t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl>${ch < 7 ? `<p class="fine">More as the story reaches them.</p>` : ''}</details>`;
+}
+
+/* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
+const NOTES = [
+  ['3.7.4', ['Chapters 1 and 2 read through for continuity: the city lies south-west beyond the hills, the quorls leave before the wagon rolls, and two dozen smaller things now agree with each other.',
+             "Kettle keeps Chub's cusser, Maud, for the one that matters: she won't fire her in an ordinary fight.",
+             'The Worry Gate is on the west side of its map, the way you walk in from the hills, and the street outside the Phoenix has people on it.',
+             'The fight at the rent in Chapter 5 is harder.',
+             "A glossary at the foot of the journal: warrens, munitions, Houses and the rest, as the story reaches them.",
+             'This note, once after each update. Tap the version number on the title screen to read it again.']],
+  ['3.7.3', ['The road from Pale is eleven days everywhere. The Moranth crate holds twelve cussers and the dud. The Phoenix is up the alley in the Daru District. Plus a sweep of Chapters 3 to 7.']],
+  ['3.7.2', ['Maps and book beats: the Worry Gate, Rake and the Hounds in the hills, Coll on the slope, five dragons at the Fete, the Pannion Seer.']],
+];
+const SEENKEY = 'ashes-of-the-pale-seen';
+function openNotes(since){
+  const vn = v => v.split('.').map(Number).reduce((a, n) => a * 1000 + n, 0);
+  const list = NOTES.filter(([v]) => !since || vn(v) > vn(since)).slice(0, 3);
+  const m = $('#modal'); m.hidden = false;
+  m.innerHTML = smartq(`<div class="mbox notes"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">What's new</h2><button class="btn icon" id="bClose" aria-label="Close">×</button></div>
+    ${(list.length ? list : NOTES.slice(0, 1)).map(([v, ls]) => `<h4 class="jh">v${v}</h4><ul class="jl">${ls.map(l => `<li>${l}</li>`).join('')}</ul>`).join('')}
+    <div class="row" style="margin-top:14px"><button class="btn primary" id="bNotesOk">Carry on</button></div></div>`);
+  const close = () => { AUDIO.play('click'); m.hidden = true; };
+  $('#bClose').onclick = close; $('#bNotesOk').onclick = close; m.onclick = e => { if (e.target === m) m.hidden = true; };
+}
+function maybeNotes(has){
+  let seen = null; try { seen = localStorage.getItem(SEENKEY); localStorage.setItem(SEENKEY, VERSION); } catch(e) { return; }
+  if (has && seen !== VERSION) openNotes(seen);
 }

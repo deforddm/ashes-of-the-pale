@@ -1,7 +1,7 @@
 /* ============ chapters: cards, intros, endings, ability picks ============ */
 const CHEND = {
   0:{ // the prologue's four endings (text kept from the slice)
-    given:['Delivered','Varrow\'s journal is in the cadre\'s hands, unread by you. Tattersail owes your squad, and she is the kind who pays.'],
+    given:['Delivered','Varrow\'s journal is in the cadre\'s hands, and whatever you read of it stays with you. Tattersail owes your squad, and she is the kind who pays.'],
     told:['Delivered, and known','Tattersail has the journal. You and Tuft both know what the underlined line says. That kind of knowledge has a weight, and a price.'],
     burned:['Ashes','Varrow\'s account went up in a candle flame. Your squad is safer. The truth about the night the Second died is not.'],
     claw:['Taken','The journal went to the Claw. Tayschrenn will know by morning who carried it up out of the dark.'] },
@@ -9,7 +9,7 @@ const CHEND = {
     line:['The line held','When the tents burned the Fourth went where Tattersail pointed, and stood there until the Hounds decided the cadre row was not worth the price. The cadre will remember which squad that was. So will a man with clean boots.'],
     claw:['The crate held','When the tents burned the Fourth sealed the cadre tent on a grey cloak\'s word and let the mage shout. The Hounds broke on Claw knives instead of marine shields. Tuft has said one thing since, with her back to the fire. The Empire, in the person of a man with clean boots, is pleased.'] },
   2:{
-    light:['You rode to the light','A mage died on the plain and the Fourth went to see it, against orders and against the clock. The Rhivi were there first and carried something away. Tuft knows what. The wagon arrives in Darujhistan a day late, and Whiskeyjack will have counted the day.'],
+    light:['You rode to the light','A mage died on the plain and the Fourth went to see it, against orders and against the clock. The Rhivi were there first and carried something away. Tuft thinks she knows what. The wagon arrives in Darujhistan a day late, and Whiskeyjack will have counted the day.'],
     road:['You kept the road','A mage died on the plain and the Fourth watched the light and counted rations. The timetable held. Three tall figures with silver hair came out of the dark to ask one question, and answered none, and that is the thing nobody in the squad is talking about.'] },
   3:{
     report:['You told the Claw','A grey-haired woman in a dye-shop asked what the Bridgeburners were doing under the city, and the Fourth told her, for silver and the Empire\'s regard. Whiskeyjack does not know. Brisk does. So does the sergeant, every time the crew goes down the hole.'],
@@ -40,7 +40,7 @@ function showChapterEnd(){
     if (S.f.decoy) extra.push('A Claw is walking around with Kettle\'s munitions ledger. He\'ll notice eventually.');
     if (S.f.marked) extra.push('A Claw has your name in a neat hand.');
     if (S.f.noisy) extra.push('Your sharper woke the Stonebound early. It remembered.');
-    if (S.f.knowDeserters && !S.f.noisy) extra.push('Garrow\'s word reached Moreau\'s section.');
+    if (S.f.garrowWord && !S.f.noisy) extra.push('Garrow\'s word reached Moreau\'s section.');
   }
   if (n === 2) {
     if (SQUAD().includes('ellis')) extra.push('Ellis rides with the Fourth. Toc\'s word, and yours.'); if (S.f.c2_ellisRefused) extra.push('Ellis stayed on the plain. Toc\'s word was not enough.');
