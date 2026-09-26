@@ -319,3 +319,137 @@ function playCharges(opt){
   g.talk = mgSay('Hedge', `He hands you a lump of chalk. "Three runs, Sergeant. Every junction wants a cusser close enough to crack it: the square round a cusser, that's its reach. Nothing near the ladder; that's our way out. Nothing near the old arch stones, or the street comes in on us. And never two cussers touching, not even at the corners. They'll go together, and then they'll go without you." He grins. "Twelve in the crate. Three runs. Count."`) + mgSay('Hedge', VAULTS[0].intro);
   draw();
 }
+
+/* ============ The roof run: across the Daru roofs unseen ============
+   Turn-based: every step (or a held breath) is one count, and the Guild's watchers swing their shuttered lanterns on a count of
+   eight. End a count in the light and you're seen: back to the plank. Their lanterns never light the slates at their own feet
+   (Kruppe was right about that). With Kruppe's rumour you know the count, and see where each lantern will swing next.
+   The run below was solved by search (15 counts, with waiting). */
+const ROOFRUN = { map:['..C.#....', 'S...p..C.', '..C.#....', '....#...>', '.C..p....', '....#.C..', '..C.#....'],
+  watchers:[[2, 4, ['E','E','NE','N','N','NW','W','W']], [6, 2, ['W','W','SW','S','S','SE','E','E']], [7, 5, ['N','N','NW','W','W','NW','N','N']]] };
+const RR_DIR = {N:[0,-1], S:[0,1], E:[1,0], W:[-1,0], NE:[1,-1], NW:[-1,-1], SE:[1,1], SW:[-1,1]};
+function rrLit(t){ const m = ROOFRUN.map, out = new Set();
+  ROOFRUN.watchers.forEach(([wx, wy, seq]) => { const d = RR_DIR[seq[((t % 8) + 8) % 8]], cand = [];
+    for (let k = 2; k <= 4; k++) { const cx = wx + d[0]*k, cy = wy + d[1]*k; cand.push([cx, cy]);
+      if (k >= 3) { if (!d[0] || !d[1]) cand.push([cx + d[1], cy + d[0]], [cx - d[1], cy - d[0]]); else cand.push([cx - d[0], cy], [cx, cy - d[1]]); } }
+    cand.forEach(([x, y]) => { if (y < 0 || y >= m.length || x < 0 || x >= m[0].length || m[y][x] === 'C') return; const n = Math.max(Math.abs(x - wx), Math.abs(y - wy));
+      for (let i = 1; i < n; i++) { const ix = Math.round(wx + (x - wx)*i/n), iy = Math.round(wy + (y - wy)*i/n); if (m[iy][ix] === 'C') return; } out.add(K(x, y)); }); });
+  return out; }
+function playRoofRun(opt){
+  const m = ROOFRUN.map, rows = m.length, cols = m[0].length, ws = new Set(ROOFRUN.watchers.map(([x, y]) => K(x, y))), rumour = !!S.f.c3_kruppeRumour;
+  const start = (() => { for (let y = 0; y < rows; y++) { const x = m[y].indexOf('S'); if (x >= 0) return {x, y}; } })();
+  const g = {pos:{...start}, t:0, seen:0, over:false, flash:0, moves:0, talk:'', trail:[]};
+  const pick = a => a[R(a.length)];
+  mgOpen({kick:'The Daru roofs', title:'The roof run', leaveText:'Walk across openly', done:r => opt.after && opt.after(r),
+    leave:() => mgClose({done:false, seen:g.seen})});
+  const can = (x, y) => y >= 0 && y < rows && x >= 0 && x < cols && '.pS>'.includes(m[y][x]) && !ws.has(K(x, y));
+  const say = (who, line) => { g.talk = mgSay(who, line); draw(); };
+  const draw = () => mgPanel(`<div class="cpbar"><span>Count ${g.t % 8 + 1} of 8</span><span>Seen: <b class="${g.seen ? 'warnc' : ''}">${g.seen}</b></span><span>${g.moves} steps</span></div>
+    ${g.talk}
+    <div class="row mgbtns">${g.over ? `<button class="btn primary" id="rrDone" data-bot="1">Onto Kalam's roof</button>` : `<button class="btn" id="rrWait" data-bot="1">Hold your breath (wait a count)</button>`}</div>
+    <p class="fine">Tap a slate next to the sergeant to step (diagonals too; planks cross the gaps). Every step is a count. End a count in lantern light and you're seen.${rumour ? ' <b class="jc">Kruppe\'s count:</b> the dashed squares are where the lanterns swing next.' : ''}</p>
+    <p class="hint keys"><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> step · <kbd>Space</kbd> wait a count · <kbd>Esc</kbd> walk across openly</p>`),
+    bind = () => { if ($('#rrWait')) $('#rrWait').onclick = () => step(0, 0); if ($('#rrDone')) $('#rrDone').onclick = () => { AUDIO.play('click'); mgClose({done:true, seen:g.seen}); }; };
+  const redraw = () => { draw(); bind(); };
+  const step = (dx, dy) => { if (g.over) return; const nx = g.pos.x + dx, ny = g.pos.y + dy;
+    if ((dx || dy) && (!can(nx, ny) || (dx && dy && !(can(g.pos.x + dx, g.pos.y) && can(g.pos.x, g.pos.y + dy))))) return;
+    g.t++; g.moves++; if (dx || dy) { g.trail.unshift({...g.pos}); g.trail = g.trail.slice(0, 4); g.pos = {x:nx, y:ny}; AUDIO.play('step'); } else AUDIO.play('click');
+    if (rrLit(g.t).has(K(g.pos.x, g.pos.y))) { g.seen++; g.flash = performance.now(); AUDIO.play('hurt'); mgDeed('roofSeen');
+      g.pos = {...start}; g.t = 0; g.trail = [];
+      g.talk = mgSay('', pick(['A lantern swings. Light across your boots. Somebody two roofs over whistles, low, and you drop back over the plank before the second whistle.', 'The light finds you. A shout in Daric, a clatter of slate, and you\'re back behind the plank with your heart in your mouth.', 'Seen. The watcher\'s lantern stops dead on you, and so do you, and then you\'re running back the way you came.'])) + (g.seen === 1 && !rumour ? mgSay(SQUAD().includes('ellis') ? 'Ellis' : 'Brisk', SQUAD().includes('ellis') ? '"Watch the lanterns, not the roofs. They swing on a count. Learn it."' : '"They swing the same way every time, Sergeant. Watch a while first."') : g.seen === 1 ? mgSay('Kettle', '"Eight. Kruppe said eight. Count it."') : '');
+      return redraw(); }
+    if (m[g.pos.y][g.pos.x] === '>') { g.over = true; AUDIO.play('coin'); if (!g.seen) mgDeed('roofsUnseen');
+      g.talk = mgSay('', g.seen ? `Onto the last roof. The Guild has seen you ${numw(g.seen)} time${g.seen === 1 ? '' : 's'} tonight, and will remember it.` : 'Onto the last roof, low, in the shadow of the parapet, and not one lantern has touched you. Across the leads, very slightly, Kalam\'s head turns.'); return redraw(); }
+    g.talk = ''; redraw(); };
+  // the roofs
+  const geo = () => { const W = MG.W, H = MG.H, T = Math.floor(Math.min((W - 12) / cols, (H - 12) / rows)); return {T, ox:Math.round((W - T*cols)/2), oy:Math.round((H - T*rows)/2)}; };
+  MG.cv.onpointerdown = e => { const r = MG.cv.getBoundingClientRect(), {T, ox, oy} = geo(), x = Math.floor((e.clientX - r.left - ox) / T), y = Math.floor((e.clientY - r.top - oy) / T);
+    const dx = x - g.pos.x, dy = y - g.pos.y; if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) step(dx, dy); };
+  MG.anim = t => { const ctx = MG.ctx; if (!ctx || !MG.W) return; const W = MG.W, H = MG.H, {T, ox, oy} = geo(), lit = rrLit(g.t), next = rumour && !g.over ? rrLit(g.t + 1) : null;
+    ctx.fillStyle = '#05070c'; ctx.fillRect(0, 0, W, H);
+    m.forEach((row, y) => [...row].forEach((c, x) => { const px = ox + x*T, py = oy + y*T;
+      if (c === '#') { const gb = ctx.createLinearGradient(px, py, px, py + T); gb.addColorStop(0, '#0a1020'); gb.addColorStop(1, '#16305a'); ctx.fillStyle = gb; ctx.fillRect(px, py, T, T); glow(ctx, px + T/2, py + T, T*.9, '#6aa8ff', .12 + Math.sin(t/900 + y)*.03); return; }
+      ctx.fillStyle = (x + y) % 2 ? '#1f2530' : '#232a36'; ctx.fillRect(px, py, T, T); ctx.strokeStyle = 'rgba(0,0,0,.4)'; for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(px, py + i*T/4); ctx.lineTo(px + T, py + i*T/4); ctx.stroke(); }
+      if (c === 'p') { ctx.fillStyle = '#5a4128'; ctx.fillRect(px + T*.12, py, T*.76, T); ctx.strokeStyle = '#3a2a1a'; ctx.beginPath(); ctx.moveTo(px + T/2, py); ctx.lineTo(px + T/2, py + T); ctx.stroke(); }
+      if (c === 'C') { ctx.fillStyle = '#3b3530'; ctx.fillRect(px + T*.2, py + T*.15, T*.6, T*.7); ctx.fillStyle = '#4e463f'; ctx.fillRect(px + T*.16, py + T*.1, T*.68, T*.14); ell(ctx, px + T/2, py + T*.18, T*.16, T*.06, '#171412'); }
+      if (c === '>') { ctx.fillStyle = 'rgba(232,192,115,.16)'; ctx.fillRect(px + 2, py + 2, T - 4, T - 4); ctx.strokeStyle = 'rgba(232,192,115,.7)'; ctx.setLineDash([4, 3]); ctx.strokeRect(px + 3, py + 3, T - 6, T - 6); ctx.setLineDash([]); }
+      if (c === 'S') { ctx.strokeStyle = 'rgba(159,224,184,.35)'; ctx.strokeRect(px + 3, py + 3, T - 6, T - 6); }
+      if (lit.has(K(x, y))) { ctx.fillStyle = `rgba(255,200,110,${.32 + Math.sin(t/140)*.05})`; ctx.fillRect(px, py, T, T); }
+      else if (next && next.has(K(x, y))) { ctx.strokeStyle = 'rgba(255,200,110,.55)'; ctx.setLineDash([3, 3]); ctx.strokeRect(px + 3, py + 3, T - 6, T - 6); ctx.setLineDash([]); } }));
+    // the watchers, lanterns turned the way they're looking
+    ROOFRUN.watchers.forEach(([wx, wy, seq]) => { const d = RR_DIR[seq[g.t % 8]], px = ox + wx*T + T/2, py = oy + wy*T + T*.6;
+      glow(ctx, px + d[0]*T*.35, py - T*.3 + d[1]*T*.35, T*1.2, '#ffc070', .35); drawFigure(ctx, 'assassin', px, py, T/34, t, {still:true, dir:d[0] < 0 ? -1 : 1});
+      ctx.fillStyle = '#ffd890'; ctx.beginPath(); ctx.arc(px + d[0]*T*.3, py - T*.35 + d[1]*T*.3, T*.07, 0, 7); ctx.fill(); });
+    // the squad: the sergeant in front, the others tucked in behind
+    g.trail.slice(0, 2).forEach((p, i) => drawFigure(ctx, SQUAD()[i + 1] || 'brisk', ox + p.x*T + T/2, oy + p.y*T + T*.62, T/40, t, {still:true, alpha:.7}));
+    drawFigure(ctx, 'sgt', ox + g.pos.x*T + T/2, oy + g.pos.y*T + T*.62, T/34, t, {still:true});
+    if (!g.over) { ctx.strokeStyle = 'rgba(232,192,115,.55)'; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; const nx = g.pos.x + dx, ny = g.pos.y + dy; if (can(nx, ny) && (!(dx && dy) || (can(g.pos.x + dx, g.pos.y) && can(g.pos.x, g.pos.y + dy)))) ctx.strokeRect(ox + nx*T + 5.5, oy + ny*T + 5.5, T - 11, T - 11); } }
+    if (g.flash && performance.now() - g.flash < 500) { ctx.fillStyle = `rgba(255,220,150,${.4*(1 - (performance.now() - g.flash)/500)})`; ctx.fillRect(0, 0, W, H); }
+  };
+  mgKeys({ArrowLeft:() => step(-1, 0), ArrowRight:() => step(1, 0), ArrowUp:() => step(0, -1), ArrowDown:() => step(0, 1), a:() => step(-1, 0), d:() => step(1, 0), w:() => step(0, -1), s:() => step(0, 1),
+    q:() => step(-1, -1), e:() => step(1, -1), z:() => step(-1, 1), c:() => step(1, 1), ' ':() => { if (g.over) { const b = $('#rrDone'); b && b.click(); } else step(0, 0); }, Enter:() => { const b = $('#rrDone'); b && b.click(); }});
+  g.talk = mgSay('', 'Three roofs to Kalam\'s, and the Guild has watchers out on the ridges tonight, each with a shuttered lantern, swinging it slow across the slates on a count.') + (rumour ? mgSay('Kettle', '"Count of eight. Kruppe said. And they never look straight down." A beat. "I wrote it on my hand."') : mgSay(SQUAD().includes('ellis') ? 'Ellis' : 'Brisk', SQUAD().includes('ellis') ? '"Low and slow, Sergeant. Watch the lanterns before you move."' : '"Low, Sergeant. Low and slow."'));
+  redraw();
+}
+
+/* ============ Masks at the Fete: five names for Whiskeyjack ============
+   Five masked guests in Lady Simtal's hall, each with a mask and a few tells; seven names to give them (two of the seven are not
+   dancing: the alchemist wears no mask tonight, and the boy is up in the gallery). One list, handed to Fiddler once. The tells
+   all come from what the squad has seen: the Phoenix, the street before the gate, the terrace. */
+const MASKS = [
+  {id:'murillio', name:'Murillio', mask:'fox', col:'#5a4a8a', tells:['A fox mask, and silk the colour of a bruise.', 'Rings on three fingers of each hand.', 'He looks at your boots as you pass, and winces for them.']},
+  {id:'coll', name:'Coll', mask:'bear', col:'#5a4a3c', tells:['A bear mask that hides nothing of the shoulders.', 'A jug, not a glass. He drinks like a man keeping a promise to someone who isn\'t here.', 'He stands like a soldier who has forgotten he was one.']},
+  {id:'challice', name:'Challice D\'Arle', mask:'half', col:'#8a8fa8', tells:['A silver half-mask. Young.', 'She is dancing with a partner she didn\'t choose.', 'She keeps looking past him, at the tall windows, as if somebody might come in through one.']},
+  {id:'orr', name:'Turban Orr', mask:'leaves', col:'#3a6a3a', tells:['A mask of gilded leaves, pushed up on the forehead. Green and gold.', 'A rapier worn as if it has been used.', 'Holding court; his eyes keep going to one thin young guard by the balustrade.']},
+  {id:'derudan', name:'Derudan', mask:'feathers', col:'#2a2420', tells:['Black feathers, and a long clay pipe smoked through the mask\'s mouth, which should be impossible.', 'Old dark hands. Rings of bone.', 'The candles nearest her lean away.']},
+];
+const MASK_NAMES = ['Murillio', 'Coll', 'Challice D\'Arle', 'Turban Orr', 'Derudan', 'Baruk', 'Crokus'];
+function playMasks(opt){
+  const order = [0, 1, 2, 3, 4].sort(() => Math.random() - .5), guests = order.map(i => MASKS[i]);
+  const g = {sel:0, as:[null, null, null, null, null], done:false, right:0, talk:''};
+  mgOpen({kick:'Lady Simtal\'s hall', title:'Masks at the Fete', leaveText:'Not now', done:r => opt.after && opt.after(r),
+    leave:() => mgClose({done:g.done, right:g.right})});
+  const say = (who, line) => { g.talk = mgSay(who, line); draw(); };
+  const draw = () => { const used = new Set(g.as.filter(Boolean));
+    mgPanel(`${g.talk}
+      <div class="mkcards">${guests.map((m, i) => `<button class="mkcard ${i === g.sel && !g.done ? 'on' : ''} ${g.done ? (g.as[i] === m.name ? 'ok' : 'bad') : ''}" data-g="${i}" data-bot="1"><span class="mkn">${i + 1}</span><span class="mkt">${m.tells.map(esc).join(' ')}</span><b>${g.done ? (g.as[i] === m.name ? `✓ ${esc(m.name)}` : `✗ ${g.as[i] ? esc(g.as[i]) : 'no name'}: it's ${esc(m.name)}`) : g.as[i] ? esc(g.as[i]) : '<i>who?</i>'}</b></button>`).join('')}</div>
+      ${g.done ? '' : `<div class="mkchips">${MASK_NAMES.map((n, i) => `<button class="btn mini ${used.has(n) ? 'used' : ''}" data-n="${i}" data-bot="1"><kbd class="mkk">${'abcdefg'[i]}</kbd>${esc(n)}</button>`).join('')}</div>`}
+      <div class="row mgbtns">${g.done ? `<button class="btn primary" id="mkDone" data-bot="1">Back to the terrace</button>` : `<button class="btn primary" id="mkHand" data-bot="1" ${g.as.some(Boolean) ? '' : 'disabled'}>Hand Fiddler the list</button>`}</div>
+      <p class="hint keys"><kbd>1</kbd>–<kbd>5</kbd> pick a guest · <kbd>A</kbd>–<kbd>G</kbd> give a name · <kbd>Enter</kbd> hand in the list · <kbd>Esc</kbd> not now</p>`);
+    document.querySelectorAll('#mgPanel [data-g]').forEach(b => b.onclick = () => { if (g.done) return; const i = +b.dataset.g; if (g.sel === i && g.as[i]) g.as[i] = null; g.sel = i; AUDIO.play('click'); draw(); });
+    document.querySelectorAll('#mgPanel [data-n]').forEach(b => b.onclick = () => name(+b.dataset.n));
+    if ($('#mkHand')) $('#mkHand').onclick = hand; if ($('#mkDone')) $('#mkDone').onclick = () => { AUDIO.play('click'); mgClose({done:true, right:g.right}); };
+  };
+  const name = i => { if (g.done) return; const n = MASK_NAMES[i], prev = g.as.indexOf(n); if (prev >= 0) g.as[prev] = null; g.as[g.sel] = n; AUDIO.play('flip');
+    const nx = g.as.findIndex(a => !a); if (nx >= 0) g.sel = nx; draw(); };
+  const hand = () => { if (g.done || !g.as.some(Boolean)) return; g.done = true; g.right = guests.filter((m, i) => g.as[i] === m.name).length; AUDIO.play(g.right >= 4 ? 'coin' : 'click');
+    mgDeed('masksRight', g.right); if (g.right === 5) mgDeed('masksAll');
+    say('Fiddler', g.right === 5 ? '"Five for five." He reads it twice, which is once more than he reads anything. "Whiskeyjack\'s going to ask me who wrote this. I\'m going to tell him."' : g.right >= 3 ? `"${numw(g.right, true)} right." He folds it into his sleeve. "That's more than the Council knows about itself. It'll do."` : g.right ? `"${numw(g.right, true)}." He looks at the list, and at you, and at the list. "Well. It's a Fete. Everybody looks like somebody else."` : '"None." He reads it again, in case. "Sergeant, I think you\'ve named the chandeliers."'); };
+  // the hall: five figures under the chandeliers, each in a mask; tap one to pick it
+  const fx = i => MG.W * (i + .5) / 5;
+  MG.cv.onpointerdown = e => { if (g.done) return; const r = MG.cv.getBoundingClientRect(), x = e.clientX - r.left, i = clamp(Math.floor(x / (MG.W / 5)), 0, 4); g.sel = i; AUDIO.play('click'); draw(); };
+  MG.anim = t => { const ctx = MG.ctx; if (!ctx || !MG.W) return; const W = MG.W, H = MG.H;
+    ctx.fillStyle = '#16100c'; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 3; i++) { const cx = W*(.2 + i*.3), fl = .9 + Math.sin(t/200 + i)*.05; glow(ctx, cx, H*.08, W*.3, '#ffd890', .3*fl); ctx.fillStyle = 'rgba(255,230,170,.8)'; for (let k = 0; k < 7; k++) ctx.fillRect(cx - 30 + k*10, H*.08 + Math.sin(k)*3, 2, 3); }
+    for (let x = 0; x < W; x += 28) for (let y = H*.62; y < H; y += 28) { ctx.fillStyle = ((x/28 + Math.floor(y/28)) % 2) ? '#d8d0c0' : '#1a1512'; ctx.globalAlpha = .18; ctx.fillRect(x, y, 28, 28); } ctx.globalAlpha = 1;
+    const s = clamp(H/72, 2.4, 5);
+    guests.forEach((m, i) => { const x = fx(i), y = H*.8, sway = Math.sin(t/700 + i*1.7)*s*1.2, sel = i === g.sel && !g.done;
+      if (sel) glow(ctx, x, y - s*12, s*16, '#e8c073', .3 + Math.sin(t/250)*.08);
+      if (g.done) glow(ctx, x, y - s*12, s*14, g.as[i] === m.name ? '#7fb394' : '#e0574a', .28);
+      ctx.save(); ctx.translate(x + sway, y); ctx.scale(s, s);
+      ell(ctx, 0, 13, 9, 3, 'rgba(0,0,0,.5)'); poly(ctx, [[-7, -6], [7, -6], [9, 12], [-9, 12]], m.col); ell(ctx, 0, -11, 4.6, 4.8, '#c8a488');
+      const k = m.mask; ctx.fillStyle = '#000';
+      if (k === 'fox') { poly(ctx, [[-5, -12], [5, -12], [0, -6]], '#c8642a'); poly(ctx, [[-5, -13], [-3.5, -18], [-2, -13]], '#c8642a'); poly(ctx, [[5, -13], [3.5, -18], [2, -13]], '#c8642a'); ctx.fillStyle = '#1a0c06'; ctx.fillRect(-3, -12.2, 1.6, 1); ctx.fillRect(1.4, -12.2, 1.6, 1); }
+      if (k === 'bear') { ell(ctx, 0, -11.5, 5.4, 5, '#5a3a22'); ell(ctx, -4, -16, 1.8, 1.8, '#5a3a22'); ell(ctx, 4, -16, 1.8, 1.8, '#5a3a22'); ell(ctx, 0, -9.5, 2.2, 1.6, '#3a2414'); ctx.fillStyle = '#0d0805'; ctx.fillRect(-2.8, -13, 1.5, 1.2); ctx.fillRect(1.3, -13, 1.5, 1.2); ctx.fillStyle = '#8a6a44'; ctx.fillRect(7, -3, 3, 7); }
+      if (k === 'half') { ctx.fillStyle = '#d8dce8'; ctx.beginPath(); ctx.moveTo(-5, -13); ctx.quadraticCurveTo(0, -15, 5, -13); ctx.lineTo(4.5, -10.5); ctx.quadraticCurveTo(0, -9.5, -4.5, -10.5); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#1a1a22'; ctx.fillRect(-3, -12.4, 1.6, 1); ctx.fillRect(1.4, -12.4, 1.6, 1); ctx.fillStyle = '#3a2418'; ctx.beginPath(); ctx.arc(0, -13.5, 4.8, Math.PI, 0); ctx.fill(); }
+      if (k === 'leaves') { for (let a = -4; a <= 4; a++) ell(ctx, a*1.2, -16 + Math.abs(a)*.4, 1.4, 2.2, a % 2 ? '#c9973f' : '#4a7a3a', a*.25); ctx.fillStyle = '#e8c073'; ctx.fillRect(-7, -6, 14, 1); ctx.strokeStyle = '#cfc8b8'; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(7, 3); ctx.lineTo(10, 10); ctx.stroke(); }
+      if (k === 'feathers') { for (let a = -5; a <= 5; a++) poly(ctx, [[a*.9 - .8, -12], [a*1.6, -19 - (5 - Math.abs(a))*.5], [a*.9 + .8, -12]], a % 2 ? '#1a1410' : '#8a6a3a'); ell(ctx, 0, -10.5, 4.6, 3, '#1a1410'); ctx.strokeStyle = '#d8c8a8'; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(1, -9); ctx.lineTo(8, -7); ctx.stroke(); const sm = (t/60) % 20; ctx.fillStyle = `rgba(200,200,210,${.5 - sm/40})`; ctx.beginPath(); ctx.arc(9 + sm*.2, -8 - sm*.6, 1 + sm*.1, 0, 7); ctx.fill(); }
+      ctx.restore();
+      ctx.fillStyle = sel ? '#e8c073' : 'rgba(200,190,170,.7)'; ctx.font = `600 ${Math.round(clamp(W*.035, 11, 16))}px 'Alegreya Sans SC', sans-serif`; ctx.textAlign = 'center'; ctx.fillText(String(i + 1), x, H*.97);
+      if (g.as[i]) { ctx.fillStyle = g.done ? (g.as[i] === m.name ? '#9fe0b8' : '#f08a7c') : '#e8c073'; ctx.font = `italic ${Math.round(clamp(W*.03, 10, 15))}px 'IM Fell English', serif`; ctx.fillText(g.as[i].split(' ')[0], x, y - s*22); } });
+  };
+  mgKeys(Object.assign({'1':() => { g.sel = 0; draw(); }, '2':() => { g.sel = 1; draw(); }, '3':() => { g.sel = 2; draw(); }, '4':() => { g.sel = 3; draw(); }, '5':() => { g.sel = 4; draw(); }, Enter:() => { if (g.done) { const b = $('#mkDone'); b && b.click(); } else hand(); }, ' ':() => { const b = $('#mkDone'); b && b.click(); }},
+    Object.fromEntries('abcdefg'.split('').map((c, i) => [c, () => name(i)]))));
+  g.talk = mgSay('Fiddler', '"Whiskeyjack wants names. Five of them, the ones worth knowing, under those masks." He nods at the hall. "Walk it. Look. Tell me who\'s who. You\'ve met half this city already, one way or another; the other half\'s met you."');
+  draw();
+}

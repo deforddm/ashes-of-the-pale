@@ -103,6 +103,8 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.9.1', ['The roof run (Chapter 4): after the fight on the Gadrobi roofs, cross to the Daru roofs low and unseen, one step at a time, while the Guild\'s watchers swing their lanterns on a count of eight. Caught Kruppe cheating in Chapter 3? Then you know the count.',
+             'Masks at the Fete (Chapter 6): Whiskeyjack wants names. Walk Lady Simtal\'s hall, read the masks and the people under them, and hand Fiddler a list of five.']],
   ['3.9.0', ['Bones at the fire: a dice game of nerve against Fiddler at the Pale, Kettle at the Rhivi Plain fire (for first watch), and Hedge at the Gadrobi crossing once the crates are down. Two bones, throw or bank, and beware Hood\'s eyes.',
              'Kruppe\'s cups at the Phoenix Inn: follow the coin for three rounds. Kruppe cheats in the last one. Catch him at it and he pays double, and tells you something about the roofs.',
              'Laying the charges: in the vault under the crossroads, lay the twelve cussers yourself, three runs of a sapper\'s puzzle with Hedge watching. Clean work is rewarded.']],

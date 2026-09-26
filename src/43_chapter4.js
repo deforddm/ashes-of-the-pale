@@ -330,7 +330,8 @@ The boy with the bag is gone. The tall shape is gone. Somewhere a long way off, 
     /* ---- exit east: Tuft's draw, then the Guild ---- */
     c4_to_daru:()=> S.f.c4_roofsFought ? {sp:'The plank east', txt:
 `The plank over the last gap to the Daru roofs: oak, tarred at the ends. On the far side, the roofs rise toward the brass lamps, and somewhere up there is a chimney with a cracked pot on it, and Kalam.`,
-      ch:[{t:'Across to the Daru roofs.', go:()=>{ startExplore('roofs_daru'); if (!S.f.c4_daruSeen) talk('c4_daru_arrive'); }},
+      ch:[{t:'Across the Daru roofs, low, between the Guild\'s lanterns.', tag:'Roof run', req:()=>!S.f.c4_daruSeen, go:()=>playRoofRun({after:r => { S.f.c4_run = r.done ? (r.seen ? 'seen' : 'unseen') : 'walked'; startExplore('roofs_daru'); talk('c4_daru_arrive'); }})},
+          {t:'Across to the Daru roofs.', go:()=>{ startExplore('roofs_daru'); if (!S.f.c4_daruSeen) talk('c4_daru_arrive'); }},
           {t:'Not yet.'}]} : (SQUAD().includes('tuft') && !S.f.c4_drawn && !S.f.c4_noCard) ? {sp:'Tuft', txt:
 `At the edge of the roof, where the plank goes over to the Daru side, Tuft stops, and crouches, and takes the Deck out of her sleeve.
 
@@ -430,8 +431,13 @@ ${SQUAD().includes('kettle') && S.f.c4_cusserHeld && S.inv.cusser > 0 ? `Kettle 
           {t:'Not yet.', go:()=>startExplore()}]}),
 
     /* ---- the Daru roofs ---- */
-    c4_daru_arrive:()=>({sp:'The Daru roofs', scene:'roof_night', fx:()=>{S.f.c4_daruSeen=1;}, txt:
-`The Daru roofs are higher and steeper and better kept, and the gutters are lead where the Gadrobi gutters are clay, and the chimney-pots have little brass hats on them against the rain. The lamps below are in brass cages. The blue coming up between the houses is paler here, bluer, as if even the haze had money.
+    c4_daru_arrive:()=>({sp:'The Daru roofs', scene:'roof_night', fx:()=>{ S.f.c4_daruSeen=1;
+        if (S.f.c4_run === 'unseen' || S.f.c4_run === 'seen') { const n = S.f.c4_run === 'unseen' ? 30 : 10, up = gainXP(n); note(`+${n} experience. ${S.f.c4_run === 'unseen' ? 'Across the roofs unseen.' : 'Across the roofs.'}`, 'good'); if (up) note(`The squad reaches level ${S.lvl}.`, 'good'); } }, txt:
+`${S.f.c4_run === 'unseen' ? `Three roofs, and not one lantern has touched you. You come down behind the last parapet in a row, all of you, breathing through your mouths, and ${SQUAD().includes('ellis') ? 'Ellis lets out a breath she has been holding since the plank. "Well," she says. "Well. The Guild\'s going to hate that."' : 'Kettle unclenches her hand. There is a smeared *8* in charcoal on the palm.'}
+
+` : S.f.c4_run === 'seen' ? `You make it across, in the end. Somewhere behind you, on a roof you've already left, somebody is still whistling, low, two notes and two notes, and somebody else is answering. The Guild knows there are Malazans on its roofs tonight. So much for low and slow.
+
+` : ''}The Daru roofs are higher and steeper and better kept, and the gutters are lead where the Gadrobi gutters are clay, and the chimney-pots have little brass hats on them against the rain. The lamps below are in brass cages. The blue coming up between the houses is paler here, bluer, as if even the haze had money.
 
 The next roof east is flat, with a low parapet round it and a chimney with a cracked pot on it. Beyond that, one more roof, a little higher than the rest, flat, leaded, with nothing on it at all.
 
@@ -446,7 +452,7 @@ Above you, the Moon's Spawn. It's right overhead here. It's not, it's over the l
     c4_meet:()=>({sp:'Kalam\'s roof', scene:'roof_night', fx:()=>{ S.f.c4_meet=1;
         // the squad goes back to the cracked pot on the middle roof, so the map afterwards matches the scene
         S.pos = {x:8, y:7}; S.trail = [[9,7],[7,7],[9,6],[8,6],[7,6],[8,8]].map(([x,y]) => ({x, y})); }, txt:
-`You get as far as his roof. Kalam doesn't turn his head. One hand moves at his side, two fingers, flat, a gesture you'd miss if you weren't waiting for it: *back*.
+`You get as far as his roof. ${S.f.c4_run === 'unseen' ? 'Nobody on any roof has seen you come, and Kalam, who sees everything, gives you one short look that is very nearly a compliment. ' : ''}Kalam doesn't turn his head. One hand moves at his side, two fingers, flat, a gesture you'd miss if you weren't waiting for it: *back*.
 
 So you go back, over the plank, behind the cracked pot, where he told you. ${SQUAD().includes('brisk') ? `Brisk puts her shield flat on the leads in front of her, so it won't catch the light, and lies behind it, and becomes a part of the roof.` : ''} ${SQUAD().includes('ellis') ? `Ellis goes to the north corner of the parapet without being told, where she can see the whole of Kalam's roof and the two roofs past it. She strings the bow lying down.` : ''}
 

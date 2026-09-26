@@ -640,7 +640,7 @@ You've seen rich houses. Nathilog had a governor's palace. It would be the stabl
 
 The great hall of Lady Simtal's house is two storeys high and all of it lit: three chandeliers the size of wagons, hung with a thousand candles and a thousand drops of crystal, so that the light comes down in pieces. The floor is marble, black and white, and there are two hundred people on it in masks, dancing, or pretending to, and the music comes from a gallery you can't see. Beyond the hall, through tall doors thrown open to the night, the terraces: white marble stepping down toward the garden, with lanterns on poles and banquet tables under white cloths, and the lake beyond it all, black, and the Spawn over the lake, blacker.
 
-Fiddler meets you at the terrace doors in a guard's blue, with a halberd on his shoulder, looking exactly like a guard. "Terrace," he says. "Walk it. Upper and lower. Anything comes over a balustrade that isn't a drunk, it's yours. The garden's down the steps; Hedge and me have the garden, and Whiskeyjack's there already." A pause. "Don't talk to the guests. Especially the tall one."
+Fiddler meets you at the terrace doors in a guard's blue, with a halberd on his shoulder, looking exactly like a guard. "Terrace," he says. "Walk it. Upper and lower. Anything comes over a balustrade that isn't a drunk, it's yours. The garden's down the steps; Hedge and me have the garden, and Whiskeyjack's there already." A pause. "Don't talk to the guests. Especially the tall one." Another. "And Whiskeyjack wants names for the masks in there, the ones worth knowing, when you've a minute. Try the hall doors."
 
 By a pillar at the edge of the hall stands a guest so tall that the dancers go round him the way water goes round a stone. A black dragon mask. He isn't dancing.
 
@@ -657,7 +657,13 @@ At the far end of the hall there's a small door with a gilt handle. It's closed.
 Near the musicians' gallery a girl in a silver half-mask is dancing with a young man who is plainly not the one she'd have chosen. She's looking over his shoulder at the tall windows, as if somebody might come in through one.
 
 Up in the gallery, in the shadow behind the musicians, something moves: a boy-shaped something with a coil of rope, crouched on the rail, watching the girl. ${S.f.c6_crokus ? `You know the rope.` : ''} Nobody else looks up. Nobody at a Fete ever looks up.`,
-      ch:[{t:'Back to the terrace.', go:()=>startExplore()}]}),
+      ch:[{t:'Walk the hall and put names to the masks for Whiskeyjack.', tag:'Masks at the Fete', req:()=>!S.f.c6_masks && !S.f.c6_duelDone, go:()=>playMasks({after:r => { if (r.done) { S.f.c6_masks = r.right + 1; talk('c6_masks_after'); } else startExplore(); }})},
+          {t:'Back to the terrace.', go:()=>startExplore()}]}),
+    c6_masks_after:()=>{ const n = (S.f.c6_masks || 1) - 1; return {sp:'Fiddler', scene:'fete_hall', fx:()=>{ const up = gainXP(n*8); if (n) note(`+${n*8} experience. ${numw(n, true)} of five names.`, 'good'); if (n >= 4) { S.f.wjRegard = (S.f.wjRegard || 0) + 1; note('Whiskeyjack will hear who wrote that list.', 'good'); } if (up) note(`The squad reaches level ${S.lvl}.`, 'good'); }, txt:
+`Fiddler tucks the list into his sleeve, next to whatever else he keeps up there, and goes back to looking like a guard.
+
+${n === 5 ? `"Five for five," he says again, to the halberd, as if he can't quite get over it. "Hedge owes me a silver. I said you would."` : n >= 3 ? `"It'll do," he says. "It'll more than do."` : `"It's a start," he says, kindly, which from Fiddler is the worst thing he can say.`}`,
+      ch:[{t:'Back to the terrace.', go:()=>startExplore()}]}; },
     c6_baruk:()=>({sp:'An old man in dark red', fx:()=>{ S.f.c6_baruk=1; }, txt: S.f.c6_baruk ?
 `He's at the balustrade with his untouched wine. He inclines his head to you, very slightly, and goes back to watching his guest.` :
 `An old man in robes of dark red, with a skullcap and a face like a well-kept ledger, is standing at the balustrade with a glass of wine he isn't drinking. He isn't masked. He looks as if he considered it and decided he was too tired.
@@ -956,7 +962,7 @@ Whiskeyjack is by the fountain.`,
       ch:[{t:'The garden.', go:()=>startExplore()}]}; },
     c6_wj_garden:()=>({sp:'Whiskeyjack', fx:()=>{ S.f.c6_wjGarden=1; }, txt: S.f.c6_wjGarden ?
 `He's leaning on his halberd by the fountain, watching the sapling at the far end of the lawn. He doesn't look round. "Sergeant."` :
-`He's standing by the fountain in a guard's blue, leaning on a halberd like a staff, and he's the only person in the garden who doesn't look as if he's at a party. He counts you. ${SQUAD().length === 6 ? 'Six' : 'Five'}.
+`He's standing by the fountain in a guard's blue, leaning on a halberd like a staff, and he's the only person in the garden who doesn't look as if he's at a party. ${(S.f.c6_masks || 0) >= 5 ? `There's a folded paper in his other hand, in your writing. He doesn't mention it. He puts it away where you can see him put it away. ` : ''}He counts you. ${SQUAD().length === 6 ? 'Six' : 'Five'}.
 
 "Sergeant." He doesn't take his eyes off the far end of the lawn. "You saw her."
 
