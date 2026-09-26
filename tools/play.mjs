@@ -1,10 +1,11 @@
 // Playthrough bot for Ashes of the Pale: drives the real UI from the title screen through the
 // prologue, all seven chapters and the finale, picking choices at random (preferring unseen nodes),
 // walking to NPCs and trigger tiles, and fighting battles with the enemy AI on the squad's side.
-// Usage: node tools/play.mjs [runs=3] [--cheat] [--from=N] [--shots=dir] [--quiet]
+// Usage: node tools/play.mjs [runs=3] [--cheat] [--from=N] [--shots=dir] [--quiet] [--wide]
 //   --cheat     win every battle instantly (flow testing only)
 //   --from=N    start from a synthetic save at the start of chapter N
 //   --shots=dir screenshot on every new view/area and on any problem
+//   --wide      play in a 1366x768 window (the wide, PC layout) instead of a phone
 // Exit code 1 if any run hit a page error, a stuck state, or failed to reach the end.
 import fs from 'fs';
 import path from 'path';
@@ -13,6 +14,7 @@ const args = process.argv.slice(2);
 const runs = +(args.find(a => /^\d+$/.test(a)) || 3);
 const cheat = args.includes('--cheat');
 const quiet = args.includes('--quiet');
+const wide = args.includes('--wide');
 const from = +((args.find(a => a.startsWith('--from=')) || '').split('=')[1] || 0);
 const shots = (args.find(a => a.startsWith('--shots=')) || '').split('=')[1] || '';
 if (shots) fs.mkdirSync(shots, { recursive: true });
@@ -100,7 +102,7 @@ const SYNTH = (n) => {
 
 let bad = 0;
 async function run(i) {
-  const { ctx, page, errors: errs } = await openGame(browser, srv.url, { fast: true });
+  const { ctx, page, errors: errs } = await openGame(browser, srv.url, wide ? { fast: true, width: 1366, height: 768 } : { fast: true });
   page.on('console', m => { if (m.type() === 'warning' && /finale|backdrop leave|unknown/i.test(m.text())) errs.push('warn: ' + m.text()); });
   await page.evaluate(BOT);
   if (cheat) await page.evaluate(() => { __bot.cheat = true; });
