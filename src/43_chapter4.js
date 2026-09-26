@@ -51,11 +51,12 @@ const CH4 = {
     guild_roofs:{title:'The Gadrobi roofs', warrenText:'Open air on every side · the blue haze below · warrens steady', warren:{meanas:1.1,denul:1}, dark:true, music:'dark', style:'roof',
       map:["#......#","...##...","........",".#....#.","........","##....##","........","...,,...","........","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['guildknife',1,1],['guildknife',6,1],['guildknife',3,2]], xp:200, after:'c4_after_guild'},
+      foes:[['guildknife',1,1],['guildknife',6,1],['guildknife',3,2],['guildveteran',4,0]], xp:200, after:'c4_after_guild',
+      waves:[{round:2, foes:[['guildknife',6,0]], text:'Another comes up over the gutter.'}] },
     guild_roofs_2:{title:'The Gadrobi roofs', warrenText:'Open air on every side · the blue haze below · warrens steady', warren:{meanas:1.1,denul:1}, dark:true, music:'dark', style:'roof',
       map:["#......#","...##...","........",".#....#.","........","##....##","........","...,,...","........","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['guildknife',1,1],['guildknife',6,1]], xp:200, after:'c4_after_guild'},
+      foes:[['guildknife',1,1],['guildknife',6,1],['guildknife',4,2]], xp:200, after:'c4_after_guild'},
     andii_roof:{title:'Two roofs over', warrenText:'Kurald Galain pours off the Spawn · Meanas drowns in it · Denul gutters', warren:{meanas:1.5,denul:0.7}, dark:true, music:'dark', style:'roof',
       map:["#......#","........","..#..#..","........","#......#","........","...,,...","#......#","........","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
@@ -66,11 +67,12 @@ const CH4 = {
     reprisal:{title:'The alley under the roofs', warrenText:'No lamps · wet stone · Meanas leans into the dark · Denul holds', warren:{meanas:1.3,denul:1}, dark:true, music:'dark', style:'city',
       map:["##....##","........",".#....#.","........","...##...","........","#......#","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['guildknife',1,1],['guildknife',6,1],['guildveteran',3,0]], xp:220, after:'c4_after_reprisal'} },
+      foes:[['guildknife',1,1],['guildknife',6,1],['guildveteran',3,0],['guildveteran',4,0]], xp:220, after:'c4_after_reprisal',
+      waves:[{round:2, foes:[['guildknife',2,0]], text:'Another comes down off the roofs.'}] } },
 
   foes:{ guildknife:{name:'Guild assassin', sig:'a', hp:14, ac:15, atk:6, dmg:[1,8,2], rng:1, mv:6, init:5, verb:'cuts at'},
          guildveteran:{name:'Guild veteran', sig:'A', hp:24, ac:16, atk:7, dmg:[1,10,3], rng:1, mv:6, init:6, verb:'opens'},
-         andiihunter:{name:'Tiste Andii', sig:'T', hp:60, ac:17, atk:8, dmg:[2,6,3], rng:1, mv:6, init:7, boss:true, verb:'takes apart'},
+         andiihunter:{name:'Tiste Andii', sig:'T', hp:60, ac:17, atk:8, dmg:[2,6,3], rng:1, mv:6, init:7, boss:true, attacks:2, verb:'takes apart', verb2:'turns and cuts again at'},
          vell:{name:'Vell', sig:'v', hp:10, ac:13, atk:4, dmg:[1,6,1], rng:1, mv:6, init:4, verb:'stabs at'} },
 
   gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
@@ -366,11 +368,11 @@ She puts her foot on the plank.
 Something moves on the far roof.`,
       ch:[{t:'"Hold."', go:'c4_guild'}]}),
     c4_guild:()=>({sp:'The plank east', scene:'roof_night', fx:()=>{ if (S.inv.cusser > 0) S.f.c4_cusserHeld=1; }, txt:
-`They come over the chimneys on the far roof: three of them, low, fast, dark coats and soot-blackened blades, running the ridge the way Guild runners run it, bent double, one hand touching the slates every third stride. They see you. They stop.
+`They come over the chimneys on the far roof: four of them, three low and fast and one older who doesn't need to be, dark coats and soot-blackened blades, running the ridge the way Guild runners run it, bent double, one hand touching the slates every third stride. They see you. They stop.
 
 For a moment nobody moves. You can see what they see: a squad of armed strangers on a Gadrobi roof, the night after a Guild clan-master was found on the temple dome with his throat opened. A shield. A crossbow. A woman with a Deck. Somebody's *helpers*.
 
-The one in front says something in Daric, low and fast, and the other two spread out along the ridge, and all three start across the planks toward you. Not hurrying. Knives down along the forearm, the Daru way. They've decided.
+The one in front says something in Daric, low and fast, and the others spread out along the ridge, and all four start across the planks toward you. Not hurrying. Knives down along the forearm, the Daru way. They've decided.
 
 ${SQUAD().includes('kettle') && S.inv.cusser > 0 ? `Kettle's hand has gone into her satchel. It comes out with a cusser in it, round and clay-grey, the Moranth seal black on the top. She looks at it. She looks at the roof under her feet. She looks at the house under the roof. And she puts it back.` : ''}`,
       ch:[{t:'"Malazan! Malazan, you idiots! We\'re not who you\'re looking for!"', check:['guile',13], go:'c4_guild_heard', fail:'c4_guild_deaf'},
@@ -401,7 +403,7 @@ You watch him think it through. A Malazan squad. Shouting its own name, on a roo
 
 He says something to the other two, sharp. They don't stop. He doesn't follow them. He goes back over the plank the way he came, and down the far side of the roof, running, and you know exactly where he is running to: to somebody who needs to be told that there's a Malazan squad on the Gadrobi roofs that *shouts*.
 
-The other two keep coming. They've come too far. Or they've buried someone this week, and a Malazan who shouts is still a Malazan.`,
+The other three keep coming. They've come too far. Or they've buried someone this week, and a Malazan who shouts is still a Malazan.`,
       ch:[{t:'"Brisk. Front."', go:()=>startBattle('guild_roofs_2',{})},
           {t:'Kettle skims a sharper along the ridge.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('guild_roofs_2',{pre:true})}]}),
     c4_guild_deaf:()=>({sp:'The plank east', txt:
@@ -764,7 +766,7 @@ Halfway down, the lane narrows between two warehouse walls, and there's no blue 
     c4_reprisal:()=>({sp:'The alley under the roofs', scene:'city_street', txt:
 `They're waiting in the narrow part, where the warehouse walls lean together overhead and the lane is two shoulders wide. You don't see them. You smell them: lamp-soot and tar and the sour sweat of people who have been crouching in the dark for a long time, very still, getting angrier.
 
-Three. Two in front, low, with the soot-black blades. And one behind them, standing, not crouching: an older man, grey at the temples, with a Guild blade held loose along his leg. ${S.f.c4_guildmen ? `You've seen him before. On Kalam's roof, kneeling among the dead, looking at your feet, and at the space where you stood aside.` : `You've seen him before, or the shape of him: one of the two who came back to Kalam's roof for the dead while you were still on yours.`}
+Four. Two in front, low, with the soot-black blades. Two behind them, standing, not crouching: a woman with a Guild blade and a face like a shut door, and beside her an older man, grey at the temples, with a Guild blade held loose along his leg. ${S.f.c4_guildmen ? `You've seen him before. On Kalam's roof, kneeling among the dead, looking at your feet, and at the space where you stood aside.` : `You've seen him before, or the shape of him: one of the two who came back to Kalam's roof for the dead while you were still on yours.`}
 
 He doesn't say anything for a long moment. When he does, it's in Malazan, careful, with the Daru bend on the vowels.
 

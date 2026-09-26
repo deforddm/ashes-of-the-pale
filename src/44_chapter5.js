@@ -74,16 +74,17 @@ const CH5 = {
     barrow_wards:{title:'The ridge of small barrows', warrenText:'Otataral somewhere below · Meanas thin as old cloth · Denul holds, barely', warren:{meanas:0.7,denul:0.8}, dark:true, music:'dark', open:true,
       map:["#..##..#","........","..#..#..","........","...,,...",".#....#.","........","........","..,..,..","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['wight',1,1],['wight',6,1],['wight',3,3],['ward',4,1]], xp:220, after:'c5_after_wards'},
+      foes:[['wight',1,1],['wight',6,1],['wight',3,3],['ward',4,1]], xp:220, after:'c5_after_wards',
+      waves:[{round:2, foes:[['wight',1,0],['wight',6,0],['wight',2,0]], text:'Three more of the small barrows split, and what was in them sits up.'}] },
     the_rent:{title:'The hillside under the rent', warrenText:'A wound in the world · Meanas howls through it · Denul gutters · something smells of Chaos', warren:{meanas:1.6,denul:0.7}, dark:true, music:'dark', open:true,
       map:["...##...","........",".#....#.","........","..,..,..","........","#......#","........","........","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['shade',2,1],['shade',5,1],['warrenspawn',3,1]], xp:240, after:'c5_after_rent',
+      foes:[['warrenspawn',2,1],['warrenspawn',5,1],['warrenspawn',3,3],['shade',3,1],['shade',4,1]], xp:240, after:'c5_after_rent',
       objective:{type:'survive', rounds:3, text:'Hold the hillside. Three rounds.'},
       waves:[{round:2, foes:[['warrenspawn',1,0],['warrenspawn',6,0]], text:'More of them come through the grey behind the first. And behind them, far off and coming closer, the sound of dogs.'}] } },
 
-  foes:{ ward:{name:'Jaghut ward', sig:'J', hp:30, ac:15, atk:6, dmg:[1,10,3], rng:1, mv:3, init:1, boss:true, verb:'grinds against'},
-         warrenspawn:{name:'Warren-spawn', sig:'W', hp:18, ac:14, atk:6, dmg:[2,4,2], rng:1, mv:6, init:5, verb:'unfolds onto'} },
+  foes:{ ward:{name:'Jaghut ward', sig:'J', hp:44, ac:15, atk:8, dmg:[1,10,4], rng:1, mv:3, init:1, boss:true, verb:'grinds against'},
+         warrenspawn:{name:'Warren-spawn', sig:'W', hp:24, ac:14, atk:7, dmg:[2,4,2], rng:1, mv:6, init:5, verb:'unfolds onto'} },
 
   gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
     rhivicharm:{name:'Rhivi bone charm', slot:'trinket', who:null, stat:{wits:1}, line:'A knuckle-bone, a horse\'s, bored through and strung on plaited hair, with a single blue bead. The Rhivi hang them on children so the grass will know whose they are. Sethand did not say whose this was. He tied it on your wrist himself, and pulled the knot tight with his teeth.'},
@@ -856,7 +857,7 @@ On the crest the puppet laughs, and lifts both wooden hands on their strings, an
 
     /* ---- after the rent: the Hounds, and Hairlock's end ---- */
     c5_after_rent:()=>({sp:'The hillside', scene:'hills_night', fx:()=>{ S.f.c5_rentFought=1; }, txt:
-`You hold. You don't know how. The things out of the grey don't die the way things die; they come apart, and the pieces go on for a while on their own. Shadow-shapes with too many joints. And the other thing, the thing with the legs, that came out folding and unfolding like a hand opening and closing, and went for ${SQUAD().includes('brisk') ? `Brisk's shield` : `the fire`} as if it hated light.
+`You hold. You don't know how. The things out of the grey don't die the way things die; they come apart, and the pieces go on for a while on their own. Shadow-shapes with too many joints. And the other things, the ones with the legs, that came out folding and unfolding like hands opening and closing, and went for ${SQUAD().includes('brisk') ? `Brisk's shield` : `the fire`} as if they hated light.
 
 And behind it, in the grey, the sound of dogs.
 

@@ -92,6 +92,8 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.7.5', ['The middle of the book bites harder. Chapters 3 to 5 now hit about as hard as Chapter 1 and the Fete: more cutpurses and a second Gadrobi at the Worry Gate, four knives and a wave behind the dye-shop, a Guild veteran on the roofs, Tiste Andii who strike twice, a tougher Jaghut ward and more of the barrow dead, and more of the things that come through the rent.',
+             'Talking one of the Guild runners down on the roof still makes that fight lighter.']],
   ['3.7.4', ['Chapters 1 and 2 read through for continuity: the city lies south-west beyond the hills, the quorls leave before the wagon rolls, and two dozen smaller things now agree with each other.',
              "Kettle keeps Chub's cusser, Maud, for the one that matters: she won't fire her in an ordinary fight.",
              'The Worry Gate is on the west side of its map, the way you walk in from the hills, and the street outside the Phoenix has people on it.',

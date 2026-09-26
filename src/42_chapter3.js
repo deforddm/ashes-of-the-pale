@@ -92,11 +92,13 @@ const CH3 = {
     cutpurses:{title:'The alley by the Worry Gate', warrenText:'City stone · the blue lamps hiss · warrens steady', warren:{meanas:1,denul:1}, music:'battle', style:'city',
       map:["#..##..#","........","..#..#..","........","#......#","........","..#..#..","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['cutpurse',1,1],['cutpurse',6,1],['cutpurse',4,3],['bruiser',3,1]], xp:160, after:'c3_after_cutpurses'},
+      foes:[['cutpurse',1,1],['cutpurse',6,1],['cutpurse',4,3],['bruiser',3,1],['bruiser',5,0]], xp:160, after:'c3_after_cutpurses',
+      waves:[{round:2, foes:[['cutpurse',1,0],['cutpurse',6,0]], text:'Two more drop off the wall at the far end of the lane.'}] },
     knives:{title:'The alley behind the dye-shop', warrenText:'No lamps back here · Meanas leans into the dark · Denul holds', warren:{meanas:1.3,denul:1}, dark:true, music:'dark', style:'city',
       map:["##....##","........",".#....#.","........","...##...","........","#......#","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['knife',1,1],['knife',6,1],['knife',2,3],['clawknife',3,0]], xp:200, after:'c3_after_knives'} },
+      foes:[['knife',1,1],['knife',6,1],['knife',2,3],['knife',5,3],['clawknife',3,0]], xp:200, after:'c3_after_knives',
+      waves:[{round:2, foes:[['knife',2,0],['knife',5,0]], text:'Two more come over the wall behind the racks.'}] } },
 
   foes:{ cutpurse:{name:'Daru cutpurse', sig:'c', hp:11, ac:12, atk:4, dmg:[1,6,1], rng:1, mv:5, init:3, verb:'stabs at'},
          bruiser:{name:'Gadrobi bruiser', sig:'G', hp:22, ac:13, atk:5, dmg:[1,10,2], rng:1, mv:4, init:1, verb:'swings a cudgel at'},
@@ -240,7 +242,7 @@ ${S.f.c3_paid ? `Something moves in the lane. Pallick said it: silver makes a no
       ch:[{t:'Keep walking.', go:'c3_ambush'},
           {t:'Not yet.'}]},
     c3_ambush:()=>({sp:'The lane by the Worry Gate', scene:'city_street', txt:
-`Three of them come out of the lane at once, low and fast, thin as the lane itself, knives out and held the Daru way, point down along the forearm. Behind them, filling the lane from wall to wall, a Gadrobi with a cudgel and a face like a wall that has been punched a great deal and has decided to be proud of it.
+`Three of them come out of the lane at once, low and fast, thin as the lane itself, knives out and held the Daru way, point down along the forearm. Behind them, filling the lane from wall to wall, two Gadrobi with cudgels and faces like walls that have been punched a great deal and have decided to be proud of it.
 
 The first one is at the wagon's tail before the mule has finished being alarmed. His hand is already under the oilcloth.
 
@@ -254,7 +256,7 @@ ${S.f.c2_wagon ? 'Pell the mule' : 'The mule'}, as if understanding, tries to bi
       ch:[{t:'"Brisk."', go:()=>startBattle('cutpurses',{})},
           {t:'Kettle has a sharper in her hand already.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('cutpurses',{pre:true})}]}),
     c3_after_cutpurses:()=>({sp:'The lane by the Worry Gate', scene:'city_street', fx:()=>{ S.f.c3_gateFought=1; gain('daruknife'); }, txt:
-`It's short. City fights are; there's nowhere to run in a lane except the ends, and there are Malazans at both of them. The big Gadrobi goes down last and hardest and gets up again on his hands and knees and crawls, with great dignity, into the dark, and nobody stops him.
+`It's short. City fights are; there's nowhere to run in a lane except the ends, and there are Malazans at both of them. The bigger of the two Gadrobi goes down last and hardest and gets up again on his hands and knees and crawls, with great dignity, into the dark, and nobody stops him.
 
 One of the thin ones has left his knife behind, on the cobbles, under the wagon. It's a duelling knife, long and fine, with a brass-wire basket round the grip. No cutpurse ever bought it. ${SQUAD().includes('ellis') ? `Ellis picks it up, weighs it, and hands it to you hilt first. "Daru noble's. Stolen from a man who'll have had the thief killed by now. It's a lovely thing. Don't wear it where a noble can see."` : `Brisk picks it up and hands it to you hilt first. "Pretty. Too long for a lane. Somebody's going to miss that."`}
 
@@ -1014,7 +1016,7 @@ No lamps in the alley. Blue light from the street at the far end, and between yo
 
 ${S.f.c3_lieHeld ? `They're slow to come. Whoever sent them sent them with a question, not an order. It gives you a breath. You use it.` : `They're already there.`}
 
-Three shapes come off the racks, low, with the Daru knife-grip. And a fourth, who doesn't come off anything. He's simply there, at the far end, against the blue, in a grey cloak, not hurrying. His boots are clean.
+Four shapes come off the racks, low, with the Daru knife-grip. And a fourth, who doesn't come off anything. He's simply there, at the far end, against the blue, in a grey cloak, not hurrying. His boots are clean.
 
 ${SQUAD().includes('ellis') ? `Ellis, very quietly: "The one at the end is Claw. The others are money. Kill the money if you have to. Don't let the Claw get behind anyone."` : `Tuft, very quietly: "The one at the end isn't hired. He's the one who pays."`}`,
       ch:[{t:'"Shields. Close up."', go:()=>startBattle('knives', S.f.c3_lieHeld ? {surprise:'p'} : S.f.c3_lied ? {surprise:'e'} : {})},
