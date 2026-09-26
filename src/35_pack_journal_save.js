@@ -102,6 +102,8 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.8.1', ['On a PC the game now uses the whole screen: the scene fills the left side, as tall as the window allows, and the text sits against the right edge. On a big monitor the text is a size larger too.',
+             'Settings \u203a Text size now makes the story text and the choices bigger or smaller, on a phone as well. Before, it only changed the buttons.']],
   ['3.8.0', ['Full screen on a PC: no browser bars, no taskbar, just the game. Press F, or the button in the top corner of the title and beside the settings gear in the game. Esc leaves it.',
              'Settings \u203a Full screen On makes every visit go full screen at your first click, so you only set it once.']],
   ['3.7.9', ['On a PC the game can install itself as a desktop app: its own window with no browser bars, and a shortcut on your desktop and taskbar. The title offers it when your browser can do it (Chrome and Edge), and Settings always has Install as an app. Your sergeants come with it.',
