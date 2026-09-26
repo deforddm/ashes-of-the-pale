@@ -273,6 +273,9 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .tmsg{margin:-8px 0 0;color:#f0c9c2;text-shadow:0 1px 4px #000}
 .tbtns .btn.warn{background:linear-gradient(180deg,#4a1d19,#2c1210);font-weight:700}
 .tmsg:empty{display:none}
+/* the title's full screen button, top right on a PC */
+.tfull{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:5;opacity:.75}
+.tfull:hover{opacity:1}
 /* the title's offer to install the game as a desktop app */
 .inst{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;padding:10px 12px;border:1px solid rgba(201,151,63,.45);background:linear-gradient(180deg,rgba(40,31,22,.92),rgba(22,17,13,.92));box-shadow:0 8px 24px rgba(0,0,0,.6)}
 .inst > div:first-child{flex:1 1 240px;display:flex;flex-direction:column;gap:2px}
@@ -365,7 +368,7 @@ kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px s
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.7.9';
+const VERSION = '3.8.0';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -390,12 +393,21 @@ const GEAR = `<svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.
 const WIDEQ = '(min-width:1000px) and (min-height:560px)', WIDE_MQ = window.matchMedia(WIDEQ), WIDE = () => WIDE_MQ.matches;
 const FINE_MQ = window.matchMedia('(hover:hover) and (pointer:fine)'), FINE = () => FINE_MQ.matches;
 const tapWord = s => FINE() ? String(s).replace(/\bTap\b/g, 'Click').replace(/\btap\b/g, 'click').replace(/\bTapping\b/g, 'Clicking').replace(/\btapping\b/g, 'clicking') : s;
+/* full screen on a PC: the browser's bars and the taskbar gone. F (or the button) turns it on and off; the browser's own Esc leaves it.
+   With Settings > Full screen on, the first click or key of each visit goes full screen (browsers only allow it from a click or a key). */
+const FULL_IN = `<svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>`, FULL_OUT = `<svg viewBox="0 0 24 24"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/></svg>`;
+const fullOK = () => !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && FINE();
+const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+function toggleFull(on){ if (on === undefined) on = !isFull(); try {
+  if (on && !isFull()) { const el = document.documentElement, p = (el.requestFullscreen || el.webkitRequestFullscreen).call(el, {navigationUI:'hide'}); if (p && p.catch) p.catch(() => {}); }
+  else if (!on && isFull()) { const p = (document.exitFullscreen || document.webkitExitFullscreen).call(document); if (p && p.catch) p.catch(() => {}); } } catch(e) {} }
+const fullBtn = id => fullOK() ? `<button class="btn icon" id="${id}" data-full aria-label="${isFull() ? 'Leave full screen' : 'Full screen'}" title="${isFull() ? 'Leave full screen' : 'Full screen'} (F)">${isFull() ? FULL_OUT : FULL_IN}</button>` : '';
 /* a new page starts at its top: the window now, and again once the new page has laid out */
 function toTop(){ const go = () => { try { window.scrollTo(0, 0); } catch(e) {} if (document.scrollingElement) document.scrollingElement.scrollTop = 0; }; go(); requestAnimationFrame(go); }
 
 /* ============ settings ============ */
 const SKEY = 'ashes-of-the-pale-settings';
-const SET = Object.assign({master:.8, music:.6, sfx:.8, amb:.6, shake:true, motion:'auto', fs:1, speed:1, dice:true, blood:true, map:'close'},
+const SET = Object.assign({master:.8, music:.6, sfx:.8, amb:.6, shake:true, motion:'auto', fs:1, speed:1, dice:true, blood:true, map:'close', full:false},
   (() => { try { return JSON.parse(localStorage.getItem(SKEY)) || {}; } catch(e) { return {}; } })());
 function saveSet(){ try { localStorage.setItem(SKEY, JSON.stringify(SET)); } catch(e) {} applySet(); }
 function applySet(){
@@ -2755,8 +2767,16 @@ function findPath(sx, sy, pass, goal){
 }
 
 /* ============ hud ============ */
-function hudButtons(){ return `<button class="btn" id="bSquad">Squad</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>`; }
-function bindHud(){ const a = $('#bSquad'), b = $('#bSet'); if (a) a.onclick = () => { AUDIO.play('click'); openChars(0); }; if (b) b.onclick = () => { AUDIO.play('click'); openSettings(); }; }
+function hudButtons(){ return `<button class="btn" id="bSquad">Squad</button>${fullBtn('bFull')}<button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>`; }
+function bindHud(){ const a = $('#bSquad'), b = $('#bSet'), f = $('#bFull'); if (a) a.onclick = () => { AUDIO.play('click'); openChars(0); }; if (b) b.onclick = () => { AUDIO.play('click'); openSettings(); }; if (f) f.onclick = () => { AUDIO.play('click'); toggleFull(); }; }
+/* every full screen button shows which way it goes; and the page's size changed, so the map fits itself again (the resize event does that) */
+const fullSync = () => document.querySelectorAll('[data-full]').forEach(b => { const on = isFull(); b.innerHTML = on ? FULL_OUT : FULL_IN; b.setAttribute('aria-label', on ? 'Leave full screen' : 'Full screen'); b.title = (on ? 'Leave full screen' : 'Full screen') + ' (F)'; });
+document.addEventListener('fullscreenchange', fullSync); document.addEventListener('webkitfullscreenchange', fullSync);
+/* Settings > Full screen on: the first click or key of the visit goes full screen (F is left to its own toggle) */
+let fullTried = false;
+['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, e => { if (fullTried || !SET.full || !fullOK() || isFull()) return;
+  if (ev === 'keydown' && (e.key === 'Escape' || /^f$/i.test(e.key) || e.ctrlKey || e.metaKey || e.altKey)) return; if (ev === 'pointerdown' && e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+  fullTried = true; toggleFull(true); }, {capture:true}));
 
 
 /* ============ title / intro ============ */
@@ -2795,7 +2815,7 @@ function showTitle(fresh){
   const list = roster().list, form = fresh || !list.length;
   const rows = list.map((e, i) => `<div class="sgtrow"><button class="btn load ${i ? '' : 'primary'}" data-id="${e.id}" ${i ? '' : 'id="bCont"'}><b>${i ? '' : 'Continue as '}Sergeant ${esc(e.name)}</b><small>${[chLabel(e), e.done ? '' : e.where, `level ${e.lvl}`, agoText(e.upd)].filter(Boolean).map(esc).join(' · ')}</small></button><button class="btn icon del" data-id="${e.id}" aria-label="Erase Sergeant ${esc(e.name)}">×</button></div>`).join('');
   const taken = n => list.find(e => sameName(e.name, n));
-  toTop(); $('#app').innerHTML = `<canvas id="titlecv" aria-hidden="true"></canvas><div id="title" class="title">
+  toTop(); $('#app').innerHTML = `<canvas id="titlecv" aria-hidden="true"></canvas>${fullBtn('bFullT').replace('class="btn icon"', 'class="btn icon tfull"')}<div id="title" class="title">
     <h1>Ashes<span>of the Pale</span></h1>
     <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them, and then south.</p>
     ${form ? `<div class="field"><label for="nm">${list.length ? 'Your new sergeant’s name' : 'Your sergeant’s name'}</label><input type="text" id="nm" maxlength="18" value="${taken('Hask') ? '' : 'Hask'}" placeholder="Name your sergeant" autocomplete="off" autocapitalize="words" spellcheck="false"></div>
@@ -2810,6 +2830,7 @@ function showTitle(fresh){
   startTitleBackdrop($('#titlecv'));
   $('#bSet').onclick = () => { AUDIO.play('click'); openSettings(); };
   $('#bVer').onclick = () => { AUDIO.play('click'); openNotes(null); };
+  if ($('#bFullT')) $('#bFullT').onclick = () => { AUDIO.play('click'); toggleFull(); };
   if ($('#bImp')) $('#bImp').onclick = () => { AUDIO.play('click'); openModal('save'); };
   if (form) {
     const msg = t => { $('#nmMsg').textContent = t; }, b = $('#bNew'), nm = $('#nm');
@@ -3767,17 +3788,18 @@ function openSettings(){
       ${seg('map', 'Map', [['close','Close'],['whole','Whole']], WIDE() ? 'On a screen this wide the whole map always fits, as big as the window allows. On a phone, Close has bigger tiles that follow the sergeant; Whole has the entire area on screen at once.' : 'Close: bigger tiles that follow the sergeant; drag the map to look around. Whole: the entire area on screen at once.')}
       ${seg('speed', 'Combat pace', [[1.4,'Slow'],[1,'Normal'],[.6,'Fast']])}
       ${seg('fs', 'Text size', [[.9,'Small'],[1,'Normal'],[1.15,'Large']])}
+      ${fullOK() ? seg('full', 'Full screen', [[true,'On'],[false,'Off']], 'No browser bars and no taskbar, just the game. <kbd>F</kbd> or the corner button turns it on and off any time; <kbd>Esc</kbd> leaves it. On: every visit goes full screen at your first click.') : ''}
       ${seg('dice', 'Roll numbers', [[true,'On'],[false,'Off']], 'Print every attack and check roll in the log.')}
       ${FINE() ? `<div class="opt keyhelp"><label>Keyboard</label><small><b>Talking</b> <kbd>1</kbd>–<kbd>9</kbd> pick a choice · <kbd>Space</kbd> takes the only one, or hurries the die<br>
         <b>The map</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> or <kbd>E</kbd> talk to whoever is beside you<br>
         <b>A fight</b> <kbd>1</kbd>–<kbd>9</kbd> abilities · <kbd>Space</kbd> or <kbd>E</kbd> end the turn · <kbd>Esc</kbd> drop an aimed ability<br>
-        <b>Anywhere</b> <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>Esc</kbd> settings, or close what's open · <kbd>Enter</kbd> the page's main button</small></div>` : ''}
+        <b>Anywhere</b> <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>F</kbd> full screen · <kbd>Esc</kbd> settings, or close what's open · <kbd>Enter</kbd> the page's main button</small></div>` : ''}
       ${installWay() === 'prompt' ? `<div class="opt"><label>${FINE() ? 'Desktop app' : 'Install'}</label><button class="btn" id="sInst">Install as an app</button><small>${FINE() ? 'Its own window with no browser bars, and a shortcut on your desktop and taskbar. Your sergeants come with it.' : 'On your home screen, full screen, and it works offline.'}</small></div>`
         : installWay() === 'dock' ? `<div class="opt"><label>Mac app</label><small>In Safari's menu bar: File \u203a Add to Dock. The Dock app keeps its own saves: copy your sergeant's save code first (Squad \u203a Save) and load it there.</small></div>` : ''}
       ${S || roster().list.length ? `<div class="opt"><label>This device</label><button class="btn" id="sReset">${S ? `Erase Sergeant ${esc(S.name)}` : 'Erase every sergeant'}</button><small>${S ? 'Only this sergeant\'s save. Anyone else on this device keeps theirs.' : 'Every sergeant saved on this device.'} Settings are kept separately and survive this. v${VERSION}</small></div>` : `<div class="opt"><small>v${VERSION}</small></div>`}
     </div></div>`;
   ['master','music','sfx','amb'].forEach(k => { const el = $('#s_' + k); el.oninput = () => { SET[k] = +el.value; $('#v_' + k).textContent = Math.round(SET[k]*100) + '%'; saveSet(); }; el.onchange = () => AUDIO.play(k === 'music' ? 'heal' : 'click'); });
-  m.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; SET[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSet(); AUDIO.play('click'); openSettings(); if (view === 'explore' && (k === 'map' || k === 'fs')) { fitCanvas(ACOLS(), AROWS()); mapBtn(); } });
+  m.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; SET[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSet(); AUDIO.play('click'); if (k === 'full') { fullTried = true; toggleFull(SET.full); } openSettings(); if (view === 'explore' && (k === 'map' || k === 'fs')) { fitCanvas(ACOLS(), AROWS()); mapBtn(); } });
   if ($('#sInst')) $('#sInst').onclick = async () => { AUDIO.play('click'); const ok = await runInstall(); const b = $('#sInst'); if (b) { b.disabled = true; b.textContent = ok ? 'Installed' : 'Maybe later'; } };
   if ($('#sReset')) $('#sReset').onclick = () => { const b = $('#sReset'); AUDIO.play('click');
     if (b.dataset.arm) { if (S) dropSlot(S.sid); else roster().list.forEach(e => dropSlot(e.id)); S = null; m.hidden = true; m.innerHTML = ''; showTitle(); }
@@ -3891,6 +3913,8 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.8.0', ['Full screen on a PC: no browser bars, no taskbar, just the game. Press F, or the button in the top corner of the title and beside the settings gear in the game. Esc leaves it.',
+             'Settings \u203a Full screen On makes every visit go full screen at your first click, so you only set it once.']],
   ['3.7.9', ['On a PC the game can install itself as a desktop app: its own window with no browser bars, and a shortcut on your desktop and taskbar. The title offers it when your browser can do it (Chrome and Edge), and Settings always has Install as an app. Your sergeants come with it.',
              'Safari on a Mac gets the directions instead (File \u203a Add to Dock). The Dock app keeps its own saves, so bring your sergeant over with a save code.']],
   ['3.7.8', ['Plays properly on a PC. On a wide screen the map, the battlefield or the scene fills the left side as big as the window allows, and everything to read and press sits in a column on the right: the conversation, the unit bar, the log. No more scrolling to reach the buttons in a fight.',
@@ -13123,6 +13147,7 @@ window.addEventListener('keydown', e => {
   const onBtn = !!document.activeElement && document.activeElement.tagName === 'BUTTON' && document.activeElement !== document.body;
   const press = el => { if (!el || el.disabled) return false; e.preventDefault(); if (k === ' ' && document.activeElement && document.activeElement.blur) document.activeElement.blur(); el.click(); return true; };
   if (!$('#cardfx').hidden) { if (go && !onBtn) { const b = $('#cardfx').querySelector('button:not([disabled])'); if (b) press(b); else { e.preventDefault(); $('#cardfx').click(); } } return; }
+  if (low === 'f' && fullOK()) { e.preventDefault(); toggleFull(); return; } // full screen, anywhere
   if (ovOpen()) return; // an overlay is open: Esc closes it (above), and everything else is its own
   const sh = $('#sheet');
   if (!sh.hidden) { // a conversation
