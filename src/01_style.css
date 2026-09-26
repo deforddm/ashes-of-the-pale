@@ -253,6 +253,22 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .tbtns .btn{min-height:46px}
 .tbtns .btn.icon{min-width:46px}
 .btn.warn{border-color:var(--blood2);color:#f0c9c2}
+.tmsg{margin:-8px 0 0;color:#f0c9c2;text-shadow:0 1px 4px #000}
+.tbtns .btn.warn{background:linear-gradient(180deg,#4a1d19,#2c1210);font-weight:700}
+.tmsg:empty{display:none}
+/* the title's roster: one row per sergeant on this device, last played first */
+.roster{display:flex;flex-direction:column;gap:8px}
+.roster .rh{font-family:var(--label);font-size:.8rem;color:var(--mute);letter-spacing:.08em;text-shadow:0 1px 4px #000}
+.sgtrow{display:grid;grid-template-columns:minmax(0,1fr) 46px;gap:6px}
+.sgtrow .load{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;text-align:left;min-height:58px;padding:8px 14px}
+.sgtrow .load b{font-weight:700;font-size:1.02rem;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.sgtrow .load small{font-size:.8rem;font-weight:500;letter-spacing:.04em;color:var(--mute);line-height:1.25}
+.sgtrow .load.primary small{color:#3a2a10}
+.sgtrow .load.warn{background:linear-gradient(180deg,#3a1a17,#241110);color:#f0c9c2;text-shadow:none;border-color:var(--blood2)}
+.sgtrow .load.warn small{color:#d9a8a0}
+.sgtrow .load:disabled{opacity:1}
+.sgtrow .del{min-height:58px;font-size:1.3rem;color:var(--mute)}
+.sgtrow .del.warn{color:#f0c9c2}
 .fine .ver{white-space:nowrap;color:var(--dim);margin-left:4px;background:none;border:0;padding:6px 2px;font:inherit;text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}
 .gloss{margin-top:16px;border-top:1px solid var(--line)}
 .gloss summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-family:var(--label);font-weight:700;letter-spacing:.14em;color:var(--brass);font-size:.78rem;list-style:none}

@@ -23,8 +23,11 @@ function openModal(tab){
       S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak is paying attention to your squad.`) : '',
       S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
       S.f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : `Brisk's brother, Second Army: not yet found.`, S.f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>${glossHTML()}`,
-    save:()=>`<p class="fine">The game saves itself on this device as you play. To move it to another device, or protect it from a cleared browser, copy this code somewhere safe.</p>
-      ${S ? `<textarea id="exp" readonly aria-label="Save code">${saveCode()}</textarea><div class="row" style="margin:8px 0 16px"><button class="btn" id="bCopy">Copy code</button></div>` : ''}
+    save:()=>`${S ? `<p class="fine">Playing as <b class="who">Sergeant ${esc(S.name)}</b>. The game saves itself on this device as you play, under your sergeant's name. Anyone else can start their own sergeant from the title, and each keeps a save of their own.</p>
+      <div class="row" style="margin:8px 0 16px"><button class="btn" id="bSwitch">Switch sergeant</button></div>
+      <label class="fine" for="exp">Sergeant ${esc(S.name)}'s save code. Copy it somewhere safe to move them to another device, or to keep them from a cleared browser.</label>
+      <textarea id="exp" readonly>${saveCode()}</textarea><div class="row" style="margin:8px 0 16px"><button class="btn" id="bCopy">Copy code</button></div>`
+      : `<p class="fine">Each sergeant saves on this device as they play. A save code brings one here from another device, or back from a cleared browser.</p>`}
       <label class="fine" for="imp">Paste a save code to load it</label><textarea id="imp" placeholder="Paste code here"></textarea>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="bLoad">Load code</button></div><p class="fine" id="impMsg"></p>`,
   };
@@ -39,8 +42,15 @@ function openModal(tab){
       const done = ok => { b.textContent = ok ? 'Copied' : 'Selected: copy it by hand'; };
       const old = () => { try { done(document.execCommand('copy')); } catch(e) { done(false); } }; // older browsers, and pages without clipboard permission
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(() => done(true), old); else old(); };
-    $('#bLoad').onclick = () => { try { const s = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim())))); if (!s || s.v !== 1) throw 0; S = migrate(s); save(); m.hidden = true; resume(); }
-      catch(e) { $('#impMsg').textContent = 'That code didn\'t load. Check that it was copied in full.'; } };
+    if ($('#bSwitch')) $('#bSwitch').onclick = () => { AUDIO.play('click'); save(); m.hidden = true; showTitle(); };
+    // a code for a sergeant already on this device asks twice: the second tap replaces that sergeant's save
+    const bl = $('#bLoad'), unarm = () => { if (bl.dataset.arm) { delete bl.dataset.arm; bl.classList.remove('warn'); bl.textContent = 'Load code'; $('#impMsg').textContent = ''; } };
+    $('#imp').oninput = unarm;
+    bl.onclick = () => { let s = null; try { s = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim())))); } catch(e) {}
+      if (!s || s.v !== 1) { unarm(); $('#impMsg').textContent = 'That code didn\'t load. Check that it was copied in full.'; return; }
+      s.name = String(s.name || 'Hask').slice(0, 18); const ex = roster().list.find(e => sameName(e.name, s.name));
+      if (ex && !bl.dataset.arm) { bl.dataset.arm = 1; bl.classList.add('warn'); bl.textContent = `Replace Sergeant ${ex.name}`; $('#impMsg').textContent = `Sergeant ${ex.name} already has a save on this device. Tap again to replace it with the one in this code.`; return; }
+      AUDIO.play('click'); s.sid = ex ? ex.id : newSid(); S = migrate(s); save(); m.hidden = true; resume(); };
   }
   m.onclick = e => { if (e.target === m) m.hidden = true; };
 }
@@ -92,6 +102,9 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.7.7', ['Every sergeant has a save of their own, so more than one person can play on the same device. The title now lists the sergeants saved here, with their chapter, where they stand, their level and when they last played. Tap yours to carry on. Your game from before is already on the list.',
+             'The name prompt only appears when you start a new sergeant. Starting one under a name that is already here asks first, then starts that sergeant over.',
+             'Switch sergeant from the Save tab. Erase one with the \u00d7 beside them on the title (tap twice) or from Settings, which now erases only the sergeant you are playing. A save code for a sergeant already on this device asks before it replaces them.']],
   ['3.7.6', ['Brisk and the sergeant no longer look like twins. Brisk goes bareheaded, her wheat-pale hair plaited in a crown, with a spear and a big oxblood shield, and she stands a head taller. The sergeant keeps the iron cap and has grown a short dark beard, greying at the chin, and carries the battered heater shield from Nathilog.',
              'Every new page, the next chapter, the chapter card, the finale and each squadmate\'s sheet, now opens at the top.']],
   ['3.7.5', ['The middle of the book bites harder. Chapters 3 to 5 now hit about as hard as Chapter 1 and the Fete: more cutpurses and a second Gadrobi at the Worry Gate, four knives and a wave behind the dye-shop, a Guild veteran on the roofs, Tiste Andii who strike twice, a tougher Jaghut ward and more of the barrow dead, and more of the things that come through the rent.',

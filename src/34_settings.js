@@ -13,11 +13,13 @@ function openSettings(){
       ${seg('speed', 'Combat pace', [[1.4,'Slow'],[1,'Normal'],[.6,'Fast']])}
       ${seg('fs', 'Text size', [[.9,'Small'],[1,'Normal'],[1.15,'Large']])}
       ${seg('dice', 'Roll numbers', [[true,'On'],[false,'Off']], 'Print every attack and check roll in the log.')}
-      <div class="opt"><label>This device</label><button class="btn" id="sReset">Erase saved game</button><small>Settings are kept separately and survive this. v${VERSION}</small></div>
+      ${S || roster().list.length ? `<div class="opt"><label>This device</label><button class="btn" id="sReset">${S ? `Erase Sergeant ${esc(S.name)}` : 'Erase every sergeant'}</button><small>${S ? 'Only this sergeant\'s save. Anyone else on this device keeps theirs.' : 'Every sergeant saved on this device.'} Settings are kept separately and survive this. v${VERSION}</small></div>` : `<div class="opt"><small>v${VERSION}</small></div>`}
     </div></div>`;
   ['master','music','sfx','amb'].forEach(k => { const el = $('#s_' + k); el.oninput = () => { SET[k] = +el.value; $('#v_' + k).textContent = Math.round(SET[k]*100) + '%'; saveSet(); }; el.onchange = () => AUDIO.play(k === 'music' ? 'heal' : 'click'); });
   m.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; SET[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSet(); AUDIO.play('click'); openSettings(); if (view === 'explore' && (k === 'map' || k === 'fs')) { fitCanvas(ACOLS(), AROWS()); mapBtn(); } });
-  $('#sReset').onclick = () => { if ($('#sReset').dataset.arm) { localStorage.removeItem(KEY); S = null; m.hidden = true; showTitle(); } else { $('#sReset').textContent = 'Tap again to erase'; $('#sReset').dataset.arm = 1; } };
+  if ($('#sReset')) $('#sReset').onclick = () => { const b = $('#sReset'); AUDIO.play('click');
+    if (b.dataset.arm) { if (S) dropSlot(S.sid); else roster().list.forEach(e => dropSlot(e.id)); S = null; m.hidden = true; m.innerHTML = ''; showTitle(); }
+    else { b.textContent = 'Tap again to erase'; b.classList.add('warn'); b.dataset.arm = 1; } };
   $('#sClose').onclick = () => { AUDIO.play('click'); m.hidden = true; m.innerHTML = ''; };
   m.onclick = e => { if (e.target === m) { m.hidden = true; m.innerHTML = ''; } };
 }

@@ -1,24 +1,51 @@
 /* ============ title / intro ============ */
-function showTitle(){
-  view = 'title'; const has = loadSave(); B = null; AUDIO.setScene('title');
+/* the title: the sergeants saved on this device, last played first; tap one to play. The name prompt only shows for a new sergeant. */
+const agoText = t => { if (!t) return ''; const d = Math.floor((new Date().setHours(0,0,0,0) - new Date(t).setHours(0,0,0,0)) / 864e5);
+  return d <= 0 ? 'today' : d === 1 ? 'yesterday' : d < 7 ? `${d} days ago` : new Date(t).toLocaleDateString(undefined, {month:'short', day:'numeric'}); };
+const chLabel = e => e.done ? 'Finished' : e.ch === 0 ? 'The prologue' : `Chapter ${CHAPTERS[e.ch] ? CHAPTERS[e.ch].number : e.ch}`;
+function showTitle(fresh){
+  if (S) save(); view = 'title'; B = null; S = null; AUDIO.setScene('title');
+  const list = roster().list, form = fresh || !list.length;
+  const rows = list.map((e, i) => `<div class="sgtrow"><button class="btn load ${i ? '' : 'primary'}" data-id="${e.id}" ${i ? '' : 'id="bCont"'}><b>${i ? '' : 'Continue as '}Sergeant ${esc(e.name)}</b><small>${[chLabel(e), e.done ? '' : e.where, `level ${e.lvl}`, agoText(e.upd)].filter(Boolean).map(esc).join(' · ')}</small></button><button class="btn icon del" data-id="${e.id}" aria-label="Erase Sergeant ${esc(e.name)}">×</button></div>`).join('');
+  const taken = n => list.find(e => sameName(e.name, n));
   toTop(); $('#app').innerHTML = `<canvas id="titlecv" aria-hidden="true"></canvas><div id="title" class="title">
     <h1>Ashes<span>of the Pale</span></h1>
     <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them, and then south.</p>
-    <div class="field"><label for="nm">Your sergeant's name</label><input type="text" id="nm" maxlength="18" value="${esc(has?.name || 'Hask')}" autocomplete="off"></div>
-    <div class="tbtns">${has ? '<button class="btn primary" id="bCont">Continue</button>' : '<button class="btn primary" id="bNew">Begin</button>'}<button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
-      <div class="row2">${has ? '<button class="btn" id="bNew">New game</button>' : ''}<button class="btn" id="bImp">Load a save code</button></div></div>
+    ${form ? `<div class="field"><label for="nm">${list.length ? 'Your new sergeant’s name' : 'Your sergeant’s name'}</label><input type="text" id="nm" maxlength="18" value="${taken('Hask') ? '' : 'Hask'}" placeholder="Name your sergeant" autocomplete="off" autocapitalize="words" spellcheck="false"></div>
+    <p class="fine tmsg" id="nmMsg" role="status"></p>
+    <div class="tbtns"><button class="btn primary" id="bNew">Begin</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
+      <div class="row2">${list.length ? '<button class="btn" id="bBack">Back to your sergeants</button>' : '<button class="btn" id="bImp">Load a save code</button>'}</div></div>`
+    : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
+    <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
+      <div class="row2"><button class="btn" id="bImp">Load a save code</button></div></div>`}
     <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
   startTitleBackdrop($('#titlecv'));
-  // a new game over a saved one asks twice: the first tap says what it will cost
-  $('#bNew').onclick = () => { const b = $('#bNew'); AUDIO.play('click');
-    if (has && !b.dataset.arm) { b.dataset.arm = 1; b.classList.add('warn'); b.textContent = 'Tap again: it replaces your save'; setTimeout(() => { if (b.isConnected) { delete b.dataset.arm; b.classList.remove('warn'); b.textContent = 'New game'; } }, 4000); return; }
-    S = newState($('#nm').value.trim()); save(); showIntro(); };
-  $('#nm').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); if (has) e.target.blur(); else $('#bNew').click(); } };
-  if (has) $('#bCont').onclick = () => { AUDIO.play('click'); S = has; resume(); };
-  $('#bImp').onclick = () => { AUDIO.play('click'); openModal('save'); };
   $('#bSet').onclick = () => { AUDIO.play('click'); openSettings(); };
   $('#bVer').onclick = () => { AUDIO.play('click'); openNotes(null); };
-  maybeNotes(!!has);
+  if ($('#bImp')) $('#bImp').onclick = () => { AUDIO.play('click'); openModal('save'); };
+  if (form) {
+    const msg = t => { $('#nmMsg').textContent = t; }, b = $('#bNew'), nm = $('#nm');
+    // a name already on the roster asks twice: the second tap starts that sergeant over
+    b.onclick = () => { AUDIO.play('click'); const n = nm.value.trim().replace(/\s+/g, ' ');
+      if (!n) { msg('Give your sergeant a name.'); nm.focus(); return; }
+      const t = taken(n);
+      if (t && b.dataset.arm !== n.toLowerCase()) { b.dataset.arm = n.toLowerCase(); b.classList.add('warn'); b.classList.remove('primary'); b.textContent = `Start Sergeant ${t.name} over`; msg(`Sergeant ${t.name} already has a save here. Tap again to start over; that save is erased. Or go back and pick them to carry on.`); return; }
+      S = newState(n); save(); showIntro(); };
+    nm.oninput = () => { if (b.dataset.arm) { delete b.dataset.arm; b.classList.remove('warn'); b.classList.add('primary'); b.textContent = 'Begin'; msg(''); } };
+    nm.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); b.click(); } };
+    if ($('#bBack')) $('#bBack').onclick = () => { AUDIO.play('click'); showTitle(); };
+    if (fresh) nm.focus();
+  } else {
+    $('#bNewSgt').onclick = () => { AUDIO.play('click'); showTitle(true); };
+    document.querySelectorAll('.sgtrow .load').forEach(el => el.onclick = () => { AUDIO.play('click'); const s = loadSlot(el.dataset.id);
+      if (!s) { dropSlot(el.dataset.id); return showTitle(); } S = s; resume(); });
+    // erasing a sergeant asks twice: the first tap says who goes
+    document.querySelectorAll('.sgtrow .del').forEach(el => el.onclick = () => { AUDIO.play('click'); const row = el.parentNode, ld = row.querySelector('.load'), e = list.find(x => x.id === el.dataset.id);
+      if (el.dataset.arm) { dropSlot(el.dataset.id); return showTitle(); }
+      el.dataset.arm = 1; el.classList.add('warn'); ld.classList.add('warn'); const was = ld.innerHTML; ld.innerHTML = `<b>Tap × again to erase Sergeant ${esc(e.name)}</b><small>Their save on this device is gone for good. A save code brings them back.</small>`; ld.disabled = true;
+      setTimeout(() => { if (el.isConnected) { delete el.dataset.arm; el.classList.remove('warn'); ld.classList.remove('warn'); ld.innerHTML = was; ld.disabled = false; } }, 4000); });
+  }
+  maybeNotes(list.length > 0);
 }
 function showIntro(){
   view = 'intro'; S.scene = 'intro'; save(); titleAnim = null; AUDIO.setScene('explore');

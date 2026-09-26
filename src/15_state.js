@@ -8,7 +8,7 @@ let notes = [];
 let walking = false;
 
 function newState(name){
-  return migrate({v:1, name:name||'Hask', scene:'intro', node:null, bg:null, silver:15, xp:0, lvl:1, card:null,
+  name = name || 'Hask'; return migrate({v:1, sid:sidFor(name), name, scene:'intro', node:null, bg:null, silver:15, xp:0, lvl:1, card:null,
     inv:{sharper:2, burner:1, cusser:1, salve:2, smoker:0},
     loy:{brisk:0,kettle:0,tuft:0,ohl:0}, f:{}, pos:{x:5,y:8},
     trail:[{x:4,y:8},{x:6,y:8},{x:4,y:9},{x:5,y:9}], log:[], ending:null, battle:null, bopt:null});
@@ -51,8 +51,29 @@ function gain(id){ const it = ITEMS[id]; if (!it || S.kit.includes(id)) return; 
 function equip(who, id){ const it = ITEMS[id]; if (!it) return; SQUAD().forEach(w => { if (S.gear[w][it.slot] === id) delete S.gear[w][it.slot]; }); S.gear[who][it.slot] = id; save(); }
 function unequip(who, slot){ delete S.gear[who][slot]; save(); }
 const NAME = id => id === 'sgt' ? S.name : TPL[id].name;
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
-function loadSave(){ try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch(e) { return null; } }
+/* saves: one slot per sergeant, so more than one person can play on the same device. The roster lists them, last played first.
+   Each game carries its slot id (S.sid); a sergeant's slot lives at KEY + ':' + sid. */
+const RKEY = 'ashes-of-the-pale-roster', slotKey = id => KEY + ':' + id;
+const sameName = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+const newSid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+/* what the title shows for a sergeant without opening their save: chapter, where they stand, level, when last played */
+function rosterMeta(s){ const a = typeof AREAS !== 'undefined' && AREAS[s.area], t = a && a.title ? splitTitle(a.title)[1] : '';
+  return {id:s.sid, name:s.name || 'Hask', ch:s.chapter || 0, lvl:s.lvl || 1, where:t, done:!!(s.chapters && s.chapters[7] != null), upd:Date.now()}; }
+function roster(){
+  let r = null; try { r = JSON.parse(localStorage.getItem(RKEY)); } catch(e) { return {list:[]}; }
+  if (r && Array.isArray(r.list)) return r;
+  r = {list:[]}; // the first run of v3.7.7: the one save this device had becomes the first sergeant on the roster
+  try { const old = JSON.parse(localStorage.getItem(KEY));
+    if (old && old.v === 1) { old.sid ??= newSid(); const js = JSON.stringify(old); localStorage.setItem(slotKey(old.sid), js); if (localStorage.getItem(slotKey(old.sid)) === js) { r.list.push(rosterMeta(old)); localStorage.setItem(RKEY, JSON.stringify(r)); localStorage.removeItem(KEY); } return r; }
+    localStorage.setItem(RKEY, JSON.stringify(r)); } catch(e) {}
+  return r;
+}
+const sidFor = name => { const e = roster().list.find(e => sameName(e.name, name)); return e ? e.id : newSid(); };
+function save(){ if (!S) return; try { S.sid ??= sidFor(S.name); localStorage.setItem(slotKey(S.sid), JSON.stringify(S));
+  const r = roster(); r.list = [rosterMeta(S), ...r.list.filter(e => e.id !== S.sid)]; localStorage.setItem(RKEY, JSON.stringify(r)); } catch(e) {} }
+function loadSlot(id){ try { const s = localStorage.getItem(slotKey(id)); if (!s) return null; const o = JSON.parse(s); o.sid = id; return o; } catch(e) { return null; } }
+function loadSave(){ const e = roster().list[0]; return e ? loadSlot(e.id) : null; }
+function dropSlot(id){ try { localStorage.removeItem(slotKey(id)); const r = roster(); r.list = r.list.filter(e => e.id !== id); localStorage.setItem(RKEY, JSON.stringify(r)); } catch(e) {} }
 function elog(m){ S.log.unshift(m); S.log = S.log.slice(0, 6); if (view === 'explore') updExplore(); }
 function loy(id, n){ S.loy[id] = Math.max(-3, Math.min(3, S.loy[id] + n)); notes.push({t:`${NAME(id)} ${n > 0 ? 'approves' : 'disapproves'}.`, c:n > 0 ? 'good' : 'bad'}); }
 function note(t, c=''){ notes.push({t, c}); }
