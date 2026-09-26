@@ -9,7 +9,8 @@ function startExplore(areaId){
   toTop(); $('#app').innerHTML = `<header class="hud"><div>${kick ? `<div class="kick">${kick}</div>` : ''}<div class="loc">${ttl}</div><div class="sub qline"><span id="quest"></span><span id="silver"></span></div></div>
     <div class="hudr">${hudButtons()}</div></header>
     <div class="cvwrap"><canvas id="cv" aria-label="Map"></canvas></div>
-    <div class="maprow"><p class="hint">${a.hint || 'Tap ground to move · tap a figure to talk'}</p><button class="btn mini" id="bMap"></button></div>
+    <div class="maprow"><p class="hint">${tapWord(a.hint || 'Tap ground to move · tap a figure to talk')}</p><button class="btn mini" id="bMap"></button></div>
+    <p class="hint keys" aria-hidden="true"><kbd>\u2190</kbd><kbd>\u2191</kbd><kbd>\u2192</kbd><kbd>\u2193</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> talk to whoever is beside you · <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>Esc</kbd> settings</p>
     <div class="log" id="elog"></div>`;
   bindHud();
   G.disp = {};
@@ -20,7 +21,7 @@ function startExplore(areaId){
 /* "Darujhistan · the Daru District" -> a kicker and a title that fits next to the buttons */
 const splitTitle = t => { const i = t.indexOf(' · '); return i < 0 ? ['', t] : [t.slice(0, i), t[i + 3].toUpperCase() + t.slice(i + 4)]; };
 /* the close/whole switch under the map; hidden when both would look the same (a wide screen) */
-function mapBtn(){ const b = $('#bMap'); if (!b) return; b.textContent = mapClose() ? 'Whole map' : 'Close up'; b.setAttribute('aria-label', mapClose() ? 'Show the whole map' : 'Show the map close up'); b.hidden = mapClose() && !G.pannable; }
+function mapBtn(){ const b = $('#bMap'); if (!b) return; b.textContent = mapClose() ? 'Whole map' : 'Close up'; b.setAttribute('aria-label', mapClose() ? 'Show the whole map' : 'Show the map close up'); b.hidden = WIDE() || (mapClose() && !G.pannable); }
 /* ash, petals or ice: the count follows the map's size on screen so the density stays what it was at the old small scale */
 function exploreParticles(){
   const n = REDUCE() ? 0 : Math.round(clamp(50 * (ACOLS()*G.T * AROWS()*G.T) / (352*264), 50, 200));
@@ -142,6 +143,8 @@ function drawExplore(t){
       if (ch === 'C') glow(ctx, x*T + T/2, y*T + T*.7, T*2.4, '#9a86e0', .16 + Math.sin(t/700)*.05);
     }));
   }
+  // a mouse over the map: the tile it would walk to, brighter over someone to talk to
+  const hv = G.hover; if (hv && !walking && $('#sheet').hidden) { const n = npcAt(hv.x, hv.y); if (n || palePass(hv.x, hv.y)) { ctx.strokeStyle = n ? 'rgba(232,192,115,.85)' : 'rgba(232,192,115,.38)'; ctx.lineWidth = 1.5; ctx.strokeRect(hv.x*T + 1.5, hv.y*T + 1.5, T - 3, T - 3); } }
   // NPCs
   a.npcs.forEach(n => { if (n.show && !n.show()) return; drawFigure(ctx, n.kind, n.x*T + T/2, n.y*T + T*.6, T/32, t, {phase:n.x + n.y*3, still:!!n.still});
     if (n.fresh && n.fresh()) { const by = Math.sin(t/300)*2; ctx.fillStyle = '#e8c073'; const cx = n.x*T+T/2, cy = n.y*T - T*.15 + by; ctx.beginPath(); ctx.moveTo(cx, cy-T*.16); ctx.lineTo(cx+T*.1, cy); ctx.lineTo(cx, cy+T*.12); ctx.lineTo(cx-T*.1, cy); ctx.fill(); } });

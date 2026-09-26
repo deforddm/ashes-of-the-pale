@@ -29,7 +29,7 @@ function showTitle(fresh){
     b.onclick = () => { AUDIO.play('click'); const n = nm.value.trim().replace(/\s+/g, ' ');
       if (!n) { msg('Give your sergeant a name.'); nm.focus(); return; }
       const t = taken(n);
-      if (t && b.dataset.arm !== n.toLowerCase()) { b.dataset.arm = n.toLowerCase(); b.classList.add('warn'); b.classList.remove('primary'); b.textContent = `Start Sergeant ${t.name} over`; msg(`Sergeant ${t.name} already has a save here. Tap again to start over; that save is erased. Or go back and pick them to carry on.`); return; }
+      if (t && b.dataset.arm !== n.toLowerCase()) { b.dataset.arm = n.toLowerCase(); b.classList.add('warn'); b.classList.remove('primary'); b.textContent = `Start Sergeant ${t.name} over`; msg(tapWord(`Sergeant ${t.name} already has a save here. Tap again to start over; that save is erased. Or go back and pick them to carry on.`)); return; }
       S = newState(n); save(); showIntro(); };
     nm.oninput = () => { if (b.dataset.arm) { delete b.dataset.arm; b.classList.remove('warn'); b.classList.add('primary'); b.textContent = 'Begin'; msg(''); } };
     nm.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); b.click(); } };
@@ -42,7 +42,7 @@ function showTitle(fresh){
     // erasing a sergeant asks twice: the first tap says who goes
     document.querySelectorAll('.sgtrow .del').forEach(el => el.onclick = () => { AUDIO.play('click'); const row = el.parentNode, ld = row.querySelector('.load'), e = list.find(x => x.id === el.dataset.id);
       if (el.dataset.arm) { dropSlot(el.dataset.id); return showTitle(); }
-      el.dataset.arm = 1; el.classList.add('warn'); ld.classList.add('warn'); const was = ld.innerHTML; ld.innerHTML = `<b>Tap × again to erase Sergeant ${esc(e.name)}</b><small>Their save on this device is gone for good. A save code brings them back.</small>`; ld.disabled = true;
+      el.dataset.arm = 1; el.classList.add('warn'); ld.classList.add('warn'); const was = ld.innerHTML; ld.innerHTML = `<b>${tapWord('Tap')} × again to erase Sergeant ${esc(e.name)}</b><small>Their save on this device is gone for good. A save code brings them back.</small>`; ld.disabled = true;
       setTimeout(() => { if (el.isConnected) { delete el.dataset.arm; el.classList.remove('warn'); ld.classList.remove('warn'); ld.innerHTML = was; ld.disabled = false; } }, 4000); });
   }
   maybeNotes(list.length > 0);

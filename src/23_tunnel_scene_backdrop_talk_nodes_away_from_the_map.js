@@ -1,16 +1,18 @@
 /* ============ scene backdrops (talk nodes away from the map) ============ */
 /* The backdrop canvas is sized by CSS (full width, 240px tall), so its backing store is fitted here to the box it is shown in,
-   at the device's pixel ratio: nothing is squashed on a narrow phone, and it stays sharp. W and H are CSS pixels. */
+   at the device's pixel ratio: nothing is squashed on a narrow phone, and it stays sharp. W and H are drawing units: CSS pixels on a phone;
+   on a wide screen, where the box is taller than 240px, the drawing is scaled up (SCENE_K) so the scene is the same picture, only bigger. */
+let SCENE_K = 1;
 function sceneFit(cv){
   const ctx = cv.getContext('2d'), cw = cv.clientWidth, ch = cv.clientHeight;
   if (!cw || !ch) { ctx.setTransform(1,0,0,1,0,0); return {ctx, W:cv.width, H:cv.height}; }
-  const dpr = Math.min(2, window.devicePixelRatio || 1), bw = Math.round(cw*dpr), bh = Math.round(ch*dpr);
+  const dpr = Math.min(2, window.devicePixelRatio || 1), bw = Math.round(cw*dpr), bh = Math.round(ch*dpr), k = Math.max(1, ch / 240);
   if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
-  ctx.setTransform(bw/cw, 0, 0, bh/ch, 0, 0); return {ctx, W:cw, H:ch};
+  SCENE_K = k; ctx.setTransform(bw/cw*k, 0, 0, bh/ch*k, 0, 0); return {ctx, W:cw/k, H:ch/k};
 }
 /* the still parts of a backdrop, painted once per kind and size; the frame only adds what moves */
 const SCENE_CACHE = new Map();
-function sceneLayer(key, W, H, paint){ const dpr = Math.min(2, window.devicePixelRatio || 1), k = `${key}|${W}x${H}|${dpr}`; let c = SCENE_CACHE.get(k);
+function sceneLayer(key, W, H, paint){ const dpr = Math.min(2, window.devicePixelRatio || 1) * SCENE_K, k = `${key}|${W}x${H}|${dpr}`; let c = SCENE_CACHE.get(k);
   if (!c) { c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W*dpr)); c.height = Math.max(1, Math.round(H*dpr)); const x = c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); paint(x, W, H); if (SCENE_CACHE.size > 12) SCENE_CACHE.clear(); SCENE_CACHE.set(k, c); }
   return c; }
 const sceneSquad = () => (typeof SQUAD === 'function' && S ? SQUAD() : PORDER);

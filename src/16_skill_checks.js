@@ -46,6 +46,7 @@ function talk(id){
   if (n.oncard) inlineCard($('#icard'), n.oncard[0], n.oncard[1]);
   sh.querySelectorAll('.choice').forEach(b => b.onclick = () => { AUDIO.play('click'); choose(curCh[+b.dataset.i]); });
   const first = sh.querySelector('.choice'); if (first && !('ontouchstart' in window)) first.focus({preventScroll:true});
+  dockSheet();
 }
 function choose(c){
   if (c.fx) c.fx();

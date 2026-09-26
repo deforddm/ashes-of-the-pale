@@ -428,8 +428,10 @@ function fitBattle(){
   const wrap = $('.cvwrap'), cv = $('#cv'); if (!wrap || !cv || !B) return;
   wrap.style.width = ''; wrap.style.marginInline = '';
   const full = wrap.clientWidth - 2, top = wrap.getBoundingClientRect().top + window.scrollY;
-  const Tw = Math.max(16, Math.floor(full / 8)), Th = Math.floor((window.innerHeight - top - 175) / 10.5);
-  const T = Math.min(Tw, Math.max(34, Th));
+  const Tw = Math.max(16, Math.floor(full / 8)), wide = WIDE(), pb = parseFloat(getComputedStyle($('#app')).paddingBottom) || 24;
+  // a wide screen: the unit bar and the log sit in the right-hand column, so the map has the whole height of the window (up to big tiles)
+  const Th = wide ? Math.floor((window.innerHeight - top - pb - 6) / 10.5) : Math.floor((window.innerHeight - top - 175 - (FINE() ? 26 : 0)) / 10.5);
+  const T = wide ? Math.max(24, Math.min(Tw, Th, 112)) : Math.min(Tw, Math.max(34, Th));
   if (T < Tw) { wrap.style.width = (T*8 + 2) + 'px'; wrap.style.marginInline = 'auto'; }
   fitCanvas(8, 10); battleHeadroom();
   B.fitW = window.innerWidth; B.fitH = window.innerHeight;
@@ -446,9 +448,14 @@ function battleHeadroom(){
   cv.height = (10*T + H) * dpr; cv.style.height = (10*T + H) + 'px';
   G.ctx = cv.getContext('2d'); G.ctx.setTransform(dpr,0,0,dpr,0,0); G.oy = H;
   cv.onpointerdown = e => { if (view !== 'battle') return; const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / T), y = Math.floor((e.clientY - r.top - H) / T); if (x >= 0 && y >= 0 && x < 8 && y < 10) battleTap(x, y); };
+  // a mouse: outline the tile under it, and a pointer where a click does something (a step, an enemy in reach, a target)
+  cv.onpointerleave = () => { G.hover = null; };
+  cv.onpointermove = e => { if (e.pointerType !== 'mouse' || view !== 'battle' || !B) return; const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / T), y = Math.floor((e.clientY - r.top - H) / T);
+    G.hover = x >= 0 && y >= 0 && x < 8 && y < 10 ? {x, y} : null; const k = K(x, y), live = G.hover && B.cur && B.cur.side === 'p' && !B.cur.ally && !B.busy && !B.over;
+    const c = live && ((B.reach && B.reach.has(k) && !(x === B.cur.x && y === B.cur.y)) || (B.hl && (B.hl.atk.has(k) || B.hl.tgt.has(k)))) ? 'pointer' : ''; if (cv.style.cursor !== c) cv.style.cursor = c; };
 }
 window.addEventListener('resize', () => { if (view !== 'battle' || !B) return; // a phone's address bar coming and going is not worth a re-layout
-  if (Math.abs(window.innerWidth - (B.fitW || 0)) > 2 || Math.abs(window.innerHeight - (B.fitH || 0)) > 120) fitBattle(); else battleHeadroom(); });
+  if (Math.abs(window.innerWidth - (B.fitW || 0)) > 2 || Math.abs(window.innerHeight - (B.fitH || 0)) > (WIDE() ? 2 : 120)) fitBattle(); else battleHeadroom(); });
 const ukey = u => u.key || (u.key = 'u' + B.units.indexOf(u)); // one display slot per unit (two allies of a kind used to share one)
 function updBattleUI(){
   if (!B || view !== 'battle') return;
@@ -488,10 +495,11 @@ function updBattleUI(){
   const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
-    <div class="bhint">${hint}</div>
+    <div class="bhint">${tapWord(hint)}</div>
     <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? `<small>×${itemLeft(a.item)}</small>` : ''; const dis = B.acted || !abOk(u,k);
       return `<button class="btn ${B.mode === k ? 'on' : ''}" id="ab_${k}" data-k="${k}" ${dis ? 'disabled' : ''}>${a.name}${cnt}</button>`; }).join('')}
-      <button class="btn ${endHot ? 'primary' : ''}" id="bEnd">End turn</button></div>`;
+      <button class="btn ${endHot ? 'primary' : ''}" id="bEnd">End turn</button></div>
+    <p class="hint keys" aria-hidden="true">${u.ab.length > 1 ? `<kbd>1</kbd>–<kbd>${u.ab.length}</kbd>` : '<kbd>1</kbd>'} ${u.ab.length > 1 ? 'abilities' : 'ability'} · <kbd>Space</kbd> end turn · <kbd>Esc</kbd> cancel</p>`;
   ub.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
     if (!B || B.busy || B.cur !== u) return; const k = b.dataset.k; AUDIO.play('click');
     if (B.mode === k) { B.mode = 'act'; B.aim = null; return updBattleUI(); }
@@ -546,6 +554,8 @@ function drawBattle(t){
     ctx.fillStyle = `rgba(224,87,74,${.18 + p*.1})`; ctx.fillRect((B.aim.x-r)*T, (B.aim.y-r)*T, (2*r+1)*T, (2*r+1)*T);
     ctx.strokeStyle = 'rgba(240,138,124,.6)'; ctx.lineWidth = 1; ctx.strokeRect((B.aim.x-r)*T + .5, (B.aim.y-r)*T + .5, (2*r+1)*T - 1, (2*r+1)*T - 1);
     ctx.strokeStyle = '#f08a7c'; ctx.lineWidth = 2; ctx.setLineDash([4,3]); ctx.strokeRect(B.aim.x*T+2, B.aim.y*T+2, T-4, T-4); ctx.setLineDash([]); }
+  if (myTurn && G.hover && !B.busy) { const hv = G.hover, k = K(hv.x, hv.y), hot = (B.reach && B.reach.has(k)) || (B.hl && (B.hl.atk.has(k) || B.hl.tgt.has(k)));
+    ctx.strokeStyle = hot ? 'rgba(255,224,160,.9)' : 'rgba(232,192,115,.3)'; ctx.lineWidth = hot ? 2 : 1; ctx.strokeRect(hv.x*T + 2, hv.y*T + 2, T - 4, T - 4); }
   // corpses first
   B.units.filter(u => u.hp <= 0).forEach(u => { const k = clamp((now - (u.deadAt || 0)) / 900, 0, 1); const d = dispOf(ukey(u), u.x, u.y);
     ctx.save(); ctx.translate(d.x*T + T/2, d.y*T + T*.6); ctx.rotate(ease(k) * Math.PI/2 * (u.facing || 1)); ctx.globalAlpha = 1 - k*.55; drawFigure(ctx, u.kind, 0, 0, T/32*(u.boss ? 1.3 : 1), t, {still:true}); ctx.restore(); });

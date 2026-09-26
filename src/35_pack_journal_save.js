@@ -49,7 +49,7 @@ function openModal(tab){
     bl.onclick = () => { let s = null; try { s = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim())))); } catch(e) {}
       if (!s || s.v !== 1) { unarm(); $('#impMsg').textContent = 'That code didn\'t load. Check that it was copied in full.'; return; }
       s.name = String(s.name || 'Hask').slice(0, 18); const ex = roster().list.find(e => sameName(e.name, s.name));
-      if (ex && !bl.dataset.arm) { bl.dataset.arm = 1; bl.classList.add('warn'); bl.textContent = `Replace Sergeant ${ex.name}`; $('#impMsg').textContent = `Sergeant ${ex.name} already has a save on this device. Tap again to replace it with the one in this code.`; return; }
+      if (ex && !bl.dataset.arm) { bl.dataset.arm = 1; bl.classList.add('warn'); bl.textContent = `Replace Sergeant ${ex.name}`; $('#impMsg').textContent = tapWord(`Sergeant ${ex.name} already has a save on this device. Tap again to replace it with the one in this code.`); return; }
       AUDIO.play('click'); s.sid = ex ? ex.id : newSid(); S = migrate(s); save(); m.hidden = true; resume(); };
   }
   m.onclick = e => { if (e.target === m) m.hidden = true; };
@@ -102,6 +102,9 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.7.8', ['Plays properly on a PC. On a wide screen the map, the battlefield or the scene fills the left side as big as the window allows, and everything to read and press sits in a column on the right: the conversation, the unit bar, the log. No more scrolling to reach the buttons in a fight.',
+             'The keyboard works: 1 to 9 pick a dialogue choice or an ability, Space ends a turn or talks to whoever is beside you, the arrow keys or WASD walk, J, P and C open the journal, pack and squad, Esc opens settings, and Enter presses a page\'s main button. The full list is in Settings.',
+             'With a mouse, the tile under the cursor is outlined, choices and abilities show their number keys, and the game says click instead of tap. On a phone nothing has changed.']],
   ['3.7.7', ['Every sergeant has a save of their own, so more than one person can play on the same device. The title now lists the sergeants saved here, with their chapter, where they stand, their level and when they last played. Tap yours to carry on. Your game from before is already on the list.',
              'The name prompt only appears when you start a new sergeant. Starting one under a name that is already here asks first, then starts that sergeant over.',
              'Switch sergeant from the Save tab. Erase one with the \u00d7 beside them on the title (tap twice) or from Settings, which now erases only the sergeant you are playing. A save code for a sergeant already on this device asks before it replaces them.']],

@@ -289,3 +289,41 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .jh{margin:14px 0 8px;font-family:var(--label);font-weight:700;font-size:.78rem;letter-spacing:.14em;color:var(--brass);display:flex;align-items:center;gap:8px}
 .jh::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
 @media (max-width:379px){.tab{padding:8px 6px;font-size:.9rem;letter-spacing:.03em}}
+/* ============ a wide screen (a PC, or a tablet on its side): the map, the battlefield or the backdrop on the left,
+   everything to read and press on the right. The same query is WIDEQ in the utilities. ============ */
+kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:3px;font-family:var(--label);font-size:.72rem;line-height:1.35;text-align:center;color:var(--ash);background:rgba(0,0,0,.3)}
+.hint.keys{display:none;line-height:1.9}
+@keyframes riseW{from{transform:translateX(18px);opacity:0}to{transform:none;opacity:1}}
+@media (min-width:1000px) and (min-height:560px){
+  :root{--side:clamp(360px,28vw,440px)}
+  #app:has(> .cvwrap),#app:has(> .scene),#app:has(> .end){max-width:1680px;padding-inline:24px}
+  #app:has(> .cvwrap),#app:has(> .scene){display:grid;grid-template-columns:minmax(0,1fr) var(--side);grid-template-rows:repeat(10,auto) 1fr;column-gap:28px;row-gap:0;align-content:start}
+  #app > .cvwrap,#app > .scene{grid-column:1;grid-row:1 / -1;align-self:start;position:sticky;top:10px} /* the picture stays in view while the column beside it scrolls */
+  #app:has(> .cvwrap) > :not(.cvwrap),#app:has(> .scene) > :not(.scene){grid-column:2;margin-bottom:12px}
+  #app > .log{min-height:0;font-size:.95rem;gap:5px}
+  #app > .scene canvas,.end > .scene canvas{height:auto;aspect-ratio:2/1;max-height:calc(100vh - 110px)}
+  #app > .scene .cap{font-size:1.05rem;padding:11px 18px 12px}
+  /* the chapter's end: the backdrop on the left, the account on the right */
+  .end{display:grid;grid-template-columns:minmax(0,1fr) var(--side);grid-template-rows:repeat(10,auto) 1fr;column-gap:28px}
+  .end > .scene{grid-column:1;grid-row:1 / -1;align-self:start;position:sticky;top:10px}
+  .end > :not(.scene){grid-column:2}
+  .end > .sub:first-of-type{margin-top:0!important}
+  /* the chapter card sits at the head of the right-hand column */
+  .chcard{text-align:left;padding:6px 0 0}.chcard h1{font-size:2.3rem}.chcard .rule{margin:12px 0 4px}
+  /* the dialogue: docked in the right-hand column under the header (dockSheet places it), not rising over the map */
+  #sheet{left:auto;right:24px;top:16px;bottom:16px;width:var(--side);max-height:none;transform:none;border-top:1px solid var(--line2);border-left:2px solid var(--brass);animation:riseW .22s ease-out;box-shadow:-10px 0 50px rgba(0,0,0,.6),0 0 0 1px #000}
+  #sheet .txt{font-size:1.08rem}
+}
+.keyhelp small{line-height:2}.keyhelp b{font-weight:600;color:var(--ash);margin-right:4px}
+/* a mouse: key hints under the map and the unit bar, and a number on each choice and ability for the number keys */
+@media (hover:hover) and (pointer:fine){
+  .hint.keys{display:block}
+  .choices{counter-reset:ch}
+  .choice::before{counter-increment:ch;content:counter(ch);display:inline-block;min-width:1.25em;margin-right:8px;padding:0 3px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:3px;font-family:var(--label);font-size:.72rem;line-height:1.4;text-align:center;color:var(--mute);vertical-align:1px}
+  .choices .choice:nth-child(n+10)::before{content:none}
+  .choice:hover::before{color:var(--brass2);border-color:var(--brass)}
+  .abil{counter-reset:ab}
+  .abil [data-k]{padding-left:22px}
+  .abil [data-k]::before{counter-increment:ab;content:counter(ab);position:absolute;left:6px;top:50%;transform:translateY(-50%);font-family:var(--label);font-size:.66rem;color:var(--dim)}
+  .abil .btn.on::before{color:var(--warren2)}
+}

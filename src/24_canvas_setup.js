@@ -5,15 +5,20 @@
    size in CSS px, G.cam the camera's top-left in map px; in a battle the viewport is the whole map and the camera 0. */
 const mapClose = () => SET.map !== 'whole';
 function exploreRoom(wrap){ // the height left for the map once the HUD, the hint row and a few log lines have theirs
-  const app = $('#app'), hint = $('.maprow'), top = wrap.getBoundingClientRect().top + window.scrollY;
+  const app = $('#app'), hint = $('.maprow'), keys = $('.hint.keys'), top = wrap.getBoundingClientRect().top + window.scrollY;
   const pb = parseFloat(getComputedStyle(app).paddingBottom) || 24, logMin = 3 * 1.45 * .9 * 16 * (SET.fs || 1);
-  return Math.floor(window.innerHeight - top - (hint ? hint.offsetHeight : 20) - logMin - 20 - pb - 2);
+  return Math.floor(window.innerHeight - top - (hint ? hint.offsetHeight : 20) - (keys && keys.offsetHeight ? keys.offsetHeight + 10 : 0) - logMin - 20 - pb - 2);
 }
 function fitCanvas(cols, rows){
   const cv = $('#cv'); if (!cv) return;
-  const w = cv.parentElement.clientWidth, ex = view === 'explore', hud = ex ? $('.hud') : null;
+  const ex = view === 'explore', wrap = cv.parentElement; if (ex) { wrap.style.width = ''; wrap.style.marginInline = ''; }
+  const w = wrap.clientWidth, hud = ex ? $('.hud') : null;
   let T = Math.max(16, Math.floor(w / cols)), vw = cols*T, vh = rows*T;
-  if (ex && mapClose()) { // as tall as the room allows, at least as big as the whole view, and never so big that fewer than 8 columns show
+  if (ex && WIDE()) { // a wide screen: the whole map, as big as the left-hand column and the window's height allow, and the frame fitted to it
+    const top = wrap.getBoundingClientRect().top + window.scrollY, pb = parseFloat(getComputedStyle($('#app')).paddingBottom) || 24;
+    T = Math.max(16, Math.min(Math.floor((w - 2) / cols), Math.floor((window.innerHeight - top - pb - 4) / rows))); vw = cols*T; vh = rows*T;
+    if (vw + 2 < w) { wrap.style.width = (vw + 2) + 'px'; wrap.style.marginInline = 'auto'; }
+  } else if (ex && mapClose()) { // as tall as the room allows, at least as big as the whole view, and never so big that fewer than 8 columns show
     const room = exploreRoom(cv.parentElement), Tc = clamp(Math.floor(room / rows), T, Math.max(T, Math.min(46, Math.floor(w / 8))));
     if (Tc > T) { T = Tc; vw = Math.min(cols*T, w); vh = Math.min(rows*T, Math.max(room, T*8)); }
   }
@@ -35,7 +40,9 @@ function fitCanvas(cols, rows){
   else { // explore: a tap walks, a drag looks around (the camera stays put until the next walk)
     let d = null;
     cv.onpointerdown = e => { d = {x:e.clientX, y:e.clientY, cx:G.cam.x, cy:G.cam.y, moved:false}; if (G.pannable) try { cv.setPointerCapture(e.pointerId); } catch(err) {} };
-    cv.onpointermove = e => { if (!d || !G.pannable) return; const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    cv.onpointerleave = () => { G.hover = null; };
+    cv.onpointermove = e => { if (e.pointerType === 'mouse' && !d) { const p = tile(e); G.hover = p; const c = npcAt(p.x, p.y) ? 'pointer' : ''; if (cv.style.cursor !== c) cv.style.cursor = c; }
+      if (!d || !G.pannable) return; const dx = e.clientX - d.x, dy = e.clientY - d.y;
       if (!d.moved && Math.hypot(dx, dy) < 10) return; d.moved = true; G.cam.pan = true;
       G.cam.x = clamp(d.cx - dx, 0, cols*T - G.vw); G.cam.y = clamp(d.cy - dy, 0, rows*T - G.vh); };
     cv.onpointerup = e => { const t = d; d = null; if (t && !t.moved) tap(e); };
