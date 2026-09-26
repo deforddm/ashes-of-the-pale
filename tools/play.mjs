@@ -133,7 +133,7 @@ async function run(i) {
   problems.forEach(p => console.log('  PROBLEM ' + p));
   [...new Set(errs)].forEach(e => console.log('  PAGE ERROR ' + e));
   rep.events.forEach(e => console.log('  event ' + e));
-  if (!quiet) console.log('  tables: ' + await page.evaluate(() => JSON.stringify(S.deeds || {}) + ' c1=' + (S.f.c1_bones || '-') + ' c2=' + (S.f.c2_bones || '-') + ' c3bones=' + (S.f.c3_bonesLast || '-') + ' cups=' + (S.f.c3_cupsLast || '-') + ' charges=' + (S.f.c3_charges || '-')));
+  if (!quiet) console.log('  tables: ' + await page.evaluate(() => JSON.stringify(S.deeds || {}) + ' c1=' + (S.f.c1_bones || '-') + ' c2=' + (S.f.c2_bones || '-') + ' c3bones=' + (S.f.c3_bonesLast || '-') + ' cups=' + (S.f.c3_cupsLast || '-') + ' charges=' + (S.f.c3_charges || '-') + ' roof=' + (S.f.c4_run || '-') + ' masks=' + (S.f.c6_masks ? S.f.c6_masks - 1 : '-')));
   if (!quiet) console.log('  battles: ' + rep.battles.map(b => `${b.id}(r${b.rounds}${b.losses ? ' L' + b.losses : ''}${b.cheated ? ' cheat' : ''})`).join(' '));
   fs.appendFileSync(path.join(root, 'tools', '.visited.json'), JSON.stringify(await page.evaluate(() => Object.keys(__bot.visited))) + '\n');
   await ctx.close();
