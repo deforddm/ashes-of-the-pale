@@ -1,6 +1,6 @@
 /* ============ pack / journal / save ============ */
 function openModal(tab){
-  const m = $('#modal'); m.hidden = false;
+  const m = $('#modal'); m.hidden = false; m.scrollTop = 0;
   const tabs = S ? ['pack','journal','save'] : ['save'];
   const body = {
     pack:()=>`<div class="kv"><span>Silver</span><span>${S.silver}</span><span>Sharpers</span><span>${S.inv.sharper}</span><span>Burners</span><span>${S.inv.burner}</span><span>Cussers</span><span>${S.inv.cusser}</span>${S.inv.smoker > 0 || S.f.gotSmokers ? `<span>Smokers</span><span>${S.inv.smoker}</span>` : ''}<span>Healing salves</span><span>${S.inv.salve}</span>
@@ -92,6 +92,8 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.7.6', ['Brisk and the sergeant no longer look like twins. Brisk goes bareheaded, her wheat-pale hair plaited in a crown, with a spear and a big oxblood shield, and she stands a head taller. The sergeant keeps the iron cap and has grown a short dark beard, greying at the chin, and carries the battered heater shield from Nathilog.',
+             'Every new page, the next chapter, the chapter card, the finale and each squadmate\'s sheet, now opens at the top.']],
   ['3.7.5', ['The middle of the book bites harder. Chapters 3 to 5 now hit about as hard as Chapter 1 and the Fete: more cutpurses and a second Gadrobi at the Worry Gate, four knives and a wave behind the dye-shop, a Guild veteran on the roofs, Tiste Andii who strike twice, a tougher Jaghut ward and more of the barrow dead, and more of the things that come through the rent.',
              'Talking one of the Guild runners down on the roof still makes that fight lighter.']],
   ['3.7.4', ['Chapters 1 and 2 read through for continuity: the city lies south-west beyond the hills, the quorls leave before the wagon rolls, and two dozen smaller things now agree with each other.',

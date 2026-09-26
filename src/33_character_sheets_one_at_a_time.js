@@ -1,6 +1,6 @@
 /* ============ character sheets, one at a time ============ */
 let charIdx = 0, charTab = 'soldier', charAnim = null;
-function openChars(i, tab){
+function openChars(i, tab){ requestAnimationFrame(() => { const c = $('#chars'); if (c) c.scrollTop = 0; });
   if (!S) { S = newState('Hask'); S._preview = true; }
   const SQ = SQUAD(); charIdx = ((i % SQ.length) + SQ.length) % SQ.length; if (tab) charTab = tab;
   const id = SQ[charIdx], c = TPL[id], L = S.lvl - 1, m = $('#chars'); m.hidden = false;

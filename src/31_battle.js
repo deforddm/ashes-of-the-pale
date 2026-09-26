@@ -70,7 +70,7 @@ function startBattle(id, opt={}){
   B.initOrder = [...B.units].sort((a,b) => b.ini - a.ini);
   B.surprise = opt.surprise || null;
   battleStyle();
-  $('#app').innerHTML = `<header class="hud bhud"><div class="bhead"><div class="loc">${def.title}</div><div class="sub warren" id="bWarren" title="${esc(def.warrenText)}">${def.warrenText}</div></div><div class="hudr"><span id="bRound"></span>${hudButtons()}</div></header>
+  toTop(); $('#app').innerHTML = `<header class="hud bhud"><div class="bhead"><div class="loc">${def.title}</div><div class="sub warren" id="bWarren" title="${esc(def.warrenText)}">${def.warrenText}</div></div><div class="hudr"><span id="bRound"></span>${hudButtons()}</div></header>
     ${def.objective ? `<div class="objective" id="objective"></div>` : ''}
     <div class="order" id="order" aria-label="Turn order"></div>
     <div class="cvwrap"><canvas id="cv" aria-label="Battle map"></canvas></div>

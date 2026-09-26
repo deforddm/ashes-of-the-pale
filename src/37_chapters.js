@@ -95,7 +95,7 @@ function showChapterEnd(){
   const next = CHAPTERS[n + 1], epi = n === 7; // there is no Chapter Eight: the last end screen opens the epilogue
   const title = n === 0 ? 'End of the prologue' : `End of Chapter ${CH ? CH.number : n}`;
   const cap = n === 0 ? 'The Fourth comes up out of the dark. All five.' : CH && CH.endCap ? safe(() => CH.endCap(), 'Morning finds the Fourth still standing, which is the whole of the job.') : 'Morning finds the Fourth still standing, which is the whole of the job.';
-  $('#app').innerHTML = smartq(`<div class="end">
+  toTop(); $('#app').innerHTML = smartq(`<div class="end">
     <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>
     <div class="sub" style="margin-top:12px">${title}</div>
     <h2>${E[0]}</h2>
@@ -123,7 +123,7 @@ function showChapterIntro(){
   const CH = CHAPTERS[S.chapter]; if (!CH) return showTitle();
   view = 'intro'; $('#sheet').hidden = true; B = null; titleAnim = null; AUDIO.setScene('explore');
   const I = CH.intro;
-  $('#app').innerHTML = `<div class="chcard"><div class="num">Chapter ${CH.number}</div><h1>${CH.title}</h1><div class="rule"></div></div>
+  toTop(); $('#app').innerHTML = `<div class="chcard"><div class="num">Chapter ${CH.number}</div><h1>${CH.title}</h1><div class="rule"></div></div>
   <header class="hud"><div><div class="loc">${I.loc}</div><div class="sub">${I.sub}</div></div><div class="hudr">${hudButtons()}</div></header>
   <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${I.cap}</div></div>
   <div class="narr">${I.paras.map(p => fmt(typeof p === 'function' ? p() : p)).join('')}</div>
@@ -175,7 +175,7 @@ function showFinale(i = 0){
       <div class="fin-endline">The End of <em>Gardens of the Moon</em></div>
       <p class="fine fin-credit">The Malazan world and its canon characters belong to Steven Erikson. With thanks to him for the book, the Bridgeburners, and the long road; the Fourth only walked beside it.</p>`; }
   const last = i === P.length - 1;
-  $('#app').innerHTML = `<div class="fin" id="fin">${body}
+  toTop(); $('#app').innerHTML = `<div class="fin" id="fin">${body}
     <div class="fin-nav ${last ? 'last' : ''}"><button class="btn" id="fBack">Back</button><span class="fin-pg">${i + 1} / ${P.length}</span>${last ? `<button class="btn" id="fSq">The squad</button><button class="btn primary" id="fTitle">Title</button>` : `<button class="btn primary" id="fNext">Next</button>`}</div></div>`;
   window.scrollTo(0, 0);
   $('#fBack').onclick = () => { AUDIO.play('click'); finGo(-1); };
