@@ -78,7 +78,7 @@ canvas{display:block;touch-action:manipulation;max-width:100%}
 .log div:first-child{color:var(--ink)}
 .log em{color:var(--brass2);font-style:normal}
 /* title */
-#title{position:relative;min-height:calc(100vh - 40px);min-height:calc(100svh - 34px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;justify-content:flex-end;gap:16px;padding-bottom:16px}
+#title{position:relative;box-sizing:border-box;min-height:calc(100vh - 34px);min-height:calc(100svh - 34px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;justify-content:flex-end;gap:16px;padding-bottom:16px}
 #titlecv{position:fixed;inset:0;width:100%;height:100%;z-index:0;background:#070606}
 .title h1{font-family:var(--display);font-weight:400;font-size:clamp(2.8rem,12vw,4rem);line-height:.92;margin:0;letter-spacing:.01em;text-shadow:0 0 30px rgba(0,0,0,.9),0 2px 0 #000}
 .title h1 span{display:block;color:var(--brass2);text-shadow:0 0 24px rgba(201,151,63,.45),0 2px 0 #000}
@@ -272,7 +272,7 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .btn.warn{border-color:var(--blood2);color:#f0c9c2}
 .tmsg{margin:-8px 0 0;color:#f0c9c2;text-shadow:0 1px 4px #000}
 .tbtns .btn.warn{background:linear-gradient(180deg,#4a1d19,#2c1210);font-weight:700}
-.tmsg:empty{display:none}
+.tmsg:empty,#instSlot:empty{display:none}
 /* the title's full screen button, top right on a PC */
 .tfull{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:5;opacity:.75}
 .tfull:hover{opacity:1}
@@ -359,6 +359,7 @@ body.padfocus button:focus,body.padfocus .choice:focus{outline:2px solid var(--b
 .mkchips{display:flex;flex-wrap:wrap;gap:6px}.mkchips .btn.used{opacity:.45}.mkchips .mkk{display:none;margin-right:6px}
 @media (hover:hover) and (pointer:fine){.mkchips .mkk{display:inline-block}}
 @media (min-width:1000px) and (min-height:560px){.mkcards{grid-template-columns:1fr 1fr}.mgbox{max-width:980px}#mgcv{height:min(50vh,540px)}}
+@media (min-width:1200px) and (min-height:560px){.mgbox:has(.mkcards){max-width:1240px}.mkcards{grid-template-columns:repeat(3,minmax(0,1fr))}} /* the masks: five guests in two rows, not three */
 /* ============ a wide screen (a PC, or a tablet on its side): the map, the battlefield or the backdrop on the left,
    everything to read and press on the right. The same query is WIDEQ in the utilities. ============ */
 kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:3px;font-family:var(--label);font-size:.72rem;line-height:1.35;text-align:center;color:var(--ash);background:rgba(0,0,0,.3)}
@@ -420,7 +421,7 @@ kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px s
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.10.0';
+const VERSION = '3.10.1';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -3162,7 +3163,7 @@ const phantomDC = () => 13 + (B.warren.meanas > 1 ? 3 : 0);
 const pace = ms => ms * SET.speed; // combat pace setting (Slow / Normal / Fast)
 /* a timer that belongs to this battle: it does nothing if the battle was won, left, restarted or replaced meanwhile */
 function later(fn, ms){ const b0 = B; return setTimeout(() => { if (B && B === b0) fn(); }, ms); }
-function blog(m){ B.log.unshift(m); B.log = B.log.slice(0,5); const el = $('#blog'); if (el) el.innerHTML = B.log.map(l => `<div>${l}</div>`).join(''); }
+function blog(m){ B.log.unshift(m); B.log = B.log.slice(0,5); const el = $('#blog'); if (el) { el.innerHTML = B.log.map(l => `<div>${l}</div>`).join(''); logFit(); } }
 /* floating text over a unit; several at once on one unit stack instead of overprinting */
 function float(u, txt, col, big){ const now = performance.now(), n = B.fx.filter(f => f.kind === 'txt' && f.x === u.x && f.y === u.y && now - f.t < 350).length;
   B.fx.push({kind:'txt', x:u.x, y:u.y, txt, col, big, t:now + n*140}); }
@@ -3569,14 +3570,14 @@ function battleStyle(){
 }
 /* size the map to the screen: full width, but on a short phone shrink it (not below a thumb-sized tile) so the unit bar
    underneath stays on screen; then give the canvas a band of headroom so tall figures on the top row are not cut off */
-function fitBattle(){
+function fitBattle(cap){
   const wrap = $('.cvwrap'), cv = $('#cv'); if (!wrap || !cv || !B) return;
   wrap.style.width = ''; wrap.style.marginInline = '';
   const full = wrap.clientWidth - 2, top = wrap.getBoundingClientRect().top + window.scrollY;
   const Tw = Math.max(16, Math.floor(full / 8)), wide = WIDE(), pb = parseFloat(getComputedStyle($('#app')).paddingBottom) || 24;
   // a wide screen: the unit bar and the log sit in the right-hand column, so the map has the whole height of the window (up to big tiles)
   const Th = wide ? Math.floor((window.innerHeight - top - pb - 6) / 10.5) : Math.floor((window.innerHeight - top - 175 - (FINE() ? 26 : 0)) / 10.5);
-  const T = wide ? Math.max(24, Math.min(Tw, Th, 112)) : Math.min(Tw, Math.max(34, Th));
+  const T = Math.min(cap || 999, wide ? Math.max(24, Math.min(Tw, Th, 112)) : Math.min(Tw, Math.max(34, Th)));
   if (T < Tw) { wrap.style.width = (T*8 + 2) + 'px'; wrap.style.marginInline = 'auto'; }
   fitCanvas(8, 10); battleHeadroom();
   B.fitW = window.innerWidth; B.fitH = window.innerHeight;
@@ -3586,6 +3587,24 @@ function barInView(){
   const ub = $('#ubar'), wrap = $('.cvwrap'); if (!ub || !wrap || !$('#sheet').hidden) return;
   const over = ub.getBoundingClientRect().bottom - window.innerHeight + 8, room = wrap.getBoundingClientRect().top - 4;
   const by = Math.min(over, room); if (by > 4) window.scrollBy({top:by, behavior:REDUCE() ? 'auto' : 'smooth'});
+}
+/* a narrow window on a PC (a mouse, and a scrollbar that shows): once the turn bar has filled in, fit the fight to the window.
+   The log gives up its older lines first (the newest are on top), then the map shrinks, never below 30px tiles, and only ever
+   shrinks during a fight, so it doesn't jump about as the bar changes from one squadmate to the next. A phone keeps its bigger
+   tiles and scrolls the bar into view instead (barInView). */
+function battleSettle(){
+  const lg = $('#blog'); if (!B || view !== 'battle' || !lg) return;
+  if (WIDE() || !FINE()) { if (lg.dataset.room) { delete lg.dataset.room; lg.style.minHeight = ''; logFit(); } return; }
+  const pb = parseFloat(getComputedStyle($('#app')).paddingBottom) || 24, minLog = Math.ceil((parseFloat(getComputedStyle(lg).fontSize) || 14) * 3.2);
+  const room = () => Math.floor(window.innerHeight - (lg.getBoundingClientRect().top + window.scrollY) - pb - 1);
+  lg.style.minHeight = '0'; let r = room(); if (r < minLog && G.T > 30) { fitBattle(Math.max(30, G.T - Math.ceil((minLog - r) / 10.5))); r = room(); }
+  lg.dataset.room = Math.max(minLog, r); logFit();
+}
+/* the log shows only the lines that fit whole in the room it was given (the newest are first), none cut in half */
+function logFit(){
+  const lg = $('#blog'); if (!lg) return; const rows = [...lg.children]; rows.forEach(c => c.hidden = false); if (!lg.dataset.room) return;
+  const room = +lg.dataset.room, top = lg.getBoundingClientRect().top, cut = rows.findIndex((c, i) => i > 0 && c.getBoundingClientRect().bottom - top > room);
+  if (cut > 0) rows.slice(cut).forEach(c => c.hidden = true);
 }
 function battleHeadroom(){
   const cv = $('#cv'); if (!cv || !G.ctx || G.cv !== cv) return;
@@ -3600,10 +3619,11 @@ function battleHeadroom(){
     const c = live && ((B.reach && B.reach.has(k) && !(x === B.cur.x && y === B.cur.y)) || (B.hl && (B.hl.atk.has(k) || B.hl.tgt.has(k)))) ? 'pointer' : ''; if (cv.style.cursor !== c) cv.style.cursor = c; };
 }
 window.addEventListener('resize', () => { if (view !== 'battle' || !B) return; // a phone's address bar coming and going is not worth a re-layout
-  if (Math.abs(window.innerWidth - (B.fitW || 0)) > 2 || Math.abs(window.innerHeight - (B.fitH || 0)) > (WIDE() ? 2 : 120)) fitBattle(); else battleHeadroom(); });
+  if (Math.abs(window.innerWidth - (B.fitW || 0)) > 2 || Math.abs(window.innerHeight - (B.fitH || 0)) > (WIDE() || FINE() ? 2 : 120)) { fitBattle(); battleSettle(); } else battleHeadroom(); });
 const ukey = u => u.key || (u.key = 'u' + B.units.indexOf(u)); // one display slot per unit (two allies of a kind used to share one)
 function updBattleUI(){
   if (!B || view !== 'battle') return;
+  queueMicrotask(battleSettle); // once the bar below has its new contents, whichever way this returns
   $('#bRound').textContent = B.surpriseRound ? 'Surprise round' : `Round ${Math.max(1, B.round)}`;
   // turn order, from whoever is acting now; then, past the round marker, who comes before them again
   const ord = B.order.length ? B.order : B.initOrder, i0 = Math.max(0, B.idx), alive = u => u.hp > 0;
@@ -3986,6 +4006,9 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.10.1', ['No more scrollbars where nothing needs scrolling. The title screen was always a little taller than the window; now it fits exactly.',
+             'On a PC window too narrow for the side-by-side layout, a fight fits the window: the map comes down a size and the log shows the newest lines that fit.',
+             'The tables fit the window too. When the talk runs long, the board gives up a little height instead of pushing the buttons off the bottom. Masks at the Fete lays its guests out three across on a wide screen.']],
   ['3.10.0', ['Deeds: a new tab, and a button on the title, that reads across every sergeant on this device. It shows the endings found on each chapter\'s road, how the tables have gone, and a map of the Fourth\'s road from Pale to the quorl hill.',
              'Difficulty: Story, Soldier or Bridgeburner. Pick it when you make a sergeant, and change it any time in Settings. Story softens the foes and the checks; Bridgeburner hardens both.',
              'The count: the finale now adds up the road. Fights won, foes put down, checks passed, silver earned and spent, munitions thrown, paces walked. The running count is on the Deeds tab.',
@@ -4050,7 +4073,9 @@ function mgOpen(o){
     <div class="mgstage"><canvas id="mgcv"></canvas>${o.over || ''}</div><div class="mgpanel" id="mgPanel"></div></div>`;
   const cv = $('#mgcv'), ctx = cv.getContext('2d');
   MG.fit = () => { const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return; if (cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)) { cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); } ctx.setTransform(dpr,0,0,dpr,0,0); MG.W = w; MG.H = h; };
-  MG.fit(); window.addEventListener('resize', MG.fit); MG.ctx = ctx; MG.cv = cv;
+  MG.refit = () => { cv.style.height = ''; MG.fit(); mgRoom(); };
+  MG.fit(); window.addEventListener('resize', MG.refit); MG.ctx = ctx; MG.cv = cv;
+  if (window.ResizeObserver) { MG.ro = new ResizeObserver(() => mgRoom()); MG.ro.observe($('#mgPanel')); } // the talk reflowing (a font arriving late) counts too
   MG.leave = o.leave || (() => mgClose({left:true}));
   $('#mgLeave').onclick = () => { AUDIO.play('click'); MG.leave(); };
   MG.done = o.done || null;
@@ -4059,7 +4084,7 @@ function mgOpen(o){
 function mgClose(result){
   const el = $('#mg'); MG.anim = null;
   if (MG.keys) window.removeEventListener('keydown', MG.keys); MG.keys = null;
-  if (MG.fit) window.removeEventListener('resize', MG.fit); MG.fit = null;
+  if (MG.refit) window.removeEventListener('resize', MG.refit); MG.fit = MG.refit = null; if (MG.ro) { MG.ro.disconnect(); MG.ro = null; }
   el.hidden = true; el.innerHTML = ''; const d = MG.done; MG.done = null; MG.leave = null;
   if (d) d(result || {});
 }
@@ -4071,7 +4096,14 @@ function mgKeys(map){
     if (f) { e.preventDefault(); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); f(); } };
   window.addEventListener('keydown', MG.keys);
 }
-const mgPanel = html => { const p = $('#mgPanel'); if (p) p.innerHTML = html; return p; };
+const mgPanel = html => { const p = $('#mgPanel'); if (p) { p.innerHTML = html; mgRoom(); } return p; };
+/* when the talk and the buttons would run past the bottom of the window, take the difference off the table (never below a playable
+   height); it only ever shrinks while a game is open, so the board doesn't jump about as the lines change, and a resize starts it over */
+function mgRoom(){
+  const el = $('#mg'), cv = $('#mgcv'); if (!el || el.hidden || !cv || !MG.fit) return;
+  const over = el.scrollHeight - el.clientHeight; if (over <= 0) return;
+  const h = cv.clientHeight, nh = Math.max(210, h - over - 1); if (nh < h) { cv.style.height = nh + 'px'; MG.fit(); }
+}
 /* a line of talk in the panel: who, and what they said */
 const mgSay = (who, line) => `<p class="mgsay">${who ? `<b>${esc(who)}</b> ` : ''}${smartq(line)}</p>`;
 /* the deeds a sergeant has done at the tables, kept on the save (the Deeds page reads them) */
