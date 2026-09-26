@@ -21,5 +21,14 @@ const GEAR = `<svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.
 const WIDEQ = '(min-width:1000px) and (min-height:560px)', WIDE_MQ = window.matchMedia(WIDEQ), WIDE = () => WIDE_MQ.matches;
 const FINE_MQ = window.matchMedia('(hover:hover) and (pointer:fine)'), FINE = () => FINE_MQ.matches;
 const tapWord = s => FINE() ? String(s).replace(/\bTap\b/g, 'Click').replace(/\btap\b/g, 'click').replace(/\bTapping\b/g, 'Clicking').replace(/\btapping\b/g, 'clicking') : s;
+/* full screen on a PC: the browser's bars and the taskbar gone. F (or the button) turns it on and off; the browser's own Esc leaves it.
+   With Settings > Full screen on, the first click or key of each visit goes full screen (browsers only allow it from a click or a key). */
+const FULL_IN = `<svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>`, FULL_OUT = `<svg viewBox="0 0 24 24"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/></svg>`;
+const fullOK = () => !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && FINE();
+const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+function toggleFull(on){ if (on === undefined) on = !isFull(); try {
+  if (on && !isFull()) { const el = document.documentElement, p = (el.requestFullscreen || el.webkitRequestFullscreen).call(el, {navigationUI:'hide'}); if (p && p.catch) p.catch(() => {}); }
+  else if (!on && isFull()) { const p = (document.exitFullscreen || document.webkitExitFullscreen).call(document); if (p && p.catch) p.catch(() => {}); } } catch(e) {} }
+const fullBtn = id => fullOK() ? `<button class="btn icon" id="${id}" data-full aria-label="${isFull() ? 'Leave full screen' : 'Full screen'}" title="${isFull() ? 'Leave full screen' : 'Full screen'} (F)">${isFull() ? FULL_OUT : FULL_IN}</button>` : '';
 /* a new page starts at its top: the window now, and again once the new page has laid out */
 function toTop(){ const go = () => { try { window.scrollTo(0, 0); } catch(e) {} if (document.scrollingElement) document.scrollingElement.scrollTop = 0; }; go(); requestAnimationFrame(go); }

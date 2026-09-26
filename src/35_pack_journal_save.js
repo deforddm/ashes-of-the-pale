@@ -102,6 +102,8 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.8.0', ['Full screen on a PC: no browser bars, no taskbar, just the game. Press F, or the button in the top corner of the title and beside the settings gear in the game. Esc leaves it.',
+             'Settings \u203a Full screen On makes every visit go full screen at your first click, so you only set it once.']],
   ['3.7.9', ['On a PC the game can install itself as a desktop app: its own window with no browser bars, and a shortcut on your desktop and taskbar. The title offers it when your browser can do it (Chrome and Edge), and Settings always has Install as an app. Your sergeants come with it.',
              'Safari on a Mac gets the directions instead (File \u203a Add to Dock). The Dock app keeps its own saves, so bring your sergeant over with a save code.']],
   ['3.7.8', ['Plays properly on a PC. On a wide screen the map, the battlefield or the scene fills the left side as big as the window allows, and everything to read and press sits in a column on the right: the conversation, the unit bar, the log. No more scrolling to reach the buttons in a fight.',

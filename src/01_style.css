@@ -256,6 +256,9 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .tmsg{margin:-8px 0 0;color:#f0c9c2;text-shadow:0 1px 4px #000}
 .tbtns .btn.warn{background:linear-gradient(180deg,#4a1d19,#2c1210);font-weight:700}
 .tmsg:empty{display:none}
+/* the title's full screen button, top right on a PC */
+.tfull{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:5;opacity:.75}
+.tfull:hover{opacity:1}
 /* the title's offer to install the game as a desktop app */
 .inst{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;padding:10px 12px;border:1px solid rgba(201,151,63,.45);background:linear-gradient(180deg,rgba(40,31,22,.92),rgba(22,17,13,.92));box-shadow:0 8px 24px rgba(0,0,0,.6)}
 .inst > div:first-child{flex:1 1 240px;display:flex;flex-direction:column;gap:2px}

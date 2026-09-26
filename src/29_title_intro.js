@@ -34,7 +34,7 @@ function showTitle(fresh){
   const list = roster().list, form = fresh || !list.length;
   const rows = list.map((e, i) => `<div class="sgtrow"><button class="btn load ${i ? '' : 'primary'}" data-id="${e.id}" ${i ? '' : 'id="bCont"'}><b>${i ? '' : 'Continue as '}Sergeant ${esc(e.name)}</b><small>${[chLabel(e), e.done ? '' : e.where, `level ${e.lvl}`, agoText(e.upd)].filter(Boolean).map(esc).join(' · ')}</small></button><button class="btn icon del" data-id="${e.id}" aria-label="Erase Sergeant ${esc(e.name)}">×</button></div>`).join('');
   const taken = n => list.find(e => sameName(e.name, n));
-  toTop(); $('#app').innerHTML = `<canvas id="titlecv" aria-hidden="true"></canvas><div id="title" class="title">
+  toTop(); $('#app').innerHTML = `<canvas id="titlecv" aria-hidden="true"></canvas>${fullBtn('bFullT').replace('class="btn icon"', 'class="btn icon tfull"')}<div id="title" class="title">
     <h1>Ashes<span>of the Pale</span></h1>
     <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them, and then south.</p>
     ${form ? `<div class="field"><label for="nm">${list.length ? 'Your new sergeant’s name' : 'Your sergeant’s name'}</label><input type="text" id="nm" maxlength="18" value="${taken('Hask') ? '' : 'Hask'}" placeholder="Name your sergeant" autocomplete="off" autocapitalize="words" spellcheck="false"></div>
@@ -49,6 +49,7 @@ function showTitle(fresh){
   startTitleBackdrop($('#titlecv'));
   $('#bSet').onclick = () => { AUDIO.play('click'); openSettings(); };
   $('#bVer').onclick = () => { AUDIO.play('click'); openNotes(null); };
+  if ($('#bFullT')) $('#bFullT').onclick = () => { AUDIO.play('click'); toggleFull(); };
   if ($('#bImp')) $('#bImp').onclick = () => { AUDIO.play('click'); openModal('save'); };
   if (form) {
     const msg = t => { $('#nmMsg').textContent = t; }, b = $('#bNew'), nm = $('#nm');

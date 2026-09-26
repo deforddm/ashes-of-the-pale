@@ -72,6 +72,7 @@ window.addEventListener('keydown', e => {
   const onBtn = !!document.activeElement && document.activeElement.tagName === 'BUTTON' && document.activeElement !== document.body;
   const press = el => { if (!el || el.disabled) return false; e.preventDefault(); if (k === ' ' && document.activeElement && document.activeElement.blur) document.activeElement.blur(); el.click(); return true; };
   if (!$('#cardfx').hidden) { if (go && !onBtn) { const b = $('#cardfx').querySelector('button:not([disabled])'); if (b) press(b); else { e.preventDefault(); $('#cardfx').click(); } } return; }
+  if (low === 'f' && fullOK()) { e.preventDefault(); toggleFull(); return; } // full screen, anywhere
   if (ovOpen()) return; // an overlay is open: Esc closes it (above), and everything else is its own
   const sh = $('#sheet');
   if (!sh.hidden) { // a conversation
