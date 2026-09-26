@@ -316,6 +316,15 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .jh{margin:14px 0 8px;font-family:var(--label);font-weight:700;font-size:.78rem;letter-spacing:.14em;color:var(--brass);display:flex;align-items:center;gap:8px}
 .jh::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
 @media (max-width:379px){.tab{padding:8px 6px;font-size:.9rem;letter-spacing:.03em}}
+/* ============ deeds, the route map, the count, a controller's focus ============ */
+.route{border:1px solid var(--line2);background:#1c1610;margin:4px 0 10px}.route canvas{display:block;width:100%;height:220px}.route.sm canvas{height:160px}
+.deeds-road{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.deeds-road li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.deeds-road span{font-family:var(--label);letter-spacing:.04em;color:var(--mute);font-size:.88rem}.deeds-road b{font-family:var(--label);color:var(--brass2);font-size:.85rem}
+.deeds-road em{grid-column:1/-1;font-family:var(--prose);font-style:normal;font-size:.92rem;color:var(--ash)}.deeds-road em i{color:var(--dim)}
+.kv.stats{margin-top:4px}.chsel .btn{min-width:0;flex:1 1 auto}
+.dseg .btn{flex:1 1 0}.dseg{display:flex}
+body.padfocus button:focus,body.padfocus .choice:focus{outline:2px solid var(--brass2);outline-offset:2px}
 /* ============ minigames: the table overlay ============ */
 #mg{position:fixed;inset:0;z-index:35;background:radial-gradient(ellipse at 50% 30%,rgba(40,28,18,.96),rgba(4,3,3,.98) 70%);overflow:auto;overscroll-behavior:contain;padding:max(12px,env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;align-items:flex-start}
 .mgbox{width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px}
@@ -411,7 +420,7 @@ kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px s
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.9.1';
+const VERSION = '3.10.0';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -1028,6 +1037,13 @@ function migrate(s){
   if (s.area === 'gadrobi_cross' && s.pos && s.pos.x === 5 && s.pos.y === 1) s.pos = {x:5, y:2};
   return s;
 }
+/* difficulty, per sergeant: Story (gentler foes, easier checks), Soldier (as written), Bridgeburner (harder). Changeable any time. */
+const DIFFS = {story:{name:'Story', hp:.75, dmg:.7, atk:-1, dc:-2, blurb:'Softer fights and easier checks. For the story.'},
+  soldier:{name:'Soldier', hp:1, dmg:1, atk:0, dc:0, blurb:'The book as written.'},
+  bridgeburner:{name:'Bridgeburner', hp:1.25, dmg:1.2, atk:1, dc:1, blurb:'Tougher foes that hit harder, and less forgiving checks.'}};
+const DIFF = () => DIFFS[(S && S.diff) || 'soldier'] || DIFFS.soldier;
+/* the count, kept on the save: the finale and the Deeds page read it */
+function tally(k, n = 1){ if (!S) return; S.stats ??= {}; S.stats[k] = (S.stats[k] || 0) + n; }
 const SQUAD = () => S.squad;
 /* a squadmate's abilities: the template's, plus Kettle's smokers once she has ever had any */
 const kitAb = id => { const ab = [...TPL[id].ab]; if (id === 'kettle' && S && ((S.inv && S.inv.smoker > 0) || (S.f && S.f.gotSmokers))) ab.splice(ab.indexOf('cusser') + 1, 0, 'smoker'); return ab; };
@@ -1056,7 +1072,7 @@ const sameName = (a, b) => String(a || '').trim().toLowerCase() === String(b || 
 const newSid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 /* what the title shows for a sergeant without opening their save: chapter, where they stand, level, when last played */
 function rosterMeta(s){ const a = typeof AREAS !== 'undefined' && AREAS[s.area], t = a && a.title ? splitTitle(a.title)[1] : '';
-  return {id:s.sid, name:s.name || 'Hask', ch:s.chapter || 0, lvl:s.lvl || 1, where:t, done:!!(s.chapters && s.chapters[7] != null), upd:Date.now()}; }
+  return {id:s.sid, name:s.name || 'Hask', ch:s.chapter || 0, lvl:s.lvl || 1, where:t, done:!!(s.chapters && s.chapters[7] != null), diff:s.diff && s.diff !== 'soldier' ? s.diff : undefined, upd:Date.now()}; }
 function roster(){
   let r = null; try { r = JSON.parse(localStorage.getItem(RKEY)); } catch(e) { return {list:[]}; }
   if (r && Array.isArray(r.list)) return r;
@@ -1067,7 +1083,8 @@ function roster(){
   return r;
 }
 const sidFor = name => { const e = roster().list.find(e => sameName(e.name, name)); return e ? e.id : newSid(); };
-function save(){ if (!S) return; try { S.sid ??= sidFor(S.name); localStorage.setItem(slotKey(S.sid), JSON.stringify(S));
+function save(){ if (!S) return; S.stats ??= {}; if (S.stats.silverSeen == null) S.stats.silverSeen = S.silver; else if (S.silver !== S.stats.silverSeen) { const d = S.silver - S.stats.silverSeen; S.stats[d > 0 ? 'silverIn' : 'silverOut'] = (S.stats[d > 0 ? 'silverIn' : 'silverOut'] || 0) + Math.abs(d); S.stats.silverSeen = S.silver; }
+  try { S.sid ??= sidFor(S.name); localStorage.setItem(slotKey(S.sid), JSON.stringify(S));
   const r = roster(); r.list = [rosterMeta(S), ...r.list.filter(e => e.id !== S.sid)]; localStorage.setItem(RKEY, JSON.stringify(r)); } catch(e) {} }
 function loadSlot(id){ try { const s = localStorage.getItem(slotKey(id)); if (!s) return null; const o = JSON.parse(s); o.sid = id; return o; } catch(e) { return null; } }
 function loadSave(){ const e = roster().list[0]; return e ? loadSlot(e.id) : null; }
@@ -1085,12 +1102,12 @@ function gainXP(n){
 /* ============ skill checks ============ */
 function roller(stat, who){ const ids = who ? [who] : SQUAD(); let best = ids[0]; ids.forEach(id => { if (statOf(id, stat) > statOf(best, stat)) best = id; }); return best; }
 function check(stat, dc, who){
-  const best = roller(stat, who);
+  dc += DIFF().dc; const best = roller(stat, who);
   const crown = S.card === 'crown', r1 = d20(), r2 = crown ? d20() : 0; // the Crown: two dice, keep the better
   const nat = Math.max(r1, r2), mod = statOf(best, stat) + (S.card === 'oponn' ? 1 : 0), tot = nat + mod, ok = tot >= dc;
   const label = stat[0].toUpperCase() + stat.slice(1), cr = crown ? (SET.dice ? ` (the Crown: best of two, ${r1} and ${r2})` : ' (the Crown: best of two)') : '';
   note(SET.dice ? `${label} check (DC ${dc}): ${NAME(best)} rolls ${nat} + ${mod} = ${tot}${cr} · ${ok ? 'success' : 'failure'}` : `${label} check: ${NAME(best)}${cr} · ${ok ? 'success' : 'failure'}`, ok ? 'good' : 'bad');
-  return {ok, nat, mod, tot, dc, who:best, label};
+  tally(ok ? 'checksOk' : 'checksFail'); return {ok, nat, mod, tot, dc, who:best, label};
 }
 /* the die: a d20 tumbles in the sheet, settles on the roll, then the story goes on. Tap to hurry it. */
 function rollDice(r, done){
@@ -1124,7 +1141,7 @@ function talk(id){
   curCh = n.ch.filter(c => !c.req || c.req());
   sh.innerHTML = `<div class="sp">${esc(n.sp || '')}</div>${noteHtml}<div class="txt">${fmt(n.txt)}</div>${n.html || ''}${n.after ? `<div class="txt">${fmt(n.after)}</div>` : ''}
     <div class="choices">${curCh.map((c,i) => {
-      const tag = c.check ? `<span class="tagk">${c.check[0]} ${c.check[1]} · ${esc(NAME(roller(c.check[0], c.check[2])))}</span>` : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
+      const tag = c.check ? `<span class="tagk">${c.check[0]} ${c.check[1] + DIFF().dc} · ${esc(NAME(roller(c.check[0], c.check[2])))}</span>` : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
       return `<button class="choice" id="ch${i}" data-i="${i}">${tag}${smartq(esc(c.t).replace(/&quot;/g,'"'))}</button>`; }).join('')}</div>`;
   sh.scrollTop = 0;
   if (n.oncard) inlineCard($('#icard'), n.oncard[0], n.oncard[1]);
@@ -2852,7 +2869,7 @@ function offerInstall(){
 /* the title: the sergeants saved on this device, last played first; tap one to play. The name prompt only shows for a new sergeant. */
 const agoText = t => { if (!t) return ''; const d = Math.floor((new Date().setHours(0,0,0,0) - new Date(t).setHours(0,0,0,0)) / 864e5);
   return d <= 0 ? 'today' : d === 1 ? 'yesterday' : d < 7 ? `${d} days ago` : new Date(t).toLocaleDateString(undefined, {month:'short', day:'numeric'}); };
-const chLabel = e => e.done ? 'Finished' : e.ch === 0 ? 'The prologue' : `Chapter ${CHAPTERS[e.ch] ? CHAPTERS[e.ch].number : e.ch}`;
+const chLabel = e => (e.done ? 'Finished' : e.ch === 0 ? 'The prologue' : `Chapter ${CHAPTERS[e.ch] ? CHAPTERS[e.ch].number : e.ch}`) + (e.diff && DIFFS[e.diff] ? ` (${DIFFS[e.diff].name})` : '');
 function showTitle(fresh){
   if (S) save(); view = 'title'; B = null; S = null; AUDIO.setScene('title');
   const list = roster().list, form = fresh || !list.length;
@@ -2862,12 +2879,13 @@ function showTitle(fresh){
     <h1>Ashes<span>of the Pale</span></h1>
     <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them, and then south.</p>
     ${form ? `<div class="field"><label for="nm">${list.length ? 'Your new sergeant’s name' : 'Your sergeant’s name'}</label><input type="text" id="nm" maxlength="18" value="${taken('Hask') ? '' : 'Hask'}" placeholder="Name your sergeant" autocomplete="off" autocapitalize="words" spellcheck="false"></div>
+    <div class="field"><label>Difficulty</label><div class="seg dseg">${Object.entries(DIFFS).map(([k, d]) => `<button class="btn ${k === 'soldier' ? 'on' : ''}" data-diff="${k}">${d.name}</button>`).join('')}</div><small class="fine" id="dBlurb">${DIFFS.soldier.blurb} You can change it later in Settings.</small></div>
     <p class="fine tmsg" id="nmMsg" role="status"></p>
     <div class="tbtns"><button class="btn primary" id="bNew">Begin</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
       <div class="row2">${list.length ? '<button class="btn" id="bBack">Back to your sergeants</button>' : '<button class="btn" id="bImp">Load a save code</button>'}</div></div>`
     : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
     <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
-      <div class="row2"><button class="btn" id="bImp">Load a save code</button></div></div>`}
+      <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button></div></div>`}
     <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
   startTitleBackdrop($('#titlecv'));
@@ -2882,13 +2900,16 @@ function showTitle(fresh){
       if (!n) { msg('Give your sergeant a name.'); nm.focus(); return; }
       const t = taken(n);
       if (t && b.dataset.arm !== n.toLowerCase()) { b.dataset.arm = n.toLowerCase(); b.classList.add('warn'); b.classList.remove('primary'); b.textContent = `Start Sergeant ${t.name} over`; msg(tapWord(`Sergeant ${t.name} already has a save here. Tap again to start over; that save is erased. Or go back and pick them to carry on.`)); return; }
-      S = newState(n); save(); showIntro(); };
+      S = newState(n); S.diff = diff; save(); showIntro(); };
+    let diff = 'soldier';
+    document.querySelectorAll('[data-diff]').forEach(x => x.onclick = () => { AUDIO.play('click'); diff = x.dataset.diff; document.querySelectorAll('[data-diff]').forEach(y => y.classList.toggle('on', y === x)); $('#dBlurb').textContent = `${DIFFS[diff].blurb} You can change it later in Settings.`; });
     nm.oninput = () => { if (b.dataset.arm) { delete b.dataset.arm; b.classList.remove('warn'); b.classList.add('primary'); b.textContent = 'Begin'; msg(''); } };
     nm.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); b.click(); } };
     if ($('#bBack')) $('#bBack').onclick = () => { AUDIO.play('click'); showTitle(); };
     if (fresh) nm.focus();
   } else {
     $('#bNewSgt').onclick = () => { AUDIO.play('click'); showTitle(true); };
+    $('#bDeeds').onclick = () => { AUDIO.play('click'); openModal('deeds'); };
     document.querySelectorAll('.sgtrow .load').forEach(el => el.onclick = () => { AUDIO.play('click'); const s = loadSlot(el.dataset.id);
       if (!s) { dropSlot(el.dataset.id); return showTitle(); } S = s; resume(); });
     // erasing a sergeant asks twice: the first tap says who goes
@@ -3005,7 +3026,7 @@ function exploreTap(x, y){
 }
 async function walk(path, done){
   walking = true; if (G.cam) G.cam.pan = false; // a walk brings the camera back to the sergeant
-  for (const st of path) { S.trail.unshift({x:S.pos.x, y:S.pos.y}); S.trail = S.trail.slice(0,6); S.pos = {x:st.x, y:st.y}; AUDIO.play('step'); await wait(150); }
+  for (const st of path) { S.trail.unshift({x:S.pos.x, y:S.pos.y}); S.trail = S.trail.slice(0,6); S.pos = {x:st.x, y:st.y}; tally('steps'); AUDIO.play('step'); await wait(150); }
   walking = false; save(); if (done) done();
 }
 function drawFireAt(ctx, T, fx, fy, t, scale = 1){
@@ -3146,12 +3167,14 @@ function blog(m){ B.log.unshift(m); B.log = B.log.slice(0,5); const el = $('#blo
 function float(u, txt, col, big){ const now = performance.now(), n = B.fx.filter(f => f.kind === 'txt' && f.x === u.x && f.y === u.y && now - f.t < 350).length;
   B.fx.push({kind:'txt', x:u.x, y:u.y, txt, col, big, t:now + n*140}); }
 function hurt(u, n, crit){ if (u.hp <= 0) return; // already down: a second blast or a late blow does nothing
+  if (u.side === 'p' && !u.ally && DIFF().dmg !== 1) n = Math.max(1, Math.round(n * DIFF().dmg)); // the difficulty, on every wound the squad takes
   if (u.side === 'p' && !u.ally && S.card === 'herald' && u.hp - n <= 0 && !B.used.herald) { B.used.herald = true; n = u.hp - 1; blog(`<em>The Herald turns its head.</em> ${u.name} stays standing at 1 health.`); float(u, 'spared', '#8fa38a'); }
   if (u.immortal && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'holds', '#bfe8ff'); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // it does not fall
-  u.hp = Math.max(0, u.hp - n); if (!(u.immortal && u.hp === 1)) float(u, '−' + n + (crit ? '!' : ''), crit ? '#ffcf7a' : '#f08a7c', crit); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
+  if (u.side === 'e') tally('dealt', Math.min(n, u.hp)); else if (!u.ally) tally('taken', Math.min(n, u.hp));
+  u.hp = Math.max(0, u.hp - n); if (u.hp === 0 && u.side === 'e') tally('kills'); if (!(u.immortal && u.hp === 1)) float(u, '−' + n + (crit ? '!' : ''), crit ? '#ffcf7a' : '#f08a7c', crit); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
   if (u.side === 'p' && !u.ally) redFlash(); if (n >= 8 || crit) shakeMap();
   if (u.hp === 0) { u.deadAt = performance.now(); AUDIO.play('death'); sparks(u.x, u.y, 14, u.side === 'p' ? '#d6a24a' : '#9a3a30', .6); blog(u.side === 'p' ? `<em>${u.name} goes down!</em>` : `${u.name} falls.`); } else AUDIO.play('hurt'); }
-function heal(u, n){ const before = u.hp; u.hp = Math.min(u.maxhp, u.hp + n); if (u.hp > before) float(u, '+'+(u.hp-before), '#9fe0b8'); u.healed = performance.now(); }
+function heal(u, n){ const before = u.hp; u.hp = Math.min(u.maxhp, u.hp + n); if (u.side === 'p' && !u.ally) tally('healed', u.hp - before); if (u.hp > before) float(u, '+'+(u.hp-before), '#9fe0b8'); u.healed = performance.now(); }
 function sparks(x, y, n, col, spd = 1){ if (REDUCE()) return; for (let i=0;i<n;i++){ const a = Math.random()*7, s = (Math.random()*.6 + .3)*spd; B.parts.push({x:x + .5, y:y + .5, vx:Math.cos(a)*s, vy:Math.sin(a)*s - .3, life:1, decay:.02 + Math.random()*.03, col, size:1 + Math.random()*2}); } }
 
 function mkParty(id, x, y){
@@ -3165,7 +3188,7 @@ function mkParty(id, x, y){
   if (B && B.def.nomagic && u.magic) { u.rng = 1; if (id === 'tuft') { u.dmg = [1,4,1]; u.verb = 'jabs a knife at'; } } // otataral: a knife, or the cudgel
   u.hp = u.maxhp; return u;
 }
-function mkFoe(k, x, y, extra=0){ const f = FOES[k]; return {id:k, kind:k, side:'e', ...f, maxhp:f.hp+extra, hp:f.hp+extra, col:'#d9695a', x, y}; }
+function mkFoe(k, x, y, extra=0){ const f = FOES[k], hp = Math.max(1, Math.round((f.hp + extra) * DIFF().hp)); return {id:k, kind:k, side:'e', ...f, atk:(f.atk || 0) + DIFF().atk, maxhp:hp, hp, col:'#d9695a', x, y}; }
 function mkAlly(k, x, y){ const f = FOES[k]; return {id:'ally_' + k, kind:k, side:'p', ally:true, ...f, name:f.name + ' (ally)', maxhp:f.hp, hp:f.hp, col:'#9fb3d9', x, y, ab:[]}; }
 /* the nearest free tile to x,y (itself if free), ring by ring out to 4, the straight neighbours first */
 function freeNear(x, y, self){ if (free(x,y,self)) return {x,y};
@@ -3256,7 +3279,7 @@ function endBeat(won){
 }
 function win(){
   if (!B) return;
-  const up = gainXP(B.def.xp), head = `${B.def.objective ? 'Held' : 'Victory'}. +${B.def.xp} experience.`;
+  tally('won'); const up = gainXP(B.def.xp), head = `${B.def.objective ? 'Held' : 'Victory'}. +${B.def.xp} experience.`;
   if (B.def.mortal) { // the fallen stay down: the sergeant gets up with a scar, everyone else is dead
     const fallen = B.units.filter(u => u.side === 'p' && !u.ally && u.hp <= 0).map(u => u.id);
     if (fallen.includes('sgt')) S.f.sgtScar = 1;
@@ -3270,12 +3293,12 @@ function win(){
   talk(B.def.after);
 }
 function lose(){
-  AUDIO.play('lose');
+  AUDIO.play('lose'); tally('retries'); save();
   const sh = $('#sheet'); sh.hidden = false;
   sh.innerHTML = `<div class="sp">The squad goes down in the dark</div><div class="txt"><p>Hood's gate is a long walk, and no one in the Fourth is in a hurry to make it. Try it again.</p></div>
     <div class="choices"><button class="choice" id="bRetry">Retry the fight</button></div>`;
   const snap = B.snap; // the save as it stood when the fight began: items, health, the lot
-  $('#bRetry').onclick = () => { AUDIO.play('click'); sh.hidden = true; S = migrate(JSON.parse(snap)); startBattle(S.battle, S.bopt || {}); };
+  $('#bRetry').onclick = () => { AUDIO.play('click'); sh.hidden = true; const st = S.stats; S = migrate(JSON.parse(snap)); if (st) S.stats = st; startBattle(S.battle, S.bopt || {}); }; // the count remembers the lost fight
 }
 
 /* abilities */
@@ -3371,7 +3394,7 @@ function hitPct(c){ let n = 0; for (let r = 1; r <= 20; r++) if (r >= c.critOn |
 function attack(a, t, o={}){
   const nat = d20(), mine = a.side === 'p';
   const {bonus, ac, critOn, fl} = atkCalc(a, t, o);
-  const crit = nat >= critOn;
+  const crit = nat >= critOn; if (crit && mine && !a.ally) tally('crits');
   const hit = crit || (nat !== 1 && nat + bonus >= ac);
   const verb = o.verb || a.verb;
   const ranged = cheb(a, t) > 1;
@@ -3439,7 +3462,7 @@ async function opportunity(u, to){
 }
 function useAb(k, x, y){
   const u = B.cur, a = AB[k];
-  if (a.item) S.inv[a.item]--;
+  if (a.item) { S.inv[a.item]--; tally('thrown_' + a.item); }
   B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.mode = 'act'; B.aim = null; B.busy = true;
   a.run(u, x, y); castStrain(u, a.strain && u.id === 'tuft' && S.card === 'magi' ? a.strain - 1 : a.strain);
   if (a.aoe) { updBattleUI(); return; } // blast() resumes the turn when it lands
@@ -3832,7 +3855,9 @@ function openSettings(){
       ${seg('speed', 'Combat pace', [[1.4,'Slow'],[1,'Normal'],[.6,'Fast']])}
       ${seg('fs', 'Text size', [[.9,'Small'],[1,'Normal'],[1.15,'Large']])}
       ${fullOK() ? seg('full', 'Full screen', [[true,'On'],[false,'Off']], 'No browser bars and no taskbar, just the game. <kbd>F</kbd> or the corner button turns it on and off any time; <kbd>Esc</kbd> leaves it. On: every visit goes full screen at your first click.') : ''}
+      ${S ? `<div class="opt"><label>Difficulty</label><div class="seg">${Object.entries(DIFFS).map(([k, d]) => `<button class="btn ${(S.diff || 'soldier') === k ? 'on' : ''}" data-sdiff="${k}">${d.name}</button>`).join('')}</div><small>${DIFF().blurb} For Sergeant ${esc(S.name)} only; change it whenever you like.</small></div>` : ''}
       ${seg('dice', 'Roll numbers', [[true,'On'],[false,'Off']], 'Print every attack and check roll in the log.')}
+      ${PAD.on ? `<div class="opt keyhelp"><label>Controller</label><small><b>Stick or D-pad</b> walk; move the target square in a fight; move between buttons elsewhere<br><b>A</b> press, talk, or strike the target square · <b>B</b> back · <b>X</b> end the turn · <b>Y</b> the squad<br><b>LB / RB</b> the choices, or the abilities in a fight · <b>Start</b> settings · <b>View</b> the journal</small></div>` : ''}
       ${FINE() ? `<div class="opt keyhelp"><label>Keyboard</label><small><b>Talking</b> <kbd>1</kbd>–<kbd>9</kbd> pick a choice · <kbd>Space</kbd> takes the only one, or hurries the die<br>
         <b>The map</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> or <kbd>E</kbd> talk to whoever is beside you<br>
         <b>A fight</b> <kbd>1</kbd>–<kbd>9</kbd> abilities · <kbd>Space</kbd> or <kbd>E</kbd> end the turn · <kbd>Esc</kbd> drop an aimed ability<br>
@@ -3843,6 +3868,7 @@ function openSettings(){
     </div></div>`;
   ['master','music','sfx','amb'].forEach(k => { const el = $('#s_' + k); el.oninput = () => { SET[k] = +el.value; $('#v_' + k).textContent = Math.round(SET[k]*100) + '%'; saveSet(); }; el.onchange = () => AUDIO.play(k === 'music' ? 'heal' : 'click'); });
   m.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; SET[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSet(); AUDIO.play('click'); if (k === 'full') { fullTried = true; toggleFull(SET.full); } openSettings(); if (view === 'explore' && (k === 'map' || k === 'fs')) { fitCanvas(ACOLS(), AROWS()); mapBtn(); } });
+  m.querySelectorAll('[data-sdiff]').forEach(b => b.onclick = () => { AUDIO.play('click'); S.diff = b.dataset.sdiff; save(); openSettings(); });
   if ($('#sInst')) $('#sInst').onclick = async () => { AUDIO.play('click'); const ok = await runInstall(); const b = $('#sInst'); if (b) { b.disabled = true; b.textContent = ok ? 'Installed' : 'Maybe later'; } };
   if ($('#sReset')) $('#sReset').onclick = () => { const b = $('#sReset'); AUDIO.play('click');
     if (b.dataset.arm) { if (S) dropSlot(S.sid); else roster().list.forEach(e => dropSlot(e.id)); S = null; m.hidden = true; m.innerHTML = ''; showTitle(); }
@@ -3855,13 +3881,14 @@ function openSettings(){
 /* ============ pack / journal / save ============ */
 function openModal(tab){
   const m = $('#modal'); m.hidden = false; m.scrollTop = 0;
-  const tabs = S ? ['pack','journal','save'] : ['save'];
+  const tabs = S ? ['pack','journal','save','deeds'] : ['save','deeds']; routeAnim = null;
   const body = {
     pack:()=>`<div class="kv"><span>Silver</span><span>${S.silver}</span><span>Sharpers</span><span>${S.inv.sharper}</span><span>Burners</span><span>${S.inv.burner}</span><span>Cussers</span><span>${S.inv.cusser}</span>${S.inv.smoker > 0 || S.f.gotSmokers ? `<span>Smokers</span><span>${S.inv.smoker}</span>` : ''}<span>Healing salves</span><span>${S.inv.salve}</span>
       <span>Squad level</span><span>${S.lvl} (${S.xp}/${LEVELS[S.lvl] ?? '—'} xp)</span>${S.card ? `<span>Deck reading</span><span>${CARDS[S.card].name}</span>` : ''}</div>
       ${S.card ? `<div class="cardinline" style="margin-top:12px"><canvas id="icard" width="240" height="360"></canvas></div><p class="fine" style="text-align:center">${CARDS[S.card].fx}</p>` : ''}
       <p class="fine" style="margin-top:10px">Moranth munitions hit everything in the blast, your own squad included. Warren magic builds strain; past ${STR_MAX}, the caster pays in blood.</p>`,
-    journal:()=>`${journalHead()}<h4 class="jh">Notes</h4><ul class="jl">${[
+    deeds:()=>deedsHTML(),
+    journal:()=>`${journalHead()}<div class="route sm"><canvas id="jRoute"></canvas></div><h4 class="jh">Notes</h4><ul class="jl">${[
       ...[7,6,5,4,3,2].filter(n => n <= S.chapter && CHAPTERS[n] && CHAPTERS[n].journal).map(n => { try { return CHAPTERS[n].journal() || []; } catch(e) { return []; } }), // optional: a chapter module may add journal:()=>[lines]; newest chapter first
       S.chapter >= 1 ? [
         S.f.c1_reported ? `Whiskeyjack: the Fourth rides south overland with the baggage. Darujhistan.` : `Report to Whiskeyjack at the Bridgeburners' fire.`,
@@ -3886,12 +3913,14 @@ function openModal(tab){
       <label class="fine" for="imp">Paste a save code to load it</label><textarea id="imp" placeholder="Paste code here"></textarea>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="bLoad">Load code</button></div><p class="fine" id="impMsg"></p>`,
   };
-  m.innerHTML = smartq(`<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
+  m.innerHTML = smartq(`<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : tab === 'deeds' ? 'Deeds' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
     <div class="tabs">${S ? `<button class="tab" data-t="squad">Squad</button>` : ''}${tabs.map(k => `<button class="tab ${k === tab ? 'on' : ''}" data-t="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
     <div>${body[tab]()}</div></div>`);
   m.querySelectorAll('.tab').forEach(b => b.onclick = () => { AUDIO.play('click'); if (b.dataset.t === 'squad') { m.hidden = true; openChars(0); } else openModal(b.dataset.t); });
   $('#bClose').onclick = () => { AUDIO.play('click'); m.hidden = true; };
   if (tab === 'pack' && S.card) inlineCard($('#icard'), S.card, false);
+  if (tab === 'deeds') bindDeeds();
+  if (tab === 'journal') { const cv = $('#jRoute'); routeAnim = t => { if (!cv.isConnected || $('#modal').hidden) { routeAnim = null; return; } drawRoute(cv, S, t); }; }
   if (tab === 'save') {
     if ($('#bCopy')) $('#bCopy').onclick = () => { const ta = $('#exp'), b = $('#bCopy'); ta.focus(); ta.select(); AUDIO.play('click');
       const done = ok => { b.textContent = ok ? 'Copied' : 'Selected: copy it by hand'; };
@@ -3957,6 +3986,12 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.10.0', ['Deeds: a new tab, and a button on the title, that reads across every sergeant on this device. It shows the endings found on each chapter\'s road, how the tables have gone, and a map of the Fourth\'s road from Pale to the quorl hill.',
+             'Difficulty: Story, Soldier or Bridgeburner. Pick it when you make a sergeant, and change it any time in Settings. Story softens the foes and the checks; Bridgeburner hardens both.',
+             'The count: the finale now adds up the road. Fights won, foes put down, checks passed, silver earned and spent, munitions thrown, paces walked. The running count is on the Deeds tab.',
+             'Chapter select: once a sergeant has finished the book, replay any chapter from the Deeds tab. The replay is a new save, so the finished one is kept.',
+             'Controllers work now. Use the stick or D-pad to move and choose, A to act, B to go back, X to end a turn, the shoulder buttons for abilities, and View for the journal. On a keyboard, the arrows and Enter now steer the battle cursor.',
+             'The journal draws the road so far as a map.']],
   ['3.9.1', ['The roof run (Chapter 4): after the fight on the Gadrobi roofs, cross to the Daru roofs low and unseen, one step at a time, while the Guild\'s watchers swing their lanterns on a count of eight. Caught Kruppe cheating in Chapter 3? Then you know the count.',
              'Masks at the Fete (Chapter 6): Whiskeyjack wants names. Walk Lady Simtal\'s hall, read the masks and the people under them, and hand Fiddler a list of five.']],
   ['3.9.0', ['Bones at the fire: a dice game of nerve against Fiddler at the Pale, Kettle at the Rhivi Plain fire (for first watch), and Hedge at the Gadrobi crossing once the crates are down. Two bones, throw or bank, and beware Hood\'s eyes.',
@@ -4010,7 +4045,7 @@ function maybeNotes(has){
    (MG.keys, removed on close). A game ends with mgClose(result); the story picks up from its done() callback. */
 const MG = { anim:null, keys:null, fit:null, done:null, leave:null };
 function mgOpen(o){
-  const el = $('#mg'); el.hidden = false; el.className = 'mg ' + (o.cls || '');
+  const el = $('#mg'); el.hidden = false; el.className = 'mg ' + (o.cls || ''); MG.arrows = !!o.arrows;
   el.innerHTML = `<div class="mgbox"><div class="mghead"><div><div class="kick">${o.kick || ''}</div><h2 class="m">${o.title}</h2></div><button class="btn" id="mgLeave" data-bot="1">${o.leaveText || 'Leave'}</button></div>
     <div class="mgstage"><canvas id="mgcv"></canvas>${o.over || ''}</div><div class="mgpanel" id="mgPanel"></div></div>`;
   const cv = $('#mgcv'), ctx = cv.getContext('2d');
@@ -4271,7 +4306,7 @@ function playCharges(opt){
   const inBlast = (x, y) => pts().some(([a, b]) => Math.max(Math.abs(a - x), Math.abs(b - y)) <= 1);
   const touching = () => { const p = pts(); return p.filter((a, i) => p.some((b, j) => i !== j && Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1])) <= 1)); };
   const cells = ch => { const out = []; V().map.forEach((r, y) => [...r].forEach((c, x) => { if (ch.includes(c)) out.push([x, y]); })); return out; };
-  mgOpen({kick:'Under the Gadrobi crossroads', title:'Laying the charges', leaveText:'Let Hedge do it', done:r => opt.after && opt.after(r),
+  mgOpen({kick:'Under the Gadrobi crossroads', title:'Laying the charges', leaveText:'Let Hedge do it', arrows:true, done:r => opt.after && opt.after(r),
     leave:() => mgClose({solved:false, runs:g.done.length})});
   const say = (who, line) => { g.talk = mgSay(who, line); draw(); };
   const draw = () => { const J = cells('J'), cov = J.filter(([x, y]) => inBlast(x, y)).length, left = V().k - g.set.size;
@@ -4346,7 +4381,7 @@ function playRoofRun(opt){
   const start = (() => { for (let y = 0; y < rows; y++) { const x = m[y].indexOf('S'); if (x >= 0) return {x, y}; } })();
   const g = {pos:{...start}, t:0, seen:0, over:false, flash:0, moves:0, talk:'', trail:[]};
   const pick = a => a[R(a.length)];
-  mgOpen({kick:'The Daru roofs', title:'The roof run', leaveText:'Walk across openly', done:r => opt.after && opt.after(r),
+  mgOpen({kick:'The Daru roofs', title:'The roof run', leaveText:'Walk across openly', arrows:true, done:r => opt.after && opt.after(r),
     leave:() => mgClose({done:false, seen:g.seen})});
   const can = (x, y) => y >= 0 && y < rows && x >= 0 && x < cols && '.pS>'.includes(m[y][x]) && !ws.has(K(x, y));
   const say = (who, line) => { g.talk = mgSay(who, line); draw(); };
@@ -4578,6 +4613,7 @@ const showEnd = showChapterEnd;
 function startChapter(n){
   const CH = CHAPTERS[n]; if (!CH) return showTitle();
   S.chapter = n; S.card = null; S.scene = 'chintro'; S.node = null; S.bg = null; S.battle = null; S.bopt = null;
+  if (n >= 1) { const c = JSON.parse(JSON.stringify(S)); delete c.chsnap; c.log = []; S.chsnap ??= {}; S.chsnap[n] = c; } // replays start from here
   S.area = CH.area.id; S.pos = {...CH.area.start}; S.trail = [[-1,0],[1,0],[-1,1],[0,1],[1,1],[0,-1]].map(([dx,dy]) => ({x:S.pos.x+dx, y:S.pos.y+dy})); S.log = [];
   save(); showChapterIntro();
 }
@@ -4633,7 +4669,8 @@ function showFinale(i = 0){
     body = `<div class="fin-k">The end</div>${coda.length ? `<div class="narr">${coda.map(p => fmt(p)).join('')}</div>` : ''}
       <div class="fin-sum"><h3>The Fourth's road</h3><ol class="fin-road">${road}</ol>
         <h3>The dead</h3>${dead.length ? `<ul class="fin-dead">${dead.map(id => `<li><b>${esc(NAME(id))}</b>${S.dead[id].where ? ` — ${esc(S.dead[id].where)}` : ''}</li>`).join('')}</ul>` : `<p class="fine">None of the Fourth. Every one of them came up out of the dark.</p>`}
-        <div class="kv"><span>Ohl's list</span><span>${listCount()} names</span><span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span></div></div>
+        <div class="kv"><span>Ohl's list</span><span>${listCount()} names</span><span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.diff && S.diff !== 'soldier' ? `<span>Played as</span><span>${DIFF().name}</span>` : ''}</div>
+        <h3>The count</h3>${statsHTML(S)}<p class="fine">Every chapter can be played again from the Deeds page (Squad, then Deeds).</p></div>
       <div class="fin-endline">The End of <em>Gardens of the Moon</em></div>
       <p class="fine fin-credit">The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. With thanks to Steven Erikson for the book, the Bridgeburners, and the long road, and to Ian C. Esslemont for the world they built together; the Fourth only walked beside it.</p>`; }
   const last = i === P.length - 1;
@@ -4680,6 +4717,121 @@ function openPicks(done){
   $('#bPick').onclick = () => { AUDIO.play('up'); Object.entries(chosen).forEach(([id,k]) => S.picks[id].push(k)); S.picksDue.shift(); save(); m.hidden = true; if (S.picksDue.length) openPicks(done); else done && done(); };
   m.onclick = null;
 }
+
+/* ============ the Deeds page, the count, the route map, chapter replays, and a controller ============ */
+
+/* ---- the count: what a sergeant's road added up to (S.stats, kept as they play) ---- */
+function statsRows(s){
+  const st = (s && s.stats) || {}, n = k => st[k] || 0, thrown = ['sharper', 'burner', 'cusser', 'smoker'].map(k => [k, n('thrown_' + k)]).filter(([, v]) => v);
+  return [['Fights won', n('won')], ['Fights retried', n('retries')], ['Foes put down', n('kills')], ['Critical hits', n('crits')],
+    ['Damage dealt', n('dealt')], ['Damage taken', n('taken')], ['Health mended', n('healed')],
+    ['Checks passed', `${n('checksOk')} of ${n('checksOk') + n('checksFail')}`], ['Silver earned', n('silverIn')], ['Silver spent', n('silverOut')],
+    ['Munitions thrown', thrown.length ? thrown.map(([k, v]) => `${v} ${k}${v === 1 ? '' : 's'}`).join(', ') : 'none'], ['Paces walked', n('steps')]];
+}
+const statsHTML = s => `<div class="kv stats">${statsRows(s).map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join('')}</div>`;
+
+/* ---- every sergeant on this device, loaded (the Deeds page reads across all of them) ---- */
+const allSergeants = () => roster().list.map(e => ({e, s:e.id === (S && S.sid) ? S : loadSlot(e.id)})).filter(x => x.s);
+
+/* ---- the route: the Fourth's road across Genabackis, drawn as far as the sergeant has come ---- */
+const ROUTE = [ // chapter -> where on the map (0..1), what to call it, and where its name sits (a: 'l' left of the mark, 'c' above it, else right; dy nudges it down)
+  {x:.12, y:.14, t:'The Pale'}, {x:.2, y:.3, t:'The Pale camp'}, {x:.36, y:.44, t:'The Rhivi Plain'}, {x:.55, y:.6, t:'Darujhistan', a:'l'},
+  {x:.6, y:.74, t:'The Daru roofs', a:'l', dy:10}, {x:.8, y:.44, t:'The Gadrobi Hills', a:'c'}, {x:.66, y:.86, t:'The Fete', dy:12}, {x:.86, y:.7, t:'The quorl hill', a:'l'}];
+function drawRoute(cv, s, t){
+  const {ctx, W, H} = (() => { const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if (cv.width !== Math.round(w*dpr)) { cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); } const c = cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); return {ctx:c, W:w, H:h}; })();
+  if (!W) return;
+  // parchment, the lake, the hills, the plain
+  const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2a2218'); bg.addColorStop(1, '#1c1610'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(0,0,0,.18)'; for (let i = 0; i < 60; i++) ctx.fillRect(hash(i, 3)*W, hash(i, 4)*H, 1 + hash(i, 5)*2, 1);
+  ctx.fillStyle = '#16304a'; ctx.beginPath(); ctx.ellipse(W*.66, H*1.02, W*.34, H*.2, 0, 0, 7); ctx.fill(); // Lake Azur
+  ctx.fillStyle = 'rgba(106,168,255,.18)'; ctx.font = `italic ${Math.round(Math.max(10, H*.05))}px 'IM Fell English', serif`; ctx.textAlign = 'center'; ctx.fillText('Lake Azur', W*.84, H*.97);
+  for (let i = 0; i < 9; i++) { const hx = W*(.72 + hash(i, 7)*.2), hy = H*(.42 + hash(i, 8)*.22); poly(ctx, [[hx - 12, hy + 6], [hx, hy - 8], [hx + 12, hy + 6]], 'rgba(90,70,48,.55)'); } // the Gadrobi Hills
+  for (let i = 0; i < 14; i++) ctx.fillStyle = 'rgba(140,130,90,.12)', ctx.fillRect(W*(.28 + hash(i, 9)*.3), H*(.32 + hash(i, 10)*.2), 10, 1); // the plain's grass
+  ctx.fillStyle = 'rgba(40,30,22,.9)'; ctx.fillRect(W*.1, H*.12, W*.08, H*.08); // the ruins of Pale
+  const reached = [0, 1, 2, 3, 4, 5, 6, 7].filter(n => n <= (s.chapter || 0)), pts = reached.map(n => ({x:ROUTE[n].x*W, y:ROUTE[n].y*H}));
+  // the Moon's Spawn: over Pale at the start, over the city from chapter 3
+  const spawn = (s.chapter || 0) >= 3 ? {x:W*.62, y:H*.5} : {x:W*.22, y:H*.08}; ell(ctx, spawn.x, spawn.y, W*.05, H*.035, '#07070a'); glow(ctx, spawn.x, spawn.y, W*.08, '#9a86e0', .08);
+  // the road
+  ctx.strokeStyle = 'rgba(232,192,115,.75)'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.setLineDash([]);
+  ROUTE.forEach((r, n) => { const x = r.x*W, y = r.y*H, on = n <= (s.chapter || 0), here = n === (s.chapter || 0) && !(s.chapters && s.chapters[7] != null);
+    if (!on) { ctx.fillStyle = 'rgba(200,190,170,.18)'; ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill(); return; }
+    if (here) glow(ctx, x, y, 18, '#e8c073', .35 + Math.sin(t/300)*.15);
+    ctx.fillStyle = here ? '#e8c073' : '#c9973f'; ctx.beginPath(); ctx.arc(x, y, here ? 5 : 3.5, 0, 7); ctx.fill();
+    ctx.fillStyle = here ? '#f2dca6' : 'rgba(230,218,194,.7)'; ctx.font = `600 ${Math.round(Math.max(9, Math.min(13, W*.028)))}px 'Alegreya Sans SC', sans-serif`; ctx.textAlign = r.a === 'l' ? 'right' : r.a === 'c' ? 'center' : 'left';
+    ctx.fillText(r.t, x + (r.a === 'l' ? -8 : r.a === 'c' ? 0 : 8), y - (r.a === 'c' ? 10 : 6) + (r.dy || 0)); });
+}
+let routeAnim = null;
+
+/* ---- the Deeds page: the road's endings found on this device, the tables, this sergeant's count, and replays ---- */
+function deedsHTML(){
+  const all = allSergeants(), deeds = {}; all.forEach(({s}) => Object.entries(s.deeds || {}).forEach(([k, v]) => deeds[k] = (deeds[k] || 0) + v));
+  const found = n => { const f = new Set(); all.forEach(({s}) => { if (s.chapters && s.chapters[n] != null) f.add(s.chapters[n]); }); return f; };
+  const road = [0, 1, 2, 3, 4, 5, 6, 7].map(n => { const E = CHEND[n] || {}, keys = Object.keys(E), f = found(n);
+    return `<li><span>${n === 0 ? 'Prologue' : `Chapter ${CHAPTERS[n] ? CHAPTERS[n].number : n}${CHAPTERS[n] ? ' · ' + CHAPTERS[n].title : ''}`}</span><b>${f.size} of ${keys.length}</b>
+      <em>${keys.map(k => f.has(k) ? esc(E[k][0]) : '<i>?</i>').join(' · ')}</em></li>`; }).join('');
+  const d = k => deeds[k] || 0, best = Math.max(0, ...all.map(({s}) => (s.f && s.f.c6_masks ? s.f.c6_masks - 1 : 0)));
+  const tables = [['Bones', `${d('bonesWon')} won, ${d('bonesLost')} lost${d('bonesShutout') ? `, ${d('bonesShutout')} before the other side scored` : ''}`],
+    ['Kruppe\'s cups', `${d('cupsWon')} rounds won${d('cupsCaught') ? `, caught palming ${d('cupsCaught') === 1 ? 'once' : d('cupsCaught') + ' times'}` : ', never caught'}`],
+    ['Laying the charges', d('chargesClean') ? 'Every run, first time' : d('chargesLaid') ? 'All three runs laid' : 'Not yet'],
+    ['The roof run', d('roofsUnseen') ? `Across unseen${d('roofsUnseen') > 1 ? ` (${d('roofsUnseen')} times)` : ''}` : d('roofSeen') ? `Seen ${d('roofSeen')} time${d('roofSeen') === 1 ? '' : 's'}; never across unseen` : 'Not yet'],
+    ['Masks at the Fete', best ? `${best} of 5 named${d('masksAll') ? ', all five at least once' : ''}` : 'Not yet']];
+  const done = S && S.chapters && S.chapters[7] != null;
+  return `<p class="fine">Across every sergeant on this device.</p>
+    <h4 class="jh">The road</h4><div class="route"><canvas id="dRoute"></canvas></div>
+    <ol class="deeds-road">${road}</ol>
+    <h4 class="jh">At the tables</h4><div class="kv">${tables.map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join('')}</div>
+    ${S ? `<h4 class="jh">Sergeant ${esc(S.name)}'s count</h4>${statsHTML(S)}` : ''}
+    ${S ? `<h4 class="jh">Play a chapter again</h4>${done ? `<p class="fine">Sergeant ${esc(S.name)} has finished the book. Start any chapter again as a new sergeant, ${esc(S.name)} (Ch <i>n</i>), with the squad as it stood then; this save stays as it is.</p>
+      <div class="row chsel">${[1, 2, 3, 4, 5, 6, 7].map(n => `<button class="btn" data-replay="${n}">${CHAPTERS[n] ? CHAPTERS[n].number : n}</button>`).join('')}</div><p class="fine" id="replayMsg"></p>` : `<p class="fine">Finish the book, and any chapter can be played again from here.</p>`}` : ''}`;
+}
+function bindDeeds(){
+  const cv = $('#dRoute'); if (cv) { routeAnim = t => { if (!cv.isConnected) { routeAnim = null; return; } drawRoute(cv, S || {chapter:0}, t); }; }
+  document.querySelectorAll('[data-replay]').forEach(b => b.onclick = () => { const n = +b.dataset.replay, name = replayName(n), msg = $('#replayMsg');
+    if (roster().list.some(e => sameName(e.name, name)) && b.dataset.arm !== '1') { document.querySelectorAll('[data-replay]').forEach(x => delete x.dataset.arm); b.dataset.arm = '1'; msg.textContent = tapWord(`Sergeant ${name} already has a save. Tap ${CHAPTERS[n].number} again to start it over.`); return; }
+    AUDIO.play('click'); replayChapter(n); });
+}
+const replayName = n => `${S.name.slice(0, 12)} (Ch ${n})`;
+/* a finished sergeant, back at chapter n: the snapshot taken when they started it, or (for saves from before snapshots) the save as it
+   finished with everything from chapter n on taken back out: the flags, the endings, the fallen (they stand up again) */
+function rebuildAt(base, n){
+  const s = JSON.parse(JSON.stringify(base)), later = k => { const m = /^c(\d)_/.exec(k); return m && +m[1] >= n; };
+  Object.keys(s.chapters || {}).forEach(k => { if (+k >= n) delete s.chapters[k]; });
+  Object.keys(s.f || {}).forEach(k => { if (later(k)) delete s.f[k]; }); Object.keys(s.fxd || {}).forEach(k => { if (later(k)) delete s.fxd[k]; });
+  Object.keys(s.dead || {}).forEach(id => { if (s.dead[id].ch >= n) { delete s.dead[id]; if (!s.squad.includes(id)) s.squad.push(id); } });
+  delete s.finPage; s.chapter = n; return s;
+}
+function replayChapter(n){
+  const base = S, snap = base.chsnap && base.chsnap[n], s = snap ? JSON.parse(JSON.stringify(snap)) : rebuildAt(base, n), name = replayName(n);
+  s.name = name; delete s.sid; s.sid = sidFor(name); s.chsnap = JSON.parse(JSON.stringify(base.chsnap || {})); s.stats = {}; s.deeds = {};
+  S = migrate(s); save(); $('#modal').hidden = true; startChapter(n);
+}
+
+/* ============ a controller (the Gamepad API): it drives the game through the same keys the keyboard does ============
+   Stick or D-pad: walk on the map, move the target square in a fight, move between buttons elsewhere. A: press (the focused button,
+   or talk / the target square / the game's main action). B: back (Esc). X: end the turn (Space). Y: the squad. LB / RB: the choices
+   (or the abilities, in a fight). Start: settings. View: the journal. */
+const PAD = {on:false, prev:[], held:{}, last:0};
+const padKey = key => window.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles:true, cancelable:true}));
+function padScope(){ return ['#settings', '#modal', '#chars', '#mg'].map(s => $(s)).find(el => el && !el.hidden) || (!$('#sheet').hidden ? $('#sheet') : $('#app')); }
+function padFocus(dir){ const sc = padScope(), bs = [...sc.querySelectorAll('button:not([disabled]), .choice:not([disabled]), [data-g]')].filter(b => b.offsetParent);
+  if (!bs.length) return; const i = bs.indexOf(document.activeElement), j = i < 0 ? (dir > 0 ? 0 : bs.length - 1) : clamp(i + dir, 0, bs.length - 1); bs[j].focus(); bs[j].scrollIntoView({block:'nearest'}); }
+function padPress(){ const a = document.activeElement; if (a && a !== document.body && (a.tagName === 'BUTTON' || a.classList.contains('choice'))) { a.click(); return; }
+  if (!$('#sheet').hidden) { padFocus(1); return; } padKey(view === 'battle' ? 'Enter' : view === 'explore' ? 'e' : ' '); }
+function padPoll(){
+  const gp = navigator.getGamepads ? [...navigator.getGamepads()].find(g => g && g.connected) : null; if (!gp) { if (PAD.on) { PAD.on = false; document.body.classList.remove('padfocus'); } return; }
+  if (!PAD.on) { PAD.on = true; document.body.classList.add('padfocus'); }
+  const b = i => !!(gp.buttons[i] && gp.buttons[i].pressed), ax = gp.axes || [], now = performance.now();
+  const dir = {up:b(12) || ax[1] < -.5, down:b(13) || ax[1] > .5, left:b(14) || ax[0] < -.5, right:b(15) || ax[0] > .5};
+  const prev = PAD.prev, edge = i => b(i) && !prev[i]; PAD.prev = gp.buttons.map(x => x.pressed);
+  const menus = ['#settings', '#modal', '#chars'].some(s => !$(s).hidden) || (!$('#sheet').hidden && view !== 'battle') || (mgOpenNow() && !MG.arrows) || ['title', 'intro', 'end', 'finale'].includes(view);
+  Object.entries({up:'ArrowUp', down:'ArrowDown', left:'ArrowLeft', right:'ArrowRight'}).forEach(([d, key]) => {
+    if (!dir[d]) { delete PAD.held[d]; return; } const h = PAD.held[d]; if (h && now - h < 170) return; PAD.held[d] = h ? now : now + 180; // a first press, then a repeat while held
+    if (menus) padFocus(d === 'up' || d === 'left' ? -1 : 1); else padKey(key); });
+  if (edge(0)) padPress(); if (edge(1)) padKey('Escape'); if (edge(2)) padKey(' '); if (edge(3)) padKey('c');
+  if (edge(4) || edge(5)) { if (view === 'battle' && $('#sheet').hidden && !mgOpenNow()) { const ab = [...document.querySelectorAll('#ubar .abil [data-k]:not([disabled])')]; if (ab.length) { PAD.ab = ((PAD.ab ?? -1) + (edge(5) ? 1 : -1) + ab.length) % ab.length; ab[PAD.ab].click(); } } else padFocus(edge(5) ? 1 : -1); }
+  if (edge(9)) padKey('Escape'); if (edge(8)) padKey('j');
+}
+window.addEventListener('gamepadconnected', () => { PAD.on = true; document.body.classList.add('padfocus'); });
 
 /* ============ the prologue: dialogue (Tattersail, the tunnels under the Pale) ============ */
 function tatRest(){
@@ -13701,6 +13853,8 @@ function loop(t){
   if (charAnim) charAnim(t);
   if (cardAnim) cardAnim();
   if (MG.anim) MG.anim(t);
+  if (routeAnim) routeAnim(t);
+  padPoll();
   requestAnimationFrame(loop);
 }
 function start(data){
@@ -13761,6 +13915,9 @@ window.addEventListener('keydown', e => {
     const mine = B.cur && B.cur.side === 'p' && !B.cur.ally && !B.over;
     if (k === 'Escape' && mine && B.mode && B.mode !== 'act') { e.preventDefault(); B.mode = 'act'; B.aim = null; updBattleUI(); return; }
     if (mine && dig) { press($('#ubar').querySelectorAll('.abil [data-k]')[dig - 1]); return; }
+    const ad = {ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0]}[k];
+    if (mine && ad) { e.preventDefault(); const c = G.hover || {x:B.cur.x, y:B.cur.y}; G.hover = {x:clamp(c.x + ad[0], 0, 7), y:clamp(c.y + ad[1], 0, 9)}; return; } // a target square, for the keyboard and a controller
+    if (mine && k === 'Enter' && !onBtn && G.hover) { e.preventDefault(); battleTap(G.hover.x, G.hover.y); return; }
     if (mine && (k === ' ' || low === 'e')) { press($('#bEnd')); return; }
   }
   if (view === 'explore' && !walking) {
