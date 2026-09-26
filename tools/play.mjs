@@ -26,9 +26,10 @@ const BOT = () => {
   window.__bot = {
     visited: {}, hist: [], nodeVisits: 0, choices: 0, battles: [], cur: null, events: [], tapFails: 0, targets: {}, cheat: false, lastView: '',
     ev(m) { this.events.push(`[ch${S ? S.chapter : '-'} ${view}${S && S.node ? ' ' + S.node : ''}] ${m}`); },
-    sig() { return [view, S && S.node, S && S.area, S && S.pos && S.pos.x, S && S.pos && S.pos.y, B && B.round, B && B.idx, B && B.units.map(u => u.hp + ':' + u.x + u.y).join(''), !$('#sheet').hidden, ($('#sheet').textContent || '').length, !$('#modal').hidden, S && S.finPage].join('|'); },
+    sig() { return [$('#mg').hidden ? '' : (($('#mgPanel') || {}).textContent || ''), view, S && S.node, S && S.area, S && S.pos && S.pos.x, S && S.pos && S.pos.y, B && B.round, B && B.idx, B && B.units.map(u => u.hp + ':' + u.x + u.y).join(''), !$('#sheet').hidden, ($('#sheet').textContent || '').length, !$('#modal').hidden, S && S.finPage].join('|'); },
     tick() {
       const sh = $('#sheet'), m = $('#modal');
+      if (!$('#mg').hidden) { const bs = [...$('#mg').querySelectorAll('[data-bot]:not([disabled])')], stay = bs.filter(b => b.id !== 'mgLeave'); if (!stay.length && !$('#chCheck')) return 'mg-wait'; const pool = stay.length && Math.random() < .95 ? stay : bs; if (pool.length) { pool[Math.floor(Math.random() * pool.length)].click(); return 'mg'; } return 'mg-wait'; } // a game at the table: mostly play it out, now and then walk away
       if (!$('#chars').hidden) { closeChars(); return 'chars'; }
       if (!$('#settings').hidden) { $('#settings').hidden = true; return 'settings'; }
       if (!m.hidden) {
@@ -132,6 +133,7 @@ async function run(i) {
   problems.forEach(p => console.log('  PROBLEM ' + p));
   [...new Set(errs)].forEach(e => console.log('  PAGE ERROR ' + e));
   rep.events.forEach(e => console.log('  event ' + e));
+  if (!quiet) console.log('  tables: ' + await page.evaluate(() => JSON.stringify(S.deeds || {}) + ' c1=' + (S.f.c1_bones || '-') + ' c2=' + (S.f.c2_bones || '-') + ' c3bones=' + (S.f.c3_bonesLast || '-') + ' cups=' + (S.f.c3_cupsLast || '-') + ' charges=' + (S.f.c3_charges || '-')));
   if (!quiet) console.log('  battles: ' + rep.battles.map(b => `${b.id}(r${b.rounds}${b.losses ? ' L' + b.losses : ''}${b.cheated ? ' cheat' : ''})`).join(' '));
   fs.appendFileSync(path.join(root, 'tools', '.visited.json'), JSON.stringify(await page.evaluate(() => Object.keys(__bot.visited))) + '\n');
   await ctx.close();
