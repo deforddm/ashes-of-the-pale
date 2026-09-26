@@ -20,10 +20,10 @@ if ('serviceWorker' in navigator) {
 function showUpdate(reg){
   if ($('#upd')) return;
   const w = document.createElement('div'); w.id = 'upd'; w.className = 'upd'; w.setAttribute('role', 'status');
-  w.innerHTML = `<button class="btn primary" id="updGo">Update ready · tap to reload</button><button class="btn icon" id="updX" aria-label="Not now">×</button>`;
+  w.innerHTML = `<button class="btn primary" id="updGo">${tapWord('Update ready · tap to reload')}</button><button class="btn icon" id="updX" aria-label="Not now">×</button>`;
   document.body.appendChild(w);
   const b = $('#updGo');
-  b.onclick = () => { if (view === 'battle' && !b.dataset.arm) { b.dataset.arm = 1; b.textContent = 'The fight starts over · tap again'; return; }
+  b.onclick = () => { if (view === 'battle' && !b.dataset.arm) { b.dataset.arm = 1; b.textContent = tapWord('The fight starts over · tap again'); return; }
     b.disabled = true; b.textContent = 'Updating…'; window.swUpdateNow(reg); };
   $('#updX').onclick = () => w.remove();
 }
