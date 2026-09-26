@@ -106,6 +106,9 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.10.1', ['No more scrollbars where nothing needs scrolling. The title screen was always a little taller than the window; now it fits exactly.',
+             'On a PC window too narrow for the side-by-side layout, a fight fits the window: the map comes down a size and the log shows the newest lines that fit.',
+             'The tables fit the window too. When the talk runs long, the board gives up a little height instead of pushing the buttons off the bottom. Masks at the Fete lays its guests out three across on a wide screen.']],
   ['3.10.0', ['Deeds: a new tab, and a button on the title, that reads across every sergeant on this device. It shows the endings found on each chapter\'s road, how the tables have gone, and a map of the Fourth\'s road from Pale to the quorl hill.',
              'Difficulty: Story, Soldier or Bridgeburner. Pick it when you make a sergeant, and change it any time in Settings. Story softens the foes and the checks; Bridgeburner hardens both.',
              'The count: the finale now adds up the road. Fights won, foes put down, checks passed, silver earned and spent, munitions thrown, paces walked. The running count is on the Deeds tab.',

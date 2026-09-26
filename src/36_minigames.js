@@ -9,7 +9,9 @@ function mgOpen(o){
     <div class="mgstage"><canvas id="mgcv"></canvas>${o.over || ''}</div><div class="mgpanel" id="mgPanel"></div></div>`;
   const cv = $('#mgcv'), ctx = cv.getContext('2d');
   MG.fit = () => { const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return; if (cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)) { cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); } ctx.setTransform(dpr,0,0,dpr,0,0); MG.W = w; MG.H = h; };
-  MG.fit(); window.addEventListener('resize', MG.fit); MG.ctx = ctx; MG.cv = cv;
+  MG.refit = () => { cv.style.height = ''; MG.fit(); mgRoom(); };
+  MG.fit(); window.addEventListener('resize', MG.refit); MG.ctx = ctx; MG.cv = cv;
+  if (window.ResizeObserver) { MG.ro = new ResizeObserver(() => mgRoom()); MG.ro.observe($('#mgPanel')); } // the talk reflowing (a font arriving late) counts too
   MG.leave = o.leave || (() => mgClose({left:true}));
   $('#mgLeave').onclick = () => { AUDIO.play('click'); MG.leave(); };
   MG.done = o.done || null;
@@ -18,7 +20,7 @@ function mgOpen(o){
 function mgClose(result){
   const el = $('#mg'); MG.anim = null;
   if (MG.keys) window.removeEventListener('keydown', MG.keys); MG.keys = null;
-  if (MG.fit) window.removeEventListener('resize', MG.fit); MG.fit = null;
+  if (MG.refit) window.removeEventListener('resize', MG.refit); MG.fit = MG.refit = null; if (MG.ro) { MG.ro.disconnect(); MG.ro = null; }
   el.hidden = true; el.innerHTML = ''; const d = MG.done; MG.done = null; MG.leave = null;
   if (d) d(result || {});
 }
@@ -30,7 +32,14 @@ function mgKeys(map){
     if (f) { e.preventDefault(); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); f(); } };
   window.addEventListener('keydown', MG.keys);
 }
-const mgPanel = html => { const p = $('#mgPanel'); if (p) p.innerHTML = html; return p; };
+const mgPanel = html => { const p = $('#mgPanel'); if (p) { p.innerHTML = html; mgRoom(); } return p; };
+/* when the talk and the buttons would run past the bottom of the window, take the difference off the table (never below a playable
+   height); it only ever shrinks while a game is open, so the board doesn't jump about as the lines change, and a resize starts it over */
+function mgRoom(){
+  const el = $('#mg'), cv = $('#mgcv'); if (!el || el.hidden || !cv || !MG.fit) return;
+  const over = el.scrollHeight - el.clientHeight; if (over <= 0) return;
+  const h = cv.clientHeight, nh = Math.max(210, h - over - 1); if (nh < h) { cv.style.height = nh + 'px'; MG.fit(); }
+}
 /* a line of talk in the panel: who, and what they said */
 const mgSay = (who, line) => `<p class="mgsay">${who ? `<b>${esc(who)}</b> ` : ''}${smartq(line)}</p>`;
 /* the deeds a sergeant has done at the tables, kept on the save (the Deeds page reads them) */

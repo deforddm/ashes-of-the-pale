@@ -19,7 +19,7 @@ const phantomDC = () => 13 + (B.warren.meanas > 1 ? 3 : 0);
 const pace = ms => ms * SET.speed; // combat pace setting (Slow / Normal / Fast)
 /* a timer that belongs to this battle: it does nothing if the battle was won, left, restarted or replaced meanwhile */
 function later(fn, ms){ const b0 = B; return setTimeout(() => { if (B && B === b0) fn(); }, ms); }
-function blog(m){ B.log.unshift(m); B.log = B.log.slice(0,5); const el = $('#blog'); if (el) el.innerHTML = B.log.map(l => `<div>${l}</div>`).join(''); }
+function blog(m){ B.log.unshift(m); B.log = B.log.slice(0,5); const el = $('#blog'); if (el) { el.innerHTML = B.log.map(l => `<div>${l}</div>`).join(''); logFit(); } }
 /* floating text over a unit; several at once on one unit stack instead of overprinting */
 function float(u, txt, col, big){ const now = performance.now(), n = B.fx.filter(f => f.kind === 'txt' && f.x === u.x && f.y === u.y && now - f.t < 350).length;
   B.fx.push({kind:'txt', x:u.x, y:u.y, txt, col, big, t:now + n*140}); }
@@ -426,14 +426,14 @@ function battleStyle(){
 }
 /* size the map to the screen: full width, but on a short phone shrink it (not below a thumb-sized tile) so the unit bar
    underneath stays on screen; then give the canvas a band of headroom so tall figures on the top row are not cut off */
-function fitBattle(){
+function fitBattle(cap){
   const wrap = $('.cvwrap'), cv = $('#cv'); if (!wrap || !cv || !B) return;
   wrap.style.width = ''; wrap.style.marginInline = '';
   const full = wrap.clientWidth - 2, top = wrap.getBoundingClientRect().top + window.scrollY;
   const Tw = Math.max(16, Math.floor(full / 8)), wide = WIDE(), pb = parseFloat(getComputedStyle($('#app')).paddingBottom) || 24;
   // a wide screen: the unit bar and the log sit in the right-hand column, so the map has the whole height of the window (up to big tiles)
   const Th = wide ? Math.floor((window.innerHeight - top - pb - 6) / 10.5) : Math.floor((window.innerHeight - top - 175 - (FINE() ? 26 : 0)) / 10.5);
-  const T = wide ? Math.max(24, Math.min(Tw, Th, 112)) : Math.min(Tw, Math.max(34, Th));
+  const T = Math.min(cap || 999, wide ? Math.max(24, Math.min(Tw, Th, 112)) : Math.min(Tw, Math.max(34, Th)));
   if (T < Tw) { wrap.style.width = (T*8 + 2) + 'px'; wrap.style.marginInline = 'auto'; }
   fitCanvas(8, 10); battleHeadroom();
   B.fitW = window.innerWidth; B.fitH = window.innerHeight;
@@ -443,6 +443,24 @@ function barInView(){
   const ub = $('#ubar'), wrap = $('.cvwrap'); if (!ub || !wrap || !$('#sheet').hidden) return;
   const over = ub.getBoundingClientRect().bottom - window.innerHeight + 8, room = wrap.getBoundingClientRect().top - 4;
   const by = Math.min(over, room); if (by > 4) window.scrollBy({top:by, behavior:REDUCE() ? 'auto' : 'smooth'});
+}
+/* a narrow window on a PC (a mouse, and a scrollbar that shows): once the turn bar has filled in, fit the fight to the window.
+   The log gives up its older lines first (the newest are on top), then the map shrinks, never below 30px tiles, and only ever
+   shrinks during a fight, so it doesn't jump about as the bar changes from one squadmate to the next. A phone keeps its bigger
+   tiles and scrolls the bar into view instead (barInView). */
+function battleSettle(){
+  const lg = $('#blog'); if (!B || view !== 'battle' || !lg) return;
+  if (WIDE() || !FINE()) { if (lg.dataset.room) { delete lg.dataset.room; lg.style.minHeight = ''; logFit(); } return; }
+  const pb = parseFloat(getComputedStyle($('#app')).paddingBottom) || 24, minLog = Math.ceil((parseFloat(getComputedStyle(lg).fontSize) || 14) * 3.2);
+  const room = () => Math.floor(window.innerHeight - (lg.getBoundingClientRect().top + window.scrollY) - pb - 1);
+  lg.style.minHeight = '0'; let r = room(); if (r < minLog && G.T > 30) { fitBattle(Math.max(30, G.T - Math.ceil((minLog - r) / 10.5))); r = room(); }
+  lg.dataset.room = Math.max(minLog, r); logFit();
+}
+/* the log shows only the lines that fit whole in the room it was given (the newest are first), none cut in half */
+function logFit(){
+  const lg = $('#blog'); if (!lg) return; const rows = [...lg.children]; rows.forEach(c => c.hidden = false); if (!lg.dataset.room) return;
+  const room = +lg.dataset.room, top = lg.getBoundingClientRect().top, cut = rows.findIndex((c, i) => i > 0 && c.getBoundingClientRect().bottom - top > room);
+  if (cut > 0) rows.slice(cut).forEach(c => c.hidden = true);
 }
 function battleHeadroom(){
   const cv = $('#cv'); if (!cv || !G.ctx || G.cv !== cv) return;
@@ -457,10 +475,11 @@ function battleHeadroom(){
     const c = live && ((B.reach && B.reach.has(k) && !(x === B.cur.x && y === B.cur.y)) || (B.hl && (B.hl.atk.has(k) || B.hl.tgt.has(k)))) ? 'pointer' : ''; if (cv.style.cursor !== c) cv.style.cursor = c; };
 }
 window.addEventListener('resize', () => { if (view !== 'battle' || !B) return; // a phone's address bar coming and going is not worth a re-layout
-  if (Math.abs(window.innerWidth - (B.fitW || 0)) > 2 || Math.abs(window.innerHeight - (B.fitH || 0)) > (WIDE() ? 2 : 120)) fitBattle(); else battleHeadroom(); });
+  if (Math.abs(window.innerWidth - (B.fitW || 0)) > 2 || Math.abs(window.innerHeight - (B.fitH || 0)) > (WIDE() || FINE() ? 2 : 120)) { fitBattle(); battleSettle(); } else battleHeadroom(); });
 const ukey = u => u.key || (u.key = 'u' + B.units.indexOf(u)); // one display slot per unit (two allies of a kind used to share one)
 function updBattleUI(){
   if (!B || view !== 'battle') return;
+  queueMicrotask(battleSettle); // once the bar below has its new contents, whichever way this returns
   $('#bRound').textContent = B.surpriseRound ? 'Surprise round' : `Round ${Math.max(1, B.round)}`;
   // turn order, from whoever is acting now; then, past the round marker, who comes before them again
   const ord = B.order.length ? B.order : B.initOrder, i0 = Math.max(0, B.idx), alive = u => u.hp > 0;
