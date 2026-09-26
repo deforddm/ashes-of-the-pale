@@ -1,4 +1,4 @@
-const CACHE = 'ashes-v3.7.7';
+const CACHE = 'ashes-v3.7.8';
 const FONTS = 'ashes-fonts'; // Google Fonts, kept across versions so the typography survives offline play
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 /* A new version installs and then WAITS. The page shows "Update ready"; tapping it posts 'skip', and only then

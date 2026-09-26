@@ -306,6 +306,44 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .jh{margin:14px 0 8px;font-family:var(--label);font-weight:700;font-size:.78rem;letter-spacing:.14em;color:var(--brass);display:flex;align-items:center;gap:8px}
 .jh::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
 @media (max-width:379px){.tab{padding:8px 6px;font-size:.9rem;letter-spacing:.03em}}
+/* ============ a wide screen (a PC, or a tablet on its side): the map, the battlefield or the backdrop on the left,
+   everything to read and press on the right. The same query is WIDEQ in the utilities. ============ */
+kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:3px;font-family:var(--label);font-size:.72rem;line-height:1.35;text-align:center;color:var(--ash);background:rgba(0,0,0,.3)}
+.hint.keys{display:none;line-height:1.9}
+@keyframes riseW{from{transform:translateX(18px);opacity:0}to{transform:none;opacity:1}}
+@media (min-width:1000px) and (min-height:560px){
+  :root{--side:clamp(360px,28vw,440px)}
+  #app:has(> .cvwrap),#app:has(> .scene),#app:has(> .end){max-width:1680px;padding-inline:24px}
+  #app:has(> .cvwrap),#app:has(> .scene){display:grid;grid-template-columns:minmax(0,1fr) var(--side);grid-template-rows:repeat(10,auto) 1fr;column-gap:28px;row-gap:0;align-content:start}
+  #app > .cvwrap,#app > .scene{grid-column:1;grid-row:1 / -1;align-self:start;position:sticky;top:10px} /* the picture stays in view while the column beside it scrolls */
+  #app:has(> .cvwrap) > :not(.cvwrap),#app:has(> .scene) > :not(.scene){grid-column:2;margin-bottom:12px}
+  #app > .log{min-height:0;font-size:.95rem;gap:5px}
+  #app > .scene canvas,.end > .scene canvas{height:auto;aspect-ratio:2/1;max-height:calc(100vh - 110px)}
+  #app > .scene .cap{font-size:1.05rem;padding:11px 18px 12px}
+  /* the chapter's end: the backdrop on the left, the account on the right */
+  .end{display:grid;grid-template-columns:minmax(0,1fr) var(--side);grid-template-rows:repeat(10,auto) 1fr;column-gap:28px}
+  .end > .scene{grid-column:1;grid-row:1 / -1;align-self:start;position:sticky;top:10px}
+  .end > :not(.scene){grid-column:2}
+  .end > .sub:first-of-type{margin-top:0!important}
+  /* the chapter card sits at the head of the right-hand column */
+  .chcard{text-align:left;padding:6px 0 0}.chcard h1{font-size:2.3rem}.chcard .rule{margin:12px 0 4px}
+  /* the dialogue: docked in the right-hand column under the header (dockSheet places it), not rising over the map */
+  #sheet{left:auto;right:24px;top:16px;bottom:16px;width:var(--side);max-height:none;transform:none;border-top:1px solid var(--line2);border-left:2px solid var(--brass);animation:riseW .22s ease-out;box-shadow:-10px 0 50px rgba(0,0,0,.6),0 0 0 1px #000}
+  #sheet .txt{font-size:1.08rem}
+}
+.keyhelp small{line-height:2}.keyhelp b{font-weight:600;color:var(--ash);margin-right:4px}
+/* a mouse: key hints under the map and the unit bar, and a number on each choice and ability for the number keys */
+@media (hover:hover) and (pointer:fine){
+  .hint.keys{display:block}
+  .choices{counter-reset:ch}
+  .choice::before{counter-increment:ch;content:counter(ch);display:inline-block;min-width:1.25em;margin-right:8px;padding:0 3px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:3px;font-family:var(--label);font-size:.72rem;line-height:1.4;text-align:center;color:var(--mute);vertical-align:1px}
+  .choices .choice:nth-child(n+10)::before{content:none}
+  .choice:hover::before{color:var(--brass2);border-color:var(--brass)}
+  .abil{counter-reset:ab}
+  .abil [data-k]{padding-left:22px}
+  .abil [data-k]::before{counter-increment:ab;content:counter(ab);position:absolute;left:6px;top:50%;transform:translateY(-50%);font-family:var(--label);font-size:.66rem;color:var(--dim)}
+  .abil .btn.on::before{color:var(--warren2)}
+}
 </style>
 <style>[hidden]{display:none!important}body{margin:0}</style>
 </head><body>
@@ -320,7 +358,7 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.7.7';
+const VERSION = '3.7.8';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -340,6 +378,11 @@ const ease = k => k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;
 function hash(x, y, s = 0) { let h = (x * 374761393 + y * 668265263 + s * 982451653) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const GEAR = `<svg viewBox="0 0 24 24"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/><path d="M19.4 13.5a7.9 7.9 0 0 0 0-3l2-1.5-2-3.4-2.4.9a8 8 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5a8 8 0 0 0-2.6 1.5l-2.4-.9-2 3.4 2 1.5a7.9 7.9 0 0 0 0 3l-2 1.5 2 3.4 2.4-.9a8 8 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a8 8 0 0 0 2.6-1.5l2.4.9 2-3.4-2-1.5z"/></svg>`;
+/* a wide screen (a PC, or a tablet on its side) lays the map or backdrop out on the left and everything to read and press on the
+   right; the same query sits in the CSS. A fine pointer (a mouse) gets "click" for "tap", key hints and hover outlines. */
+const WIDEQ = '(min-width:1000px) and (min-height:560px)', WIDE_MQ = window.matchMedia(WIDEQ), WIDE = () => WIDE_MQ.matches;
+const FINE_MQ = window.matchMedia('(hover:hover) and (pointer:fine)'), FINE = () => FINE_MQ.matches;
+const tapWord = s => FINE() ? String(s).replace(/\bTap\b/g, 'Click').replace(/\btap\b/g, 'click').replace(/\bTapping\b/g, 'Clicking').replace(/\btapping\b/g, 'clicking') : s;
 /* a new page starts at its top: the window now, and again once the new page has laid out */
 function toTop(){ const go = () => { try { window.scrollTo(0, 0); } catch(e) {} if (document.scrollingElement) document.scrollingElement.scrollTop = 0; }; go(); requestAnimationFrame(go); }
 
@@ -1025,6 +1068,7 @@ function talk(id){
   if (n.oncard) inlineCard($('#icard'), n.oncard[0], n.oncard[1]);
   sh.querySelectorAll('.choice').forEach(b => b.onclick = () => { AUDIO.play('click'); choose(curCh[+b.dataset.i]); });
   const first = sh.querySelector('.choice'); if (first && !('ontouchstart' in window)) first.focus({preventScroll:true});
+  dockSheet();
 }
 function choose(c){
   if (c.fx) c.fx();
@@ -1833,17 +1877,19 @@ function startTitleBackdrop(cv){
 
 /* ============ scene backdrops (talk nodes away from the map) ============ */
 /* The backdrop canvas is sized by CSS (full width, 240px tall), so its backing store is fitted here to the box it is shown in,
-   at the device's pixel ratio: nothing is squashed on a narrow phone, and it stays sharp. W and H are CSS pixels. */
+   at the device's pixel ratio: nothing is squashed on a narrow phone, and it stays sharp. W and H are drawing units: CSS pixels on a phone;
+   on a wide screen, where the box is taller than 240px, the drawing is scaled up (SCENE_K) so the scene is the same picture, only bigger. */
+let SCENE_K = 1;
 function sceneFit(cv){
   const ctx = cv.getContext('2d'), cw = cv.clientWidth, ch = cv.clientHeight;
   if (!cw || !ch) { ctx.setTransform(1,0,0,1,0,0); return {ctx, W:cv.width, H:cv.height}; }
-  const dpr = Math.min(2, window.devicePixelRatio || 1), bw = Math.round(cw*dpr), bh = Math.round(ch*dpr);
+  const dpr = Math.min(2, window.devicePixelRatio || 1), bw = Math.round(cw*dpr), bh = Math.round(ch*dpr), k = Math.max(1, ch / 240);
   if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
-  ctx.setTransform(bw/cw, 0, 0, bh/ch, 0, 0); return {ctx, W:cw, H:ch};
+  SCENE_K = k; ctx.setTransform(bw/cw*k, 0, 0, bh/ch*k, 0, 0); return {ctx, W:cw/k, H:ch/k};
 }
 /* the still parts of a backdrop, painted once per kind and size; the frame only adds what moves */
 const SCENE_CACHE = new Map();
-function sceneLayer(key, W, H, paint){ const dpr = Math.min(2, window.devicePixelRatio || 1), k = `${key}|${W}x${H}|${dpr}`; let c = SCENE_CACHE.get(k);
+function sceneLayer(key, W, H, paint){ const dpr = Math.min(2, window.devicePixelRatio || 1) * SCENE_K, k = `${key}|${W}x${H}|${dpr}`; let c = SCENE_CACHE.get(k);
   if (!c) { c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W*dpr)); c.height = Math.max(1, Math.round(H*dpr)); const x = c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); paint(x, W, H); if (SCENE_CACHE.size > 12) SCENE_CACHE.clear(); SCENE_CACHE.set(k, c); }
   return c; }
 const sceneSquad = () => (typeof SQUAD === 'function' && S ? SQUAD() : PORDER);
@@ -2337,15 +2383,20 @@ function drawEstate(cv, kind, t){
    size in CSS px, G.cam the camera's top-left in map px; in a battle the viewport is the whole map and the camera 0. */
 const mapClose = () => SET.map !== 'whole';
 function exploreRoom(wrap){ // the height left for the map once the HUD, the hint row and a few log lines have theirs
-  const app = $('#app'), hint = $('.maprow'), top = wrap.getBoundingClientRect().top + window.scrollY;
+  const app = $('#app'), hint = $('.maprow'), keys = $('.hint.keys'), top = wrap.getBoundingClientRect().top + window.scrollY;
   const pb = parseFloat(getComputedStyle(app).paddingBottom) || 24, logMin = 3 * 1.45 * .9 * 16 * (SET.fs || 1);
-  return Math.floor(window.innerHeight - top - (hint ? hint.offsetHeight : 20) - logMin - 20 - pb - 2);
+  return Math.floor(window.innerHeight - top - (hint ? hint.offsetHeight : 20) - (keys && keys.offsetHeight ? keys.offsetHeight + 10 : 0) - logMin - 20 - pb - 2);
 }
 function fitCanvas(cols, rows){
   const cv = $('#cv'); if (!cv) return;
-  const w = cv.parentElement.clientWidth, ex = view === 'explore', hud = ex ? $('.hud') : null;
+  const ex = view === 'explore', wrap = cv.parentElement; if (ex) { wrap.style.width = ''; wrap.style.marginInline = ''; }
+  const w = wrap.clientWidth, hud = ex ? $('.hud') : null;
   let T = Math.max(16, Math.floor(w / cols)), vw = cols*T, vh = rows*T;
-  if (ex && mapClose()) { // as tall as the room allows, at least as big as the whole view, and never so big that fewer than 8 columns show
+  if (ex && WIDE()) { // a wide screen: the whole map, as big as the left-hand column and the window's height allow, and the frame fitted to it
+    const top = wrap.getBoundingClientRect().top + window.scrollY, pb = parseFloat(getComputedStyle($('#app')).paddingBottom) || 24;
+    T = Math.max(16, Math.min(Math.floor((w - 2) / cols), Math.floor((window.innerHeight - top - pb - 4) / rows))); vw = cols*T; vh = rows*T;
+    if (vw + 2 < w) { wrap.style.width = (vw + 2) + 'px'; wrap.style.marginInline = 'auto'; }
+  } else if (ex && mapClose()) { // as tall as the room allows, at least as big as the whole view, and never so big that fewer than 8 columns show
     const room = exploreRoom(cv.parentElement), Tc = clamp(Math.floor(room / rows), T, Math.max(T, Math.min(46, Math.floor(w / 8))));
     if (Tc > T) { T = Tc; vw = Math.min(cols*T, w); vh = Math.min(rows*T, Math.max(room, T*8)); }
   }
@@ -2367,7 +2418,9 @@ function fitCanvas(cols, rows){
   else { // explore: a tap walks, a drag looks around (the camera stays put until the next walk)
     let d = null;
     cv.onpointerdown = e => { d = {x:e.clientX, y:e.clientY, cx:G.cam.x, cy:G.cam.y, moved:false}; if (G.pannable) try { cv.setPointerCapture(e.pointerId); } catch(err) {} };
-    cv.onpointermove = e => { if (!d || !G.pannable) return; const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    cv.onpointerleave = () => { G.hover = null; };
+    cv.onpointermove = e => { if (e.pointerType === 'mouse' && !d) { const p = tile(e); G.hover = p; const c = npcAt(p.x, p.y) ? 'pointer' : ''; if (cv.style.cursor !== c) cv.style.cursor = c; }
+      if (!d || !G.pannable) return; const dx = e.clientX - d.x, dy = e.clientY - d.y;
       if (!d.moved && Math.hypot(dx, dy) < 10) return; d.moved = true; G.cam.pan = true;
       G.cam.x = clamp(d.cx - dx, 0, cols*T - G.vw); G.cam.y = clamp(d.cy - dy, 0, rows*T - G.vh); };
     cv.onpointerup = e => { const t = d; d = null; if (t && !t.moved) tap(e); };
@@ -2730,7 +2783,7 @@ function showTitle(fresh){
     b.onclick = () => { AUDIO.play('click'); const n = nm.value.trim().replace(/\s+/g, ' ');
       if (!n) { msg('Give your sergeant a name.'); nm.focus(); return; }
       const t = taken(n);
-      if (t && b.dataset.arm !== n.toLowerCase()) { b.dataset.arm = n.toLowerCase(); b.classList.add('warn'); b.classList.remove('primary'); b.textContent = `Start Sergeant ${t.name} over`; msg(`Sergeant ${t.name} already has a save here. Tap again to start over; that save is erased. Or go back and pick them to carry on.`); return; }
+      if (t && b.dataset.arm !== n.toLowerCase()) { b.dataset.arm = n.toLowerCase(); b.classList.add('warn'); b.classList.remove('primary'); b.textContent = `Start Sergeant ${t.name} over`; msg(tapWord(`Sergeant ${t.name} already has a save here. Tap again to start over; that save is erased. Or go back and pick them to carry on.`)); return; }
       S = newState(n); save(); showIntro(); };
     nm.oninput = () => { if (b.dataset.arm) { delete b.dataset.arm; b.classList.remove('warn'); b.classList.add('primary'); b.textContent = 'Begin'; msg(''); } };
     nm.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); b.click(); } };
@@ -2743,7 +2796,7 @@ function showTitle(fresh){
     // erasing a sergeant asks twice: the first tap says who goes
     document.querySelectorAll('.sgtrow .del').forEach(el => el.onclick = () => { AUDIO.play('click'); const row = el.parentNode, ld = row.querySelector('.load'), e = list.find(x => x.id === el.dataset.id);
       if (el.dataset.arm) { dropSlot(el.dataset.id); return showTitle(); }
-      el.dataset.arm = 1; el.classList.add('warn'); ld.classList.add('warn'); const was = ld.innerHTML; ld.innerHTML = `<b>Tap × again to erase Sergeant ${esc(e.name)}</b><small>Their save on this device is gone for good. A save code brings them back.</small>`; ld.disabled = true;
+      el.dataset.arm = 1; el.classList.add('warn'); ld.classList.add('warn'); const was = ld.innerHTML; ld.innerHTML = `<b>${tapWord('Tap')} × again to erase Sergeant ${esc(e.name)}</b><small>Their save on this device is gone for good. A save code brings them back.</small>`; ld.disabled = true;
       setTimeout(() => { if (el.isConnected) { delete el.dataset.arm; el.classList.remove('warn'); ld.classList.remove('warn'); ld.innerHTML = was; ld.disabled = false; } }, 4000); });
   }
   maybeNotes(list.length > 0);
@@ -2795,7 +2848,8 @@ function startExplore(areaId){
   toTop(); $('#app').innerHTML = `<header class="hud"><div>${kick ? `<div class="kick">${kick}</div>` : ''}<div class="loc">${ttl}</div><div class="sub qline"><span id="quest"></span><span id="silver"></span></div></div>
     <div class="hudr">${hudButtons()}</div></header>
     <div class="cvwrap"><canvas id="cv" aria-label="Map"></canvas></div>
-    <div class="maprow"><p class="hint">${a.hint || 'Tap ground to move · tap a figure to talk'}</p><button class="btn mini" id="bMap"></button></div>
+    <div class="maprow"><p class="hint">${tapWord(a.hint || 'Tap ground to move · tap a figure to talk')}</p><button class="btn mini" id="bMap"></button></div>
+    <p class="hint keys" aria-hidden="true"><kbd>\u2190</kbd><kbd>\u2191</kbd><kbd>\u2192</kbd><kbd>\u2193</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> talk to whoever is beside you · <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>Esc</kbd> settings</p>
     <div class="log" id="elog"></div>`;
   bindHud();
   G.disp = {};
@@ -2806,7 +2860,7 @@ function startExplore(areaId){
 /* "Darujhistan · the Daru District" -> a kicker and a title that fits next to the buttons */
 const splitTitle = t => { const i = t.indexOf(' · '); return i < 0 ? ['', t] : [t.slice(0, i), t[i + 3].toUpperCase() + t.slice(i + 4)]; };
 /* the close/whole switch under the map; hidden when both would look the same (a wide screen) */
-function mapBtn(){ const b = $('#bMap'); if (!b) return; b.textContent = mapClose() ? 'Whole map' : 'Close up'; b.setAttribute('aria-label', mapClose() ? 'Show the whole map' : 'Show the map close up'); b.hidden = mapClose() && !G.pannable; }
+function mapBtn(){ const b = $('#bMap'); if (!b) return; b.textContent = mapClose() ? 'Whole map' : 'Close up'; b.setAttribute('aria-label', mapClose() ? 'Show the whole map' : 'Show the map close up'); b.hidden = WIDE() || (mapClose() && !G.pannable); }
 /* ash, petals or ice: the count follows the map's size on screen so the density stays what it was at the old small scale */
 function exploreParticles(){
   const n = REDUCE() ? 0 : Math.round(clamp(50 * (ACOLS()*G.T * AROWS()*G.T) / (352*264), 50, 200));
@@ -2928,6 +2982,8 @@ function drawExplore(t){
       if (ch === 'C') glow(ctx, x*T + T/2, y*T + T*.7, T*2.4, '#9a86e0', .16 + Math.sin(t/700)*.05);
     }));
   }
+  // a mouse over the map: the tile it would walk to, brighter over someone to talk to
+  const hv = G.hover; if (hv && !walking && $('#sheet').hidden) { const n = npcAt(hv.x, hv.y); if (n || palePass(hv.x, hv.y)) { ctx.strokeStyle = n ? 'rgba(232,192,115,.85)' : 'rgba(232,192,115,.38)'; ctx.lineWidth = 1.5; ctx.strokeRect(hv.x*T + 1.5, hv.y*T + 1.5, T - 3, T - 3); } }
   // NPCs
   a.npcs.forEach(n => { if (n.show && !n.show()) return; drawFigure(ctx, n.kind, n.x*T + T/2, n.y*T + T*.6, T/32, t, {phase:n.x + n.y*3, still:!!n.still});
     if (n.fresh && n.fresh()) { const by = Math.sin(t/300)*2; ctx.fillStyle = '#e8c073'; const cx = n.x*T+T/2, cy = n.y*T - T*.15 + by; ctx.beginPath(); ctx.moveTo(cx, cy-T*.16); ctx.lineTo(cx+T*.1, cy); ctx.lineTo(cx, cy+T*.12); ctx.lineTo(cx-T*.1, cy); ctx.fill(); } });
@@ -3396,8 +3452,10 @@ function fitBattle(){
   const wrap = $('.cvwrap'), cv = $('#cv'); if (!wrap || !cv || !B) return;
   wrap.style.width = ''; wrap.style.marginInline = '';
   const full = wrap.clientWidth - 2, top = wrap.getBoundingClientRect().top + window.scrollY;
-  const Tw = Math.max(16, Math.floor(full / 8)), Th = Math.floor((window.innerHeight - top - 175) / 10.5);
-  const T = Math.min(Tw, Math.max(34, Th));
+  const Tw = Math.max(16, Math.floor(full / 8)), wide = WIDE(), pb = parseFloat(getComputedStyle($('#app')).paddingBottom) || 24;
+  // a wide screen: the unit bar and the log sit in the right-hand column, so the map has the whole height of the window (up to big tiles)
+  const Th = wide ? Math.floor((window.innerHeight - top - pb - 6) / 10.5) : Math.floor((window.innerHeight - top - 175 - (FINE() ? 26 : 0)) / 10.5);
+  const T = wide ? Math.max(24, Math.min(Tw, Th, 112)) : Math.min(Tw, Math.max(34, Th));
   if (T < Tw) { wrap.style.width = (T*8 + 2) + 'px'; wrap.style.marginInline = 'auto'; }
   fitCanvas(8, 10); battleHeadroom();
   B.fitW = window.innerWidth; B.fitH = window.innerHeight;
@@ -3414,9 +3472,14 @@ function battleHeadroom(){
   cv.height = (10*T + H) * dpr; cv.style.height = (10*T + H) + 'px';
   G.ctx = cv.getContext('2d'); G.ctx.setTransform(dpr,0,0,dpr,0,0); G.oy = H;
   cv.onpointerdown = e => { if (view !== 'battle') return; const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / T), y = Math.floor((e.clientY - r.top - H) / T); if (x >= 0 && y >= 0 && x < 8 && y < 10) battleTap(x, y); };
+  // a mouse: outline the tile under it, and a pointer where a click does something (a step, an enemy in reach, a target)
+  cv.onpointerleave = () => { G.hover = null; };
+  cv.onpointermove = e => { if (e.pointerType !== 'mouse' || view !== 'battle' || !B) return; const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / T), y = Math.floor((e.clientY - r.top - H) / T);
+    G.hover = x >= 0 && y >= 0 && x < 8 && y < 10 ? {x, y} : null; const k = K(x, y), live = G.hover && B.cur && B.cur.side === 'p' && !B.cur.ally && !B.busy && !B.over;
+    const c = live && ((B.reach && B.reach.has(k) && !(x === B.cur.x && y === B.cur.y)) || (B.hl && (B.hl.atk.has(k) || B.hl.tgt.has(k)))) ? 'pointer' : ''; if (cv.style.cursor !== c) cv.style.cursor = c; };
 }
 window.addEventListener('resize', () => { if (view !== 'battle' || !B) return; // a phone's address bar coming and going is not worth a re-layout
-  if (Math.abs(window.innerWidth - (B.fitW || 0)) > 2 || Math.abs(window.innerHeight - (B.fitH || 0)) > 120) fitBattle(); else battleHeadroom(); });
+  if (Math.abs(window.innerWidth - (B.fitW || 0)) > 2 || Math.abs(window.innerHeight - (B.fitH || 0)) > (WIDE() ? 2 : 120)) fitBattle(); else battleHeadroom(); });
 const ukey = u => u.key || (u.key = 'u' + B.units.indexOf(u)); // one display slot per unit (two allies of a kind used to share one)
 function updBattleUI(){
   if (!B || view !== 'battle') return;
@@ -3456,10 +3519,11 @@ function updBattleUI(){
   const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
-    <div class="bhint">${hint}</div>
+    <div class="bhint">${tapWord(hint)}</div>
     <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? `<small>×${itemLeft(a.item)}</small>` : ''; const dis = B.acted || !abOk(u,k);
       return `<button class="btn ${B.mode === k ? 'on' : ''}" id="ab_${k}" data-k="${k}" ${dis ? 'disabled' : ''}>${a.name}${cnt}</button>`; }).join('')}
-      <button class="btn ${endHot ? 'primary' : ''}" id="bEnd">End turn</button></div>`;
+      <button class="btn ${endHot ? 'primary' : ''}" id="bEnd">End turn</button></div>
+    <p class="hint keys" aria-hidden="true">${u.ab.length > 1 ? `<kbd>1</kbd>–<kbd>${u.ab.length}</kbd>` : '<kbd>1</kbd>'} ${u.ab.length > 1 ? 'abilities' : 'ability'} · <kbd>Space</kbd> end turn · <kbd>Esc</kbd> cancel</p>`;
   ub.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
     if (!B || B.busy || B.cur !== u) return; const k = b.dataset.k; AUDIO.play('click');
     if (B.mode === k) { B.mode = 'act'; B.aim = null; return updBattleUI(); }
@@ -3514,6 +3578,8 @@ function drawBattle(t){
     ctx.fillStyle = `rgba(224,87,74,${.18 + p*.1})`; ctx.fillRect((B.aim.x-r)*T, (B.aim.y-r)*T, (2*r+1)*T, (2*r+1)*T);
     ctx.strokeStyle = 'rgba(240,138,124,.6)'; ctx.lineWidth = 1; ctx.strokeRect((B.aim.x-r)*T + .5, (B.aim.y-r)*T + .5, (2*r+1)*T - 1, (2*r+1)*T - 1);
     ctx.strokeStyle = '#f08a7c'; ctx.lineWidth = 2; ctx.setLineDash([4,3]); ctx.strokeRect(B.aim.x*T+2, B.aim.y*T+2, T-4, T-4); ctx.setLineDash([]); }
+  if (myTurn && G.hover && !B.busy) { const hv = G.hover, k = K(hv.x, hv.y), hot = (B.reach && B.reach.has(k)) || (B.hl && (B.hl.atk.has(k) || B.hl.tgt.has(k)));
+    ctx.strokeStyle = hot ? 'rgba(255,224,160,.9)' : 'rgba(232,192,115,.3)'; ctx.lineWidth = hot ? 2 : 1; ctx.strokeRect(hv.x*T + 2, hv.y*T + 2, T - 4, T - 4); }
   // corpses first
   B.units.filter(u => u.hp <= 0).forEach(u => { const k = clamp((now - (u.deadAt || 0)) / 900, 0, 1); const d = dispOf(ukey(u), u.x, u.y);
     ctx.save(); ctx.translate(d.x*T + T/2, d.y*T + T*.6); ctx.rotate(ease(k) * Math.PI/2 * (u.facing || 1)); ctx.globalAlpha = 1 - k*.55; drawFigure(ctx, u.kind, 0, 0, T/32*(u.boss ? 1.3 : 1), t, {still:true}); ctx.restore(); });
@@ -3664,17 +3730,21 @@ function openSettings(){
       ${seg('shake', 'Screen shake', [[true,'On'],[false,'Off']])}
       ${seg('blood', 'Blood', [[true,'On'],[false,'Off']], 'Wounds leave marks on the ground where they fall.')}
       ${seg('motion', 'Motion', [['auto','System'],['on','Full'],['off','Reduced']], 'Reduced motion shortens animations and the card reading.')}
-      ${seg('map', 'Map', [['close','Close'],['whole','Whole']], 'Close: bigger tiles that follow the sergeant; drag the map to look around. Whole: the entire area on screen at once.')}
+      ${seg('map', 'Map', [['close','Close'],['whole','Whole']], WIDE() ? 'On a screen this wide the whole map always fits, as big as the window allows. On a phone, Close has bigger tiles that follow the sergeant; Whole has the entire area on screen at once.' : 'Close: bigger tiles that follow the sergeant; drag the map to look around. Whole: the entire area on screen at once.')}
       ${seg('speed', 'Combat pace', [[1.4,'Slow'],[1,'Normal'],[.6,'Fast']])}
       ${seg('fs', 'Text size', [[.9,'Small'],[1,'Normal'],[1.15,'Large']])}
       ${seg('dice', 'Roll numbers', [[true,'On'],[false,'Off']], 'Print every attack and check roll in the log.')}
+      ${FINE() ? `<div class="opt keyhelp"><label>Keyboard</label><small><b>Talking</b> <kbd>1</kbd>–<kbd>9</kbd> pick a choice · <kbd>Space</kbd> takes the only one, or hurries the die<br>
+        <b>The map</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> or <kbd>E</kbd> talk to whoever is beside you<br>
+        <b>A fight</b> <kbd>1</kbd>–<kbd>9</kbd> abilities · <kbd>Space</kbd> or <kbd>E</kbd> end the turn · <kbd>Esc</kbd> drop an aimed ability<br>
+        <b>Anywhere</b> <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>Esc</kbd> settings, or close what's open · <kbd>Enter</kbd> the page's main button</small></div>` : ''}
       ${S || roster().list.length ? `<div class="opt"><label>This device</label><button class="btn" id="sReset">${S ? `Erase Sergeant ${esc(S.name)}` : 'Erase every sergeant'}</button><small>${S ? 'Only this sergeant\'s save. Anyone else on this device keeps theirs.' : 'Every sergeant saved on this device.'} Settings are kept separately and survive this. v${VERSION}</small></div>` : `<div class="opt"><small>v${VERSION}</small></div>`}
     </div></div>`;
   ['master','music','sfx','amb'].forEach(k => { const el = $('#s_' + k); el.oninput = () => { SET[k] = +el.value; $('#v_' + k).textContent = Math.round(SET[k]*100) + '%'; saveSet(); }; el.onchange = () => AUDIO.play(k === 'music' ? 'heal' : 'click'); });
   m.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; SET[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSet(); AUDIO.play('click'); openSettings(); if (view === 'explore' && (k === 'map' || k === 'fs')) { fitCanvas(ACOLS(), AROWS()); mapBtn(); } });
   if ($('#sReset')) $('#sReset').onclick = () => { const b = $('#sReset'); AUDIO.play('click');
     if (b.dataset.arm) { if (S) dropSlot(S.sid); else roster().list.forEach(e => dropSlot(e.id)); S = null; m.hidden = true; m.innerHTML = ''; showTitle(); }
-    else { b.textContent = 'Tap again to erase'; b.classList.add('warn'); b.dataset.arm = 1; } };
+    else { b.textContent = tapWord('Tap again to erase'); b.classList.add('warn'); b.dataset.arm = 1; } };
   $('#sClose').onclick = () => { AUDIO.play('click'); m.hidden = true; m.innerHTML = ''; };
   m.onclick = e => { if (e.target === m) { m.hidden = true; m.innerHTML = ''; } };
 }
@@ -3731,7 +3801,7 @@ function openModal(tab){
     bl.onclick = () => { let s = null; try { s = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim())))); } catch(e) {}
       if (!s || s.v !== 1) { unarm(); $('#impMsg').textContent = 'That code didn\'t load. Check that it was copied in full.'; return; }
       s.name = String(s.name || 'Hask').slice(0, 18); const ex = roster().list.find(e => sameName(e.name, s.name));
-      if (ex && !bl.dataset.arm) { bl.dataset.arm = 1; bl.classList.add('warn'); bl.textContent = `Replace Sergeant ${ex.name}`; $('#impMsg').textContent = `Sergeant ${ex.name} already has a save on this device. Tap again to replace it with the one in this code.`; return; }
+      if (ex && !bl.dataset.arm) { bl.dataset.arm = 1; bl.classList.add('warn'); bl.textContent = `Replace Sergeant ${ex.name}`; $('#impMsg').textContent = tapWord(`Sergeant ${ex.name} already has a save on this device. Tap again to replace it with the one in this code.`); return; }
       AUDIO.play('click'); s.sid = ex ? ex.id : newSid(); S = migrate(s); save(); m.hidden = true; resume(); };
   }
   m.onclick = e => { if (e.target === m) m.hidden = true; };
@@ -3784,6 +3854,9 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.7.8', ['Plays properly on a PC. On a wide screen the map, the battlefield or the scene fills the left side as big as the window allows, and everything to read and press sits in a column on the right: the conversation, the unit bar, the log. No more scrolling to reach the buttons in a fight.',
+             'The keyboard works: 1 to 9 pick a dialogue choice or an ability, Space ends a turn or talks to whoever is beside you, the arrow keys or WASD walk, J, P and C open the journal, pack and squad, Esc opens settings, and Enter presses a page\'s main button. The full list is in Settings.',
+             'With a mouse, the tile under the cursor is outlined, choices and abilities show their number keys, and the game says click instead of tap. On a phone nothing has changed.']],
   ['3.7.7', ['Every sergeant has a save of their own, so more than one person can play on the same device. The title now lists the sergeants saved here, with their chapter, where they stand, their level and when they last played. Tap yours to carry on. Your game from before is already on the list.',
              'The name prompt only appears when you start a new sergeant. Starting one under a name that is already here asks first, then starts that sergeant over.',
              'Switch sergeant from the Save tab. Erase one with the \u00d7 beside them on the title (tap twice) or from Settings, which now erases only the sergeant you are playing. A save code for a sergeant already on this device asks before it replaces them.']],
@@ -12950,7 +13023,18 @@ function resume(){
   startExplore(); if (S.node) talk(S.node);
 }
 /* backdrops keep their 240px-high drawing but take the width their box really has, so a phone doesn't squash them sideways */
+/* a wide screen: the dialogue sits in the right-hand column, from just under the header to the foot of the window */
+let dockAt = '';
+function dockSheet(){
+  const sh = $('#sheet'); if (!sh || sh.hidden) return;
+  let k = '';
+  if (WIDE() && ($('#app > .cvwrap') || $('#app > .scene'))) { const hud = $('#app > .hud'); if (hud) { const r = hud.getBoundingClientRect(); k = `${Math.round(r.left)}|${Math.round(r.width)}|${Math.max(16, Math.round(r.bottom + 14))}`; } }
+  if (k === dockAt) return; dockAt = k;
+  if (!k) { sh.style.left = sh.style.width = sh.style.top = sh.style.right = ''; return; }
+  const [l, w, top] = k.split('|'); sh.style.left = l + 'px'; sh.style.width = w + 'px'; sh.style.top = top + 'px'; sh.style.right = 'auto';
+}
 function loop(t){
+  dockSheet();
   if (view === 'explore') drawExplore(t); else if (view === 'battle') drawBattle(t);
   else if (view === 'title' && titleAnim) titleAnim();
   const scv = $('#scv'); if (scv && (view === 'scene' || view === 'intro' || view === 'end' || view === 'finale')) { if (FETE_SCENES.includes(G.sceneKind)) drawEstate(scv, G.sceneKind, t); else if (G.sceneKind === 'camp' || G.sceneKind === 'camp_night') drawCamp(scv, t, G.sceneKind === 'camp_night'); else if (G.sceneKind === 'tent' || G.sceneKind === 'fire') drawInterior(scv, G.sceneKind, t); else if (G.sceneKind && (G.sceneKind.startsWith('plain') || G.sceneKind.startsWith('hills'))) drawPlain(scv, G.sceneKind, t); else if (G.sceneKind && (G.sceneKind.startsWith('city') || ['inn','cellar','room','roof','roof_night'].includes(G.sceneKind))) drawCity(scv, G.sceneKind, t); else drawScene(scv, G.sceneKind, t); }
@@ -12990,6 +13074,43 @@ window.addEventListener('popstate', () => {
   $('#modal').hidden = true;
 });
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && ovOpen() && !picksOpen() && history.state && history.state.ov) history.back(); });
+/* the keyboard, for a PC. Talking: 1-9 pick a choice, Space or Enter takes the only one (or hurries the die). The map: the arrow keys or WASD
+   walk a tile, Space or E talks to whoever is beside you. A fight: 1-9 the abilities, Space or E ends the turn, Esc drops an aimed ability.
+   Anywhere in the game: J journal, P pack, C squad, Esc settings; Space or Enter presses a page's main button (the next chapter, and so on). */
+const typing = e => { const t = e.target; return !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable); };
+window.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented || typing(e) || picksOpen()) return;
+  const k = e.key, low = k.length === 1 ? k.toLowerCase() : k, dig = /^[1-9]$/.test(k) ? +k : 0, go = k === 'Enter' || k === ' ';
+  const onBtn = !!document.activeElement && document.activeElement.tagName === 'BUTTON' && document.activeElement !== document.body;
+  const press = el => { if (!el || el.disabled) return false; e.preventDefault(); if (k === ' ' && document.activeElement && document.activeElement.blur) document.activeElement.blur(); el.click(); return true; };
+  if (!$('#cardfx').hidden) { if (go && !onBtn) { const b = $('#cardfx').querySelector('button:not([disabled])'); if (b) press(b); else { e.preventDefault(); $('#cardfx').click(); } } return; }
+  if (ovOpen()) return; // an overlay is open: Esc closes it (above), and everything else is its own
+  const sh = $('#sheet');
+  if (!sh.hidden) { // a conversation
+    if (dig) { press(sh.querySelectorAll('.choice')[dig - 1]); return; }
+    if (go && !onBtn) { const d = $('#dice'); if (d) { e.preventDefault(); d.click(); return; } const cs = [...sh.querySelectorAll('.choice:not([disabled])')]; if (cs.length === 1) press(cs[0]); }
+    return;
+  }
+  if (view === 'title') { if (k === 'Enter' && !onBtn) press($('#bCont')); return; }
+  if (!S) return;
+  if (k === ' ' && (view === 'explore' || view === 'battle')) { e.preventDefault(); if (onBtn) document.activeElement.blur(); } // Space is the game's here, not a focused button's
+  if (view === 'battle' && B) {
+    const mine = B.cur && B.cur.side === 'p' && !B.cur.ally && !B.over;
+    if (k === 'Escape' && mine && B.mode && B.mode !== 'act') { e.preventDefault(); B.mode = 'act'; B.aim = null; updBattleUI(); return; }
+    if (mine && dig) { press($('#ubar').querySelectorAll('.abil [data-k]')[dig - 1]); return; }
+    if (mine && (k === ' ' || low === 'e')) { press($('#bEnd')); return; }
+  }
+  if (view === 'explore' && !walking) {
+    const dir = {ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0], w:[0,-1], s:[0,1], a:[-1,0], d:[1,0]}[low];
+    if (dir) { e.preventDefault(); exploreTap(S.pos.x + dir[0], S.pos.y + dir[1]); return; }
+    if ((k === ' ' || low === 'e' || (k === 'Enter' && !onBtn))) { const n = AREA().npcs.find(n => (!n.show || n.show()) && cheb(S.pos, n) <= 1); if (n) { e.preventDefault(); exploreTap(n.x, n.y); } return; }
+  }
+  if (view === 'explore' && walking && /^Arrow/.test(k)) { e.preventDefault(); return; } // a held arrow key keeps the page still between steps
+  if (low === 'j' || low === 'p') { e.preventDefault(); AUDIO.play('click'); openModal(low === 'j' ? 'journal' : 'pack'); return; }
+  if (low === 'c') { e.preventDefault(); AUDIO.play('click'); openChars(0); return; }
+  if (k === 'Escape') { e.preventDefault(); AUDIO.play('click'); openSettings(); return; }
+  if (go && !onBtn && view !== 'explore' && view !== 'battle') press($('#app .btn.primary:not([disabled])'));
+});
 if (history.state && history.state.ov) history.replaceState(null, ''); // a reload with an overlay's entry on top: nothing is open now
 </script>
 
@@ -13016,10 +13137,10 @@ if ('serviceWorker' in navigator) {
 function showUpdate(reg){
   if ($('#upd')) return;
   const w = document.createElement('div'); w.id = 'upd'; w.className = 'upd'; w.setAttribute('role', 'status');
-  w.innerHTML = `<button class="btn primary" id="updGo">Update ready · tap to reload</button><button class="btn icon" id="updX" aria-label="Not now">×</button>`;
+  w.innerHTML = `<button class="btn primary" id="updGo">${tapWord('Update ready · tap to reload')}</button><button class="btn icon" id="updX" aria-label="Not now">×</button>`;
   document.body.appendChild(w);
   const b = $('#updGo');
-  b.onclick = () => { if (view === 'battle' && !b.dataset.arm) { b.dataset.arm = 1; b.textContent = 'The fight starts over · tap again'; return; }
+  b.onclick = () => { if (view === 'battle' && !b.dataset.arm) { b.dataset.arm = 1; b.textContent = tapWord('The fight starts over · tap again'); return; }
     b.disabled = true; b.textContent = 'Updating…'; window.swUpdateNow(reg); };
   $('#updX').onclick = () => w.remove();
 }
