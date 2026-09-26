@@ -206,7 +206,7 @@ He isn't alone. Fiddler and Hedge are on the far side of the vault arguing in wh
 
 And against the wall, standing, as if sitting down were a thing he had lately forgotten how to do: Captain Paran. He got here a day ahead of you, and looks as if he hasn't slept in it. The ordinary sword is at his hip in its worn scabbard, and his hand is on the pommel, and he nods to you, once, and says nothing.
 
-Up in the crossing, tethered beside the Bridgeburners' mule, there's a horse somebody has brushed until it shines. ${S.f.c2_muleNamed ? `Pell, tethered on its other side, has already bitten it once, on principle.` : `The Fourth's mule, tethered on its other side, has already bitten it once, on principle.`}
+Up in the crossing, tethered beside the Bridgeburners' mule, there's a horse somebody has brushed until it shines. ${S.f.c2_wagon ? `Pell, tethered on its other side, has already bitten it once, on principle.` : `The Fourth's mule, tethered on its other side, has already bitten it once, on principle.`}
 
 "Report," says Whiskeyjack.`,
       ch:[{t:'Give it to him. In order.', go:'c6_report'}]}),
@@ -1121,7 +1121,7 @@ By the fountain, where a lantern has gone out and nobody has lit it again, a man
 
 You know him. ${S.f.clawMet || S.f.c1_claw ? `You've known him since the Pale.` : `You've never been introduced. You know him anyway; the whole Host knows that walk.`}
 
-"Sergeant." Pleasantly, as if you'd met at a wedding. ${S.f.marked ? `"{sgt}. Still attached, I see. Good.${S.f.c1_claw && !S.f.decoy && !S.f.gaveClaw ? ` I did ask.` : ''}"` : S.f.clawFavour ? `"It's always a pleasure, at a party, to find a helpful squad on the lawn."` : `"We keep meeting at other people's fires."`}
+"Sergeant." Pleasantly, as if you'd met at a wedding. ${S.f.marked && !(S.f.markedPale || (S.f.marked && S.f.c3_key !== 'refuse')) ? `"{sgt}. Madryn's list. I read it this morning; your name is in her best hand."` : S.f.marked ? `"{sgt}. Still attached, I see. Good.${S.f.c1_claw && !S.f.decoy && !S.f.gaveClaw ? ` I did ask.` : ''}"` : S.f.clawFavour ? `"It's always a pleasure, at a party, to find a helpful squad on the lawn."` : `"We keep meeting at other people's fires."`}
 
 "I won't keep you. You're on duty; I can see the armband. It suits you. I'm here on behalf of a man who would like to see the Fete, and can't come himself. He's very busy. He's always very busy." His eyes go past you. "Tuft."
 
@@ -1454,7 +1454,7 @@ Into it. Not off it. The sword *drinks* it, the way dry sand drinks water, and t
 
 He's gone somewhere. You can see it. His body is here, standing, and he is not. For one long breath, and two, and three, he stands there empty as a coat on a peg, while the Tyrant stares at him with its tusked face; and then he comes back into himself all at once, and staggers, and looks down at the sword in his hand as if it had said something to him.`,
       ch:[{t:'"Down!"', go:'c6_bb_hedge'}]}),
-    c6_bb_hedge:()=>({sp:'Hedge', scene:'garden_storm', fx:()=>{ S.f.c6_azath=1; if (SQUAD().includes('kettle') && S.inv.cusser > 0 && !S.f.c6_hedgeCusser) { S.f.c6_hedgeCusser=1; S.inv.cusser -= 1; loy('kettle',1); } }, txt:
+    c6_bb_hedge:()=>({sp:'Hedge', scene:'garden_storm', fx:()=>{ S.f.c6_azath=1; if (SQUAD().includes('kettle') && S.inv.cusser > (maudKept() ? 1 : 0) && !S.f.c6_hedgeCusser) { S.f.c6_hedgeCusser=1; S.inv.cusser -= 1; loy('kettle',1); } }, txt:
 `It isn't you who shouts it. It's Hedge.
 
 ${SQUAD().includes('kettle') && S.inv.cusser > 0 && !S.f.c6_hedgeCusser ? `He's beside Kettle, with his hand out, open. "Mine," he says. "Falari. Give it back."
@@ -1624,7 +1624,7 @@ Good paper. A few lines. A neat hand, very neat: small and square and without a 
 
 No signature. It doesn't need one.
 
-${S.f.marked ? `You've never seen the hand. You know it anyway: it's the hand your name went into at the Pale, in a ledger you were never shown.` : `You've never seen the hand before. You'd know it again anywhere.`}
+${(S.f.markedPale || (S.f.marked && S.f.c3_key !== 'refuse')) ? `You've never seen the hand. You know it anyway: it's the hand your name went into at the Pale, in a ledger you were never shown.` : `You've never seen the hand before. You'd know it again anywhere.`}
 
 ${SQUAD().includes('ellis') ? `Ellis reads it over your shoulder, which she has never done. "That's the house hand," she says. "Every order out of the green door is written like that. They train you to it, the ones who'll be writing." She says it to the paper, not to you.` : ''}
 
@@ -1770,7 +1770,7 @@ Everybody's standing. Some of them only just. Nobody in the Fourth will ever be 
 
 Then he sits back on his heels in the wet and takes out the oilcloth, and the charcoal, and he writes. You watch him do it. It takes a long time. His hand doesn't shake. That's the worst part: after twenty-two years, his hand knows exactly how.
 
-"${fell.map((id, i) => `${C6H.num(first + i)}. ${NAME(id)}. The Fourth`).join('. ')}." He says it aloud as he writes it${S.f.c2_key === 'light' ? `, the way he said Tattersail's on the plain` : ''}. "I said I'd die before I put one of ours on here." He folds the oilcloth along its old creases. "I was slow. I've always been slow. It's why I'm still alive to be."` : SQUAD().includes('brisk') ? `Somebody has to write it. Ohl can't.
+"${fell.map((id, i) => `${C6H.num(first + i)}. ${NAME(id)}. The Fourth`).join('. ')}." He says it aloud as he writes it${S.f.c2_key === 'light' && S.f.c2_ashesOhl ? `, the way he said Tattersail's on the plain` : ''}. "I said I'd die before I put one of ours on here." He folds the oilcloth along its old creases. "I was slow. I've always been slow. It's why I'm still alive to be."` : SQUAD().includes('brisk') ? `Somebody has to write it. Ohl can't.
 
 Brisk takes out the ration ledger. She opens it on her knee in the wet, to the last page, under *Eighteen days hardtack*, and she writes, in her square infantry hand, ${fell.length === 1 ? 'the name' : `the names, Ohl's first`}. She doesn't cross anybody off the count. She draws a line under the count instead, the whole width of the page.
 

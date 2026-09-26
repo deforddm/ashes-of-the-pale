@@ -7,7 +7,7 @@ const CH2 = {
   title:'The Rhivi Plain', number:'Two',
   intro:{loc:'The Rhivi Plain', sub:'Genabackis · three days south-east of Pale', cap:'Grass to every horizon, and one wagon on it, and the sky empty of quorls.',
     paras:[
-`The Black Moranth went south on the second morning, eight Bridgeburners riding things that should not fly, bound for the north shore of Lake Azur and a boat across it by night. Hedge was still complaining about the boat when the quorl lifted him. The sky over the Pale was full of wings for the time it takes to say a name, and then it was not. Whiskeyjack did not wave. Nobody expected him to. Kettle watched until there was nothing to watch, and then she counted the munitions.`,
+`The Black Moranth went south the morning the wagon left, before it had rolled a mile, eight Bridgeburners riding things that should not fly, bound for the north shore of Lake Azur and a boat across it by night. Hedge was still complaining about the boat when the quorl lifted him. The sky over the Pale was full of wings for the time it takes to say a name, and then it was not. Whiskeyjack did not wave. Nobody expected him to. Kettle watched until there was nothing to watch, and then she counted the munitions.`,
 `You are Sergeant {sgt}, Fourth Squad, Seventh Company marines, and you are the baggage. One wagon, one mule, eighteen days of hardtack, the Bridgeburners' spare kit under an oilcloth, and a Rhivi guide who has said eleven words in three days and rationed them. The grass is chest-high on Brisk and taller than Tuft. It does not end. Sethand says it ends at the Gadrobi Hills, and says it the way you'd tell a child the sea has a far side.`,
 `Day four. Somewhere ahead, a city with blue fire in its streets. Somewhere behind, a camp that has stopped burning. Somewhere on the same road, though nobody has said so, a captain who should have died twice.`],
     go:'Ride', node:'c2_start'},
@@ -80,7 +80,7 @@ const CH2 = {
             "#,,...,....,####",
             "################" ],
       walk:'.,', triggers:{W:'c2_wagon_last', '>':'c2_close'}, start:{x:2,y:6},
-      quest:()=> 'Darujhistan is a blue smudge to the south-east. The hills are in the way.',
+      quest:()=> 'Darujhistan is a blue smudge to the south-west. The hills are in the way.',
       npcs:[ {id:'sethand', name:'Sethand', kind:'rhivi', x:10, y:5, node:()=>S.f.c2_hillsSeth ? 'c2_hills_seth_again' : 'c2_hills_dust', fresh:()=>!S.f.c2_hillsSeth} ] } ],
 
   battles:{
@@ -133,7 +133,7 @@ ${S.loy.kettle >= 2 ? `Then, lower: "It's cussers. A full crate. Twelve, and the
     c2_start_tuft:()=>({sp:'Tuft', fx:()=>{S.f.c2_startTuft=1;}, txt:
 `She's in the tall grass where you can see her head and not her hands. "There's no lamp out here," she says. "I noticed that the first night."
 
-${S.f.c1_plant ? `"You talked to Tattersail. Outside the tent. I know you did; she does a thing with her shawl." A pause. "Whatever she said, Sergeant, it was true. That doesn't mean it was hers to say."` : `"It's fine. Kettle snores. It's like a lamp, if you close your eyes."`}
+"It's fine. Kettle snores. It's like a lamp, if you close your eyes."${S.f.c1_plant ? ` Then, not looking at you: "You talked to Tattersail. Outside the tent. I know you did; she does a thing with her shawl." A pause. "Whatever she said, Sergeant, it was true. That doesn't mean it was hers to say."` : ''}
 
 ${S.loy.tuft >= 2 ? `"The quorls went south-east. Not south. I watched them till they were gone. Somebody's going somewhere first."` : `She goes back into the grass. It closes behind her like water.`}`,
       ch:[{t:'"Kettle. Count."', req:()=>!S.f.c2_startKettle, go:'c2_start_kettle'},
@@ -157,7 +157,7 @@ ${S.loy.tuft >= 2 ? `"The quorls went south-east. Not south. I watched them till
           {t:'"The dust, north-west."', req:()=>!S.f.c2_sethDust, go:'c2_seth_dust'},
           {t:'"Nothing. Lead on."', go:()=>startExplore()}]}),
     c2_seth_road:()=>({sp:'Sethand', fx:()=>{S.f.c2_sethRoad=1;}, txt:
-`"South. Then east, at the place where the grass changes. Then south again to the hills, and then it is not a road, it is a city, and I will not go into it."
+`"South and east, until the grass changes. Then the hills, and the road goes west over them, and then it is not a road, it is a city, and I will not go into it."
 
 He looks along the line of the wagon-ruts, which are not a road either, only the memory of other wagons.
 
@@ -502,7 +502,7 @@ At the edge of the flattened grass he stops, once, and looks back at the place w
 
 Then he's a shape in the grass, and then he's the grass.
 
-There's a cloak on the wagon's tailboard that wasn't there before. Grey going brown, the shoulder cut for a bow. ${S.f.c2_ellisJoined ? `Ellis looks at it for a long moment before she touches it. "His spare," she says. "He never wears it. He says it's for when he's cold, and he's never cold. That's a Claw joke. There aren't many." She puts it on.` : `Nobody claims it. Brisk folds it and puts it under the oilcloth with the rest of what the Bridgeburners left.`}
+There's a cloak on the wagon's tailboard that wasn't there before. Grey going brown, the shoulder cut for a bow. ${S.f.c2_ellisJoined ? `Ellis looks at it for a long moment before she touches it. "His spare," she says. "He never wears it. He says it's for when he's cold, and he's never cold. That's a Claw joke. There aren't many." She puts it on.` : `${(w => w ? `Nobody claims it for a while. Then ${w === 'sgt' ? 'you put it on' : `${NAME(w)} puts it on`}, because the nights on the plain are cold and it's a good cloak, and Toc would call leaving it folded a waste.` : `Nobody claims it. Brisk folds it and puts it under the oilcloth with the rest of what the Bridgeburners left.`)(['tuft','sgt'].find(x => S.gear[x] && S.gear[x].armour === 'toccloak'))}`}
 
 Sethand, from his horse, to nobody: "The ridge, before full dark. I said not to stop long."`,
       ch:[{t:'East. The ridge.', go:()=>startExplore()}]}),
@@ -538,7 +538,7 @@ He turns a stick in the fire.
       ch:[{t:'"The dust-line. It\'s closer."', go:'c2_seth_night_dust'},
           {t:'"Why are you at our fire, Sethand?"', go:'c2_seth_night_why'},
           {t:'Say nothing. Let him have the fire.', go:'c2_seth_night_quiet'}]}),
-    c2_seth_night_dust:()=>({sp:'Sethand', txt:
+    c2_seth_night_dust:()=>({sp:'Sethand', fx:()=>{S.f.c2_sethDustNight=1;}, txt:
 `"It is not closer. It is *ahead*. It has been ahead since noon. Whatever the thing that walks like the barrows is, it walks faster than a wagon, and it is going to the hills, and it will be in them before you are, and it will be doing something there that the Rhivi will feel in our teeth for a year."
 
 He spits into the fire, carefully, so that it doesn't hiss.
@@ -616,7 +616,7 @@ Ohl is sitting on the wagon's tailboard with the oilcloth open on his knee and t
 
 "Two hundred and eleven," he says, when you're close enough. "I've read it twice tonight. I keep getting to the end and finding no one new, and it should be a relief, Sergeant, and it isn't. It feels like waiting."
 
-${SQUAD().includes('ellis') ? `"Six." He says it to the list. "I've had five in the Fourth for two years. I've never once had six. I keep looking at the tents and counting and it comes out wrong." A pause. "It comes out *right*. That's what's wrong."` : S.f.c2_ellisRefused ? `He closes the oilcloth. He does it without looking at you, which in Ohl is as close to a door slammed as he comes. "I'd have liked to look at her hand," he says. "That's all. It's the healer talking. Ignore him. Everybody does."` : `He closes the oilcloth. "Go and sleep, Sergeant. Or go and pretend. Tattersail told you that once. It was good advice from a woman who took none of it."`}`}`,
+${SQUAD().includes('ellis') ? `"Six." He says it to the list. "I've had five in the Fourth for a year and more. I've never once had six. I keep looking at the tents and counting and it comes out wrong." A pause. "It comes out *right*. That's what's wrong."` : S.f.c2_ellisRefused ? `He closes the oilcloth. He does it without looking at you, which in Ohl is as close to a door slammed as he comes. "I'd have liked to look at her hand," he says. "That's all. It's the healer talking. Ignore him. Everybody does."` : `He closes the oilcloth. "Go and sleep, Sergeant. Or go and pretend. Tattersail told you that once. It was good advice from a woman who took none of it."`}`}`,
       fx:()=>{S.f.c2_tentSeen=1;},
       ch:[{t:'Leave'}]}),
     c2_wagon_night:()=>({sp:'The wagon', txt:
@@ -724,7 +724,7 @@ She puts a hand flat on the glass. It should burn her. It doesn't.
 
 "The big one's Bellurdan. Thelomen. He was on the staff. He carried Nightchill's body south from Pale because he was told to, and he came after her because he was told to, and he didn't want to, and he did it anyway, and she burned him and herself rather than let him." Her voice hasn't risen at all. "Somebody told him to, Sergeant. Somebody sent a man who didn't want to go. I was on that staff. I know what that sounds like when it's said in a tent."
 
-${S.f.knowTruth && S.ending === 'claw' ? `"*Moved before the Spawn attacked.* We read it, and then we gave it to the Claw, and she never saw it. She died without it." A breath. "He'll have read it the morning after, and put it in a drawer."` : S.f.knowTruth ? `"*Moved before the Spawn attacked.* You read it. Varrow wrote it. She died carrying it, and now there's nobody left who read that page who isn't in this squad."` : S.f.c1_plant ? `"She talked to you about me, outside the tent. She wouldn't tell me what she said. I'd give a lot to know now. I'd give the Deck."` : `"She sewed a badge on my collar once. I don't wear it. I'm going to start."`}
+${S.f.knowTruth && S.ending === 'claw' ? `"*Moved before the Spawn attacked.* We read it, and then we gave it to the Claw, and she never saw it. She died without it." A breath. "He'll have read it the morning after, and put it in a drawer."` : S.f.knowTruth && S.ending === 'burned' ? `"*Moved before the Spawn attacked.* You read it. Varrow wrote it. She burned it without reading it, and now there's nobody left who read that page who isn't in this squad."` : S.f.knowTruth ? `"*Moved before the Spawn attacked.* You read it. Varrow wrote it. She died carrying it, and now there's nobody left who read that page who isn't in this squad."` : S.f.c1_plant ? `"She talked to you about me, outside the tent. She wouldn't tell me what she said. I'd give a lot to know now. I'd give the Deck."` : ''} "She sewed a badge on my collar once. I don't wear it. I'm going to start."
 
 She takes her hand off the glass. Where it was, there's a print, and the print stays.`,
       ch:[{t:'"Whoever sent him, Tuft, he\'s not here. We are."', fx:()=>{loy('tuft',1); S.f.c2_tuftSteadied=1;}, go:'c2_ashes_more'},
@@ -746,7 +746,7 @@ ${SQUAD().includes('ellis') ? `Ellis, at your elbow, in a voice with no weight i
 
 "*Tattersail. Cadre. Two hundred and twelve.* That is the line, Sergeant, and there is a thing wrong with it, and I will tell you what it is so you can stop looking at me like that."
 
-"She is the first name on that list I could not have saved. Every other one, I was there. I had my hands in them. Her I was two hours away and asleep." He folds the oilcloth along its old creases. "I have decided that counts. I have decided the list is not a list of my failures. It is a list of the ones I would have tried for. That changes it. I am fifty-eight and I have changed it tonight, on the back of a wagon, and I would like you to remember that I did, because I will not."
+"She is the first name on that list I could not have saved. Every other one, I was there. I had my hands in them. Her I was two hours away, and too late." He folds the oilcloth along its old creases. "I have decided that counts. I have decided the list is not a list of my failures. It is a list of the ones I would have tried for. That changes it. I am fifty-eight and I have changed it tonight, on the back of a wagon, and I would like you to remember that I did, because I will not."
 
 Then, because he is Ohl: "Drink something. Not the tea. The other flask."`,
       ch:[{t:'Go to Tuft.', req:()=>!S.f.c2_ashesTuft, go:'c2_ashes_tuft'},
@@ -772,9 +772,9 @@ Tuft doesn't say anything. Tuft sits down where she was standing, on the ground,
 
 Ohl closes the oilcloth. He doesn't open it again. "Somebody is dying," he says, to the fire, "and we are counting rations." It isn't an argument. It's a line in a ledger; he's putting it where he'll find it.
 
-Nobody sleeps. The light burns in the west for four hours and doesn't flicker, and then it goes out all at once, the way a lamp does when a hand closes on it, and the dark it leaves is worse.
+Nobody sleeps. The light burns in the west for two hours and doesn't flicker, and then it goes out all at once, the way a lamp does when a hand closes on it, and the dark it leaves is worse.
 
-${SQUAD().includes('ellis') ? `Ellis comes in from the stakes an hour before dawn. "Sergeant. Riders. Three. On foot, walking, from the west, and they're not Rhivi, and I couldn't see them until they wanted me to."` : `Sethand, an hour before dawn, on his feet with his knife out: "Malazan. Get up. Something is coming across the grass, and it is not walking like anything I know."`}`,
+${SQUAD().includes('ellis') ? `Ellis comes in from the stakes an hour before dawn. "Sergeant. Three. On foot, walking, from the west, and they're not Rhivi, and I couldn't see them until they wanted me to."` : `Sethand, an hour before dawn, on his feet with his knife out: "Malazan. Get up. Something is coming across the grass, and it is not walking like anything I know."`}`,
       ch:[{t:'"Stand to."', go:'c2_andii'}]}),
     c2_andii:()=>({sp:'Tiste Andii', scene:'plain_night', fx:()=>{S.f.c2_andii=1; S.f.c2_lightOut=1;}, txt:
 `Three of them. Tall, taller than Brisk, and the tallness is wrong for people; it's the tallness of something that had a long time to grow. Silver hair, long and unbound, and skin the colour of the dark between the stars, and eyes that have the light of the dead fire in them, still, hours after it went out.
@@ -867,7 +867,7 @@ Brisk has the tents struck and the wagon loaded and ${c2Mule()} hitched before t
 
 Tuft has spoken to nobody since the light. She walks in the tall grass, where you can't see her hands. Kettle walks beside her, on the outside, and doesn't say anything either, which for Kettle is a kind of shouting.`}
 
-Sethand: "East. Then south. Two days, and the grass changes, and then the hills."`,
+Sethand: "South. Two days, and the grass changes, and then the hills."`,
       ch:[{t:'East.', go:'c2_to_hills'}]}),
     /* the ridge's exit tile, and also the way on from c2_dawn (a backdrop, so "Not yet" is offered only on the map) */
     c2_to_hills:()=> S.f.c2_lightDone ? {sp:'East · the hills', txt:
@@ -881,9 +881,9 @@ Sethand: "East. Then south. Two days, and the grass changes, and then the hills.
 
     /* ---- the edge of the Gadrobi Hills ---- */
     c2_hills:()=>({sp:'The edge of the Gadrobi Hills', scene:'plain', fx:()=>{S.f.c2_hills=1;}, txt:
-`The last morning. The hills come up out of the plain to the east like something surfacing, brown and bare-shouldered, and the road, which has not been a road for six days, becomes one again: cart-ruts, a cairn, a dead fire that isn't yours.
+`The last morning. The hills come up out of the plain ahead like something surfacing, brown and bare-shouldered, and the road, which has not been a road for ${S.f.c2_late ? 'seven' : 'six'} days, becomes one again: cart-ruts, a cairn, a dead fire that isn't yours.
 
-And to the south-east, past the hills, low on the horizon, a smudge. Blue. Not sky-blue; the blue of a flame with something wrong in it. It doesn't move. It's been there since first light and Kettle saw it first and said nothing, which is how you knew it was real.
+And to the south-west, past the hills, low on the horizon, a smudge. Blue. Not sky-blue; the blue of a flame with something wrong in it. It doesn't move. It's been there since first light and Kettle saw it first and said nothing, which is how you knew it was real.
 
 "Darujhistan," Sethand says. He's stopped his horse. He won't go further. "The blue is gas, under the streets, in the lamps. The Gadrobi say the city is built on a dead god's breath and lights its lamps with it. The Gadrobi are drunk a great deal."
 
@@ -918,7 +918,7 @@ ${S.loy.ellis >= 1 ? `Then, drier: "Also, the fish is good. Lakefront. Say I sen
       ch:[{t:'"Sethand. The dust-line."', req:()=>!S.f.c2_hillsDust, go:'c2_hills_dust'},
           {t:'The road. The city.', go:()=>startExplore()}]}),
     c2_hills_seth_again:()=>({sp:'Sethand', txt:
-`"I have said it. I do not say things twice; it is a Malazan habit and it wears the words out." He looks south-east, at the blue. "Go. Your sergeant with the sword is under that city already, and he is counting days, and he does not count kindly."`,
+`"I have said it. I do not say things twice; it is a Malazan habit and it wears the words out." He looks south-west, at the blue. "Go. Your sergeant with the sword is under that city already, and he is counting days, and he does not count kindly."`,
       ch:[{t:'Leave him.'}]}),
     c2_wagon_last:()=>({sp:'The wagon', txt:
 `Brisk has the ledger open and is writing in it, in daylight, which she does when she wants something on paper before somebody argues.
@@ -934,7 +934,7 @@ ${S.f.c2_key === 'light' && S.loy.brisk <= -1 ? `She doesn't look at you when sh
     c2_close:()=>({sp:'The road into the hills', txt:
 `The ruts go up between two brown shoulders of hill and out of sight. Somewhere past them, a lake, and a city on it, and eight Bridgeburners under its streets who have been waiting for a wagon since the quorls set them down.
 
-Sethand has turned his horse west. He has not said goodbye. He said, three days ago, that he would not go into the city, and a Rhivi does not say a thing twice.
+Sethand has turned his horse west. He has not said goodbye. ${S.f.c2_sethRoad ? `He said, days ago, that he would not go into the city, and a Rhivi does not say a thing twice.` : `He will not go into the city. He has not said so. He doesn't need to.`}
 
 ${S.f.c2_key === 'light' ? `Tuft walks beside the wagon, where you can see her. She has the badge on her collar. The cadre badge. She has not said a word about it and nobody has asked, and Ohl looked at it once and then looked at you, and nodded, as if something on his list had been paid.` :
   `Tuft walks in the tall grass, or what's left of it, where you can't see her hands. She has spoken to Kettle. She has not spoken to you. The Deck is in her sleeve and she has not touched it since the ridge, and you think that she is waiting for something, and you think that it isn't the city.`}

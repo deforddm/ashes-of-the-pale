@@ -9,22 +9,22 @@ const CH3 = {
     go:'Into the city', node:'c3_start'},
 
   areas:[
-    /* 16 columns x 12 rows.  . cobbles  , wet cobbles  # wall  L gas lamp  W wagon  B crates  x stake barrier  > exit east (the Worry Gate proper) */
-    { id:'worry_gate', title:'Darujhistan · the Worry Gate', sub:'Dusk', hint:'Tap ground to move · tap a figure to talk · the gate is east', decor:'city_dusk',
+    /* 16 columns x 12 rows.  . cobbles  , wet cobbles  # wall  L gas lamp  W wagon  B crates  x stake barrier  < exit west (the Worry Gate proper: the road runs along the wall from the hills) */
+    { id:'worry_gate', title:'Darujhistan · the Worry Gate', sub:'Dusk', hint:'Tap ground to move · tap a figure to talk · the gate is west', decor:'city_dusk',
       map:[ "################",
-            "#L....,....L...#",
-            "#.....,........#",
-            "###..BB..###..##",
-            "#......,.......#",
-            "#............L.#",
-            "#........,.....>",
-            "#.W.....,......#",
-            "##..L...xx..B..#",
-            "#.......,,.....#",
-            "#L.....,.....L.#",
+            "#...L....,....L#",
+            "#........,.....#",
+            "##..###..BB..###",
+            "#.......,......#",
+            "#.L............#",
+            "<.....,........#",
+            "#......,.....W.#",
+            "#..B..xx...L..##",
+            "#.....,,.......#",
+            "#.L.....,.....L#",
             "################" ],
-      walk:'.,DH><', triggers:{W:'c3_wagon', '>':'c3_to_cross'}, start:{x:3,y:5},
-      npcs:[ {id:'pallick', name:'Pallick', kind:'guard', x:13, y:7, node:()=>S.f.c3_gate?'c3_pallick_again':'c3_pallick', fresh:()=>!S.f.c3_gate} ] },
+      walk:'.,DH><', triggers:{W:'c3_wagon', '<':'c3_to_cross'}, start:{x:12,y:5},
+      npcs:[ {id:'pallick', name:'Pallick', kind:'guard', x:2, y:7, node:()=>S.f.c3_gate?'c3_pallick_again':'c3_pallick', fresh:()=>!S.f.c3_gate} ] },
 
     /* . cobbles  , gutter  # wall  H the dig  x stakes  W the crew's wagon  F brazier  B barrels  L lamp  > the alley up into Daru (the Phoenix at the top of it) */
     { id:'gadrobi_cross', title:'Darujhistan · the Gadrobi crossroads', sub:'Night', hint:'Tap ground to move · tap a figure to talk · the hole is in the middle', decor:'city_night',
@@ -66,7 +66,9 @@ const CH3 = {
             "#####..,...#####",
             "#####L....L#####",
             "################" ],
-      walk:'.,D<', triggers:{D:'c3_inn_door', '<':'c3_lane_back'}, start:{x:1,y:5}, npcs:[] },
+      walk:'.,D<', triggers:{D:'c3_inn_door', '<':'c3_lane_back'}, start:{x:1,y:5},
+      npcs:[ {id:'irilta', name:'A big woman in an apron', kind:'irilta', x:8, y:2, still:true, node:()=>'c3_lane_irilta', fresh:()=>!S.f.c3_laneIrilta},
+             {id:'laneboy', name:'A boy on a barrel', kind:'cutpurse', x:11, y:4, node:()=>'c3_lane_boy', show:()=>!S.f.c3_laneBoy, fresh:()=>true} ] },
 
     /* . cobbles  , gutter  # wall  L lamp  D the dye-shop door  < alley back west */
     { id:'daru_street', title:'Darujhistan · the Daru District', sub:'Night · the second night', hint:'Tap ground to move · tap a figure to talk · the dye-shop is north', decor:'city_night',
@@ -123,9 +125,9 @@ ${S.f.c2_late ? `Brisk has not said *a day late* since the hills. She has said i
 Tuft is looking up. She is the only person on the road who is. Out over the lake, black against the last of the light, the mountain hangs as if it had always hung there, and she looks at it the way you'd look at a man across a room who once hit you.`,
       ch:[{t:'Walk the wagon up to the gate.', go:()=>startExplore()},
           {t:'"Kettle. Count."', go:'c3_start_kettle'},
-          {t:'"Ellis. You\'ve been here. What am I looking at?"', req:()=>SQUAD().includes('ellis'), go:'c3_start_ellis'}]}),
+          {t: S.f.c2_hillsEllis ? '"Ellis. You\'ve been here. What am I looking at?"' : '"Ellis. What am I looking at?"', req:()=>SQUAD().includes('ellis'), go:'c3_start_ellis'}]}),
     c3_start_kettle:()=>({sp:'Kettle', txt:
-`"${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}." She doesn't look at the ledger. "And a crate. Bridgeburner property. Sealed. ${tripDays(1)} days on a wagon, Sergeant, over a plain and round a barrow and past a mage burning to death, and I have not opened it, and when we find Whiskeyjack I want you to tell him so in front of me, so I can watch his face."
+`"${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}." ${S.f.decoy && !S.f.c1_claw ? `She doesn't have a ledger to look at any more; the Claw has it.` : `She doesn't look at the ledger.`} "And a crate. Bridgeburner property. Sealed. ${tripDays(1)} days on a wagon, Sergeant, over a plain and round a barrow and past a mage burning to death, and I have not opened it, and when we find Whiskeyjack I want you to tell him so in front of me, so I can watch his face."
 
 She sniffs. Frowns. Sniffs again.
 
@@ -142,7 +144,7 @@ Ohl, from the driver's board: "Do not."
 
 She points, without meaning to, the way you'd point at a scar on your own hand. A street going up between two tall houses, narrow, a line of blue lamps up it like buttons.
 
-"That one goes up to a dye-shop. Indigo and madder, and a courtyard where they dry the cloth, and a room over it with a good lock." Her hand comes down. "The green door's the house, Sergeant. That street's where the house sends you when it doesn't want you at the house."
+"That one goes up to a dye-shop. Indigo and madder, and a courtyard where they dry the cloth, and a room over it with a good lock." Her hand comes down. "${S.f.c2_hillsEllis ? `The green door's the house, Sergeant.` : `There's a green door in this city, Sergeant. The Claw calls it the house.`} That street's where the house sends you when it doesn't want you at the house."
 
 Then she stops, and you watch her hear herself and wish she hadn't.
 
@@ -782,6 +784,28 @@ The first door on the corner has a painted bird over it, a phoenix or a chicken,
 
 ${SQUAD().includes('kettle') ? `Kettle has her nose up like a dog at a kitchen. "Wine," she reports. "Bad wine. And pastry. And somebody's *very* good boots."` : `Brisk looks at the door, and at the street, and at the roofs opposite, in that order, and says nothing, which from Brisk is approval.`}`,
       ch:[{t:'The lane.', go:()=>startExplore()}]}),
+    c3_lane_irilta:()=>({sp:'A big woman in an apron', fx:()=>{S.f.c3_laneIrilta=1;}, txt: S.f.c3_inn ?
+`She's back on the step with the door propped behind her and the cudgel leaning on the frame. "Still sitting down?" she says, and looks you over, and seems to decide you are. "Good. Kruppe likes you. I haven't made up my mind."` :
+`She's taking the air on the step with the door propped open behind her: a big woman in an apron, sleeves rolled to the elbow, and a cudgel leaning on the frame within reach, the way another woman might keep an umbrella by the door. She looks the squad over the way a quartermaster looks over a delivery she didn't order.
+
+"Road crew," she says. "From the hole." It isn't a question; the whole street knows about the hole. "You pay before you drink. You drink sitting down. You start anything, I finish it." She jerks her head at the door. "Kruppe's at his table. He's always at his table. He said you'd come." A pause. "He says that about everybody. It's worse when he's right."
+
+${SQUAD().includes('brisk') ? `Brisk looks at the cudgel, and at the arm that goes with it, and nods to her the way she'd nod to another sergeant.` : `Nobody argues with the cudgel.`}`,
+      ch:[{t:'"We\'ll sit down."'}]}),
+    c3_lane_boy:()=>({sp:'A boy on a barrel', fx:()=>{S.f.c3_laneBoy=1;}, txt:
+`A boy of ten or so is sitting on a barrel against the Phoenix's wall with his heels drumming on the staves, watching the squad the way a cat watches a bird it has decided is too big. His eyes go to ${SQUAD().includes('kettle') ? `Kettle's satchel` : `your belt`} and stay there.
+
+${SQUAD().includes('kettle') ? `Kettle looks back at him. "No," she says. The boy considers this, and nods, and looks at Brisk's purse instead. Brisk looks at him. He looks at the sky.` : `Brisk moves her purse round to the front of her belt without looking at him. He looks at the sky.`}
+
+"You're the hole," he says. "Everybody knows about the hole. The big sad one's in there. The fat one's in there; he's *never* sad. Crokus is in there with his coin." He hops down. "I'm not in there. I'm not allowed in there. I'm allowed *out here*."
+
+And he's gone up the street, past the lamps, before you've decided whether you've been robbed.`,
+      ch:[{t:'Count the purse.', go:'c3_lane_purse'}]}),
+    c3_lane_purse:()=>({sp:'The purse', txt:
+`It's all there. Every coin. You count it twice.
+
+It's the not knowing that stays with you, all the way to the door.`,
+      ch:[{t:'The lane.'}]}),
     c3_lane_back:()=>({sp:'The alley', txt:
 `Back down the alley to the Gadrobi crossing, where the brazier is.`,
       ch:[{t:'Down to the crossing.', go:()=>startExplore('gadrobi_cross')},

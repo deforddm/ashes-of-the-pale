@@ -86,7 +86,7 @@ You carry ${S.silver} silver.`,
 
 Nobody has seen you yet.`,
     ch:[
-      {t:`"Moreau! Garrow says the Fist is still counting heads."`, req:()=>S.f.knowDeserters, check:['guile',10], go:'desert_flee', fail:'desert_fight'},
+      {t:`"Moreau! Garrow says the Fist is still counting heads."`, req:()=>S.f.knowDeserters, fx:()=>{S.f.garrowWord=1;}, check:['guile',10], go:'desert_flee', fail:'desert_fight'},
       {t:'Talk them down.', check:['guile',14], go:'desert_half', fail:'desert_fight'},
       {t:'Hit them before they know you\'re here.', go:()=>startBattle('deserters',{surprise:'p'})},
       {t:'Kettle rolls a sharper in first.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0,
@@ -142,7 +142,7 @@ Behind you, Tuft stops breathing. Then she starts again.`,
 `Five marines. One Claw. A narrow place full of beams that might come down. He does the arithmetic out loud: "Another time, then."
 
 When he's gone, Brisk lowers her shield about an inch.`, ch:[{t:'Report to Tattersail', go:'final'}]}),
-  claw_marked:()=>({sp:'A grey cloak', fx:()=>S.f.marked=1, txt:
+  claw_marked:()=>({sp:'A grey cloak', fx:()=>{ S.f.marked=1; S.f.markedPale=1; }, txt:
 `"Of course it is." He steps aside with a little bow. You have the distinct feeling of having been entered into a ledger, in a very neat hand.`, ch:[{t:'Report to Tattersail', go:'final'}]}),
   claw_decoy:()=>({sp:'A grey cloak', fx:()=>{S.f.decoy=1; loy('kettle',1);}, txt:
 `Kettle hands over a satchel, *a* satchel anyway, with the sullen reluctance of a woman surrendering her life's work. He walks off with it under his arm.

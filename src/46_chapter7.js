@@ -1443,7 +1443,7 @@ He's been watching you come down the hill for as long as you've been coming. His
 
 "Malazan." The voice the Untan docks use for *tide*. "You are on a hill. We are on a road. It has always been this way between us."
 
-${S.f.c2_outFought ? `He doesn't move his horse to let you nearer. "There is Rhivi blood on the grass by the fourth camp," he says. "I have not forgotten it because the morning is fine. I am telling you so you do not think I have."` : S.f.c2_key === 'light' ? `"The Mhybe said you might live," he says. "You have. She will be pleased, and not say so."` : `"You kept your road on the plain," he says, "and your road in the hills. You are good at roads, for a people who fly."`}
+${S.f.c2_outFought ? `He doesn't move his horse to let you nearer. "There is Rhivi blood on the grass west of the fourth camp," he says. "I have not forgotten it because the morning is fine. I am telling you so you do not think I have."` : S.f.c2_key === 'light' ? `"The Mhybe said you might live," he says. "You have. She will be pleased, and not say so."` : `"You kept your road on the plain," he says, "and your road in the hills. You are good at roads, for a people who fly."`}
 
 ${S.f.c2_outSeth ? `"You owe me a thing you will not be able to pay. I told you so on the plain. I have decided what it is."
 
@@ -1838,5 +1838,5 @@ C7H.coda = key => {
     disband:`There is no Fourth now. There ${alive === 1 ? 'is one sergeant who was it' : `are ${C7H.num(alive)} people who were it, on ${C7H.num(alive)} roads`}, and ${alive === 1 ? 'the sergeant still counts' : 'every one of them still counts'}.`}[key];
   return [
 `In Darujhistan they light the lamps at dusk, street by street, blue, as if something under the city were breathing out. In a garden on the Estate hill a small wrong house keeps its door shut and its guests in. At the bottom of the lake a coin lies in the mud on neither face. Somewhere west, over water, a mountain drifts with a lord in it who was interested once, and is no longer. The gods don't say what they made of any of it. Nobody asks them. Nobody ever asks the gods anything, in the end, but marines, and marines don't wait for the answer.`,
-`Three days after the Pale fell, a sergeant came into a tent on the cadre row with ${S.ending === 'claw' ? 'empty hands' : 'a satchel'} and all five, and a mage looked up from her cards and said it was a nice touch. East on the Rhivi road, a child in good red wool is going to grow up too fast and remember a great many things. One of them, perhaps, will be that. ${last} Somebody noticed. It was enough.`];
+`Three days after the Pale fell, a sergeant came into a tent on the cadre row with ${S.ending === 'claw' ? `empty hands and all five, and a mage heard the sergeant out without looking up from her cards` : `a satchel and all five, and a mage looked up from her cards and said it was a nice touch`}. East on the Rhivi road, a child in good red wool is going to grow up too fast and remember a great many things. One of them, perhaps, will be that. ${last} Somebody noticed. It was enough.`];
 };

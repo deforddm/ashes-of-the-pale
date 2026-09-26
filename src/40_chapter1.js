@@ -403,7 +403,7 @@ Then: "Sergeant." And the conversation, such as it was, is over, and something i
 
     /* ---- the grey cloak ---- */
     c1_claw:()=>({sp:'A grey cloak', fx:()=>{S.f.c1_claw=1;}, txt:
-`He is standing between two tents where there isn't a fire, which means you saw him because he wanted you to. His boots are still clean. It's been raining ash for three days.
+`He is standing between two tents where there isn't a fire, which means you saw him because he wanted you to. His boots are still clean. It's been raining ash since the Spawn went.
 
 "Sergeant. Fine night for a walk."
 
@@ -587,7 +587,7 @@ Tuft won't look at you. She's looking at the place between the tents where the g
 ${S.f.c1_key === 'line' ? `"You held the row. For the cadre. That's going to matter more than you think and less than you'd like. The Host doesn't love the cadre, Sergeant, and the Claw don't love anybody who does." ${S.f.wjRegard > 0 ? `"But I do. Noted."` : S.f.wjRegard < 0 ? `"It's a start."` : `"Noted."`}` :
   `"You held the tent. For the grey cloaks." He says it without weight, and that's the weight. "I won't ask what they took. I'll know by morning anyway. But you'll want to remember that people who help the Claw once get asked twice, and the second time it isn't a request." ${S.f.wjRegard > 0 ? `"You came out of a hole with all five. Keep it five. That's the whole of my advice."` : S.f.wjRegard < 0 ? `"Fourth Squad." Nothing else.` : `"Go and sleep."`}`}
 
-"Wagon leaves at dawn. Baggage, Rhivi guide, the Fourth. South, then east, then Darujhistan. Eleven days. We'll be there a week before you. Try not to be interesting on the way."`,
+"Wagon leaves at dawn. Baggage, Rhivi guide, the Fourth. South-east across the plain, over the Gadrobi Hills, then Darujhistan. Eleven days. We'll be there a week before you. Try not to be interesting on the way."`,
       ch:[{t:'"Sir."', go:'c1_close'}]}),
     c1_close:()=>({sp:'The Fourth\'s fire', scene:'camp_night', fx:()=>{S.f.c1_done=1;}, txt:
 `Back at your own fire, which is smaller and still there. Brisk is standing over it. Kettle is counting. Ohl has the oilcloth open on his knee and has not added a name, and closes it, and you watch him decide not to say so.
