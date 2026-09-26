@@ -36,7 +36,7 @@ const BOT = () => {
       }
       const dice = $('#dice'); if (dice) { dice.click(); return 'dice'; }
       if (!$('#cardfx').hidden) { const b = $('#cardfx').querySelector('button:not([disabled])'); if (b) { b.click(); return 'cardfx-btn'; } $('#cardfx').click(); return 'cardfx'; }
-      if (view === 'title') { const b = $('#bNew'); if (b) { b.click(); return 'new'; } }
+      if (view === 'title') { const b = $('#bNew') || $('#bNewSgt'); if (b) { b.click(); return 'new'; } }
       if (!sh.hidden) {
         const retry = $('#bRetry');
         if (retry) { const b = this.cur; if (b) { b.losses++; this.ev(`lost battle ${b.id} (attempt ${b.losses})`); } retry.click(); return 'retry'; }
