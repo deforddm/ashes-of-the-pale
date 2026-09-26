@@ -70,7 +70,7 @@ For the writers of Chapter 6 (The Fete) and Chapter 7 (Outlaws). The sources are
   - Current count is `S.inv.cusser`, which may be 0 because cussers can also be thrown in battle.
 - **Arc in Ch1–5: permission to throw.**
   - Ch1 `[c1_accBluffed]`: she walks out with the cusser, "This is Maud/Gerrun," "Say hello." (kettle +1, brisk −1; "Never. Again.")
-  - Ch2: she names the mule **Pell** (`c2_muleNamed`, kettle +1): "It does the same face." She walks eleven days beside the Bridgeburners' sealed crate without opening it.
+  - Ch2: she names the mule **Pell** (`c2_wagon`, kettle +1): "It does the same face." She walks eleven days beside the Bridgeburners' sealed crate without opening it.
   - Ch3: she opens the crate at last. `c3_kettleSeal`: Whiskeyjack says "Noted… Open it." Then: "Four," she says at last, to Whiskeyjack. "Sir. I *told* them."
   - Ch4: she refuses to throw on a roof (`c4_kettleNo`): "I throw that up here and I don't take three knives off a roof. I take the Gadrobi District off the map… I'm telling you why so you don't think I've gone soft."
   - Ch5: Whiskeyjack says yes ("Throw it at anything else you like"). `[c5_cusserUsed]` She throws it at the barrow wards: "That's awful," she says. "Isn't it. That's an awful thing to feel." / "It was *beautiful*, though. Wasn't it." / "I don't think it mattered, Sergeant. I think I just couldn't carry it any more." If she had a cusser and didn't throw it: "Maybe I've gone Fiddler."
@@ -84,13 +84,13 @@ For the writers of Chapter 6 (The Fete) and Chapter 7 (Outlaws). The sources are
   - `final_told` tuft +1, `final_burn` tuft −1, `claw_took` tuft −2.
 - **Ch1.**
   - Quick Ben (`c1_qbTuft`, a Wits 12 check): "How's the High Mage's staff these days?"
-  - **Tattersail's plant** (`c1_tuft_plant`, always, so `S.f.c1_plant` is effectively always 1): "I sewed one like it onto a girl's collar sixteen months ago, on the High Mage's staff… He doesn't let people leave, Sergeant. He let her. I'd like to know what he thinks he still has of hers." The paragraph after that varies by `knowTruth` / `partial` / neither. Three possible replies:
+  - **Tattersail's plant** (`c1_tuft_plant`, always, so `S.f.c1_plant` is effectively always 1): "I sewed one like it onto a girl's collar eighteen months ago, on the High Mage's staff… He doesn't let people leave, Sergeant. He let her. I'd like to know what he thinks he still has of hers." The paragraph after that varies by `knowTruth` / `partial` / neither. Three possible replies:
     - `c1_plantDeny`: "don't ask her why. Ask her who taught her."
     - `c1_plantMarine` (tuft +1): "there's a card in her deck she's never drawn for herself. When she does, be standing next to her."
     - The ask reply (no flag): "it'll come looking like a favour or an order, and it'll come from someone who outranks both of us. Do nothing until you've asked her."
   - At the close. `[line]` "Sergeant." She doesn't turn round. "Thank you." `[claw]` "One of them knew my name… Not the one you'd think. The other one." That grey-cloak Claw is **still unexplained**.
 - **Ch2.**
-  - She knows the light is Tattersail before anyone says it: "That's her… that's Tattersail. That's Telas".
+  - She knows the light is Tattersail before anyone says it: "That's her… that's Tattersail. That's Thyr".
   - `[light]` At the ashes (`c2_ashesTuft`) she names Bellurdan and Nightchill: "Somebody sent a man who didn't want to go. I was on that staff." Her replies set `c2_tuftSteadied` / `c2_tuftStood` (+1 each) or "Up" (−1).
   - `[light]` She **starts wearing the cadre badge** (`c2_close`). `[road]` She walks in the tall grass and doesn't wear it.
   - Refusing her draw (`c2_noCard`, after `c1_noCard`): "That's twice."
@@ -204,7 +204,7 @@ For the writers of Chapter 6 (The Fete) and Chapter 7 (Outlaws). The sources are
 | Others | | | Pallick (gate clerk, `c3_gate`); Garrow (`knowDeserters`); Quartermaster Pell; the Gadrobi urchin (only without Ellis); the well-boy (only with Ellis); the Rhivi outrider boy (his cousin was killed by Lorn); Jeth Arrow; Corporal Hesk; Chub; the Hound "Gear". **Never on-screen:** Tayschrenn, Dujek, Rake, Ocelot, Mammot, Simtal. |
 
 **Bridgeburner regard beyond `wjRegard`.**
-- Kettle's crate discipline, which Whiskeyjack noticed: "Eleven days, and you didn't open it."
+- Kettle's crate discipline, which Whiskeyjack noticed: "Eleven days, and you didn't open it." (twelve on the late path, via tripDays())
 - Hedge's cusser.
 - Fiddler, `[workDone]`: "Good hands, your lot."
 - Quick Ben's interest in Tuft.
