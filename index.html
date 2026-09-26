@@ -273,6 +273,13 @@ h2.m{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;color
 .tmsg{margin:-8px 0 0;color:#f0c9c2;text-shadow:0 1px 4px #000}
 .tbtns .btn.warn{background:linear-gradient(180deg,#4a1d19,#2c1210);font-weight:700}
 .tmsg:empty{display:none}
+/* the title's offer to install the game as a desktop app */
+.inst{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;padding:10px 12px;border:1px solid rgba(201,151,63,.45);background:linear-gradient(180deg,rgba(40,31,22,.92),rgba(22,17,13,.92));box-shadow:0 8px 24px rgba(0,0,0,.6)}
+.inst > div:first-child{flex:1 1 240px;display:flex;flex-direction:column;gap:2px}
+.inst b{font-family:var(--label);font-weight:700;letter-spacing:.06em;color:var(--brass2)}
+.inst small{color:var(--ash);font-size:.84rem;line-height:1.35}
+.inst .row{flex:0 0 auto;gap:8px}
+.inst-ok{color:#9fe0b8}
 /* the title's roster: one row per sergeant on this device, last played first */
 .roster{display:flex;flex-direction:column;gap:8px}
 .roster .rh{font-family:var(--label);font-size:.8rem;color:var(--mute);letter-spacing:.08em;text-shadow:0 1px 4px #000}
@@ -358,7 +365,7 @@ kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px s
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.7.8';
+const VERSION = '3.7.9';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -2753,6 +2760,32 @@ function bindHud(){ const a = $('#bSquad'), b = $('#bSet'); if (a) a.onclick = (
 
 
 /* ============ title / intro ============ */
+/* installing the game as an app on a PC. Chrome and Edge offer it with beforeinstallprompt, which is held here and fired from our own
+   button (the title offers it once in a while; Settings always has it). Safari on a Mac has File > Add to Dock and no event, so it gets
+   the directions. Firefox on a PC can't install web apps, so it gets nothing. Never offered inside the installed app itself. */
+const INSTKEY = 'ashes-of-the-pale-install';
+let installEvt = null;
+const asApp = () => { try { return window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui)').matches || navigator.standalone === true; } catch(e) { return false; } };
+const macSafari = () => { const u = navigator.userAgent; return /Macintosh/.test(u) && /Version\/(1[7-9]|[2-9]\d)\b.*Safari\//.test(u) && !/Chrome|Chromium|Edg|OPR|Firefox/.test(u) && !('ontouchend' in document); };
+const installWay = () => asApp() ? '' : installEvt ? 'prompt' : macSafari() ? 'dock' : '';
+function installLater(way){ let v = ''; try { v = localStorage.getItem(INSTKEY) || ''; } catch(e) { return true; }
+  if (way === 'dock' && v === 'dock-seen') return true; // Safari's directions, once; Settings keeps them after that
+  const m = /^later:(\d+)$/.exec(v); return !!m && Date.now() - +m[1] < 14 * 864e5; } // Chrome only asks while the app isn't installed, so an old 'installed' mark means nothing here
+const installMark = v => { try { localStorage.setItem(INSTKEY, v === 'later' ? 'later:' + Date.now() : v); } catch(e) {} };
+window.addEventListener('beforeinstallprompt', e => { if (FINE()) e.preventDefault(); installEvt = e; offerInstall(); }); // a phone keeps its own install banner
+window.addEventListener('appinstalled', () => { installEvt = null; installMark('installed'); const o = $('#instOffer'); if (o) o.remove(); });
+async function runInstall(){ const ev = installEvt; if (!ev) return false; installEvt = null; try { ev.prompt(); const r = await ev.userChoice; installMark(r && r.outcome === 'accepted' ? 'installed' : 'later'); return r && r.outcome === 'accepted'; } catch(e) { return false; } }
+/* the title's offer, on a PC only, and not again for two weeks after "Not now" */
+function offerInstall(){
+  const slot = $('#instSlot'); if (!slot || view !== 'title' || !FINE()) return;
+  const way = installWay(); if (!way || installLater(way)) { slot.innerHTML = ''; return; }
+  slot.innerHTML = way === 'prompt'
+    ? `<div class="inst" id="instOffer"><div><b>Play it as a desktop app</b><small>Its own window with no browser bars, and a shortcut on your desktop and taskbar. Your sergeants come with it.</small></div><div class="row"><button class="btn primary" id="bInst">Install</button><button class="btn" id="bInstNo">Not now</button></div></div>`
+    : `<div class="inst" id="instOffer"><div><b>Play it as a Mac app</b><small>In Safari's menu bar: File › Add to Dock. The Dock app keeps its own saves, so copy your sergeant's save code first (Squad › Save) and load it there.</small></div><div class="row"><button class="btn" id="bInstNo">Got it</button></div></div>`;
+  if ($('#bInst')) $('#bInst').onclick = async () => { AUDIO.play('click'); const ok = await runInstall();
+    slot.innerHTML = ok ? `<p class="fine inst-ok">Installed. It opens in its own window from your desktop, taskbar or Start menu; this tab can close.</p>` : ''; };
+  $('#bInstNo').onclick = () => { AUDIO.play('click'); installMark(way === 'dock' ? 'dock-seen' : 'later'); slot.innerHTML = ''; };
+}
 /* the title: the sergeants saved on this device, last played first; tap one to play. The name prompt only shows for a new sergeant. */
 const agoText = t => { if (!t) return ''; const d = Math.floor((new Date().setHours(0,0,0,0) - new Date(t).setHours(0,0,0,0)) / 864e5);
   return d <= 0 ? 'today' : d === 1 ? 'yesterday' : d < 7 ? `${d} days ago` : new Date(t).toLocaleDateString(undefined, {month:'short', day:'numeric'}); };
@@ -2772,6 +2805,7 @@ function showTitle(fresh){
     : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
     <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
       <div class="row2"><button class="btn" id="bImp">Load a save code</button></div></div>`}
+    <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world and its canon characters belong to Steven Erikson. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
   startTitleBackdrop($('#titlecv'));
   $('#bSet').onclick = () => { AUDIO.play('click'); openSettings(); };
@@ -2799,7 +2833,7 @@ function showTitle(fresh){
       el.dataset.arm = 1; el.classList.add('warn'); ld.classList.add('warn'); const was = ld.innerHTML; ld.innerHTML = `<b>${tapWord('Tap')} × again to erase Sergeant ${esc(e.name)}</b><small>Their save on this device is gone for good. A save code brings them back.</small>`; ld.disabled = true;
       setTimeout(() => { if (el.isConnected) { delete el.dataset.arm; el.classList.remove('warn'); ld.classList.remove('warn'); ld.innerHTML = was; ld.disabled = false; } }, 4000); });
   }
-  maybeNotes(list.length > 0);
+  maybeNotes(list.length > 0); offerInstall();
 }
 function showIntro(){
   view = 'intro'; S.scene = 'intro'; save(); titleAnim = null; AUDIO.setScene('explore');
@@ -3738,10 +3772,13 @@ function openSettings(){
         <b>The map</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> or <kbd>E</kbd> talk to whoever is beside you<br>
         <b>A fight</b> <kbd>1</kbd>–<kbd>9</kbd> abilities · <kbd>Space</kbd> or <kbd>E</kbd> end the turn · <kbd>Esc</kbd> drop an aimed ability<br>
         <b>Anywhere</b> <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>Esc</kbd> settings, or close what's open · <kbd>Enter</kbd> the page's main button</small></div>` : ''}
+      ${installWay() === 'prompt' ? `<div class="opt"><label>${FINE() ? 'Desktop app' : 'Install'}</label><button class="btn" id="sInst">Install as an app</button><small>${FINE() ? 'Its own window with no browser bars, and a shortcut on your desktop and taskbar. Your sergeants come with it.' : 'On your home screen, full screen, and it works offline.'}</small></div>`
+        : installWay() === 'dock' ? `<div class="opt"><label>Mac app</label><small>In Safari's menu bar: File \u203a Add to Dock. The Dock app keeps its own saves: copy your sergeant's save code first (Squad \u203a Save) and load it there.</small></div>` : ''}
       ${S || roster().list.length ? `<div class="opt"><label>This device</label><button class="btn" id="sReset">${S ? `Erase Sergeant ${esc(S.name)}` : 'Erase every sergeant'}</button><small>${S ? 'Only this sergeant\'s save. Anyone else on this device keeps theirs.' : 'Every sergeant saved on this device.'} Settings are kept separately and survive this. v${VERSION}</small></div>` : `<div class="opt"><small>v${VERSION}</small></div>`}
     </div></div>`;
   ['master','music','sfx','amb'].forEach(k => { const el = $('#s_' + k); el.oninput = () => { SET[k] = +el.value; $('#v_' + k).textContent = Math.round(SET[k]*100) + '%'; saveSet(); }; el.onchange = () => AUDIO.play(k === 'music' ? 'heal' : 'click'); });
   m.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; SET[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSet(); AUDIO.play('click'); openSettings(); if (view === 'explore' && (k === 'map' || k === 'fs')) { fitCanvas(ACOLS(), AROWS()); mapBtn(); } });
+  if ($('#sInst')) $('#sInst').onclick = async () => { AUDIO.play('click'); const ok = await runInstall(); const b = $('#sInst'); if (b) { b.disabled = true; b.textContent = ok ? 'Installed' : 'Maybe later'; } };
   if ($('#sReset')) $('#sReset').onclick = () => { const b = $('#sReset'); AUDIO.play('click');
     if (b.dataset.arm) { if (S) dropSlot(S.sid); else roster().list.forEach(e => dropSlot(e.id)); S = null; m.hidden = true; m.innerHTML = ''; showTitle(); }
     else { b.textContent = tapWord('Tap again to erase'); b.classList.add('warn'); b.dataset.arm = 1; } };
@@ -3854,6 +3891,8 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.7.9', ['On a PC the game can install itself as a desktop app: its own window with no browser bars, and a shortcut on your desktop and taskbar. The title offers it when your browser can do it (Chrome and Edge), and Settings always has Install as an app. Your sergeants come with it.',
+             'Safari on a Mac gets the directions instead (File \u203a Add to Dock). The Dock app keeps its own saves, so bring your sergeant over with a save code.']],
   ['3.7.8', ['Plays properly on a PC. On a wide screen the map, the battlefield or the scene fills the left side as big as the window allows, and everything to read and press sits in a column on the right: the conversation, the unit bar, the log. No more scrolling to reach the buttons in a fight.',
              'The keyboard works: 1 to 9 pick a dialogue choice or an ability, Space ends a turn or talks to whoever is beside you, the arrow keys or WASD walk, J, P and C open the journal, pack and squad, Esc opens settings, and Enter presses a page\'s main button. The full list is in Settings.',
              'With a mouse, the tile under the cursor is outlined, choices and abilities show their number keys, and the game says click instead of tap. On a phone nothing has changed.']],

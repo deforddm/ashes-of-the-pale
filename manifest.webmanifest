@@ -9,6 +9,11 @@
   "background_color": "#0d0b0a",
   "theme_color": "#0d0b0a",
   "categories": ["games"],
+  "screenshots": [
+    {"src": "screenshot-wide-1.jpg", "sizes": "1280x720", "type": "image/jpeg", "form_factor": "wide", "label": "The Daru District at night: the squad on the map, a conversation beside it"},
+    {"src": "screenshot-wide-2.jpg", "sizes": "1280x720", "type": "image/jpeg", "form_factor": "wide", "label": "A fight in Lady Simtal's garden: the battlefield, the turn order and the squad's abilities"},
+    {"src": "screenshot-narrow.jpg", "sizes": "780x1688", "type": "image/jpeg", "form_factor": "narrow", "label": "The Daru District on a phone"}
+  ],
   "icons": [
     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
