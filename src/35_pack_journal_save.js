@@ -1,13 +1,14 @@
 /* ============ pack / journal / save ============ */
 function openModal(tab){
   const m = $('#modal'); m.hidden = false; m.scrollTop = 0;
-  const tabs = S ? ['pack','journal','save'] : ['save'];
+  const tabs = S ? ['pack','journal','save','deeds'] : ['save','deeds']; routeAnim = null;
   const body = {
     pack:()=>`<div class="kv"><span>Silver</span><span>${S.silver}</span><span>Sharpers</span><span>${S.inv.sharper}</span><span>Burners</span><span>${S.inv.burner}</span><span>Cussers</span><span>${S.inv.cusser}</span>${S.inv.smoker > 0 || S.f.gotSmokers ? `<span>Smokers</span><span>${S.inv.smoker}</span>` : ''}<span>Healing salves</span><span>${S.inv.salve}</span>
       <span>Squad level</span><span>${S.lvl} (${S.xp}/${LEVELS[S.lvl] ?? '—'} xp)</span>${S.card ? `<span>Deck reading</span><span>${CARDS[S.card].name}</span>` : ''}</div>
       ${S.card ? `<div class="cardinline" style="margin-top:12px"><canvas id="icard" width="240" height="360"></canvas></div><p class="fine" style="text-align:center">${CARDS[S.card].fx}</p>` : ''}
       <p class="fine" style="margin-top:10px">Moranth munitions hit everything in the blast, your own squad included. Warren magic builds strain; past ${STR_MAX}, the caster pays in blood.</p>`,
-    journal:()=>`${journalHead()}<h4 class="jh">Notes</h4><ul class="jl">${[
+    deeds:()=>deedsHTML(),
+    journal:()=>`${journalHead()}<div class="route sm"><canvas id="jRoute"></canvas></div><h4 class="jh">Notes</h4><ul class="jl">${[
       ...[7,6,5,4,3,2].filter(n => n <= S.chapter && CHAPTERS[n] && CHAPTERS[n].journal).map(n => { try { return CHAPTERS[n].journal() || []; } catch(e) { return []; } }), // optional: a chapter module may add journal:()=>[lines]; newest chapter first
       S.chapter >= 1 ? [
         S.f.c1_reported ? `Whiskeyjack: the Fourth rides south overland with the baggage. Darujhistan.` : `Report to Whiskeyjack at the Bridgeburners' fire.`,
@@ -32,12 +33,14 @@ function openModal(tab){
       <label class="fine" for="imp">Paste a save code to load it</label><textarea id="imp" placeholder="Paste code here"></textarea>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="bLoad">Load code</button></div><p class="fine" id="impMsg"></p>`,
   };
-  m.innerHTML = smartq(`<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
+  m.innerHTML = smartq(`<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : tab === 'deeds' ? 'Deeds' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
     <div class="tabs">${S ? `<button class="tab" data-t="squad">Squad</button>` : ''}${tabs.map(k => `<button class="tab ${k === tab ? 'on' : ''}" data-t="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
     <div>${body[tab]()}</div></div>`);
   m.querySelectorAll('.tab').forEach(b => b.onclick = () => { AUDIO.play('click'); if (b.dataset.t === 'squad') { m.hidden = true; openChars(0); } else openModal(b.dataset.t); });
   $('#bClose').onclick = () => { AUDIO.play('click'); m.hidden = true; };
   if (tab === 'pack' && S.card) inlineCard($('#icard'), S.card, false);
+  if (tab === 'deeds') bindDeeds();
+  if (tab === 'journal') { const cv = $('#jRoute'); routeAnim = t => { if (!cv.isConnected || $('#modal').hidden) { routeAnim = null; return; } drawRoute(cv, S, t); }; }
   if (tab === 'save') {
     if ($('#bCopy')) $('#bCopy').onclick = () => { const ta = $('#exp'), b = $('#bCopy'); ta.focus(); ta.select(); AUDIO.play('click');
       const done = ok => { b.textContent = ok ? 'Copied' : 'Selected: copy it by hand'; };
@@ -103,6 +106,12 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.10.0', ['Deeds: a new tab, and a button on the title, that reads across every sergeant on this device. It shows the endings found on each chapter\'s road, how the tables have gone, and a map of the Fourth\'s road from Pale to the quorl hill.',
+             'Difficulty: Story, Soldier or Bridgeburner. Pick it when you make a sergeant, and change it any time in Settings. Story softens the foes and the checks; Bridgeburner hardens both.',
+             'The count: the finale now adds up the road. Fights won, foes put down, checks passed, silver earned and spent, munitions thrown, paces walked. The running count is on the Deeds tab.',
+             'Chapter select: once a sergeant has finished the book, replay any chapter from the Deeds tab. The replay is a new save, so the finished one is kept.',
+             'Controllers work now. Use the stick or D-pad to move and choose, A to act, B to go back, X to end a turn, the shoulder buttons for abilities, and View for the journal. On a keyboard, the arrows and Enter now steer the battle cursor.',
+             'The journal draws the road so far as a map.']],
   ['3.9.1', ['The roof run (Chapter 4): after the fight on the Gadrobi roofs, cross to the Daru roofs low and unseen, one step at a time, while the Guild\'s watchers swing their lanterns on a count of eight. Caught Kruppe cheating in Chapter 3? Then you know the count.',
              'Masks at the Fete (Chapter 6): Whiskeyjack wants names. Walk Lady Simtal\'s hall, read the masks and the people under them, and hand Fiddler a list of five.']],
   ['3.9.0', ['Bones at the fire: a dice game of nerve against Fiddler at the Pale, Kettle at the Rhivi Plain fire (for first watch), and Hedge at the Gadrobi crossing once the crates are down. Two bones, throw or bank, and beware Hood\'s eyes.',

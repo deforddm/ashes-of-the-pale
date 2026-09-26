@@ -13,7 +13,9 @@ function openSettings(){
       ${seg('speed', 'Combat pace', [[1.4,'Slow'],[1,'Normal'],[.6,'Fast']])}
       ${seg('fs', 'Text size', [[.9,'Small'],[1,'Normal'],[1.15,'Large']])}
       ${fullOK() ? seg('full', 'Full screen', [[true,'On'],[false,'Off']], 'No browser bars and no taskbar, just the game. <kbd>F</kbd> or the corner button turns it on and off any time; <kbd>Esc</kbd> leaves it. On: every visit goes full screen at your first click.') : ''}
+      ${S ? `<div class="opt"><label>Difficulty</label><div class="seg">${Object.entries(DIFFS).map(([k, d]) => `<button class="btn ${(S.diff || 'soldier') === k ? 'on' : ''}" data-sdiff="${k}">${d.name}</button>`).join('')}</div><small>${DIFF().blurb} For Sergeant ${esc(S.name)} only; change it whenever you like.</small></div>` : ''}
       ${seg('dice', 'Roll numbers', [[true,'On'],[false,'Off']], 'Print every attack and check roll in the log.')}
+      ${PAD.on ? `<div class="opt keyhelp"><label>Controller</label><small><b>Stick or D-pad</b> walk; move the target square in a fight; move between buttons elsewhere<br><b>A</b> press, talk, or strike the target square · <b>B</b> back · <b>X</b> end the turn · <b>Y</b> the squad<br><b>LB / RB</b> the choices, or the abilities in a fight · <b>Start</b> settings · <b>View</b> the journal</small></div>` : ''}
       ${FINE() ? `<div class="opt keyhelp"><label>Keyboard</label><small><b>Talking</b> <kbd>1</kbd>–<kbd>9</kbd> pick a choice · <kbd>Space</kbd> takes the only one, or hurries the die<br>
         <b>The map</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> or <kbd>E</kbd> talk to whoever is beside you<br>
         <b>A fight</b> <kbd>1</kbd>–<kbd>9</kbd> abilities · <kbd>Space</kbd> or <kbd>E</kbd> end the turn · <kbd>Esc</kbd> drop an aimed ability<br>
@@ -24,6 +26,7 @@ function openSettings(){
     </div></div>`;
   ['master','music','sfx','amb'].forEach(k => { const el = $('#s_' + k); el.oninput = () => { SET[k] = +el.value; $('#v_' + k).textContent = Math.round(SET[k]*100) + '%'; saveSet(); }; el.onchange = () => AUDIO.play(k === 'music' ? 'heal' : 'click'); });
   m.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; SET[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSet(); AUDIO.play('click'); if (k === 'full') { fullTried = true; toggleFull(SET.full); } openSettings(); if (view === 'explore' && (k === 'map' || k === 'fs')) { fitCanvas(ACOLS(), AROWS()); mapBtn(); } });
+  m.querySelectorAll('[data-sdiff]').forEach(b => b.onclick = () => { AUDIO.play('click'); S.diff = b.dataset.sdiff; save(); openSettings(); });
   if ($('#sInst')) $('#sInst').onclick = async () => { AUDIO.play('click'); const ok = await runInstall(); const b = $('#sInst'); if (b) { b.disabled = true; b.textContent = ok ? 'Installed' : 'Maybe later'; } };
   if ($('#sReset')) $('#sReset').onclick = () => { const b = $('#sReset'); AUDIO.play('click');
     if (b.dataset.arm) { if (S) dropSlot(S.sid); else roster().list.forEach(e => dropSlot(e.id)); S = null; m.hidden = true; m.innerHTML = ''; showTitle(); }

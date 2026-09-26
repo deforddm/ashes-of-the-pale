@@ -4,7 +4,7 @@
    (MG.keys, removed on close). A game ends with mgClose(result); the story picks up from its done() callback. */
 const MG = { anim:null, keys:null, fit:null, done:null, leave:null };
 function mgOpen(o){
-  const el = $('#mg'); el.hidden = false; el.className = 'mg ' + (o.cls || '');
+  const el = $('#mg'); el.hidden = false; el.className = 'mg ' + (o.cls || ''); MG.arrows = !!o.arrows;
   el.innerHTML = `<div class="mgbox"><div class="mghead"><div><div class="kick">${o.kick || ''}</div><h2 class="m">${o.title}</h2></div><button class="btn" id="mgLeave" data-bot="1">${o.leaveText || 'Leave'}</button></div>
     <div class="mgstage"><canvas id="mgcv"></canvas>${o.over || ''}</div><div class="mgpanel" id="mgPanel"></div></div>`;
   const cv = $('#mgcv'), ctx = cv.getContext('2d');
@@ -265,7 +265,7 @@ function playCharges(opt){
   const inBlast = (x, y) => pts().some(([a, b]) => Math.max(Math.abs(a - x), Math.abs(b - y)) <= 1);
   const touching = () => { const p = pts(); return p.filter((a, i) => p.some((b, j) => i !== j && Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1])) <= 1)); };
   const cells = ch => { const out = []; V().map.forEach((r, y) => [...r].forEach((c, x) => { if (ch.includes(c)) out.push([x, y]); })); return out; };
-  mgOpen({kick:'Under the Gadrobi crossroads', title:'Laying the charges', leaveText:'Let Hedge do it', done:r => opt.after && opt.after(r),
+  mgOpen({kick:'Under the Gadrobi crossroads', title:'Laying the charges', leaveText:'Let Hedge do it', arrows:true, done:r => opt.after && opt.after(r),
     leave:() => mgClose({solved:false, runs:g.done.length})});
   const say = (who, line) => { g.talk = mgSay(who, line); draw(); };
   const draw = () => { const J = cells('J'), cov = J.filter(([x, y]) => inBlast(x, y)).length, left = V().k - g.set.size;
@@ -340,7 +340,7 @@ function playRoofRun(opt){
   const start = (() => { for (let y = 0; y < rows; y++) { const x = m[y].indexOf('S'); if (x >= 0) return {x, y}; } })();
   const g = {pos:{...start}, t:0, seen:0, over:false, flash:0, moves:0, talk:'', trail:[]};
   const pick = a => a[R(a.length)];
-  mgOpen({kick:'The Daru roofs', title:'The roof run', leaveText:'Walk across openly', done:r => opt.after && opt.after(r),
+  mgOpen({kick:'The Daru roofs', title:'The roof run', leaveText:'Walk across openly', arrows:true, done:r => opt.after && opt.after(r),
     leave:() => mgClose({done:false, seen:g.seen})});
   const can = (x, y) => y >= 0 && y < rows && x >= 0 && x < cols && '.pS>'.includes(m[y][x]) && !ws.has(K(x, y));
   const say = (who, line) => { g.talk = mgSay(who, line); draw(); };

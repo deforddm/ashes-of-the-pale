@@ -30,6 +30,8 @@ function loop(t){
   if (charAnim) charAnim(t);
   if (cardAnim) cardAnim();
   if (MG.anim) MG.anim(t);
+  if (routeAnim) routeAnim(t);
+  padPoll();
   requestAnimationFrame(loop);
 }
 function start(data){
@@ -90,6 +92,9 @@ window.addEventListener('keydown', e => {
     const mine = B.cur && B.cur.side === 'p' && !B.cur.ally && !B.over;
     if (k === 'Escape' && mine && B.mode && B.mode !== 'act') { e.preventDefault(); B.mode = 'act'; B.aim = null; updBattleUI(); return; }
     if (mine && dig) { press($('#ubar').querySelectorAll('.abil [data-k]')[dig - 1]); return; }
+    const ad = {ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0]}[k];
+    if (mine && ad) { e.preventDefault(); const c = G.hover || {x:B.cur.x, y:B.cur.y}; G.hover = {x:clamp(c.x + ad[0], 0, 7), y:clamp(c.y + ad[1], 0, 9)}; return; } // a target square, for the keyboard and a controller
+    if (mine && k === 'Enter' && !onBtn && G.hover) { e.preventDefault(); battleTap(G.hover.x, G.hover.y); return; }
     if (mine && (k === ' ' || low === 'e')) { press($('#bEnd')); return; }
   }
   if (view === 'explore' && !walking) {

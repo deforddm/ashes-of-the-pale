@@ -116,6 +116,7 @@ const showEnd = showChapterEnd;
 function startChapter(n){
   const CH = CHAPTERS[n]; if (!CH) return showTitle();
   S.chapter = n; S.card = null; S.scene = 'chintro'; S.node = null; S.bg = null; S.battle = null; S.bopt = null;
+  if (n >= 1) { const c = JSON.parse(JSON.stringify(S)); delete c.chsnap; c.log = []; S.chsnap ??= {}; S.chsnap[n] = c; } // replays start from here
   S.area = CH.area.id; S.pos = {...CH.area.start}; S.trail = [[-1,0],[1,0],[-1,1],[0,1],[1,1],[0,-1]].map(([dx,dy]) => ({x:S.pos.x+dx, y:S.pos.y+dy})); S.log = [];
   save(); showChapterIntro();
 }
@@ -171,7 +172,8 @@ function showFinale(i = 0){
     body = `<div class="fin-k">The end</div>${coda.length ? `<div class="narr">${coda.map(p => fmt(p)).join('')}</div>` : ''}
       <div class="fin-sum"><h3>The Fourth's road</h3><ol class="fin-road">${road}</ol>
         <h3>The dead</h3>${dead.length ? `<ul class="fin-dead">${dead.map(id => `<li><b>${esc(NAME(id))}</b>${S.dead[id].where ? ` — ${esc(S.dead[id].where)}` : ''}</li>`).join('')}</ul>` : `<p class="fine">None of the Fourth. Every one of them came up out of the dark.</p>`}
-        <div class="kv"><span>Ohl's list</span><span>${listCount()} names</span><span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span></div></div>
+        <div class="kv"><span>Ohl's list</span><span>${listCount()} names</span><span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.diff && S.diff !== 'soldier' ? `<span>Played as</span><span>${DIFF().name}</span>` : ''}</div>
+        <h3>The count</h3>${statsHTML(S)}<p class="fine">Every chapter can be played again from the Deeds page (Squad, then Deeds).</p></div>
       <div class="fin-endline">The End of <em>Gardens of the Moon</em></div>
       <p class="fine fin-credit">The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. With thanks to Steven Erikson for the book, the Bridgeburners, and the long road, and to Ian C. Esslemont for the world they built together; the Fourth only walked beside it.</p>`; }
   const last = i === P.length - 1;
