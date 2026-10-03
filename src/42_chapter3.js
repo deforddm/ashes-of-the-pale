@@ -529,18 +529,22 @@ Kettle is standing next to it. She has one hand flat on the oilcloth. She has no
     c3_pinup:()=>({sp:'A crate lid', fx:()=>{ S.f.c3_pinup=1; }, txt:
 `Nailed to the Bridgeburners' tailboard, where a sapper can see it from the hole, is the lid of a Moranth crate, and somebody has painted on it.
 
-Somebody good. Two women as big as a pair of siege towers and twice as cheerful, done in the old poster style soldiers paint on shields and wagon-boards from Unta to Genabackis: one with her sleeve rolled and her arm up and a jug of rum sat on the muscle of it like it grew there, one winking over a tray of honey-cakes, one of which has a fuse in it. The paint has had a hard war. Across the top, on a red ribbon, in letters a hand high:`,
-      html:`<div class="pinup"><canvas id="pinup" width="600" height="760" aria-label="A painted crate lid: two big cheerful women in an old poster style, one flexing her arm with a rum jug on it, one winking over a tray of honey-cakes. The banner reads Rumjugs and Sweetlard."></canvas></div>`,
+Somebody good, and somebody who had given the subject a great deal of thought. Two big women in the old poster style soldiers paint on shields and wagon-boards from Unta to Genabackis, laced into bodices that are losing the argument. One has her sleeve rolled and her arm up and a jug of rum sat on the muscle of it like it grew there. The other is winking over a tray of honey-cakes, one of which has a fuse in it. Each has a hand on her hip and an elbow hooked through the other's. The paint has had a hard war. Across the top, on a red ribbon, in letters a hand high:`,
+      html:`<div class="pinup"><canvas id="pinup" width="600" height="760" aria-label="A painted crate lid in the old pin-up style: two big, buxom women in low-cut bodices, arm in arm, one flexing with a rum jug on her arm, one winking over a tray of honey-cakes. The banner reads Rumjugs and Sweetlard; the ribbon below, Sweets for the Sappers."></canvas></div>`,
       onshow:()=>drawPinup($('#pinup')),
       after:`"Came with the crate," says Hedge, from the lip of the hole, without looking up. "Painted before it ever left Moranth. Or after. Nobody's owned up."
 
 "Who are they?"
 
-"No idea. Never met 'em." He does look up then, at the lid, a long look, the way he looks at a fuse he didn't cut himself. "Funny thing," he says. "Feel like I'm going to."
+"There's a tent behind every army, Sergeant, with a red lamp over the door. Somebody painted the sign." He does look up then, at the lid, a long look, the way he looks at a fuse he didn't cut himself. "Never met 'em. Funny thing," he says. "Feel like I'm going to."
 
-${SQUAD().includes('kettle') ? `Kettle has stopped in front of it with her hands clasped behind her back, the way people stand in temples. "Look at her *arm*," she says. "I'd follow them into a breach."${SQUAD().includes('brisk') ? `
+${SQUAD().includes('kettle') ? `Kettle has stopped in front of it with her hands clasped behind her back, the way people stand in temples. "Look at her *arm*," she says.${SQUAD().includes('brisk') ? `
 
-"You'd follow the cake," says Brisk.
+"Nobody's looking at her arm," says Brisk.` : ''}
+
+Kettle looks at the lid again, fairly, top to bottom, and takes her time about it. "I'd follow them into a breach."${SQUAD().includes('brisk') ? `
+
+"You'd follow the cake."
 
 "I'd follow the cake into a breach."` : ''}
 
@@ -548,7 +552,7 @@ ${SQUAD().includes('kettle') ? `Kettle has stopped in front of it with her hands
 
 "That's the joke, Fid," says Hedge.
 
-"It's a bad joke." Fiddler considers the lid for a while longer than a bad joke needs. "Good painting, though."`,
+"It's a bad joke." Fiddler considers the lid for a good deal longer than a bad joke needs. "Good painting, though."`,
       ch:[{t:'Leave them to it.'}]}),
 
     /* ---- the dig ---- */
