@@ -200,7 +200,7 @@ function drawCity(cv, kind, t){
 
 /* ============ Chapters 6 and 7: the Fete, the Tyrant, the sky over the city, the Lakefront, the hill, the road ============ */
 const FETE_SCENES = ['fete_street','fete_hall','fete_garden','garden_storm','dragon_sky','alley_night','lakefront_dawn','quorl_hill','road_east','ship'];
-const LANT = ['#d8503a','#e8a040','#4aa870','#4a7ad8'];
+const LANT = ['#d8503a','#e8a040','#4aa870','#d8b84a']; // red, amber, green, gold: every colour but blue (the city's own lamps are blue)
 /* the garden and its house are lit by dawn once the night is over */
 function feteDawn(){ return !!S && (S.chapter >= 7 || !!(S.f && S.f.c6_done) || /^c6_(dawn|close)/.test(S.node || '')); }
 function vign(ctx, W, H, a, cy = .55){ const v = ctx.createRadialGradient(W/2, H*cy, H*.3, W/2, H*cy, W*.72); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,`rgba(0,0,0,${a})`); ctx.fillStyle = v; ctx.fillRect(0,0,W,H); }
@@ -231,7 +231,7 @@ function lanternLine(ctx, x0, y0, x1, y1, sag, n, t, s = 1, seed = 0, dead = fal
     if (dead) { poly(ctx, [[-2.4*s, 3*s],[2*s, 2.6*s],[2.8*s, 8*s],[-1*s, 9.6*s]], shade(c, -.6)); ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.beginPath(); ctx.moveTo(0, 9*s); ctx.lineTo(hash(i, seed)*3*s - 1.5*s, 12*s); ctx.stroke(); }
     else { glow(ctx, 0, 6*s, 12*s, c, .3*fl); ell(ctx, 0, 6.5*s, 3*s, 4*s, c); ell(ctx, -.6*s, 6*s, 1.4*s, 2.6*s, `rgba(255,236,190,${.6*fl})`); ctx.fillStyle = 'rgba(30,20,12,.85)'; ctx.fillRect(-1.8*s, 2.4*s, 3.6*s, .9*s); ctx.fillRect(-1.8*s, 10.2*s, 3.6*s, .9*s); }
     ctx.restore(); } }
-function confetti(ctx, W, H, t, n, a = .7){ for (let i=0;i<n;i++){ const y = ((hash(i,61)*H) + t*(.012 + hash(i,62)*.02)) % (H + 10) - 5, x = hash(i,63)*W + Math.sin(t/1300 + i)*10, r = t/400 + i; ctx.save(); ctx.translate(x, y); ctx.rotate(r); ctx.scale(1, Math.abs(Math.sin(r*1.4)) + .15); ctx.fillStyle = rgba(['#d8503a','#e8a040','#4aa870','#4a7ad8','#e8d8c0','#c05a8a'][i % 6], a); ctx.fillRect(-2, -1.2, 4, 2.4); ctx.restore(); } }
+function confetti(ctx, W, H, t, n, a = .7){ for (let i=0;i<n;i++){ const y = ((hash(i,61)*H) + t*(.012 + hash(i,62)*.02)) % (H + 10) - 5, x = hash(i,63)*W + Math.sin(t/1300 + i)*10, r = t/400 + i; ctx.save(); ctx.translate(x, y); ctx.rotate(r); ctx.scale(1, Math.abs(Math.sin(r*1.4)) + .15); ctx.fillStyle = rgba(['#d8503a','#e8a040','#4aa870','#d8b84a','#e8d8c0','#c05a8a'][i % 6], a); ctx.fillRect(-2, -1.2, 4, 2.4); ctx.restore(); } }
 function gulls(ctx, W, H, t, n, top = .1, spread = .3, col = 'rgba(225,220,210,.75)'){ for (let i=0;i<n;i++){ const k = ((t/(22000 + i*4000) + hash(i,71)) % 1), gx = (1.1 - k*1.25)*W, gy = (top + hash(i,72)*spread)*H + Math.sin(t/900 + i)*5, w = 5 + hash(i,73)*5, f = Math.sin(t/170 + i*2)*w*.4;
   ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(gx - w, gy - f); ctx.quadraticCurveTo(gx - w*.4, gy - w*.45, gx, gy); ctx.quadraticCurveTo(gx + w*.4, gy - w*.45, gx + w, gy - f); ctx.stroke(); } }
 /* a great dragon in flight, drawn facing +x: body, neck, head, tail, two wings of finger-bones and skin */

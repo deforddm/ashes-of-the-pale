@@ -108,6 +108,15 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.13.0', ['Squadmates can move through each other, as long as they have the movement to get past. Nobody can end a move on someone else\'s tile.',
+             'Steady: a squadmate who ends a turn without doing anything gets +2 on their next attack or save.',
+             'Post up: a ranged squadmate who hasn\'t fired yet this fight gets a free shot at the first enemy who walks into range.',
+             'Kettle\'s sharper openings now have consequences, different in every fight, and the story says what went differently: a barrow that heard the bang, a gas main in the lane, slates through an attic roof, a ship that cuts her lines at the quay, the Watch coming out of the Worry Gate. Some of it helps. Some of it costs.',
+             'Hold-out fights: putting an enemy down when you were only meant to hold pays extra experience, and the story remembers it, even when the enemy gets up again.',
+             'A continuity pass through every chapter: lines that assumed you had already talked to someone, people said to be down the hole while standing in plain sight, names used before anyone learned them, and more. Ellis now makes it plain when she has a letter for you.',
+             'Gear: new kit goes to whoever it suits best with that slot free, and an Allocate gear button on the squad sheet deals everything out again for the most benefit. The sheet shows each bonus in gold, with the total.',
+             'The Fete has no blue lanterns any more. Darujhistan\'s gas lamps are already blue.',
+             'Somebody has painted the lid of a crate at the Gadrobi crossing. Go and have a look.']],
   ['3.12.0', ['Fights have higher stakes. Most fights now go on into a second area: clear the first ground and push on into the next, with your wounds, your strain, your spent munitions and your once-a-fight abilities carried over. A squadmate who went down gets dragged back up at a quarter of their health.',
              'Seven new fights, one in every chapter: deserters at Pell\'s wagon, deserters on the ridge, a grudge in the alley, a Guild clan on the plank home, barrow-robbers at the dig, a bonfire over the munitions, and the Worry Gate on the way out.',
              'Enemies have tricks of their own: hounds pounce and howl, Claw assassins step through shadow behind you, knives make you bleed, crossbows pin you, wights chill, bruisers shove, veterans parry, the Claw mage dazes, the grey cloak marks a target. Watch the log.',

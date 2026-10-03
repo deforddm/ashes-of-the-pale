@@ -94,7 +94,7 @@ You carry ${S.silver} silver.`,
   pell_cusser:()=>({sp:'Quartermaster Pell', txt:`"Cussers." He laughs without moving his face. "Your sapper's already got one, and I'd take it off her if I thought I'd live through the conversation."`, ch:[{t:'Back', go:'pell'}]}),
 
   garrow:()=>({sp:'Garrow · Second Army', fx:()=>S.f.garrow=1, txt:
-`A soldier of the Second sits by the burial pits with his helmet in his lap. His armour is scorched in a pattern that looks almost like handprints.`,
+`A soldier of the Second sits by the burial pits with his helmet in his lap, counting the pits under his breath. His armour is scorched in a pattern that looks almost like handprints.`,
     ch:[{t:'Share your water with him.', fx:()=>loy('ohl',1), go:'garrow_saw'},
         {t:'"What did you see that night?"', go:'garrow_saw'},
         {t:'Leave him be.'}]}),
@@ -215,7 +215,11 @@ The lamp swings round. Someone cocks a crossbow.`, ch:[{t:'Fight', go:()=>startB
 
 The air between here and there is wrong: cold, and too dark, as if the lantern light has to push through water. "Kurald Galain," Tuft whispers. "The Spawn's warren leaked down here. Meanas will love it. Denul won't."
 
-The dark between you and Varrow moves, the way water moves when something under it does. Further in, something shifts its weight. Something big.${S.f.noisy ? ` It isn't waking up. It's been awake since your sharper went off, and it's been waiting.` : ''}`,
+The dark between you and Varrow moves, the way water moves when something under it does. Further in, something shifts its weight. Something big.${S.f.noisy ? ` It isn't waking up. It's been awake since your sharper went off, and it's been waiting.${SQUAD().includes('brisk') && SQUAD().includes('kettle') ? `
+
+"Sapper," says Brisk. Just that.
+
+"I *know*," says Kettle. "I know. Next time I'll knock."` : ''}` : ''}`,
     ch:[{t:'Go straight for the satchel.', go:()=>startBattle('stone',{surprise:'e'})},
         {t:'"Form up. Shields front."', go:()=>startBattle('stone',{surprise:'p'})}]}),
   journal:()=>({sp:'Collapsed junction', scene:'tunnel', fx:()=>{S.f.gotSatchel=1;}, txt:
@@ -252,7 +256,7 @@ Nobody says *ask your High Mage where the rest of it went*. Nobody has to.` : ''
     return {sp:'A grey cloak', scene:'explore', fx:()=>{S.f.clawMet=1;}, txt: (S.f.clawMet ?
 `The grey cloak from the crater is waiting at the tunnel mouth, leaning on the shoring as if he's been part of it since the siege. His boots are still clean.
 
-"Grave detail," he says pleasantly. "Find anything heavy? I'd be glad to carry it."` :
+"Grave detail," he says pleasantly${S.f.p_clawDoubt ? '' : `, though nobody said those words to him at the crater`}. "Find anything heavy? I'd be glad to carry it."` :
 `A man in a grey cloak is waiting at the tunnel mouth, leaning on the shoring as if he's been part of it since the siege. His boots are clean. Nobody's boots are clean.
 
 "Grave detail," he says pleasantly, before you can. "Find anything heavy? I'd be glad to carry it."`) + (S.f.p_clawDoubt ? `

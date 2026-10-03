@@ -170,6 +170,10 @@ const BATTLES = {
     map:["..#..#..","........",".##....#","........","...##...","........","#.......","..#..##.","........","........"],
     party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
     foes:[['deserter',1,1],['deserter',4,1],['deserter',6,1],['xbow',3,0]],xp:100,after:'deep1',
+    /* Kettle's sharper (the approach): it brings down the timber they were prying at, and the dust off every beam with it, for a round;
+       and the tunnel carries the bang on past the bend, to Moreau's gallery (he picks his ground) and the junction (S.f.noisy: the Stonebound is awake, +10 health) */
+    preText:'The timber they were prying at comes down the rest of the way, and the dust comes off every beam with it: nobody shoots into or out of their end of the tunnel this round. The bang goes on without it, down the tunnel and round the bend, further than anyone meant it to.',
+    preFx:B => { preTile(3, 1, '#'); [[3,0],[4,0],[2,1],[4,1],[5,1],[3,2],[4,2]].forEach(([x, y]) => preSmoke(x, y, 1)); },
     /* the second ground: Moreau's gallery, shored lanes between the posts, a crossbow at the far end, and one of them round behind by the old crawl */
     stage2:{title:'The officers\' gallery',
       text:()=>`Past the timber the tunnel bends into a gallery, shored and dry, where a row of officers came down the night the sky fell to watch the mines laid, and stayed. Somebody has laid them out along the wall. Somebody has cut every purse-string.${SQUAD().includes('ohl') ? ` Ohl looks along the faces. He knows two of them. He doesn't say which.` : ''}
@@ -177,7 +181,9 @@ const BATTLES = {
 ${S.f.p_desertHalf ? `The two who backed away into the dark didn't run. They went to fetch their sergeant: a grey man with his badge cut off clean, who puts down the purse he was counting and picks up a sword instead.` :
   S.f.p_garrowCrossed ? `Their sergeant is a grey man with his badge cut off clean. "One of mine's gone up the tunnel with Garrow's name in his mouth," he says. "So nobody's going up after him."` :
   S.f.noisy ? `Your sapper's sharper told the whole gallery you were coming. Their sergeant, a grey man with his badge cut off clean, has had time to pick his ground, and he has picked it well.` :
-  `Their sergeant is a grey man with his badge cut off clean, counting a dead captain's purse by a stub of candle. He finishes counting before he stands.`} ${S.f.knowDeserters ? `Garrow gave you his name at the pits. Moreau.` : `Somebody behind him calls him Moreau.`}`,
+  `Their sergeant is a grey man with his badge cut off clean, counting a dead captain's purse by a stub of candle. He finishes counting before he stands.`} ${S.f.knowDeserters ? `Garrow gave you his name at the pits. Moreau.` : `Somebody behind him calls him Moreau.`}${S.f.noisy && SQUAD().includes('kettle') ? `
+
+"Tunnels carry," Kettle says, too quietly, to nobody. "First thing they teach you at the Moranth sheds. You throw in a tunnel, you're not throwing at four men. You're throwing at everything the tunnel touches." She knew it when she threw it. You can hear her knowing it.` : ''}`,
       map:["#..##..#","#......#","#.#..#.#","#......#","#.#..#.#","#......#","#.#..#.#","#......#","##....##","#......."],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['moreau',3,1],['deserter',1,3],['xbow',5,0]],
@@ -192,7 +198,7 @@ ${S.f.p_desertHalf ? `The two who backed away into the dark didn't run. They wen
     stage2:{title:'Collapsed junction',warrenText:'Kurald Galain seeps in · Meanas surges · Denul falters',warren:{meanas:1.5,denul:0.6},
       text:()=>`The last shade goes back into the dark it came out of, and the dark lets it. The lanterns have gone the colour of weak tea. Ahead, the sapper tunnel opens into the junction, and Varrow is three paces inside it, under his beam, with the strap still wrapped round his hand.
 
-You are halfway to him when the floor in the middle of the junction stands up.${S.f.noisy ? ` It was never asleep. It let you come this far.` : ''}${SQUAD().includes('brisk') ? ` Brisk's shield comes up. "Sergeant."` : ''}`,
+You are halfway to him when the floor in the middle of the junction stands up.${S.f.noisy ? ` It was never asleep. It let you come this far. It has had since your sharper went off to pull itself together out of the junction floor, and it has taken more of the floor than it needed.` : ''}${SQUAD().includes('brisk') ? ` Brisk's shield comes up. "Sergeant."` : ''}`,
       map:["#......#","..#..#..","........","........",".#....#.","........","...##...","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['stone',3,2],['shade',1,3],['shade',6,3]],xp:150}},

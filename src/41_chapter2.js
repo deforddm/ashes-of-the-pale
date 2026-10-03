@@ -10,12 +10,16 @@ const c2P = id => { const y = !(id && id !== 'sgt' && TPL[id] && SQUAD().include
 const c2Who = id => id && id !== 'sgt' && TPL[id] ? NAME(id) : 'the sergeant';
 /* Moreau's section ran from the north tunnels on Garrow's word in the prologue (desert_flee), so the men at the ridge are his */
 const c2Moreau = () => !!(S.f.garrowWord && !S.f.p_garrowCrossed);
-/* Brisk's ration count at dusk on day four, the same as she gave it at the horses */
-const c2Count = () => SQUAD().includes('ellis') ? 'Fifteen days, six' : 'Seventeen days, five';
+/* Brisk's ration count at dusk on day four, before supper: the same as she gave it at the horses (90 rations: eighteen for five, fifteen for six) */
+/* the watch Kettle's bones are played for: Ellis takes the first herself when she is with the Fourth (c2_ridge_arrive) */
+/* Kettle's sharper in the barrow (the engine's opening line, replaced): from the passage mouth, or from the far wall if she went in first alone */
+const c2BarrowPre = () => S.f.c2_barrowMissWho && !S.f.c2_kettleOut ? 'Kettle, against the far wall, lets a sharper go along the floor between their feet and gets her arms over her head. In a stone room it is the loudest thing that has happened in a thousand years.' : 'Kettle rolls a sharper in from the passage mouth. In a stone room it is the loudest thing that has happened in a thousand years.';
+const c2Watch = () => SQUAD().includes('ellis') ? 'second watch' : 'first watch';
+const c2Count = () => SQUAD().includes('ellis') ? 'Fifteen days, six' : 'Eighteen days, five';
 /* the outriders' answers: the talk (Guile), the ✦ song (Wits 16), Sethand's word, shields. Offered again if the song goes wrong. */
 const c2OutCh = () => [
   {t:'Through Sethand: you have come to bury her, not to take anything.', check:['guile',13], fx:()=>{ S.f.c2_outTalkTried=1; },
-    edges:id=>[S.f.c2_barrowCold && ['the Rhivi can see the barrow on Kettle', -1], S.f.c2_songWrong && ['they heard the horse-song', -1], id === 'tuft' && ['Tuft knew the dead woman', 1], id === 'kettle' && [S.f.c2_barrowCold ? 'they are pointing at Kettle' : 'they are pointing at Kettle\'s satchel', -2]],
+    edges:id=>[S.f.c2_barrowCold && ['the Rhivi can see the barrow on Kettle', -1], preUsed('barrow') && ['the grass carried the barrow-fire to them', -1], S.f.c2_songWrong && ['they heard the horse-song', -1], id === 'tuft' && ['Tuft knew the dead woman', 1], id === 'kettle' && [S.f.c2_barrowCold ? 'they are pointing at Kettle' : 'they are pointing at Kettle\'s satchel', -2]],
     near:{t:()=>!['sharper','burner'].includes(S.f.c2_outToll) ? `The man in front keeps an arrow on ${NAME(ROLL().who)} all the way through the line. ${NAME(ROLL().who)} comes out of it rattled: −1 on the next check.` : `The man in front will not lower his bow until Kettle has put a ${S.f.c2_outToll} in his hand.`,
       fx:()=>{ if (S.inv.sharper > 0) { S.inv.sharper--; S.f.c2_outToll = 'sharper'; } else if (S.inv.burner > 0) { S.inv.burner--; S.f.c2_outToll = 'burner'; } else { S.f.c2_outToll = 'arrow'; (S.rattled ??= {})[ROLL().who] = 1; } }},
     clean:{fx:()=>{ const w = ROLL().who; if (w !== 'sgt' && SQUAD().includes(w)) loy(w, 1); }},
@@ -110,11 +114,15 @@ const CH2 = {
       map:["#..##..#","........","..#..#..","........","........",".#....#.","........","........","..#..#..","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['wight',2,1],['wight',5,1],['wight',3,3],['wight',6,4]], xp:140, after:'c2_after_barrow',
+      /* Kettle's sharper in a dry-laid grave: it knocks the near ones flat (they lose a turn getting up, in stages), and something under the slab hears it */
+      preText:()=>`Dry-laid stone and no mortar: the blast has nowhere to go but round, and the roof comes down on everyone as dust. The ones nearest it go over in their wrappings and will have to stand up all over again, in stages. And under the slab, something heard.`,
+      preFx:B=>{ foes().filter(f => Math.max(Math.abs(f.x - 3.5), Math.abs(f.y - 1)) <= 2).forEach(f => { f.stun = true; float(f, 'knocked flat', '#cfc8b8'); });
+        preWave(2, [['wight',4,1]], 'The slab grinds a hand\'s width on its stair. Something under it heard the sharper, and sends one more up.'); },
       /* down the stair under the slab: a long stone room with burial niches in both walls, the squad coming up out of a two-wide stair mouth */
       stage2:{title:'The burial chamber', warrenText:'Under the slab · the cold is older here · Meanas leans in · Denul holds', open:false,
-        text:()=>`The four are down, and the cold hasn't gone anywhere. It's coming up past the slab, and the slab isn't a slab: it's a lid, and something has pushed it a hand's width off a stair that goes down further than a barrow has any business going.
+        text:()=>`${preUsed('barrow') ? `They're down, and the cold hasn't gone anywhere. It's coming up past the slab, and the slab isn't a slab: it's a lid, cracked clean across where the sharper found it, and something underneath has pushed the two halves a hand's width apart off a stair that goes down further than a barrow has any business going.` : `The four are down, and the cold hasn't gone anywhere. It's coming up past the slab, and the slab isn't a slab: it's a lid, and something has pushed it a hand's width off a stair that goes down further than a barrow has any business going.`}
 
-${SQUAD().includes('brisk') ? `"Nothing at our backs," says Brisk, and goes down first, bent double, shield in front.` : `Nobody wants it at their backs.`}${SQUAD().includes('kettle') ? ` Kettle, behind her, very quietly: "There's another room." This time she doesn't sound pleased about it.` : ''}`,
+${SQUAD().includes('brisk') ? `"Nothing at our backs," says Brisk, and goes down first, bent double, shield in front.` : `Nobody wants it at their backs.`}${SQUAD().includes('kettle') ? (preUsed('barrow') ? ` Kettle, behind her, very quietly: "There's another room. And I've knocked." This time she doesn't sound pleased about it.` : ` Kettle, behind her, very quietly: "There's another room." This time she doesn't sound pleased about it.`) : ''}`,
         map:["#.#..#.#","#......#","..#..#..","#......#","#..##..#","#......#","..#..#..","#......#","###..###","##....##"],
         party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
         foes:[['c2_keeper',4,1],['wight',0,2],['wight',7,6]],
@@ -179,6 +187,7 @@ ${SQUAD().includes('ellis') ? `Ellis: "Two gaps in the thorn. He's standing in t
     if (f.c2_songWrong) x.push(`The outriders call ${c2Who(f.c2_songWho)} horse-singer. Sethand says it is not an insult. He says it is not not one.`);
     if (f.c2_outToll === 'sharper' || f.c2_outToll === 'burner') x.push(`One of Kettle's ${f.c2_outToll}s is riding with the Rhivi. She wants it noted that it was a loan.`);
     if (f.c2_horseHow === 'botched' && SQUAD().includes('ellis')) x.push('The mare took two strokes. Ellis has written it down as one.');
+    if (preUsed('barrow')) x.push(`Kettle put a sharper into a barrow older than the Rhivi. The grass carried it to every clan fire on the plain by dark${f.c2_hillsDust ? ', and something walking beside the Adjunct stopped and turned its head' : ''}. Sethand's Malazans, they say now.`);
     if (f.c2_desTalked || f.c2_desPaid) x.push(`${c2Moreau() ? 'Moreau\'s section' : 'Eight deserters of the Second'} walked off a Rhivi ridge ${f.c2_desPaid ? 'ten silver richer' : 'on a word'}, south-west, toward the city. ${c2Moreau() ? 'That\'s twice. Garrow would want to know.' : 'Nobody in the Fourth has said where they think they went.'}`);
     else if (f.c2_desFought && c2Moreau()) x.push('Garrow\'s word got Moreau out of the Pale and four days south. The Fourth was the fifth day.');
     return x; },
@@ -224,7 +233,8 @@ ${S.loy.tuft >= 2 ? `"The quorls went south-east. Not south. I watched them till
           {t:'"The stones back there. The mounds."', go:'c2_seth_barrows'},
           {t:'"There\'s dust on the horizon. North-west. Been there since dawn."', go:'c2_seth_dust'},
           {t:'"No questions. Lead."', fx:()=>{S.f.c2_sethTrust = (S.f.c2_sethTrust || 0) + 1; loy('brisk',1);}, go:'c2_seth_lead'}]}),
-    c2_sethand_again:()=>({sp:'Sethand', txt:
+    c2_sethand_again:()=>({sp:'Sethand', txt: S.f.c2_barrowHeard ?
+`He is back on his horse, and he has not looked at you since the barrow. He doesn't now. "More questions."` :
 `He has not dismounted. He does not, for Malazans. "More questions."`,
       ch:[{t:'"Where does the road go?"', req:()=>!S.f.c2_sethRoad, go:'c2_seth_road'},
           {t:'"The stones. The mounds."', req:()=>!S.f.c2_sethBarrows, go:'c2_seth_barrows'},
@@ -305,7 +315,7 @@ Tuft, from the tall grass, without heat: "Cadre eat."
 
     /* ---- the barrow ---- */
     c2_barrow:()=> S.f.c2_barrowFought ? {sp:'The barrow', txt:
-`The stones are where they were. The gap you went in by is a black mouth in the turf, and the grass in front of it has been flattened by things that came out and did not go back.
+`The stones are where they were. The gap you went in by is a black mouth in the turf${preUsed('barrow') ? `, scorched at the lip now, and the fallen stone has a crack across it that it didn't have this morning` : ''}, and the grass in front of it has been flattened by things that came out and did not go back.
 
 Sethand has moved his horse to the far side of the wagon, and has not said anything, and is not going to.`,
       ch:[{t:'Leave it.'}]} : {sp:'The barrow', fx:()=>{S.f.c2_barrowSeen=1;}, txt: S.f.c2_barrowSeen ?
@@ -314,7 +324,7 @@ Sethand has moved his horse to the far side of the wagon, and has not said anyth
 Kettle is standing a careful three paces off it${S.f.c2_barrowCold ? ', with her hands tucked into her armpits' : ''}, which is as close to obedience as Kettle comes.` :
 `Four stones, waist-high on Brisk, leaning together over a long low mound that the grass has not managed to cover. The stones are older than the grass. They are older than the word for grass. There is a gap on the east side where one of them has fallen, or been pushed, and it is dark in the gap in a way that has nothing to do with the sun.
 
-${S.f.c2_sethBarrows ? `Sethand said *do not.* He said it once, which for Sethand is a speech.` : `Sethand, out ahead, has stopped his horse and is not looking this way. He has the stillness of a man who has decided not to be involved.`}
+${S.f.c2_sethBarrows ? `Sethand said *do not.* He said it once, which for Sethand is a speech.` : `Sethand has stopped his horse well short of the stones and is not looking this way. He has the stillness of a man who has decided not to be involved.`}
 
 Kettle has already found the gap. Of course she has.`,
       ch:[{t:'Look at the fallen stone.', check:['wits',12], req:()=>!S.f.c2_barrowTried, fx:()=>{S.f.c2_barrowTried=1;},
@@ -364,7 +374,7 @@ Then, after a moment, not hollow at all, and very small: "It's *cold* in here."`
 
 Her hands are white to the wrist. She puts them under her arms. "It's a room," she says, eventually. "There's a slab, and nothing on it, and things in the corners that didn't get up. Yet. I didn't wait for *yet*."
 
-${S.f.c2_sethBarrows ? `Out ahead, Sethand has turned his horse round to watch. He doesn't say *I said*. He has the face for it, and lets the face say it.` : `Out ahead, Sethand has turned his horse round to watch. When he sees Kettle standing in the sun with her hands under her arms, he turns it back.`}`,
+${S.f.c2_sethBarrows ? `Back by the ruts, Sethand has turned his horse round to watch. He doesn't say *I said*. He has the face for it, and lets the face say it.` : `Back by the ruts, Sethand has turned his horse round to watch. When he sees Kettle standing in the sun with her hands under her arms, he turns it away again.`}`,
       ch:[{t:'Ride on.', go:()=>startExplore()}]}),
     c2_barrow_in:()=>({sp:'The barrow', scene:'rhivi_barrow', txt:
 `Inside it is cold the way the tunnels under the Pale were cold, the cold that isn't weather. A passage of dry-laid stone, low enough that Brisk goes in bent double, opens into a chamber the size of a company tent with a stone slab in the middle of it and nothing on the slab.
@@ -378,11 +388,15 @@ They stand up the way old men stand up, in stages. Four of them. Dry, brown, wou
 Tuft, very quietly: "They're not undead. They're *worse* than undead. They're patient."`,
       /* a stone read right means nothing gets the jump on the squad; a clean read (four) means the squad moves first */
       ch:[{t:S.f.c2_barrowLooked ? '"Shields. Take them as they stand."' : '"Shields. Back to the passage."', go:()=>startBattle('barrow', S.f.c2_barrowFour ? {surprise:'p'} : S.f.c2_barrowLooked ? {} : {surprise:'e'})},
-          {t:'Kettle has a sharper in her hand.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('barrow', S.f.c2_barrowFour ? {pre:true, surprise:'p'} : {pre:true})}]}),
+          {t:'Kettle has a sharper in her hand.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('barrow', S.f.c2_barrowFour ? {pre:c2BarrowPre(), surprise:'p'} : {pre:c2BarrowPre()})}]}),
     c2_after_barrow:()=>({sp:'The barrow', scene:'rhivi_barrow', fx:()=>{ S.f.c2_barrowFought=1; gain('barrowtorc'); }, txt:
-`When it's done they don't fall so much as stop. Four brown shapes on the floor above, arranged wrong, and down here the big one folded across its own bier like a man who has sat down at the end of a long march. The cold goes out of the barrow like a tide going out.
+`When it's done they don't fall so much as stop. ${preUsed('barrow') ? 'Brown shapes in the roof-dust on the floor above' : 'Four brown shapes on the floor above'}, arranged wrong, and down here the big one folded across its own bier like a man who has sat down at the end of a long march. The cold goes out of the barrow like a tide going out.
 
-There's a torc on the bier that wasn't there before. Black iron. Nobody saw who put it down.
+${preUsed('barrow') ? `Kettle is looking up. Over the first room a capstone the size of a cart-bed has come a hand's width out of the corbelling and stopped there, thinking about it. "Dry-laid," she says. "No mortar. A sharper in a room like that doesn't go *off*, Sergeant, it goes *round*. It put them down before they'd finished getting up, and that was lovely. And everything in here heard it, and everything under here heard it, and came up to see." She doesn't sound pleased, which for Kettle and a room is new. "I'd do it again. I'd like it noted I'd do it smaller."
+
+${SQUAD().includes('brisk') ? `"Everyone heard it," says Brisk, already looking at the stair, and the light at the top of it. "Not just in here."` : `Nobody says what everyone is thinking, which is that it wasn't only the barrow that heard.`}
+
+` : ''}There's a torc on the bier that wasn't there before. Black iron. Nobody saw who put it down.
 
 And in the niche where the last one stood, in the dust, a bronze badge. Malazan. Second Army. Kettle picks it up and reads it and hands it to Brisk without a word, which is a thing Kettle has never done in her life.
 
@@ -397,16 +411,30 @@ Ohl, from the stair: "Then it is someone's."`,
 "Somebody from the Second walked out onto this plain and into a barrow and didn't walk out. That's a year ago, maybe. Before Pale." She puts the badge inside her gorget, where the letter is. "He could've known Tav. Marched with him. Somebody did."
 
 She doesn't say anything else. She doesn't have to; she has said more in a minute than she said in the whole of the Pale.`,
-      ch:[{t:'Out. Into the light.', go:()=>startExplore()}]}),
+      ch:[{t:'Out. Into the light.', go:preUsed('barrow') ? 'c2_barrow_heard' : ()=>startExplore()}]}),
     c2_barrow_leave:()=>({sp:'Brisk', txt:
 `She sets it on the slab, square, the way you'd set a helmet on a pit's edge.
 
 "Fine." She straightens. "He stays with the ones that killed him. That's the Second all over."
 
 Ohl says something to Hood in Ehrlii on the way out. It doesn't sound like an argument this time. It sounds like a receipt.`,
-      ch:[{t:'Out. Into the light.', go:()=>startExplore()}]}),
+      ch:[{t:'Out. Into the light.', go:preUsed('barrow') ? 'c2_barrow_heard' : ()=>startExplore()}]}),
+    /* the sharper in the barrow was heard on the plain: Sethand off his horse, the clans told by dark, and his name tied to it (costs one of his trust) */
+    c2_barrow_heard:()=>({sp:'Sethand', scene:'plain', fx:()=>{ S.f.c2_barrowHeard=1; S.f.c2_sethTrust = Math.max(0, (S.f.c2_sethTrust || 0) - 1); note('The plain heard the sharper. Sethand trusts the Fourth a little less.', 'bad'); }, txt:
+`Outside it's still day, which feels like a mistake.
+
+Sethand is off his horse. You have not seen him off his horse in four days. He is kneeling ten paces from the stones with one hand flat on the turf, the way Ohl puts a hand on a man's chest, and the horse is a hundred paces off and not coming back.
+
+"It came up through the ground," he says, without looking round. "Here. And there, and there." The free hand goes west, and east, and south. "The grass carries a sound like that. Not to me. To every fire between here and the hills, and before dark every one of them will know that there is a wagon on the plain whose Malazans put fire into a grave."
+
+${SQUAD().includes('kettle') ? `Kettle, behind you, still smelling of it: "It's not *fire*. A burner's fire. A sharper's more of a—" Brisk puts a hand on her shoulder. "—I'm saying it for the ledger."
+
+` : ''}"The dead in there are not ours. They are older than the Rhivi; they will not mind fire; they have seen worse than you." He stands and wipes the hand down his leg. "It is the clans who will mind. They will say *the Malazans with the wagon*. And then they will say *Sethand's Malazans*, because I am the one who brought you, and I will be hearing it at the Mhybe's fires until I am old, which I already am. I am telling you so you will know what they will call you. What I call you, I have not decided."
+
+${S.f.c2_sethBarrows ? `He does not say *I said do not.* He said it once. He has never said a thing twice, and he is not going to start for a Malazan.` : `He goes to fetch his horse. It takes him a long time, and he does not hurry it.`}`,
+      ch:[{t:'Ride on.', go:()=>startExplore()}]}),
     c2_to_hound:()=>({sp:'The wagon road · east', txt:
-`The ruts bend east here, and the grass ahead is trampled in a way that has nothing to do with wagons. Sethand is already out that way, sitting his horse, waiting. He has the look of a man standing at a distance from something.`,
+`The ruts bend east here, and the grass ahead is trampled in a way that has nothing to do with wagons. Sethand rides past you without a word and on out that way, and stops, and sits his horse, waiting. He has the look of a man standing at a distance from something.`,
       ch:[{t:'Ride east.', go:()=>{ startExplore('hound_site'); talk('c2_site'); }},
           {t:'Not yet.'}]}),
 
@@ -513,6 +541,8 @@ ${S.f.c2_prints ? `"You saw the prints. Where they stop." Not a question. ${S.f.
 
 Her voice is very exact. Every word is put down where it's meant to go, and none of them shake.
 
+"Ellis," she adds, as if it were the next item on a list. "His scout." A tilt of the head at ${S.f.c2_toc ? 'Toc' : 'the man with the bow'}, without looking at him.
+
 ${S.f.c2_tocCaptain ? `"He's asked you. I know. I'd like it noted that I didn't."` : `"Toc'll ask you. He's asked me twice. I'd like it noted that I didn't."`}${S.f.c2_printsTrod ? ((p) => `
 
 Then, still not looking up: "${p.you ? 'You stood' : `${p.N} stood`} where it stopped. ${p.you ? `Don't do it twice.` : `Don't let ${p.them} do it twice.`}"`)(c2P(S.f.c2_printsWho)) : ''}
@@ -577,8 +607,8 @@ Toc has his own horse's saddle over his shoulder and is standing at Sethand's st
 ${SQUAD().includes('ohl') && S.f.c2_horseHow === 'tea' ? `Ohl has the oilcloth out. He isn't writing on it. He's looking at the place where he would.` : `Tuft has gone to the edge of the flattened grass and is standing with her back to it, which is the way she stands to things she is listening to.`}`,
       ch:[{t:'"Toc. Before you ride. What happened here?"', req:()=>!S.f.c2_tocHound, go:'c2_toc_hound'},
           {t:'Toc wants a word.', go:'c2_toc_offer'}]}),
-    c2_toc_offer:()=>({sp:'Toc the Younger', fx:()=>{S.f.c2_offer=1;}, txt:
-`He has the pony's reins in one hand and his own saddle on it, and the light is nearly gone.
+    c2_toc_offer:()=>({sp:'Toc the Younger', fx:()=>{S.f.c2_offer=1; S.f.c2_toc=1;}, txt:
+`He has the pony's reins in one hand and his own saddle on it, and the light is nearly gone.${S.f.c2_toc ? '' : ` Close to, he's younger than the bow made him look, with a burn across the left side of his face, new and shiny, and the eye on that side gone, the lid sunk over nothing. "Toc the Younger," he says. "Second Army scouts, and other things. We'll skip the rest; there isn't light for it."`}
 
 "Ellis." He doesn't raise his voice. She comes. "You're going with the Fourth."
 
@@ -649,7 +679,7 @@ Sethand, from his horse, to nobody: "The ridge, before full dark. I said not to 
 `The ground rises ahead, not much, a long low back of land with the last light on it. Sethand has ridden on to the foot of it and stopped there, off to one side of the ruts. He has been looking west all day. He isn't now. He's looking up at the crest.`,
       ch:[{t:'Make camp on the ridge.', go:'c2_dusk'},
           {t:'Not yet.'}]} : {sp:'East · the ridge', txt:
-`Sethand is waiting by the ridge. ${S.f.c2_horseDone ? `Toc hasn't ridden yet.` : `Toc is still sitting with the horse.`} Whatever this is, it isn't finished, and you're the one who'll have to finish it.`,
+`Sethand is waiting by the ridge. ${S.f.c2_horseDone ? `Toc hasn't ridden yet.` : `${S.f.c2_toc || S.f.c2_ellisMet ? 'Toc' : 'The man with the bow'} is still sitting with the horse.`} Whatever this is, it isn't finished, and you're the one who'll have to finish it.`,
       ch:[{t:'Not yet.'}]},
 
     /* ---- the foot of the ridge: Pale deserters want the wagon (the chapter's road fight; talk, pay, or fight) ---- */
@@ -760,7 +790,7 @@ He spits into the fire, carefully, so that it doesn't hiss.
     c2_seth_night_why:()=>({sp:'Sethand', fx:()=>{S.f.c2_sethWhy=1;}, txt:
 `He is quiet for a while.
 
-"Because your mage has a Deck in her sleeve, and I have seen her not draw from it for four days, and tonight she is at the fire with it in her hand." He doesn't look at Tuft. "The Rhivi do not read the Deck. We do not need to. We have the grass, and the grass says what the Deck says, only slower and with fewer pictures."
+"Because your mage has a Deck in her sleeve, and I have seen her not draw from it for four days, and tonight ${S.f.c2_drawn ? 'she drew, at this fire, on your shield-woman\'s shield' : S.f.c2_noCard ? 'she took it out at this fire, and you told her to put it back, and she did, which I did not expect of either of you' : 'she is at the fire with it in her hand'}." He doesn't look at Tuft. "The Rhivi do not read the Deck. We do not need to. We have the grass, and the grass says what the Deck says, only slower and with fewer pictures."
 
 ${S.f.c2_horseHow === 'tea' ? `"And because a man who can put a horse down that gently should not sit alone."` : S.f.c2_horseHow === 'botched' ? `"And because your healer had to finish a thing at dusk that you began, and has not said a word since, and a man that old should not sit alone with a thing like that."` : `"And because your healer has not said a word since the horses, and a man that old should not sit alone with a thing like that."`} A nod toward the wagon, toward Ohl. "That is all. I will go back to my own fire when I have finished being here."`,
       ch:[{t:'"The dust-line."', req:()=>!S.f.c2_sethDustNight, fx:()=>S.f.c2_sethDustNight=1, go:'c2_seth_night_dust'},
@@ -795,8 +825,8 @@ ${!(S.f.c2_drawn || S.f.c2_noCard) ? `He nods, very slightly, at Tuft, and the D
 
 ${S.f.c2_noCard ? `Tuft has the Deck in her sleeve and is not touching it. She hasn't said anything about it. That's how you know.` : `Tuft has put the Deck away. She's looking west, over the tents, at nothing.`}
 
-${SQUAD().includes('kettle') && !S.f.c2_bones ? `Kettle has two knucklebones out and is throwing them against her own knee, left hand against right, keeping score in the dirt with a stick. "Hedge taught me," she says, without looking up. "Well. Hedge took four silver off me and I watched how." She holds them up. "Loser takes first watch, Sergeant?"` : S.f.c2_bones === 'won' ? `Kettle is on first watch, out by the stakes, counting stars under her breath and losing count on purpose.` : S.f.c2_bones === 'lost' ? `Kettle is asleep already, curled round her satchel, with the bones in her fist.` : ''}`,
-      ch:[{t:'"Loser takes first watch. Throw."', tag:'Bones', req:()=>SQUAD().includes('kettle') && !S.f.c2_bones, go:()=>playBones({opp:'kettle', chat:SQUAD().includes('brisk') ? 'brisk' : null, stakes:null, stakeText:'first watch', place:'c2', after:r => { if (r.games) S.f.c2_bones = r.last === 'me' ? 'won' : 'lost'; talk('c2_bones_after'); }})},
+${SQUAD().includes('kettle') && !S.f.c2_bones ? `Kettle has two knucklebones out and is throwing them against her own knee, left hand against right, keeping score in the dirt with a stick. "Hedge taught me," she says, without looking up. "Well. Hedge took four silver off me and I watched how." She holds them up. "Loser takes ${c2Watch()}, Sergeant?${SQUAD().includes('ellis') ? ` Ellis has the first. She took it before anyone could lose it.` : ''}"` : S.f.c2_bones === 'won' ? (SQUAD().includes('ellis') ? `Kettle is lying by the wagon with her crossbow across her chest, waiting for second watch, counting stars under her breath and losing count on purpose.` : `Kettle is on first watch, out by the stakes, counting stars under her breath and losing count on purpose.`) : S.f.c2_bones === 'lost' ? `Kettle is asleep already, curled round her satchel, with the bones in her fist.` : ''}`,
+      ch:[{t:`"Loser takes ${c2Watch()}. Throw."`, tag:'Bones', req:()=>SQUAD().includes('kettle') && !S.f.c2_bones, go:()=>playBones({opp:'kettle', chat:SQUAD().includes('brisk') ? 'brisk' : null, stakes:null, stakeText:c2Watch(), place:'c2', after:r => { if (r.games) S.f.c2_bones = r.last === 'me' ? 'won' : 'lost'; talk('c2_bones_after'); }})},
           {t:'Leave the fire.'}]} : {sp:'The fire', fx:()=>{S.f.c2_fireSeen=1;}, txt:
 `Tuft has the Deck out. She has it face-down on her knee, one hand flat on it, the way you'd hold a door shut.
 
@@ -814,10 +844,10 @@ ${SQUAD().includes('ellis') ? `Ellis, from the dark beyond the stakes, not loudl
 Sethand has not looked at the card. He has looked at Tuft's face while she looked at it, which is where a Rhivi reads a Deck.`,
       ch:[{t:'Put the cards away.', go:()=>{ if (S.f.c2_sethNight) talk('c2_light'); else startExplore(); }}]}; },
     c2_bones_after:()=>({sp:'The fire', txt: S.f.c2_bones === 'won' ?
-`Kettle stares at the bones for a while as if they might explain themselves. Then she gets up, picks up her crossbow, and goes out to the stakes for first watch without a word, which from Kettle is a speech.
+`Kettle stares at the bones for a while as if they might explain themselves. Then she gets up, picks up her crossbow, and ${SQUAD().includes('ellis') ? 'lies down by the wagon with it across her chest, to be ready for second watch,' : 'goes out to the stakes for first watch'} without a word, which from Kettle is a speech.
 
 ${SQUAD().includes('brisk') ? `Brisk, feeding the fire a stick at a time: "She let you win." A pause. "She didn't. But she'll say she did. Let her."` : `She's still muttering odds at the dark when you fall asleep.`}` : S.f.c2_bones === 'lost' ?
-`"First watch," says Kettle, and is asleep before you've finished standing up, curled round her satchel with the bones in her fist.
+`"${c2Watch()[0].toUpperCase() + c2Watch().slice(1)}," says Kettle, and is asleep before you've finished standing up, curled round her satchel with the bones in her fist.
 
 The stars over the Rhivi Plain are very large and very many, and there is a long time to look at them.` :
 `Kettle puts the bones away. "Another night," she says. "I've been working on a system."`,
@@ -833,17 +863,17 @@ ${S.f.noCard && S.f.c1_noCard ? `"That's three times." Not an accusation. An obs
     /* ---- the tents and the wagon at night ---- */
     c2_tent:()=>({sp:'The tents', txt:
 `${S.f.c2_lightDone ? `The tents are struck and on the wagon. Two squares of pale, flattened grass where they stood. By tonight the plain will have them back.` : S.f.c2_tentSeen ? `The tents are where they were. Kettle's snoring is not louder than the wind, but it's arguing with it.` :
-`Two tents, six paces apart, which is the distance Brisk has decided is safe from Kettle. Kettle's has a lamp in it. Brisk's doesn't; Brisk sleeps standing, or looks like it.
+`Two tents, six paces apart, which is the distance Brisk has decided is safe from Kettle. Kettle's is the one with the lamp, or was. Brisk's never has; Brisk sleeps standing, or looks like it.
 
 Ohl is sitting on the wagon's tailboard with the oilcloth open on his knee and the lamp from Kettle's tent held over it, which she let him take, which she lets nobody do.
 
 "Two hundred and eleven," he says, when you're close enough. "I've read it twice tonight. I keep getting to the end and finding no one new, and it should be a relief, Sergeant, and it isn't. It feels like waiting."
 
-${SQUAD().includes('ellis') ? `"Six." He says it to the list. "I've had five in the Fourth for a year and more. I've never once had six. I keep looking at the tents and counting and it comes out wrong." A pause. "It comes out *right*. That's what's wrong."` : S.f.c2_ellisRefused ? `He closes the oilcloth. He does it without looking at you, which in Ohl is as close to a door slammed as he comes. "I'd have liked to look at her hand," he says. "That's all. It's the healer talking. Ignore him. Everybody does."` : `He closes the oilcloth. "Go and sleep, Sergeant. Or go and pretend. Tattersail told you that once. It was good advice from a woman who took none of it."`}`}`,
+${SQUAD().includes('ellis') ? `"Six." He says it to the list. "I've had five in the Fourth for a year and more. I've never once had six. I keep looking at the tents and counting and it comes out wrong." A pause. "It comes out *right*. That's what's wrong."` : S.f.c2_ellisRefused ? `He closes the oilcloth. He does it without looking at you, which in Ohl is as close to a door slammed as he comes. "I'd have liked to look at her hand," he says. "That's all. It's the healer talking. Ignore him. Everybody does."` : `He closes the oilcloth. "Go and sleep, Sergeant. Or go and pretend. Tattersail says that. It's good advice, from a woman who takes none of it."`}`}`,
       fx:()=>{S.f.c2_tentSeen=1;},
       ch:[{t:'Leave'}]}),
     c2_wagon_night:()=>({sp:'The wagon', txt:
-`${S.f.c2_lightDone ? `The wagon's loaded and ${c2Mule()} is in the traces. Brisk is at the tailboard with the ledger shut, waiting, which is a thing she can make sound like a remark.` : S.f.c2_wagonNight ? `Brisk is asleep against the wheel, or doing a very good impression. Her spear is across her knees. ${S.f.c2_wagon ? 'Pell the mule' : 'The mule'} is asleep too, and looks, for once, like it doesn't hate anyone.` :
+`${S.f.c2_lightDone ? `The wagon's loaded and ${c2Mule()} is in the traces. Brisk is at the tailboard with the ledger shut, waiting, which is a thing she can make sound like a remark.` : S.f.c2_wagonNight ? `Brisk has gone back to the fire. The ledger is on the tailboard, shut, with a stone on it against the wind. ${S.f.c2_wagon ? 'Pell the mule' : 'The mule'} is asleep in the traces, and looks, for once, like it doesn't hate anyone.` :
 `Brisk is at the wagon with her back to the wheel and the ration ledger open on her knee, though it's too dark to read and she isn't reading it.
 
 "${SQUAD().includes('ellis') ? 'Fourteen days, six.' : 'Seventeen days, five.'}" She says it the way you'd say goodnight.
@@ -885,7 +915,7 @@ You go, the wagon lurching on ground it was never meant for. The light doesn't g
     c2_outriders:()=>({sp:'Rhivi outriders', txt:
 `Six of them, then nine, then more than you want to count: small horses, small men, bows strung, arrows on the string and not yet drawn. They come out of the lit grass in a curve and stop at a distance that is exactly a bowshot, which is not an accident.
 
-The one in front says something in Rhivi. It has a sergeant's tone in it. Sethand answers, short. The man says it again, and this time he points at ${S.f.c2_barrowCold ? `Kettle: not the satchel, Kettle, her hands, which she has had under her arms since the barrow. He says a second word about her that Sethand does not translate. Then he points` : `Kettle's satchel, and then`} at the light, and then at you, and the meaning is very clear in any language: *not one step*.
+The one in front says something in Rhivi. It has a sergeant's tone in it. Sethand answers, short. The man says it again, and this time he points at ${S.f.c2_barrowCold ? `Kettle: not the satchel, Kettle, her hands, which she has had under her arms since the barrow. He says a second word about her that Sethand does not translate. Then he points` : `Kettle's satchel, and then`} at the light, and then at you, and the meaning is very clear in any language: *not one step*.${preUsed('barrow') ? ` Then he says one more word, at Kettle's satchel, and the riders behind him say it after him, low. Sethand translates it without being asked, flat. "Grave-fire. They have heard about the barrow. The whole plain has."` : ''}
 
 ${SQUAD().includes('ellis') ? `Ellis, at your elbow, without moving her lips: "Eleven. Four more in the grass on the left. They're not here for us. They're here for whatever's behind them."` : `Tuft, at your elbow: "Sergeant. They're afraid of us. Not of the fire. Of *us.* Malazans and a burning mage. Think about how that looks."`}
 
@@ -943,7 +973,7 @@ ${by({
   brisk:`It's Brisk. She doesn't sing it, exactly. She calls it, in the regiment voice, the one for reading out the names after a field; and it turns out that is what the song is.`,
   _:`It's {who}. {who} sings it low, the few words, with the man's word where the horse was.`})}
 
-For a breath nothing happens. Then the man in front closes his mouth on whatever he was going to say, and opens it again, and sings the next line. And the next. The riders take it up, one and then four and then all of them, low, the way you'd sing in a tent with a sick child in it, and the bows are down and nobody saw them lowered.
+For a breath nothing happens. Then the man in front closes his mouth on whatever he was going to say, and opens it again, and sings the next line. And the next. The riders take it up, one and then four and then all of them, low, the way you'd sing in a tent with a sick child in it, and the bows are down and nobody saw them lowered.${preUsed('barrow') ? ` The man in front looks once more at Kettle's satchel, and then at ${p.n}, and you watch him decide that the one has been paid for with the other.` : ''}
 
 Something comes with the song that wasn't in it at dusk. ${S.f.c2_barrowCold ? `Kettle's hands, cold since the barrow, are warm, and she looks at them as if they belonged to someone else.` : `Ohl's hands, which have not been still since the ridge, are still.`} Brisk lets her shield down an inch, which she has never done for anything she couldn't see the end of. Sung for the dead, the words carry the dead. Sung over the living, they carry something else, and for as long as it lasts the Fourth is standing in it.
 
@@ -1038,7 +1068,7 @@ Then, because he is Ohl: "Drink something. Not the tea. The other flask."`,
     c2_ashes_more:()=>({sp:'The ashes', txt:
 `The Rhivi are going. They go the way they came, in a curve, and the old woman rides in the middle of them with the horse-blanket held against her chest, and not one of them looks back at the glass.
 
-Brisk has the wagon turned already. Brisk has not looked at the glass either. She is looking east, where the timetable is, and she has not said one word since the ridge, and she is not going to.
+Brisk has the wagon turned already. Brisk has not looked at the glass either. She is looking east, where the timetable is, and she has not said one word of her own since the ridge, and she is not going to.
 
 Something crosses the stars.
 
@@ -1187,7 +1217,7 @@ Brisk has the tents struck and the wagon loaded and ${c2Mule()} hitched before t
 
 Tuft has spoken to nobody since the light. She walks in the tall grass, where you can't see her hands. Kettle walks beside her, on the outside, and doesn't say anything either, which for Kettle is a kind of shouting.`}
 
-Sethand: "South. Two days, and the grass changes, and then the hills."`,
+Sethand: "East. Two days, and the grass changes, and then the hills."`,
       ch:[{t:'East.', go:'c2_to_hills'}]}),
     /* the ridge's exit tile, and also the way on from c2_dawn (a backdrop, so "Not yet" is offered only on the map) */
     c2_to_hills:()=> S.f.c2_lightDone ? {sp:'East · the hills', txt:
@@ -1216,7 +1246,11 @@ ${SQUAD().includes('ellis') ? `Ellis has stopped too. She's looking at the blue 
     c2_hills_dust:()=>({sp:'Sethand', fx:()=>{S.f.c2_hillsDust=1; S.f.c2_hillsSeth=1;}, txt:
 `He's quiet for long enough that ${c2Mule()} shifts in the traces.
 
-"A woman on a horse. Malazan. Not a soldier, though she rides like one and kills like one; the clans watched her kill a Rhivi boy on the third day for seeing her, and the thing beside her did not help, and did not need to." His hands are still on the reins. He has made them be. "The thing that is not a man is a thing that was buried. ${S.f.c2_sethBarrows ? `The barrows I told you not to open, Malazan` : `The barrows on the plain, Malazan, the ones your people walk past`}: it is what they were *for*. It walks with her because she has a word that makes it walk, and she is taking it into those hills, and there is something in those hills that has been asleep since before the Rhivi, and she is going to wake it."
+"A woman on a horse. Malazan. Not a soldier, though she rides like one and kills like one; the clans watched her kill a Rhivi boy on the third day for seeing her, and the thing beside her did not help, and did not need to." His hands are still on the reins. He has made them be. "The thing that is not a man is a thing that was buried. ${S.f.c2_sethBarrows ? `The barrows I told you not to open, Malazan` : `The barrows on the plain, Malazan, the ones your people walk past`}: it is what they were *for*. It walks with her because she has a word that makes it walk, and she is taking it into those hills, and there is something in those hills that has been asleep since before the Rhivi, and she is going to wake it."${preUsed('barrow') ? `
+
+He is quiet a moment. "The clans watch that thing; they always watch it. On the day you put fire in the barrow, it stopped. It has not stopped once in three days of walking. It stood in the grass and turned its head toward the barrow, for as long as it takes to water a horse." He looks at Kettle's satchel. "Then it walked on. I am telling you so you will know that something on this plain heard you that was not the grass."${SQUAD().includes('kettle') ? `
+
+Kettle, very quietly: "I'd like that not noted."` : ''}` : ''}
 
 He turns the horse.
 
@@ -1262,12 +1296,12 @@ ${S.f.c2_key === 'light' && S.loy.brisk <= -1 ? `She doesn't look at you when sh
 
 Sethand has turned his horse west. He has not said goodbye. ${S.f.c2_sethRoad ? `He said, days ago, that he would not go into the city, and a Rhivi does not say a thing twice.` : `He will not go into the city. He has not said so. He doesn't need to.`}
 
-${S.f.c2_key === 'light' ? `Tuft walks beside the wagon, where you can see her. She has the badge on her collar. The cadre badge. She has not said a word about it and nobody has asked, and Ohl looked at it once and then looked at you, and nodded, as if something on his list had been paid.` :
+${S.f.c2_key === 'light' ? `Tuft walks beside the wagon, where you can see her. She has the badge on her collar. The cadre badge. She has not said a word about it${S.f.c2_ashesTuft ? ' since the glass' : ''} and nobody has asked, and Ohl looked at it once and then looked at you, and nodded, as if something on his list had been paid.` :
   `Tuft walks in the tall grass, or what's left of it, where you can't see her hands. She has spoken to Kettle. She has not spoken to you. The Deck is in her sleeve and she has not touched it since the ridge, and you think that she is waiting for something, and you think that it isn't the city.`}
 
 ${SQUAD().includes('ellis') ? `Ellis is out ahead, on foot, where the ruts go up into the hills, with her bow strung and her burned hand gloved. She looks back once. Counts. Arrives at six, and checks it.` : S.f.c2_ellisRefused ? `Somewhere ahead, a scout with one eye is riding after an Adjunct with a woman who could have been the Fourth's, and Ohl has not mentioned it, and will not, and the not-mentioning has a shape.` : ``}
 
-Kettle: "${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}, ${S.f.c2_outToll === 'sharper' || S.f.c2_outToll === 'burner' ? `one ${S.f.c2_outToll} on loan to a Rhivi who isn't giving it back, ` : ''}and a crate I still haven't opened. I want that in the ledger."
+Kettle: "${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}, ${preUsed('barrow') ? `one sharper spent in a barrow, which I'm told the whole plain heard, ` : ''}${S.f.c2_outToll === 'sharper' || S.f.c2_outToll === 'burner' ? `one ${S.f.c2_outToll} on loan to a Rhivi who isn't giving it back, ` : ''}and a crate I still haven't opened. I want that in the ledger."
 
 Brisk: "It's in."
 

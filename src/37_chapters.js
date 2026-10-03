@@ -61,6 +61,7 @@ function showChapterEnd(){
     if (S.f.c3_ellisMsg) extra.push('The Claw\'s message came through Ellis. She brought it anyway. Remember that.');
     if (S.f.c3_trueName) extra.push('The sergeant\'s real name is in a gate-clerk\'s ledger, spelled correctly. Somebody reads that ledger.'); else if (S.f.c3_falseName) extra.push('A dead man\'s name off an Untan headstone is in a gate-clerk\'s ledger. It is the name this city knows the sergeant by.'); else if (S.f.c3_paid) extra.push('Five silver kept the Fourth\'s name out of a gate-clerk\'s ledger. It did not keep it out of anyone else\'s.');
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
+    if (S.f.c3_pinup) extra.push('Two painted women on a crate lid, Rumjugs and Sweetlard, rode out of the crossing on the Bridgeburners\' tailboard. Nobody knows who they are. Hedge thinks he will.');
   }
   if (n === 4) {
     if (S.f.c4_vell) extra.push('Vell is alive. A Guild journeyman owes the Fourth his life, and the Guild pays its debts, one way or the other.');
@@ -68,9 +69,9 @@ function showChapterEnd(){
     if (S.f.c4_seen) extra.push('A Tiste Andii knows the Fourth\'s faces. That is Rake\'s business now.');
     if (S.f.c4_tuftDark) extra.push('Tuft has not slept. She says the dark was polite. She says it the way you say a thing you are trying not to say.');
     if (S.f.c4_kalamLook) extra.push('Kalam looked at the sergeant a beat too long before he went up. He knows something was told. He does not know by whom. Yet.');
-    if (S.f.c4_reprisalFought) extra.push('Guild blood in the alley. Ocelot sent three and got two back, one of them holding his ribs, and will count that.');
+    if (S.f.c4_reprisalFought) extra.push('Guild blood in the lane and in a cooperage yard. Ocelot sent his knives after the Fourth, and fewer walked home than went out, the old one holding his ribs. Ocelot will count that.');
     if (S.f.c4_sawSorry) extra.push('A girl in a doorway who did not move at all. Kettle has not stopped talking about it, which is how Kettle is afraid.');
-    if (S.f.c4_rallick) extra.push((SQUAD().includes('ellis') ? 'Rallick Nom' : 'The Guild man on the roof') + ' told the Fourth to go home. He is the first person in this city to say it as a kindness.');
+    if (S.f.c4_rallick) extra.push((SQUAD().includes('ellis') && (S.f.c4_rallickOk || S.f.c4_rallickTail) ? 'Rallick Nom' : 'The Guild man on the roof') + ' told the Fourth to go home. He is the first person in this city to say it as a kindness.');
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
   }
   if (n === 5) {
@@ -200,7 +201,7 @@ const QUESTS = {
   ridge:()=> S.f.c2_lightDone ? 'Dawn. East, to the hills' : S.f.c2_light ? 'The light in the west' : 'The fourth camp. Talk to Sethand.',
   hills_edge:()=> 'The Gadrobi Hills. Darujhistan beyond.',
   worry_gate:()=> S.f.c3_gateFought ? 'Into the city, down to the Gadrobi District' : S.f.c3_gate ? 'The wagon through the gate.' : 'The Worry Gate. Talk to the gate-clerk.',
-  gadrobi_cross:()=> S.f.c3_key ? 'Dawn. The roof above the dig.' : S.f.c3_msg ? 'Up the alley to the Daru District. A dye-shop.' : S.f.c3_workDone ? (SQUAD().includes('ellis') ? 'The second night. Ellis is waiting at the dig.' : 'The second night. A Gadrobi child is looking for you.') : S.f.c3_reported ? 'Crates down the hole. Whiskeyjack\'s orders.' : 'Report to Whiskeyjack at the barrier',
+  gadrobi_cross:()=> S.f.c3_key ? 'Dawn. The roof above the dig.' : S.f.c3_msg ? 'Up the alley to the Daru District. A dye-shop.' : S.f.c3_workDone ? (SQUAD().includes('ellis') ? 'The second night. Ellis has a letter. Ask her at the dig.' : 'The second night. A Gadrobi child is looking for you.') : S.f.c3_reported ? 'Crates down the hole. Whiskeyjack\'s orders.' : 'Report to Whiskeyjack at the barrier',
   hills_ridge:()=> S.f.c5_seth ? 'East, to the barrow. Don\'t be seen.' : 'Talk to the Rhivi on the ridge',
   barrow_vale:()=> S.f.c5_key ? 'Dawn. Paran rides for the city.' : S.f.c5_night ? 'Night. Something on the next hill. East.' : S.f.c5_wardsFought ? 'Two riders coming up the vale' : 'The Adjunct and the Imass. Watch.',
   roofs_gadrobi:()=> S.f.c4_key ? 'Down. The dig, and Whiskeyjack.' : S.f.c4_roofsFought ? 'East across the planks, to Kalam\'s roof' : 'Two roofs over. Watch. Do not help.',

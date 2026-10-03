@@ -36,7 +36,7 @@ const BTUNE = {
   barrow:{hp:1.1, atk:1}, outriders:{hp:1.2, atk:2}, c2_deserters:{atk:1}, cutpurses:{atk:1}, knives:{hp:.92}, c3_toughs:{hp:1.15, atk:1},
   andii_roof:{atk:5, dmg:5}, c4_clan:{hp:1.15, atk:1}, c5_dig:{atk:1}, the_rent:{hp:1.2, atk:3, dmg:3},
   garden_hound:{atk:6, dmg:6, waves:[{round:2, foes:[['shade',0,1],['shade',7,1]], text:'Two lesser shadows come over the garden wall after it.'}]}, tyrant_garden:{atk:4, dmg:3}, lorn_alley:{atk:-3, dmg:-3}, // the alley is mortal: kept near its old edge
-  last_accounting:{hp:.75, atk:-1}, 'last_accounting:2':{hp:.8, atk:-1},
+  last_accounting:{hp:.75, atk:-1}, 'last_accounting:2':{hp:.8, atk:-1}, c7_worrygate:{hp:.8, atk:-1}, // the gate was 6–25% for a smart squad
 };
 const foeScale = () => { if (DIFF() === DIFFS.story) return {hp:1, atk:0, dmg:0};
   const c = FSCALE[clamp((S && S.chapter) || 0, 0, FSCALE.length - 1)], t = (B && (BTUNE[B.id + (B.def && B.def.isStage2 ? ':2' : '')] || BTUNE[B.id])) || {};
@@ -91,7 +91,7 @@ async function foeSpecial(u, gone){
   if (ready('mark')) { const t = sq.filter(p => cheb(u, p) <= 6).sort((a, b) => a.hp - b.hp)[0]; if (t) { u.cd.mark = B.round + 2; t.clawMarkUntil = B.round + 1; blog(`${u.name} looks at ${t.name} and writes something down. <em>Every Claw blade on the field knows the name now: +2 to hit them.</em>`); float(t, 'marked', '#f08a7c'); await wait(400); if (gone()) return true; } }
   // whole-turn tricks
   if (ready('daze')) { const t = sq.filter(p => cheb(u, p) <= 4 && canShoot(u, p))[0]; if (t && R(3) === 0) { u.cd.daze = B.round + 2;
-    const res = d20() + (TPL[t.id] ? statOf(t.id, 'wits') : 0); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#c9bbff', t:performance.now(), dur:400, wob:true}); AUDIO.play('shadow');
+    const res = d20() + (TPL[t.id] ? statOf(t.id, 'wits') : 0) + (t.steady ? 2 : 0); if (t.steady) { t.steady = false; blog(`${t.name} was steady for it.`); } B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#c9bbff', t:performance.now(), dur:400, wob:true}); AUDIO.play('shadow');
     if (res >= 14) { blog(`${u.name} whispers into ${t.name}'s head. ${t.name} does not listen${SET.dice ? ` (${res} vs 14)` : ''}.`); float(t, 'resists', '#a99a88'); }
     else { t.stun = true; blog(`${u.name} whispers into ${t.name}'s head, and ${t.name} stops to listen${SET.dice ? ` (${res} vs 14)` : ''}.`); float(t, 'dazed', '#c9bbff'); }
     await wait(650); return true; } }
@@ -167,3 +167,70 @@ function chapterAgain(){
   Object.assign(s, keep); s.gods = {ch:n, used:[]}; S = migrate(s); S.scene = 'chintro'; save(); B = null; $('#sheet').hidden = true;
   if (n === 0) showIntro(); else startChapter(n);
 }
+
+/* ============ v3.13 tactics: through the squad, Steady, Post up, hold-out takedowns ============ */
+/* the squad passes through its own people (and allies) on the move; enemies block */
+const passFriend = (x, y, u) => !wall(x, y) && !B.units.some(v => v !== u && v.hp > 0 && v.x === x && v.y === y && v.side !== u.side);
+/* a ranged squadmate who has not fired yet this fight is posted up: the first enemy to step into their reach eats a free shot */
+const postedUp = u => !!(B && u && u.side === 'p' && !u.ally && u.hp > 0 && u.rng > 1 && !u.fired && !u.stun);
+async function postUp(e, was){
+  if (!B || B.over || e.hp <= 0) return false;
+  const shooters = party().filter(p => postedUp(p) && cheb(p, e) <= p.rng && cheb(p, was) > p.rng && canShoot(p, e));
+  if (!shooters.length) return false;
+  const p = shooters.sort((a, b) => cheb(a, e) - cheb(b, e))[0];
+  p.facing = e.x >= p.x ? 1 : -1; blog(`<em>${p.name} was posted up for exactly this.</em>`); float(p, 'posted up', '#e8c073');
+  attack(p, e, {verb:'was waiting for'}); updBattleUI(); await wait(420); return true;
+}
+/* hold-out fights: every enemy the Fourth puts down, even one that gets up again or goes home */
+function holdDown(u, knelt){ if (!B || !B.def || !B.def.objective || u.side !== 'e') return; B.holdDowns ??= []; B.holdDowns.push({name:u.name, kind:u.kind, knelt:!!knelt});
+  blog(knelt ? `<em>${u.name} goes down on one knee.</em> It will get up. It went down.` : `<em>${u.name} goes down.</em>`); }
+function holdBonus(){
+  const d = B && B.holdDowns; if (!d || !d.length) return;
+  const n = Math.min(3, d.length), xp = Math.round((B.def.xp || 0) * .4 * n * XPK); gainXP(xp);
+  S.f.holdDowns ??= {}; S.f.holdDowns[B.id] = d.length; S.f.lastHold = {id:B.id, n:d.length, names:d.map(x => x.name), knelt:d.some(x => x.knelt)};
+  const names = [...new Set(d.map(x => x.name))], list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
+  note(`They were only meant to hold. They put ${d.length > 1 ? `${d.length} down` : 'one down'} as well: ${list}${d.some(x => x.knelt) ? ', on its knees for a moment' : ''}. +${xp} experience.`, 'good');
+  tally('holdDowns', d.length);
+}
+/* the story can say it: did the Fourth put anything down in this hold-out fight? */
+const heldDowns = id => (S && S.f && S.f.holdDowns && S.f.holdDowns[id]) || 0;
+
+/* ============ v3.13 gear: the best hands for each piece ============ */
+const avgDmg = d => d ? d[0] * (d[1] + 1) / 2 + (d[2] || 0) : 0;
+/* how much a piece of gear is worth on this squadmate: armour for the front, reach for the ranged, a stat trinket on whoever rolls that stat */
+function gearValue(id, g){
+  const it = ITEMS[g], t = TPL[id]; if (!it || !t || (it.who && !it.who.includes(id))) return -1;
+  const ranged = t.rng > 1, front = id === 'brisk' || id === 'sgt';
+  let v = (it.ac || 0) * (front ? 3 : 2) + (it.atk || 0) * 2.5 + (it.hp || 0) * (front ? .6 : .45) + (it.mv || 0) * (ranged ? 1.2 : 2) + (it.rng || 0) * (ranged ? 2.5 : .3);
+  if (it.dmg) v += (avgDmg(it.dmg) - avgDmg(t.dmg)) * 1.5;
+  if (it.stat) Object.entries(it.stat).forEach(([k, n]) => { const mine = t.st[k], best = Math.max(...SQUAD().map(o => TPL[o] ? TPL[o].st[k] : 0)); v += n * (mine >= best ? 2.5 : mine >= best - 1 ? 1 : .3); });
+  return v + .01; // anything wearable beats nothing
+}
+/* a new piece goes to whoever it suits best among those with that slot empty */
+function placeGear(g){
+  const it = ITEMS[g]; if (!it) return null;
+  const who = (it.who || SQUAD()).filter(w => SQUAD().includes(w) && S.gear[w] && !S.gear[w][it.slot]).sort((a, b) => gearValue(b, g) - gearValue(a, g))[0];
+  if (who && gearValue(who, g) > 0) { S.gear[who][it.slot] = g; return who; } return null;
+}
+/* Allocate: everything in the kit, re-dealt for the most good (biggest gains first) */
+function allocateGear(){
+  const kit = [...new Set(S.kit)].filter(g => ITEMS[g]), sq = SQUAD();
+  const before = JSON.stringify(S.gear); sq.forEach(w => { S.gear[w] = {}; });
+  const pairs = []; kit.forEach(g => sq.forEach(w => { const v = gearValue(w, g); if (v > 0) pairs.push({w, g, v}); }));
+  pairs.sort((a, b) => b.v - a.v); const used = new Set();
+  pairs.forEach(({w, g}) => { const sl = ITEMS[g].slot; if (used.has(g) || S.gear[w][sl]) return; S.gear[w][sl] = g; used.add(g); });
+  save(); return before !== JSON.stringify(S.gear);
+}
+/* the sheet's numbers: what the gear adds, so it can show the base, the bonus and the total */
+function gearBonus(id){ const b = {ac:0, atk:0, hp:0, mv:0, rng:0, might:0, wits:0, guile:0, dmg:null};
+  Object.values((S.gear && S.gear[id]) || {}).forEach(g => { const it = ITEMS[g]; if (!it) return; ['ac','atk','hp','mv','rng'].forEach(k => b[k] += it[k] || 0); if (it.stat) Object.entries(it.stat).forEach(([k, n]) => b[k] += n); if (it.dmg) b.dmg = it.dmg; });
+  return b; }
+
+/* ============ v3.13 sharper openings: what Kettle's opening sharper changed (a battle's preFx(B) and preText) ============ */
+const preUsed = id => !!(S && S.f && S.f.pre && S.f.pre[id]);
+/* helpers for a preFx: more of them come at the noise; a tile changes (a wall comes down, a doorway is blocked); fire; smoke */
+function preWave(round, foes, text){ B.xwaves ??= []; B.xwaves.push({round, foes, text}); }
+function preTile(x, y, ch){ if (!inB(x, y) || unitAt(x, y)) return; const m = B.def.map.slice(); m[y] = m[y].slice(0, x) + ch + m[y].slice(x + 1); B.def = Object.assign({}, B.def, {map:m}); }
+function preFire(x, y, rounds = 2, txt){ if (!wall(x, y)) B.fires.push({x, y, until:(B.round || 0) + rounds, txt}); }
+function preSmoke(x, y, rounds = 2){ if (!wall(x, y)) B.smoke.push({x, y, until:(B.round || 0) + rounds}); }
+function preFoe(kind, x, y){ const at = freeNear(x, y); if (!at || !FOES[kind]) return null; const u = mkFoe(kind, at.x, at.y); u.ini = d20() + (u.init || 0); u.arrived = performance.now(); B.units.push(u); B.initOrder.push(u); return u; }

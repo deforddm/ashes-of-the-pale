@@ -425,3 +425,9 @@ kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px s
 body.reduce .txt.god{animation:none}
 .btn.sm{min-height:30px;padding:3px 9px;font-size:.78rem;margin-left:8px}
 .kv.wounds span:nth-child(even){display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+/* v3.13 gear bonuses on the sheet */
+.gbon{color:#f2c46b;font-size:.85em;margin-left:2px;letter-spacing:.02em}
+.stbar .bar{position:relative}.stbar .bar i.gb{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#c9973f,#f2c46b);opacity:.85}
+.allocrow{align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.pinup{display:flex;justify-content:center;margin:10px 0 14px}
+.pinup canvas{width:min(300px,84%);height:auto;aspect-ratio:600/760;border-radius:3px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.85))}

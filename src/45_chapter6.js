@@ -27,8 +27,15 @@ const C6H = {
     go:'c6_dark_ok', fail:'c6_dark_bad'}),
   /* the second ground of both terrace fights: the lead roof over the hall, chimney stacks for cover, and the great glass lantern
      over the ballroom splitting the roof into two lanes. The one who spoke on the terrace went up here with the rest of the cell. */
+  /* v3.13: Kettle's opening sharper, fight by fight. Each one changes something in the fight (preFx) and in the story after (preUsed). */
+  knivesPre:() => preUsed('terrace_knives') || preUsed('terrace_knives_2'),
+  /* the upper terrace: marble in the Guild veterans' sword arms, and then the tall guest puts a lid of Kurald Galain on the noise */
+  terracePre:{
+    preText:'The sharper goes off on the marble forty paces from two hundred masks, and the music stops in the middle of a bar. Marble goes through the Guild like hail. Then a dark comes down over the end of the terrace like a lid on a pot, and the music starts again. Somebody in the hall has decided the Fete did not hear that.',
+    preFx:B => { foes().filter(f => f.id === 'guildveteran').forEach(f => { f.parryLeft = 0; float(f, 'marble in the arm', '#cfc8b8'); });
+      for (let x = 0; x < 8; x++) if (!wall(x, 4)) B.smoke.push({x, y:4, until:(B.round || 0) + 2, dark:true}); } },
   roof:{ title:'The leads above the hall', style:'roof', warrenText:'Lead roofs and lake wind · two hundred masks under the glass · Meanas leans into the dark · Denul holds',
-    text:()=>`The upper terrace is yours. It isn't all of them.
+    text:()=>`The upper terrace is yours.${C6H.knivesPre() ? ` The dark is lifting off it as quietly as it came, and nobody in the hall is looking this way, very carefully.` : ''} It isn't all of them.
 
 ${S.f.c4_key === 'aside' ? `The old man from the alley isn't among the ones on the marble.` : `The one who spoke isn't among the ones on the marble.`} He went up while you were busy: up the drainpipe at the corner of the house with three of his behind him, onto the leads over the hall, to go along the roof to the far end and come down on the old man in dark red from above. You go up after him. Lead under your boots, chimney stacks, the wind off the lake, and in the middle of the roof the great glass lantern over the ballroom, lit from below, with two hundred masks going round under it. Nobody at a Fete ever looks up.
 
@@ -127,34 +134,52 @@ const CH6 = {
       map:["##....##","........",".#.,,.#.","........","..#..#..","........","#..,,..#","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['houseguard',2,1],['houseguard',5,1],['houseguard',3,3],['housecaptain',4,0]], xp:200, after:'c6_after_guards',
+      /* the sharper: the straw holds, the horses don't. The halberds are bowled over; the gatehouse and the whole hill hear it */
+      preText:'The straw doesn\'t catch; Kettle saw to that. The horses do. Every guest\'s carriage pair in the long stable goes up at once, two stall doors come out into the yard in splinters, and the noise of it goes over the wall into the Fete like a thrown stone.',
+      preFx:B => { foes().filter(f => !f.boss).forEach(f => { f.stun = true; float(f, 'horses', '#cfc8b8'); });
+        preWave(2, [['houseguard',2,0],['houseguard',5,0]], 'The gatehouse heard that. So did the hill. Two more halberds come over the yard gate at a run.'); },
       /* the kitchen court through the carriage arch: a two-pace arch with halberds the far side of it, and a crossbow on the loft stair */
       stage2:{ title:'The kitchen court, through the arch',
         text:()=>`The yard is yours, and the captain is sitting in the straw. But somebody ran. The carriage arch at the end of the yard stands open on the kitchen court, and down the loft stair on the far side of it, in no hurry at all, comes the second watch: two more halberds, a crossbow at the stair-head, and the farrier in his leather apron, with the hammer he shoes Lady Simtal's horses with.
 
-${SQUAD().includes('brisk') ? `Brisk looks at the arch. Two paces wide, and seven feet of halberd on the far side of it, twice. "Narrow," she says. "Good. Narrow's honest."` : `The arch is two paces wide. The halberds on the far side of it are seven feet long apiece.`} Over the wall the Fete goes on, and nobody hears a thing.`,
+${SQUAD().includes('brisk') ? `Brisk looks at the arch. Two paces wide, and seven feet of halberd on the far side of it, twice. "Narrow," she says. "Good. Narrow's honest."` : `The arch is two paces wide. The halberds on the far side of it are seven feet long apiece.`} ${preUsed('house_guards') ? `Over the wall the Fete goes on. It heard the sharper. It has decided, the way a city decides things on a holiday, that it didn't.` : `Over the wall the Fete goes on, and nobody hears a thing.`}`,
         map:["#.##...#","#......#","#..##..#","#......#","#.#....#","#....#.#","###..###","#......#","........","#......#"],
         party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
         foes:[['c6_housebow',1,0],['c6_farrier',4,1],['houseguard',5,3],['houseguard',3,4]] }},
     terrace_knives:{title:'The upper terrace', warrenText:'Marble and lake wind · the music forty paces off · Meanas leans into the dark · Denul holds', warren:{meanas:1.2,denul:1}, dark:true, music:'dark', style:'terrace',
       map:["#.#..#.#","........","..,,,,..",".#....#.","........","..#..#..","........","...,,...","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0]], xp:240, after:'c6_after_knives', stage2:C6H.roof},
+      foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0]], xp:240, after:'c6_after_knives', stage2:C6H.roof, ...C6H.terracePre},
     terrace_knives_2:{title:'The upper terrace', warrenText:'Marble and lake wind · the music forty paces off · Meanas leans into the dark · Denul holds', warren:{meanas:1.2,denul:1}, dark:true, music:'dark', style:'terrace',
       map:["#.#..#.#","........","..,,,,..",".#....#.","........","..#..#..","........","...,,...","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0],['guildveteran',3,0]], xp:240, after:'c6_after_knives', stage2:C6H.roof},
+      foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0],['guildveteran',3,0]], xp:240, after:'c6_after_knives', stage2:C6H.roof, ...C6H.terracePre},
     garden_hound:{title:'The lawn by the east wall', warrenText:'Wet grass and lantern-light · something of Shadow on the lawn · Meanas swells', warren:{meanas:1.3,denul:1}, dark:true, music:'dark', style:'garden',
       map:["#......#","..#..#..","........",".#....#.","...,,...","........","#..##..#","........","........","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['houndhurt',4,1]], xp:240, after:'c6_after_hound',
-      objective:{type:'survive', rounds:3, text:'Keep it off the guests. Three rounds.'} },
+      objective:{type:'survive', rounds:3, text:'Keep it off the guests. Three rounds.'},
+      /* the sharper in the sapling's earth: the young Azath answers with roots. They hold the Hound a breath and knot up the middle of
+         the lawn (the Hound has to come round); and the noise carries further than the garden */
+      preText:'The sharper goes off in the wet turf between the Hound and the black sapling. The turned earth goes up in a fan, and where it comes down the lawn is full of roots that were not there before: black, thin, reaching, knotting up out of the grass like a hedge grown in a breath. One of them has the Hound by a hind leg.',
+      preFx:B => { const h = foes().find(f => f.id === 'houndhurt'); if (h) { h.stun = true; float(h, 'held', '#9a86e0'); }
+        preTile(3, 4, '#'); preTile(4, 4, '#');
+        preWave(3, [['shade',4,0]], 'Something else heard the sharper. A shadow comes over the wall at the noise, low to the ground.'); } },
     tyrant_garden:{title:'Lady Simtal\'s garden', warrenText:'Omtose Phellack · the lawn freezing in rings · every warren shouldered aside by ice', warren:{meanas:0.8,denul:0.8}, dark:true, music:'dark', style:'storm',
       map:["#......#","...##...",".#....#.","........","..,..,..","#......#","........","..#..#..","........","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['raest',3,0],['rime',1,1],['rime',6,1],['rime',4,3]], xp:300, after:'c6_after_tyrant',
       allies:[['bbfiddler',1,9],['bbhedge',6,8]],
       objective:{type:'survive', rounds:4, text:'Hold the garden. Four rounds.'},
-      waves:[{round:2, foes:[['rime',1,0],['rime',6,0],['rime',0,3]], text:'The frost goes out another ring, and where it passes the lawn heaves, and more of them come up out of it, white to the bone.'}] },
+      waves:[{round:2, foes:[['rime',1,0],['rime',6,0],['rime',0,3]], text:'The frost goes out another ring, and where it passes the lawn heaves, and more of them come up out of it, white to the bone.'}],
+      /* the sharper: the frozen lawn breaks under the rime-dead (they lose their first turn), and the Tyrant answers the thrower at once:
+         its first lance goes at Kettle now, instead of at somebody on its own first turn */
+      preText:'The sharper goes off in the white grass and the frozen lawn breaks like a plate. The rime-dead in it go down in pieces and have to find their feet again. The Tyrant doesn\'t go down. It turns its tusked face, slowly, to see who threw it.',
+      preFx:B => { foes().filter(f => f.id === 'rime').forEach(f => { f.stun = true; float(f, 'shattered', '#bfe8ff'); });
+        const r = foes().find(f => f.ai === 'raest'), k = squadUnits().find(u => u.id === 'kettle') || squadUnits()[0]; if (!r || !k) return;
+        r.tc = 1; r.facing = k.x >= r.x ? 1 : -1; // its own first turn is the slow walk: the lance has been spent on Kettle
+        B.fx.push({kind:'lance', from:{x:r.x, y:r.y}, to:{x:k.x, y:k.y}, col:'#bfe8ff', t:performance.now(), dur:1200}); sparks(k.x, k.y, 30, '#bfe8ff', 1);
+        blog(`The Tyrant answers in kind: one word of Omtose Phellack, and the air round ${k.name} turns to knives.`); hurt(k, roll(2,8,2)); float(k, 'noticed', '#bfe8ff'); } },
     the_mines:{title:'The vault under the Gadrobi crossing', warrenText:'Gas in the pipes · frost on the joints · one spark and there is no city · nobody throws anything', warren:{meanas:1,denul:1}, dark:true, music:'dark', style:'cellar', nothrow:true,
       map:["#..##..#","........",".##..##.","........","...,,...","#......#","..#..#..","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
@@ -188,7 +213,12 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
       map:["##....##","#......#","#.#....#","#......#","#....#.#","#......#","#......#","#.#....#","#......#","#......#"],
       party:[[4,9],[3,6],[4,6],[3,7],[5,7],[4,7]], // the sergeant at the back with the boy; the line is already up against her
       foes:[['lorn',3,4]], xp:320, after:'c6_after_alley',
-      objective:{type:'survive', rounds:3, text:'Keep her off the boy. Three rounds.'} } },
+      objective:{type:'survive', rounds:3, text:'Keep her off the boy. Three rounds.'},
+      /* the sharper: otataral doesn't stop munitions. It puts her on one knee (she loses her first turn), and in an alley two paces wide
+         it deafens the Fourth's own front line (slowed on their next turn) */
+      preText:'Otataral eats sorcery. It doesn\'t eat Moranth clay. The sharper goes off at the Adjunct\'s feet and puts her down on one knee on the cobbles, and the alley throws the noise back at you like a slap. Behind you, the boy has both hands over his ears.',
+      preFx:B => { const l = foes().find(f => f.id === 'lorn'); if (!l) return; l.stun = true; float(l, 'one knee', '#cfc8b8');
+        squadUnits().filter(u => cheb(u, l) <= 2).forEach(u => { u.slowTurn = true; float(u, 'deafened', '#cfc8b8'); }); } } },
 
   foes:{ houseguard:{name:'House guard', sig:'g', hp:20, ac:15, atk:7, dmg:[1,8,3], rng:1, mv:4, init:2, verb:'swings a halberd at'},
          housecaptain:{name:'Captain of the house', sig:'G', kind:'houseguard', hp:32, ac:16, atk:8, dmg:[1,10,3], rng:1, mv:4, init:3, boss:true, verb:'brings a halberd down on'},
@@ -255,10 +285,12 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
     if (S.f.c6_collRing) x.push('Coll has his ring back, and by morning, his house.');
     if (S.f.c6_captainMum) x.push('The captain of Simtal\'s house knew the shape of Coll\'s ring at the gate and told nobody. At dawn he held the door for Coll.');
     else if (S.f.c6_signetSeen && !S.f.c6_collRing) x.push('The captain of Simtal\'s house knew the shape of the ring in the sergeant\'s pocket. So, by now, does half the hill.');
+    if (preUsed('house_guards')) x.push('Kettle\'s sharper went off in Lady Simtal\'s stable yard on the night of the Fete. Every dangerous person on the hill heard it, and half the hill walked home.');
     if (S.f.c6_guildPassed) x.push('Vell\'s token got the Fourth called furniture by the Guild. It was meant kindly.');
-    if (S.f.c6_terraceFought) x.push('Guild blood on Lady Simtal\'s upper terrace. The music did not stop.');
+    if (S.f.c6_terraceFought) x.push(C6H.knivesPre() ? 'Guild blood on Lady Simtal\'s upper terrace, and a black star on the marble. Kettle\'s sharper stopped the music for one breath; then a dark came down over the terrace and it started again. Somebody in the hall tidied up after the Fourth.' : 'Guild blood on Lady Simtal\'s upper terrace. The music did not stop.');
     if (S.f.c6_houndKnew) x.push(`A wounded Hound of Shadow lay down in the wet grass for Tuft.${oA ? ' Ohl has not stopped rubbing his hands.' : ''}`);
-    if (S.f.c6_houndFought) x.push('A wounded Hound of Shadow came over the garden wall, and the Fourth held it off the guests, and it went back into nothing.');
+    if (S.f.c6_houndFought) x.push(S.f.c6_houndDowned ? 'A wounded Hound of Shadow came over the garden wall, and the Fourth held it off the guests and put it down once on the wet grass. It got up, and went home limping. It will remember the lawn.' : 'A wounded Hound of Shadow came over the garden wall, and the Fourth held it off the guests, and it went back into nothing.');
+    if (preUsed('garden_hound')) x.push('Kettle\'s sharper went off in the young Azath\'s earth. By dawn a root ran out from its yard to the scorch, as if to see who had knocked.');
     if (S.f.c6_rakeLooked) x.push('The tall guest in the black dragon mask looked at the Fourth. Nobody in the squad will say his name. Nobody has been told it.'); else if (S.f.c6_sawRake) x.push('The Fourth stood on a terrace with a very tall guest in a black dragon mask. He did not look at them. That is a kindness.');
     const who = id => C6H.nm(id, 'The sergeant');
     if (S.f.c6_rakeNod) x.push(`${who(S.f.c6_rakeNod)} bowed to the tall guest the way the Andii do, and he inclined his head, once. Nothing changed. Something of the cold came with it anyway.`);
@@ -271,6 +303,10 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
     if (S.f.c6_clawNoted) x.push('The grey cloak watched the sergeant reach Tuft, and wrote it down somewhere behind his face.');
     if (S.f.c6_orders) x.push('A standing order in a very neat hand is in the sergeant\'s coat. Somebody wanted the city gone. Somebody will want the paper back.');
     if (S.f.c6_wjLeg) x.push('The Fourth was on the lawn when Whiskeyjack\'s leg broke. Brisk says it was the sound of a green branch.');
+    if (preUsed('tyrant_garden')) x.push('Kettle threw a sharper at the Tyrant, and it answered her. It is in a house now, with the door shut. She still checks the door.');
+    if (S.f.c6_tyrantKnelt) x.push('The Tyrant went down on one knee in front of the Fourth\'s line. Whiskeyjack saw it. So did it.');
+    if (S.f.c6_alleyPre) x.push('Otataral doesn\'t stop munitions. Kettle\'s sharper put the Adjunct on one knee in the alley, with a Daru boy two paces away and both his hands over his ears.');
+    if (S.f.c6_lornKnelt) x.push('The Adjunct went down on one knee in a Daru alley with the Fourth\'s blades over her. Nobody in the Fourth will say it out loud.');
     if (S.f.c6_lornEnd) x.push('The Adjunct died in an alley with Paran\'s knee under her head. The Fourth stood aside to let him carry her past.');
     if (S.f.wjRegard > 0) x.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) x.push('Whiskeyjack has decided the Fourth is trouble.');
     return x; },
@@ -639,7 +675,7 @@ He takes it. He puts it on. It goes over the knuckle hard, the way a ring does o
 ${SQUAD().includes('ohl') ? `Ohl, beside you, has the look of a man who has watched a wound close that he'd expected to have to stitch, twice now, on the same patient.` : ''}`,
       ch:[{t:'Leave him to his house.'}]}),
 
-    c6_crokus:()=>({sp:'Crokus', fx:()=>{ S.f.c6_crokus=1; }, txt:
+    c6_crokus:()=>({sp: S.f.c3_innCrokus ? 'Crokus' : 'A boy with a rope', fx:()=>{ S.f.c6_crokus=1; }, txt:
 `He comes through the crowd at a run that isn't quite a run, the way a boy runs when he's been told not to, with a coil of rope over his shoulder and a hook wrapped in rag, and a mask pushed up on his forehead that he's forgotten is there. He sees your armbands and stops so hard he nearly falls over.
 
 ${S.f.c3_innCrokus ? `Then he sees your faces. "You!" A grin, enormous, and then it falls off. "The road-menders. From the Phoenix. You're— you're *guards*? At *Simtal's*?"` : `"Guards," he says. "Simtal's. Of course. Of *course*." He looks at the rope on his shoulder as if an enemy had put it there.`}
@@ -671,7 +707,7 @@ ${SQUAD().includes('tuft') ? `Tuft has stopped a pace behind you, staring at him
 
 "Guard! Guard. You know what tonight is? No. You're *Gadrobi*." He leans in. Wine and cloves. "Gedderone. The Lady of Spring. The Fete's hers. Every year she comes back, you see, every single year, and everything that died in the winter comes back with her." He pats your arm, kindly. "That's the story. Everything that died comes back." A wink, through the goat. "It's a *story*. Nothing comes back. But it's a lovely night for pretending."
 
-${SQUAD().includes('tuft') ? `Tuft has stopped dead. She isn't looking at the goat. She's looking east, over the roofs, toward the Gadrobi Hills and the long road the Rhivi took with the bundle, and her face has gone the colour it went at the Phoenix door.` : ''}
+${SQUAD().includes('tuft') ? `Tuft has stopped dead. She isn't looking at the goat. She's looking east, over the roofs, toward the Gadrobi Hills${S.f.c5_sethBundle ? ` and the long road the Rhivi took with the bundle` : ''}, and her face has gone the colour it went at the Phoenix door.` : ''}
 
 ${SQUAD().includes('ohl') ? `Ohl, behind you, very quietly: "Nothing comes back." He says it the way he says *technically*. "No. But I'd keep the space open anyway."` : ''}`,
       ch:[{t:'Let him go.'}]}),
@@ -801,8 +837,8 @@ Round the back is a stable yard: straw, a horse trough, lanterns on hooks, and a
 ${SQUAD().includes('kettle') ? `Kettle's hand is on her satchel. "Stables," she says. "Straw." She takes the hand away again. "No. *No.*"` : ''}`,
       ch:[{t:'"Close up."', go:()=>startBattle('house_guards',{})},
           {t:'Kettle rolls a sharper across the cobbles, well away from the straw.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('house_guards',{pre:true})}]}),
-    c6_after_guards:()=>({sp:'The stable yard', scene:'fete_street', fx:()=>{ S.f.c6_guardsFought=1; }, txt:
-`It isn't short, and it's loud for a while, and then not, because the Fete on the other side of the wall swallows everything: the yard, and the arch, and the kitchen court beyond it, where the farrier sits down at last against the well with his hammer in his lap and won't get up again for anyone. When it's done you walk back through the arch, and the captain is still sitting in the straw against the horse trough with a hand pressed to his ribs, breathing in short pulls, and his men are down around him and through the arch, and none of them is dead, though one of them is thinking about it.
+    c6_after_guards:()=>{ const pre = preUsed('house_guards'); return {sp:'The stable yard', scene:'fete_street', fx:()=>{ S.f.c6_guardsFought=1; }, txt:
+`${pre ? `It isn't short, and it isn't quiet. Kettle's sharper saw to that, and the horses after it: a whole stable of guests' carriage pairs going up at once, and the stall doors coming out into the yard, and Simtal's halberds under the hooves before they'd got them level. The Fete on the other side of the wall heard it. Then it swallows the rest: the yard, and the arch, and the kitchen court beyond it,` : `It isn't short, and it's loud for a while, and then not, because the Fete on the other side of the wall swallows everything: the yard, and the arch, and the kitchen court beyond it,`} where the farrier sits down at last against the well with his hammer in his lap and won't get up again for anyone. When it's done you walk back through the arch, and the captain is still sitting in the straw against the horse trough with a hand pressed to his ribs, breathing in short pulls, and his men are down around him and through the arch, and none of them is dead, though one of them is thinking about it.
 
 The captain looks at the ring. He looks at you.
 
@@ -810,10 +846,24 @@ The captain looks at the ring. He looks at you.
 
 The yard gate opens. Hedge comes through it with a halberd on his shoulder and a pie in his other hand, and stops, and looks at the straw, and the men in it, and the Fourth.
 
-"First night on the job," he says. "*Hood's teeth.*"
+"First night on the job," he says. "*Hood's teeth.*"${pre ? ` He sniffs. He knows the smell the way a baker knows bread. "Was that one of *ours*?"` : ''}
 
-Fiddler comes in behind him and takes it all in with one look. "Nobody's going to miss the captain of the house tonight," he says, to the yard. "Tonight's a very busy night." He and Hedge get the captain and his men into the tack room without any fuss at all, and bar the door, and Fiddler pockets the key. "Keep that ring in your belt, Sergeant, and your belt on. Terrace. Go."`,
-      ch:[{t:'Up the drive.', go:'c6_terrace_arrive'}]}),
+Fiddler comes in behind him and takes it all in with one look. ${pre ? `Then he takes it in again, slower: the scorch on the cobbles, the stall doors, a groom at the far end of the yard trying to talk thirty horses back into their stalls and losing.
+
+"Not a sharper," he says. ${S.f.c6_vFid ? `"I said. In the vault. I said it to your *face*."` : `"I'd have said so in the vault, if anybody'd come over and asked. I didn't think I *needed* to."`}
+
+"It was away from the straw," says Kettle.
+
+"It was in *earshot*." He doesn't raise his voice. Fiddler never raises his voice; it's worse. "You know who's in earshot tonight, Falari? Everybody. Every knife the Guild owns. Every mage the Council won't admit to. Half of them just heard a Moranth sharper go off in Lady Simtal's stable yard, and the other half are being told about it over the wine. Every dangerous person in this city knows there are sappers on the guard list now." He looks at the gate, where the horses went. "And half the hill's walking home."
+
+Hedge, very quietly, to Kettle: "Was it a good one, though?"
+
+Kettle thinks about it. "It was a good one."
+
+"*Don't*," says Fiddler.
+
+` : ''}"Nobody's going to miss the captain of the house tonight," he says, to the yard. "Tonight's a very busy night." He and Hedge get the captain and his men into the tack room without any fuss at all, and bar the door, and Fiddler pockets the key. "Keep that ring in your belt, Sergeant, and your belt on. Terrace. Go."`,
+      ch:[{t:'Up the drive.', go:'c6_terrace_arrive'}]}; },
     c6_terrace_arrive:()=>({sp:'Lady Simtal\'s estate', scene:'fete_hall', txt:
 `Up the white gravel between the lantern-trees, past the fountain in the drive, and in.
 
@@ -846,12 +896,12 @@ Up in the gallery, in the shadow behind the musicians, something moves: a boy-sh
 ${n === 5 ? `"Five for five," he says again, to the halberd, as if he can't quite get over it. "Hedge owes me a silver. I said you would."` : n >= 3 ? `"It'll do," he says. "It'll more than do."` : `"It's a start," he says, kindly, which from Fiddler is the worst thing he can say.`}`,
       ch:[{t:'Back to the terrace.', go:()=>startExplore()}]}; },
     c6_baruk:()=>({sp:'An old man in dark red', fx:()=>{ S.f.c6_baruk=1; }, txt: S.f.c6_baruk ?
-`He's at the balustrade with his untouched wine. He inclines his head to you, very slightly, and goes back to watching his guest.` :
+`He's at the balustrade with his untouched wine. He inclines his head to you, very slightly, and goes back to watching his guest.${C6H.knivesPre() ? ` His eyes pass once over Kettle's satchel on the way.` : ''}` :
 `An old man in robes of dark red, with a skullcap and a face like a well-kept ledger, is standing at the balustrade with a glass of wine he isn't drinking. He isn't masked. He looks as if he considered it and decided he was too tired.
 
 He turns his head when you pass, and looks at your armband, and at your boots, and at the way you stand, and something in his face settles into a conclusion.
 
-"You are not Lady Simtal's," he says. His voice is courteous and dry and exact, the voice of a man who has been correcting other people's arithmetic for fifty years and has stopped enjoying it. "Nor Gadrobi. Nor, I think, guards, except in the sense that tonight everyone is." A small inclination of the head. "Your Empire is very thorough, Sergeant. I find that I admire it. I would find it easier to admire from further away."
+"You are not Lady Simtal's," he says. His voice is courteous and dry and exact, the voice of a man who has been correcting other people's arithmetic for fifty years and has stopped enjoying it. "Nor Gadrobi. Nor, I think, guards, except in the sense that tonight everyone is." A small inclination of the head. "Your Empire is very thorough, Sergeant. I find that I admire it. I would find it easier to admire from further away."${preUsed('house_guards') ? ` A pause. "I heard it in Lady Simtal's stables, earlier. So did everyone on this hill with a reason to listen for that particular sound. There are a great many of us tonight."` : ''}${C6H.knivesPre() ? ` His eyes go, once, to the black star on the marble of the upper terrace. "And your Moranth toys will stay in the box for the rest of the evening, I think. My guest has already had to tidy up after one."` : ''}
 
 His eyes go to the tall guest by the pillar, and come back.
 
@@ -969,7 +1019,9 @@ Then he sees you. "Guards! Kruppe did say. Not to *guard* him." He pushes the se
 `The hostess. You'd know it without being told: she's the one the guests turn toward without looking, the way plants turn toward a window. A gown the colour of pale wine. Jewels at her throat like frost on a branch. A mask of white feathers that she holds on a stick instead of wearing, so that you can see what a face she has, and what she has done with it. She's very beautiful. She's laughing at something a young man has said, and the laugh is lovely, and it doesn't reach anywhere.
 
 She sees your armband, and you cease to exist. It's a thing she does with her eyes, like closing a door.
-
+${preUsed('house_guards') ? `
+"—a *Fete cracker*," she's saying, "in my stable yard, if you please, and every carriage pair on the hill is in the Daru District, and my captain is nowhere to be found." The young man laughs. She lets him. Under the laugh, her eyes go once to the terrace doors, and to your armband, and to the soot on Kettle's sleeve, and away.
+` : ''}
 ${S.f.c6_signetSeen && !S.f.c6_guardsFought && !S.f.c6_captainMum ? `Then the door opens again. Her eyes come back, and go to your hand, and stay there for one breath. Somebody has told her. "The Gadrobi with the *ring*," she says, lightly, to the young man, as if it were a joke about the weather. The young man laughs. She doesn't. She looks away, and her fingers have gone white on the stick of the feathered mask.` : ''}
 
 She's watching the terrace doors. Waiting for someone. Every time a man in a silk coat comes through them she looks up, and every time it isn't him, something in her face goes a very little harder.
@@ -977,8 +1029,8 @@ She's watching the terrace doors. Waiting for someone. Every time a man in a sil
 ${SQUAD().includes('ohl') ? `Ohl, when you've walked on: "She's afraid," he says. "Under all that. I've seen that face on people waiting for the surgeon to come in, when they've heard what the surgeon is like."` : ''}`,
       ch:[{t:'Stand somewhere else.'}]}),
     c6_orr:()=>({sp:'A councilman in green and gold', fx:()=>{ S.f.c6_orr=1; }, txt: S.f.c6_orr ?
-`The councillor is at the top of the steps with his friends, laughing at the right places, and his eyes are still going, every few breaths, across the terrace to the thin young guard by the balustrade.` :
-`A man in green and gold with a rapier at his hip and a mask of gilded leaves pushed up on his forehead is holding court at the top of the garden steps, with four men in masks around him laughing at the right places. Lean, handsome, going grey well. His voice carries without being raised. He is the kind of man who has never once had to raise it.
+`The councillor is holding court by the mosaic runner with his friends, laughing at the right places, and his eyes are still going, every few breaths, across the terrace to the thin young guard by the balustrade.` :
+`A man in green and gold with a rapier at his hip and a mask of gilded leaves pushed up on his forehead is holding court in the middle of the terrace, beside the mosaic runner, with four men in masks around him laughing at the right places. Lean, handsome, going grey well. His voice carries without being raised. He is the kind of man who has never once had to raise it.
 
 ${S.f.c6_coll ? `You know who he is before anyone tells you. A big sober man in the street said it, looking at his own gate: *a councillor who took it with my wife's help.* ` : ''}Somebody at the next table says *Turban Orr* in the voice you'd use for the name of a storm.
 
@@ -1042,8 +1094,8 @@ Then he looks back at the lake, and lifts his iced wine, and doesn't drink it.
 You didn't learn anything. It did.`,
       ch:[{t:'Walk on.'}]}),
     c6_derudan:()=>({sp:'A woman in a mask of feathers', fx:()=>{ S.f.c6_derudan=1; }, txt: S.f.c6_derudan ?
-`The woman in black feathers is smoking on the balustrade. "Guard something," she says, without taking the pipe out of the mask.` :
-`A woman in a mask of black feathers is sitting on the balustrade with her back against a lantern pole, smoking a long clay pipe through the mouth of the mask, which should be impossible, and which she is doing anyway. Her hands are old and dark and her rings are bone. She's watching ${SQUAD().includes('tuft') ? 'Tuft' : 'the squad'}.
+`The woman in black feathers is smoking on the statue's plinth. "Guard something," she says, without taking the pipe out of the mask.` :
+`A woman in a mask of black feathers is sitting on the plinth of a statue at the west end of the terrace, with her back against somebody's marble aunt, smoking a long clay pipe through the mouth of the mask, which should be impossible, and which she is doing anyway. Her hands are old and dark and her rings are bone. She's watching ${SQUAD().includes('tuft') ? 'Tuft' : 'the squad'}.
 
 ${SQUAD().includes('tuft') ? `"Little Meanas," she says, as Tuft goes by, and Tuft stops as if she'd been called by her name. "Come here. No, don't. Stay there; I can see well enough." Smoke. "Somebody's using your ${S.f.c2_key === 'light' ? 'collar' : 'pack'} for a window, girl.${S.f.c5_tuftMarked ? ` And somebody else has put a thumb in your hair.` : ''}${S.f.c4_tuftDark ? ` And *that* one,` : ''}" ${S.f.c4_tuftDark ? `a nod of the feathers toward the tall guest, "knows your face." ` : ''}She taps the pipe on the stone. "Busy. Very busy, for somebody so small."
 
@@ -1066,14 +1118,14 @@ ${S.f.c4_key === 'aside' ? `The one in front is older than the rest, grey at the
 
 He smiles. It's the first time you've seen him do it. "Ocelot said you'd be here," he says, in Malazan, with the Daru bend on the vowels. "Ocelot said, if the ones who stand aside are on the terrace tonight, bring a friend." A fifth shape comes over the balustrade behind him, bigger than the rest, and straightens up. "I brought a friend."` : S.f.c4_key === 'shield' && S.kit.includes('guildtoken') ? `The one in front is older than the rest. He looks at your armband, and then at your face, and something in his own face changes, as if checking what he sees against something he's been told.
 
-"Vell's Malazans," he says. Quietly, in Malazan, with the Daru bend. "Ocelot's clan owes you a boy." His blade doesn't come up. It doesn't go down either. "We've business at the far end of the house tonight. Not with you."` : `The one in front is older than the rest. "Guards," he says, in Daric, and then, looking harder, in Malazan: "Not guards." His blade comes up. "Doesn't matter. Tonight you're in the way."`}
+"Vell's Malazans," he says. Quietly, in Malazan, with the Daru bend. "Ocelot's clan owes you a boy." His blade doesn't come up. It doesn't go down either. "We've business at the far end of the house tonight. Not with you."` : `The one in front is older than the rest. "Guards," he says, in Daric, and then, looking harder, in Malazan: "Not guards."${preUsed('house_guards') ? ` His eyes go to Kettle's satchel. "The stable yard. The whole hill heard you."` : ''} His blade comes up. "Doesn't matter. Tonight you're in the way."`}
 
 ${SQUAD().includes('kettle') ? `Kettle has her hand on the satchel. "There's a whole house under us," she says, very fast. "And a hall full of candles, and gas in the walls. Sharpers only, Sergeant. Small ones. *Small.*"` : ''}`,
       ch:[{t:'Hold up Vell\'s token.', req:()=>S.f.c4_key === 'shield' && S.kit.includes('guildtoken'), go:'c6_knives_pass'},
           {t:'"Close up."', req:()=>S.f.c4_key === 'aside', go:()=>startBattle('terrace_knives_2',{})},
-          {t:'Kettle skims a sharper along the marble.', tag:'uses 1 sharper', req:()=>S.f.c4_key === 'aside' && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('terrace_knives_2',{pre:true})},
+          {t:'Kettle skims a sharper along the marble.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.f.c4_key === 'aside' && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('terrace_knives_2',{pre:true})},
           {t:'"Close up."', req:()=>S.f.c4_key !== 'aside', go:()=>startBattle('terrace_knives',{})},
-          {t:'Kettle skims a sharper along the marble.', tag:'uses 1 sharper', req:()=>S.f.c4_key !== 'aside' && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('terrace_knives',{pre:true})},
+          {t:'Kettle skims a sharper along the marble.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.f.c4_key !== 'aside' && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('terrace_knives',{pre:true})},
           {t:'Not yet. Back down the steps.'}]}),
     c6_knives_pass:()=>({sp:'The upper terrace', fx:()=>{ S.f.c6_guildPassed=1; S.f.c6_knivesDone=1; }, txt:
 `You hold it up. A disc of black horn the size of a thumbnail, with a hole through it and nothing carved on it at all.
@@ -1094,8 +1146,10 @@ ${SQUAD().includes('brisk') ? `"Furniture," says Brisk. She considers the word. 
 
 ${SQUAD().includes('ohl') ? `Ohl is looking at the far end of the terrace, where the flash was. "I didn't hear anyone cry out," he says. "I'm choosing to be glad of that. I'm choosing very carefully."` : ''}`,
       ch:[{t:'Back to the rounds.'}]}),
-    c6_after_knives:()=>({sp:'The upper terrace', scene:'fete_hall', fx:()=>{ S.f.c6_terraceFought=1; S.f.c6_knivesDone=1; gain('blackedblade'); }, txt:
-`It's quiet, because it has to be: two hundred people are dancing forty paces away, and then under your boots, and a scream on the upper terrace or a body through the glass would stop the music, and nobody on either side wants the music stopped. Marble, then lead, and soot-black blades, and the lake wind.
+    c6_after_knives:()=>{ const pre = C6H.knivesPre(); return {sp:'The upper terrace', scene:'fete_hall', fx:()=>{ S.f.c6_terraceFought=1; S.f.c6_knivesDone=1; gain('blackedblade'); }, txt:
+`${pre ? `It isn't quiet. Not at first. Kettle's sharper stops the music in the middle of a bar, and for one breath two hundred masks in the hall turn toward the upper terrace together, and the marble goes through the Guild like hail.
+
+Then the dark comes down. Not smoke, not night: a dark you could lean on, cold as the breath off a well, folded over the end of the terrace like a lid on a pot. Inside it the music starts again, because somebody in the hall has decided it should, and nobody in the hall is looking this way any more. Marble, then lead, and soot-black blades, and the lake wind.` : `It's quiet, because it has to be: two hundred people are dancing forty paces away, and then under your boots, and a scream on the upper terrace or a body through the glass would stop the music, and nobody on either side wants the music stopped. Marble, then lead, and soot-black blades, and the lake wind.`}
 
 ${S.f.c4_key === 'aside' ? `The old man from the alley goes down last. He sits against a chimney stack with his blade across his knees, the way he sat against the warehouse wall, and looks at you. "There," he says. "Asked twice." And then he goes over the parapet on the lake side, into the dark over the water, and you hear the splash a long time after, and you don't know if it was him going in or him getting away.` : `The one who spoke goes over the parapet on the lake side, into the dark over the water, with a hand pressed to his side, and you hear the splash a long time after. The rest don't go anywhere.`}
 
@@ -1103,8 +1157,14 @@ One of them has dropped his blade on the leads. Longer than the roof knives, bla
 
 ${SQUAD().includes('ohl') ? `Ohl is kneeling by the one who didn't get up, with his hands on him, arguing quietly in Ehrlii. He loses. He usually does, with the ones he meets like this. He closes the man's eyes and doesn't take out the oilcloth.` : ''}
 
-Down on the lower terrace, the music has not stopped. Nobody looks up. Nobody at a Fete ever looks up.`,
-      ch:[{t:'Back to the rounds.', go:()=>startExplore()}]}),
+${pre ? `When you come down off the leads the dark has gone, as if it had never been. There's a black star on the marble where the sharper went, the size of a cartwheel. At the foot of the upper steps the old man in dark red is looking at it with his untouched wine, the way a man looks at a blot on a page of figures. He looks once along the terrace, toward a pillar, and back. He doesn't say anything. He doesn't have to.
+
+${SQUAD().includes('tuft') ? `"That was *him*," Tuft whispers. "The dark. Kurald Galain. He put a lid on us so the party wouldn't have to know." She's shivering. "He didn't do it for us. He did it for the *music*."` : ''}
+
+${SQUAD().includes('kettle') ? `"I made it small," Kettle says, to nobody. "I *said* small."` : ''}
+
+Down on the lower terrace the music is playing as if it had never stopped. Everybody heard it stop. Nobody is going to say so.` : `Down on the lower terrace, the music has not stopped. Nobody looks up. Nobody at a Fete ever looks up.`}`,
+      ch:[{t:'Back to the rounds.', go:()=>startExplore()}]}; },
 
     /* ---- the duel ---- */
     c6_duel:()=>({sp:'The terrace', scene:'fete_hall', txt:
@@ -1243,21 +1303,27 @@ Ten paces off, Hedge drops his onion.`,
 
 "Somebody's been digging in the flowerbed," he says, before you can speak. He nods down the lawn at the turned earth and the black stick in it. "Fresh. Nobody's supposed to be down there. Whiskeyjack watched her do it and didn't stop her, and I don't know why, and he's not going to tell me." He spits on the grass, a sapper's blessing, and looks as if he regrets it. "That thing's *growing*, Sergeant. I've been sitting here an hour. It was the height of my boot."
 
-${SQUAD().includes('kettle') ? `He looks past you at Kettle. "Nothing, Falari. Not tonight. I don't care what comes over that wall. There's a city under this lawn full of gas and a vault full of *us*, and you know it better than anybody, because you stacked it."
+${SQUAD().includes('kettle') ? (preUsed('garden_hound') ? `He looks past you at Kettle, and then down the lawn at the scorch by the east wall with the black roots knotted through it, and doesn't say anything at all. He's said it. He goes back to rubbing his neck.` : `He looks past you at Kettle. "Nothing, Falari. Not tonight.${preUsed('house_guards') || C6H.knivesPre() ? ` Not *another*. Whatever you threw up there, you've thrown it.` : ''} I don't care what${S.f.c6_houndDone ? ' else' : ''} comes over that wall. There's a city under this lawn full of gas and a vault full of *us*, and you know it better than anybody, because you stacked it."
 
 "I know," says Kettle.
 
-"I know you know." He goes back to rubbing his neck. "I'm telling you so you'll remember I told you."` : `"No munitions tonight," he says. "Not a sharper. You know why."`}`,
+"I know you know." He goes back to rubbing his neck. "I'm telling you so you'll remember I told you."`) : `"No munitions tonight," he says. "Not a sharper. You know why."`}`,
       ch:[{t:'Leave him to the steps.'}]}),
     c6_hedge_garden:()=>({sp:'Hedge', fx:()=>{ S.f.c6_hedgeG=1; }, txt: S.f.c6_hedgeG ?
 `Hedge is at the east wall with his back to it and another onion. ${S.f.c6_houndDone ? `He keeps turning round to look at the top of the wall. "Cats and lovers," he says bitterly. "That's what I was told."` : `"Cats and lovers," he says.`}` :
-`Hedge is leaning on the east wall with a halberd he's clearly forgotten he's holding, eating an onion like an apple.
+`${S.f.c6_houndKnew ? `Hedge is standing as far along the east wall from the Hound as the wall goes, with an onion he isn't eating.
 
-"East wall," he says. "Nothing comes over the east wall but cats and lovers, the steward says. I've had four cats. No lovers." He considers the onion. "Night's young."
+"Cats and lovers," he says. "That's what the steward said comes over this wall." He looks at the Hound lying in the wet grass, and at Tuft. "Your mage just put her hand on a Hound of Shadow like it was a farm dog." He looks at the onion. "I'm going to need a bigger onion."` : S.f.c6_houndDone ? `Hedge is leaning on the east wall eating another onion and looking up at the top of the wall every few bites.
+
+"East wall," he says. "Nothing comes over the east wall but cats and lovers, the steward said. I've had four cats." A bite. "I'm going to have words with the steward."` : S.f.c6_wjGarden ? `Hedge has his back flat against the east wall, three paces along from the thing crouched on top of it, with a halberd he's forgotten he's holding and no onion. The onion is in the grass.
+
+"East wall," he says, without moving his lips. "Nothing comes over the east wall but cats and lovers, the steward said." His eyes go up, and sideways, and down again. "That's not a cat, Sergeant."` : `Hedge is leaning on the east wall with a halberd he's clearly forgotten he's holding, eating an onion like an apple.
+
+"East wall," he says. "Nothing comes over the east wall but cats and lovers, the steward says. I've had four cats. No lovers." He considers the onion. "Night's young."`}
 
 He's got his own satchel under his cloak, and he's got a hand on it, the way Kettle keeps a hand on hers. You look at the hand. He looks at you looking.
 
-"Fiddler says nothing tonight. Fiddler's right." A bite of onion. "Fiddler's always right, and I've never once in my life done what he said, and we're both still here. Work that out."
+${preUsed('garden_hound') ? `"Fiddler said nothing tonight." He looks at the scorch by the wall, and at Kettle, and you watch him try not to grin and fail. "Fiddler's always right, and I've never once in my life done what he said, and now neither has she. Work that out."` : `"Fiddler says nothing tonight. Fiddler's right." A bite of onion. "Fiddler's always right, and I've never once in my life done what he said, and we're both still here. Work that out."`}
 
 ${SQUAD().includes('kettle') ? `He looks past you at Kettle, and something in his face goes soft in a way that would embarrass him if he knew. "If it comes to it, Falari," he says, "if it *comes* to it — you'll know. Like Chub said. You'll know."
 
@@ -1281,24 +1347,26 @@ The smile flickers. Not the way it stopped at the ladder: only for a breath. Whe
 
 "When it starts, Sergeant," he says, "and it'll start, don't look at the sky. Whatever falls out of it. Look at *him*."` : ''}` : `"Everybody's here," he says, to the sapling. "Have you noticed? Everybody who could take this city apart, all in one garden, all being very polite to each other. It's like a room full of cussers with the wax scraped thin."`}
 
-${SQUAD().includes('tuft') ? `He glances at Tuft, and away. "Closed any windows yet?"
+${preUsed('garden_hound') ? `His eyes go once to the scorch by the east wall and the black roots knotted through it. "And never wake a house, Sergeant," he says pleasantly. "Not even a small one. It remembers who knocked."
 
-Tuft doesn't answer. Her hand is ${S.f.c2_key === 'light' ? `at her collar` : `on the strap of her pack`}.` : ''}`,
+` : ''}${SQUAD().includes('tuft') ? (S.f.c6_tuft === 'kept' ? `He glances at Tuft, at her eyes, and the smile stops, the way it stopped at the ladder. It doesn't come back while you're standing there.` : S.f.c6_tuft ? `He glances at Tuft, and the smile goes wider by a hair. "Somebody closed a window," he says, to the sapling. "Good."` : `He glances at Tuft, and away. "Closed any windows yet?"
+
+Tuft doesn't answer. Her hand is ${S.f.c2_key === 'light' ? `at her collar` : `on the strap of her pack`}.`) : ''}`,
       ch:[{t:'Leave him to the fountain.'}]}),
     c6_paran_garden:()=>({sp:'Captain Paran', fx:()=>{ S.f.c6_paranG=1; }, txt:
 `He's standing by the pond with his hand on the pommel of the ordinary sword, watching the black sapling at the far end of the lawn the way he watched the long barrow in the vale: as if nothing needs to be looked at the moment it arrives, and this is going to arrive anyway.
 
 "Sergeant." He doesn't turn his head. "She was here."
 
-${S.f.c6_houndDone ? `His hand is on his chest, low, on the left, where the knife went in at Pale. He takes it away when he sees you see it.` : `"I felt her go by," he says. "The way you'd feel a draught from a door."`}`,
+${S.f.c6_houndDone ? `His hand is on his chest, low, on the left, where the knife went in at Pale. He takes it away when he sees you see it.${S.f.c6_houndDowned ? ` "You put it down," he says. "On the lawn. I felt it go down." He doesn't say how.` : ''}` : `"I felt her go by," he says. "The way you'd feel a draught from a door."`}`,
       ch:[{t:'"Toc gave me something to tell you, sir. On the plain."', req:()=>!S.f.c6_paranToc, go:'c6_paran_toc'},
           {t:'Leave him to the pond.'}]}),
-    c6_crokus_garden:()=>({sp:'Crokus', fx:()=>{ S.f.c6_crokusRan=1; }, txt:
+    c6_crokus_garden:()=>({sp: S.f.c3_innCrokus ? 'Crokus' : 'A boy and a girl', fx:()=>{ S.f.c6_crokusRan=1; }, txt:
 `They come across the lawn hand in hand at a run, out of the shadow of the hedges: a boy with his mask pushed up and his rope gone, and a girl in a silver half-mask and a gown the colour of the inside of a shell, holding her skirts up out of the wet grass with her free hand and laughing.
 
 They see the armbands. They stop so hard the girl nearly goes over.
 
-"Oh, no," says Crokus. "Oh, no, no, no." Then he sees your face. ${S.f.c6_crokus ? `"*You.* You said—"` : S.f.c3_innCrokus ? `"The road-menders! You're— oh, *gods*."` : `"Please."`}
+"Oh, no," says ${S.f.c3_innCrokus ? 'Crokus' : 'the boy'}. "Oh, no, no, no." Then he sees your face. ${S.f.c6_crokus ? `"*You.* You said—"` : S.f.c3_innCrokus ? `"The road-menders! You're— oh, *gods*."` : `"Please."`}
 
 The girl looks at you through the silver mask, and then at Brisk's hauberk, and Kettle's soot, and the whole of the Fourth standing on the lawn in Lady Simtal's blue. "Crokus," she says, in a voice that has never in its life had to ask for anything twice, "who *are* these people?"
 
@@ -1404,14 +1472,16 @@ By the fountain, where a lantern has gone out and nobody has lit it again, a man
 
 ${SQUAD().includes('tuft') ? `Tuft keeps looking back at it, the way you'd look back at a lamp you'd left burning.` : ''}`,
       ch:[{t:'Leave it be.'}]}),
-    c6_after_hound:()=>({sp:'The east wall', scene:'fete_garden', fx:()=>{ S.f.c6_houndFought=1; S.f.c6_houndDone=1; }, txt:
+    c6_after_hound:()=>{ const pre = preUsed('garden_hound'), lh = S.f.lastHold && S.f.lastHold.id === 'garden_hound' ? S.f.lastHold : null;
+      const down = heldDowns('garden_hound') > 0 && !!lh && lh.names.includes(FOES.houndhurt.name), shades = lh ? lh.names.filter(n => n === FOES.shade.name).length : 0;
+      return {sp:'The east wall', scene:'fete_garden', fx:()=>{ S.f.c6_houndFought=1; S.f.c6_houndDone=1; if (down) S.f.c6_houndDowned=1; }, txt:
 `It's short and ugly, the way anything is with a Hound in it: the weight of it, and the speed, and the cold that comes off it like the cold under a door. It isn't trying to kill you. You understand that about halfway through. It's hurt and it's afraid and it wants to be past you, at the far end of the lawn, at the black thing in the flowerbed, and you're in the way.
 
-You stay in the way.
+You stay in the way.${pre ? ` So does the lawn. Where Kettle's sharper went off, the earth came down full of black root, thin as cord and then thick as a wrist, knotted up out of the grass in a breath like a hedge nobody planted; it held the Hound by the leg for a heartbeat, and it held the middle of the lawn after that, and the Hound had to come at you round it.` : ''}
 
-In the end it gives up the lawn. It goes back over the east wall the way it came, in one long pour, and into the dark on the other side, and the dark takes it without a sound.
+${down ? `And once, you put it down. On the wet grass, all four legs gone from under it at once, with the lantern-light going through it as if it were smoke. Nobody cheers. You've seen dead things, and it isn't one. After a while it gets up, the way the dark gets up when you take the lamp away, and goes back over the east wall the way it came, slowly, limping on the hurt side, and the dark on the other side takes it. It's going home hurt, wherever home is. It will remember this lawn.` : `In the end it gives up the lawn. It goes back over the east wall the way it came, in one long pour, and into the dark on the other side, and the dark takes it without a sound.`}${shades ? ` ${shades > 1 ? 'The lesser shadows' : 'The lesser shadow'} that came over the wall after it ${shades > 1 ? `don't` : `doesn't`} get up at all. The grass has ${shades > 1 ? 'them' : 'it'}, like spilled ink.` : ''}
 
-Up on the terrace the music hasn't stopped. Two masks at the balustrade are laughing about a *very* large dog.${S.f.c6_lawnClear ? ` Lady Simtal's dog, they're calling it. By midnight half the terrace will claim to have stroked it.` : ''}
+${pre ? `Up on the terrace the music stopped for a bar when the sharper went, and the whole balustrade is lined with masks now, looking down at the lawn. Two of them are laughing about a *very* large dog, and a firework.` : `Up on the terrace the music hasn't stopped. Two masks at the balustrade are laughing about a *very* large dog.`}${S.f.c6_lawnClear ? ` Lady Simtal's dog, they're calling it. By midnight half the terrace will claim to have stroked it.` : ''}
 
 ${S.f.c6_guestHurt ? `On the gravel the young lord in the stag mask is sitting up with his arm across his knees, white to the lips, laughing in short pieces. ${SQUAD().includes('ohl') ? `Ohl gets to him first. He kneels on the wet gravel with the arm in his lap and the Denul light coming up green under his hands, and argues with Hood about it in Ehrlii, briefly, and wins. "It'll scar," he tells the boy. "You'll show it to people. Don't."` : `You bind it with a strip of Simtal's blue armband, which is the first thing it's been good for. It'll close. It'll scar.`} The boy looks at the east wall where the dark took the animal. "Whose *dog* is that?" he says.
 
@@ -1419,8 +1489,16 @@ ${S.f.c6_guestHurt ? `On the gravel the young lord in the stag mask is sitting u
 
 ${SQUAD().includes('ohl') ? `Ohl is going down the line with his hands out, the Denul light coming up faint and green under his palms. "Nothing that won't close," he says. He sounds surprised. He sounds, very slightly, disappointed in the Hound.` : ''}
 
-By the fountain, where a lantern has gone out and nobody has lit it again, a man in a grey cloak is standing where nobody was.`,
-      ch:[{t:'Back to the lawn.', go:()=>startExplore()}]}),
+${pre ? `Fiddler is coming down the lawn from the steps. Not running, which is worse. He stops at the scorch in the turf and looks at it, and at the roots knotted through it, and at Kettle.
+
+"Not a sharper," he says. "There's a city under this lawn full of gas and a vault full of *us*.${S.f.c6_vFid || S.f.c6_fidG || preUsed('house_guards') ? ` I said.` : ` I shouldn't have had to say.`}"
+
+"It was the one in my hand," says Kettle, which isn't an answer, and she knows it.
+
+Fiddler crouches and puts two fingers on a root, and takes them away again fast, as if it were warm. "That wasn't there," he says. "That wasn't there an hour ago, and now it's round my *boot*." He looks down the lawn at the black sapling, which is a hand taller than it was when you came down the steps, and has turned, very slightly, toward the scorch. "Hood's breath, Falari. You *woke* it."
+
+` : ''}By the fountain, where a lantern has gone out and nobody has lit it again, a man in a grey cloak is standing where nobody was.`,
+      ch:[{t:'Back to the lawn.', go:()=>startExplore()}]}; },
 
     /* ---- the summons: the grey cloak, and Tuft ---- */
     c6_claw:()=>({sp:'A grey cloak', scene:'fete_garden', fx:()=>{ S.f.c6_clawMet=1; }, txt:
@@ -1461,7 +1539,7 @@ Her hands aren't steady. They haven't been steady since the ladder. She holds th
 
 ${S.f.c1_plantMarine ? `A long way back, outside a tent at the Pale, in the cold, a cadre mage said a thing to you that you've carried ever since without knowing what it weighed. *There's a card in her deck she's never drawn for herself. When she does, be standing next to her.*
 
-Now you know what it weighs.` : `You don't know why she's asking. You know that she is, and that she has asked you for something in that voice only once before, on a ridge in the hills, and that time it was to be kept away from a thing.`}
+Now you know what it weighs.` : S.f.c5_sethBundle ? `You don't know why she's asking. You know that she is, and that she has asked you for something in that voice only once before, on a ridge in the hills, and that time it was to be kept away from a thing.` : `You don't know why she's asking. You know that she is, and that you have never once heard her ask for anything in that voice.`}
 
 ${S.f.c6_noCard ? `You told her no at the gate. She isn't asking you for a reading now. She's asking you to stand somewhere.` : ''}
 
@@ -1566,7 +1644,7 @@ And he goes: not over the wall, but up through the garden, past the fountain and
 
 ${gw === 'brisk' ? `Brisk closes her fist round the glove, badge and all, and holds it the way she holds the rim of her shield. "Mine now," she says. "Anybody wants to look out of it, they can come and ask me."` : `You close the glove round the badge and put it back in your belt. Tuft watches you do it. "Keep it," she says. "I don't want to see it. I don't want to *not know where it is*, either."`}
 
-${SQUAD().includes('ohl') ? `Ohl has knelt in the grass beside her and put his hand on her head, the way he did on a hill in the dark, and this time he says what he finds. "Nothing," he says. "Nothing's got her. Nothing at all." He sounds like a man reading good news off a list he'd been afraid to open.` : ''}
+${SQUAD().includes('ohl') ? `Ohl has knelt in the grass beside her and put his hand on her head, ${S.f.c5_tuftMarked ? `the way he did on a hill in the dark, and this time he says what he finds` : `the way you'd bless a child, and says what he finds`}. "Nothing," he says. "Nothing's got her. Nothing at all." He sounds like a man reading good news off a list he'd been afraid to open.` : ''}
 
 "It isn't polite," Tuft says, to the glove. She's crying and she's almost laughing. "That's why I was afraid of it. Everything else was *polite*.${S.f.c4_tuftDark ? ` The house was polite.` : ''}${S.f.c5_tuftMarked ? ` The Hounds were polite.` : ''} *He* was polite." A nod at the steps, where the grey cloak went. "That thing doesn't ask. It just eats." She wipes her face with the heel of her hand. "Good."
 
@@ -1789,11 +1867,17 @@ ${S.f.c6_mammotKnown ? `You were off the gravel before it moved, because you wer
 ` : ''}Fiddler, loading, not looking at you: "*I told you.* Back of the neck. I *told* you."`,
       ch:[{t:'"Hold!"', go:()=>startBattle('tyrant_garden', S.f.c6_mammotKnown ? {drop:[3]} : {})},
           {t:'Kettle skims a sharper across the frozen lawn at them.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('tyrant_garden', S.f.c6_mammotKnown ? {pre:true, drop:[3]} : {pre:true})}]}),
-    c6_after_tyrant:()=>({sp:'The garden', scene:'garden_storm', txt:
+    c6_after_tyrant:()=>{ const pre = preUsed('tyrant_garden'), lh = S.f.lastHold && S.f.lastHold.id === 'tyrant_garden' ? S.f.lastHold : null;
+      const knelt = heldDowns('tyrant_garden') > 0 && !!lh && lh.knelt, rime = lh ? lh.names.filter(n => n === FOES.rime.name).length : 0;
+      return {sp:'The garden', scene:'garden_storm', fx:()=>{ if (knelt) S.f.c6_tyrantKnelt=1; }, txt:
 `You hold. Afterwards you'll try to put it in order, the way Whiskeyjack likes, and it won't go. It comes in pieces.
 
-Frost on your blade and in your teeth. The rime-dead coming on without hurry and coming apart ${SQUAD().includes('brisk') ? `against Brisk's shield` : `against your shield`} like icicles knocked off an eave. The Tyrant saying a word, one word, and the air round somebody in the line turning to knives. Fiddler's crossbow, never stopping. Hedge laughing, the whole time, like a man at a wedding.
+${pre ? `Kettle's sharper, first: the frozen lawn breaking like a plate under the rime-dead, and the Tyrant turning its tusked face, slowly, to see who'd thrown it, and finding her. The first word of Omtose Phellack it spoke tonight, it spoke at Kettle.${SQUAD().includes('kettle') ? ` She's still white with the frost of it. "It *answered*," she keeps saying, through her teeth. "I threw a sharper at it and it *answered*."` : ''}
 
+` : ''}Frost on your blade and in your teeth. The rime-dead coming on without hurry and coming apart ${SQUAD().includes('brisk') ? `against Brisk's shield` : `against your shield`} like icicles knocked off an eave.${rime ? ` ${rime > 1 ? `${C6H.num(rime)} of them` : 'One of them'} you put down for good: ${rime > 1 ? 'they lie' : 'it lies'} in the white grass in pieces, and the lawn doesn't send ${rime > 1 ? 'them' : 'it'} back.` : ''} The Tyrant saying a word, one word, and the air round somebody in the line turning to knives. Fiddler's crossbow, never stopping. Hedge laughing, the whole time, like a man at a wedding.
+${knelt ? `
+And once, in the middle of it, the Tyrant went down on one knee in its own frost. Not for long. Long enough for Fiddler to see it, and Whiskeyjack, and every one of you. It got up. It turned the tusked face along the line, slowly, the way a man looks over a sum that has come out to a number he didn't expect, and it looked at the Fourth for a long moment before it looked away.
+` : ''}
 And Quick Ben.
 
 He's standing in the middle of the lawn with his arms out, and there's light coming off him. Not one light. Seven. You count them later, lying awake; at the time you only see colours: a green, and a gold, and a colour like bruised plums, and a colour like the inside of a shell, and others, going up round him like doors opening in a house all at once, seven doors, and Quick Ben in the middle of them with his face perfectly empty, holding them all open.
@@ -1809,11 +1893,11 @@ You don't see him cross the lawn. He's just there, between, with the ordinary sw
 Into it. Not off it. The sword *drinks* it, the way dry sand drinks water, and the white is gone, and Paran is standing on the frozen lawn with the sword in his hand and his eyes open and nobody behind them.
 
 He's gone somewhere. You can see it. His body is here, standing, and he is not. For one long breath, and two, and three, he stands there empty as a coat on a peg, while the Tyrant stares at him with its tusked face; and then he comes back into himself all at once, and staggers, and looks down at the sword in his hand as if it had said something to him.`,
-      ch:[{t:'"Down!"', go:'c6_bb_hedge'}]}),
+      ch:[{t:'"Down!"', go:'c6_bb_hedge'}]}; },
     c6_bb_hedge:()=>({sp:'Hedge', scene:'garden_storm', fx:()=>{ S.f.c6_azath=1; if (SQUAD().includes('kettle') && S.inv.cusser > (maudKept() ? 1 : 0) && !S.f.c6_hedgeCusser) { S.f.c6_hedgeCusser=1; S.inv.cusser -= 1; loy('kettle',1); } }, txt:
 `It isn't you who shouts it. It's Hedge.
 
-${SQUAD().includes('kettle') && S.inv.cusser > 0 && !S.f.c6_hedgeCusser ? `He's beside Kettle, with his hand out, open. "Mine," he says. "Falari. Give it back."
+${SQUAD().includes('kettle') && S.inv.cusser > 0 && !S.f.c6_hedgeCusser ? `He's beside Kettle, with his hand out, open. ${preUsed('tyrant_garden') ? `"You threw at *that*," he says, wondering. "With a *sharper*. Hood's teeth, girl." Then: ` : ''}"Mine," he says. "Falari. Give it back."
 
 And she does. She takes Hedge's cusser out of the satchel, the one he put into her arms in the vault like a baby not ten days ago, the one she's carried to the hills and back and never thrown, and she puts it in his hand. He grins at her, all his missing teeth.
 
@@ -1823,7 +1907,7 @@ He doesn't throw it. He's too close to throw it. He gets inside the reach of the
 
 The sound isn't a sound. It's a shove: a hand the size of a hill in the middle of your back, and the frost on the lawn goes up in a white wall, and comes down again for a long time afterwards, pattering, like rain after the rain.
 
-When you can see again, the thing in the old priest's body is on its knees in a crater of black earth and white frost, and the body is broken. An old man's body, opened, that should be dead and isn't, because the thing inside it hasn't noticed yet.
+When you can see again, the thing in the old priest's body is on its knees in a crater of black earth and white frost${S.f.c6_tyrantKnelt ? `, the second time tonight; the first was yours` : ''}, and the body is broken. An old man's body, opened, that should be dead and isn't, because the thing inside it hasn't noticed yet.
 
 Then the sapling moves.
 
@@ -2044,7 +2128,7 @@ Into the alley.`,
 
 She's got the boy against the wall.
 
-Crokus. The rope's gone from his shoulder and the mask's gone from his forehead, and he's pressed back against the brick with her left hand flat on his chest; not holding him, just there, the way you'd put a hand on a door you were about to open. Her sword is in her right hand. It's a plain sword with a plain hilt, and you can feel it from the alley mouth, the way you felt it from three hundred paces in the hills: not with your skin.
+${S.f.c3_innCrokus || S.f.c6_crokusRan ? `Crokus.` : S.f.c6_crokus ? `The boy with the rope, from outside Simtal's gate.` : `A Daru boy, sixteen at most.`} The rope's gone from his shoulder and the mask's gone from his forehead, and he's pressed back against the brick with her left hand flat on his chest; not holding him, just there, the way you'd put a hand on a door you were about to open. Her sword is in her right hand. It's a plain sword with a plain hilt, and you can feel it from the alley mouth, the way you felt it from three hundred paces in the hills: not with your skin.
 
 The coin's in his fist. You can see it between his fingers, catching the lamp.
 
@@ -2074,7 +2158,7 @@ ${SQUAD().includes('brisk') ? `Brisk is on your left before your foot is down. H
 
 The Adjunct looks at you over the shields. Her face does nothing. It does nothing for a long moment, very completely. Then she takes her hand off the boy's chest.
 
-Behind you, Crokus doesn't run. He should. He's standing against the wall with the coin in his fist, staring at your backs.
+Behind you, the boy doesn't run. He should. He's standing against the wall with the coin in his fist, staring at your backs.
 
 "Go," you tell him, without turning round. He doesn't.
 
@@ -2084,11 +2168,16 @@ Nobody who falls in this alley is getting up again. Everybody in the Fourth know
       ch:[{t:'"Hold."', fx:()=>{ S.f.c6_alleySh = S.inv.sharper; }, go:()=>startBattle('lorn_alley',{})},
           {t:'Kettle rolls a sharper at her feet. Munitions don\'t care about otataral.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; S.f.c6_alleyPre=1; S.f.c6_alleySh = S.inv.sharper; }, go:()=>startBattle('lorn_alley',{pre:true})}]}),
     c6_after_alley:()=>{ const fell = (S.f.lastFallen || []).filter(id => id !== 'sgt'); const names = fell.map(id => NAME(id)); const w = ['None','One','Two','Three','Four','Five','Six'][SQUAD().length] || String(SQUAD().length);
-      return {sp:'The alley', scene:'alley_night', txt:
+      const pre = !!S.f.c6_alleyPre || preUsed('lorn_alley'), knelt = heldDowns('lorn_alley') > 0;
+      return {sp:'The alley', scene:'alley_night', fx:()=>{ if (knelt) S.f.c6_lornKnelt=1; }, txt:
 `Three rounds. You'll never be able to say how.
 
 It comes in pieces, and the pieces have edges. No Meanas. No Denul. No shadow round anybody's hands. Iron, and brick, and bodies, and the Adjunct in the middle of it cutting twice for every blow that reaches her, and the blows that reach her don't seem to matter. She fights like the thing she is: the Empress's own hand, closing.
-
+${pre ? `
+Kettle's sharper went first. Otataral eats sorcery; it doesn't eat Moranth clay, and it put the Adjunct of the Empress down on one knee on the cobbles before she'd lifted the sword, and kept her there for one long breath, and the alley rang like a bell with all of you inside it. The front of the line fought the next round half deaf. She didn't show that she was. You'd like to think she was.
+` : ''}${knelt ? `
+And once, she went down on one knee in the wet. ${pre ? `Not from the sharper; that was the first time. This time it was you.` : `It was you.`} The Empress's own hand, on one knee in a Daru alley with the Fourth's blades over her, for as long as it takes to breathe in. Then she was up, and nothing in her face had changed. Nobody in the Fourth will ever say it out loud. Every one of them saw it.
+` : ''}
 And in the third round, a man steps out of the doorway.
 
 A man in a faded crimson cloak, with a plain sword. You'd swear the doorway was empty. You'd swear it on anything. He doesn't say a word. He simply comes out of the dark at the Adjunct's flank, between one of her cuts and the next, and his sword goes in under her guard, once, and out.
@@ -2099,7 +2188,9 @@ She steps back, with one hand pressed flat to her side, and looks at the man in 
 
 The man in crimson looks at you. He doesn't speak. He goes back into the doorway, and the doorway is empty.
 
-The boy is gone. You didn't see him go either.
+The boy is gone. You didn't see him go either.${pre ? ` The last you saw of him, he had both hands clamped over his ears and was staring at Kettle the way you'd stare at somebody who had just rolled a bomb at your feet, which she had.${SQUAD().includes('kettle') ? `
+
+"His feet," Kettle says. Her voice is too loud; she can't hear it. "I rolled it at *her* feet, Sergeant. They were two paces apart. They were the same feet."` : ''}` : ''}
 
 ${S.f.sgtScar ? `You were down. You remember the cobbles against your cheek, cold, and the wet, and her boots going past your face. You remember thinking, quite clearly, *well, then*. And then you were getting up, and nobody can tell you how, least of all you, and there's a new ache in you that you suspect is going to be there for the rest of your life.
 
@@ -2157,7 +2248,7 @@ ${SQUAD().includes('brisk') ? `Brisk doesn't move. For a heartbeat she's still t
 
 The Adjunct doesn't look at you again. You've done what she'd have expected of a squad of her Empress's marines, and it isn't worth a look.
 
-Crokus looks at you, though. Over her shoulder, with his back against the brick and the coin in his fist.${S.f.c3_innCrokus ? ` It's the look from the Phoenix, when you told him about Pale: *and you lived*.` : ''} He's still looking at you when a man steps out of the doorway.
+The boy looks at you, though. Over her shoulder, with his back against the brick and the coin in his fist.${S.f.c3_innCrokus ? ` It's the look from the Phoenix, when you told him about Pale: *and you lived*.` : ''} He's still looking at you when a man steps out of the doorway.
 
 A man in a faded crimson cloak, with a plain sword. You'd swear the doorway was empty. He doesn't say a word. He comes out of the dark at her flank, and his sword goes in under her guard, once, and out.
 
@@ -2201,7 +2292,7 @@ On the cobbles at your feet, going away across the square toward the lake, a dro
 
 A big woman in an apron with a cudgel over her shoulder, and a lean one beside her with a kitchen knife held down along her leg the Daru way. Neither is wearing a mask. ${S.f.c3_inn ? `You know them, a little: the Phoenix. The big one pulled the wine; the lean one threw a drunk into the street by his collar while you were drinking ${S.f.c3_innColl ? 'the round Coll bought' : 'at Kruppe\'s table'}.` : `They have the look of women who work somewhere with a lot of broken glass in it.`} They're walking fast, and quiet, and together, the way people walk who have done a thing like this before, in the direction the blood goes.
 
-They don't look at the Fourth. You're furniture.
+${S.f.c6_alleyPre && SQUAD().includes('kettle') ? `The big one looks at Kettle, once, the way you'd look at somebody who has made a great deal of noise in your street. Then neither of them looks at the Fourth again. You're furniture.` : `They don't look at the Fourth. You're furniture.`}
 
 ${SQUAD().includes('kettle') ? `"Those are the—" says Kettle.
 
@@ -2220,7 +2311,7 @@ After a while there are footsteps from the other way. A man in a dust-coloured c
 Paran.`,
       ch:[{t:'Follow him.', go:'c6_alley_paran'}]}),
     c6_alley_paran:()=>({sp:'The Adjunct', scene:'alley_night', fx:()=>{ S.f.c6_lornEnd=1; }, txt:
-`She's lying at the end of the alley by a rain-barrel, on her back on the wet cobbles, with her sword beside her hand where it fell.
+`She's lying at the end of the alley by a rain-barrel, on her back on the wet cobbles, with her sword beside her hand where it fell.${S.f.c6_lornKnelt ? ` One knee of her breeches is torn through and grey with cobble-grit. You put that there. It's the only mark on her that's yours.` : ''}
 
 The two women are gone. You never saw them go. You don't need to see what they did; it's there on the cobbles, and on her, and it was quick, and it was done by people who had been told whose she was and had decided they didn't care.
 
@@ -2258,7 +2349,7 @@ Beyond the wall the bells have started, and under the bells, a sound like a hunt
 
 ${S.f.c6_key === 'bridgeburners' ? `And the house is still there.` : `And there's a house.`}
 
-At the far end of the lawn, where the flowerbed was, where the Adjunct knelt and a black stick grew, ${S.f.c6_key === 'bridgeburners' ? `there's the house you watched come up out of the lawn in the night, with the Tyrant going into it. In daylight it's worse.` : `there's a house that wasn't there last night.`} It isn't large. Squat and dark, made of wood that is still growing, you'd swear, if you stood and watched it long enough: a peaked roof, a door, one small window with a light in it that isn't any colour a lamp makes. Round it, a yard. And in the yard, mounds. Low grassed mounds, a dozen or more, as if the house had arrived with its graves already dug. One of them is fresh. Bare earth, still dark with the wet.
+At the far end of the lawn, where the flowerbed was, where the Adjunct knelt and a black stick grew, ${S.f.c6_key === 'bridgeburners' ? `there's the house you watched come up out of the lawn in the night, with the Tyrant going into it. In daylight it's worse.` : `there's a house that wasn't there last night.`} It isn't large. Squat and dark, made of wood that is still growing, you'd swear, if you stood and watched it long enough: a peaked roof, a door, one small window with a light in it that isn't any colour a lamp makes. Round it, a yard. And in the yard, mounds. Low grassed mounds, a dozen or more, as if the house had arrived with its graves already dug. One of them is fresh. Bare earth, still dark with the wet.${preUsed('garden_hound') ? ` And out of the yard, across the lawn, runs a single ridge of root, black, the thickness of a man's arm, to the scorched patch by the east wall where Kettle's sharper went off, and stops there, like a dog that has come to the end of its chain to see who knocked.` : ''}
 
 Nobody in the Fourth says who's under it. Nobody knows. The man in the plain coat is nowhere.
 
@@ -2290,11 +2381,11 @@ ${dead.length ? `You count. You get the number you got in the alley. You'll get 
 
 "Report."
 
-You give it to him the way he taught you, in order, without anything in it that isn't so. ${S.f.c6_key === 'bridgeburners' ? `The lawn, and the line, and the rime-dead. Seven doors. The sword that drank the lance. Hedge running. The roots. The sky.` : S.f.c6_key === 'cellars' ? `The run down the hill with the frost in the cobbles. The lantern at the bottom of the ladder that shouldn't have been lit. Four grey cloaks and a phial. The wax. The sky, from the crossing.` : `The gate, and the streets, and the thing that went up over the roofs. The alley. The boy against the wall and the order: *hold him*. What you did. The man in crimson. The two women from the Phoenix. The captain, kneeling. The sky.`}${dead.length ? (dead.length === 1 ? ` The name.` : ` The names.`) : ''}
+You give it to him the way he taught you, in order, without anything in it that isn't so. ${S.f.c6_key === 'bridgeburners' ? `The lawn, and the line, and the rime-dead.${S.f.c6_tyrantKnelt ? ` The Tyrant on one knee.` : ''} Seven doors. The sword that drank the lance. Hedge running. The roots. The sky.` : S.f.c6_key === 'cellars' ? `The run down the hill with the frost in the cobbles. The lantern at the bottom of the ladder that shouldn't have been lit. Four grey cloaks and a phial. The wax. The sky, from the crossing.` : `The gate, and the streets, and the thing that went up over the roofs. The alley. The boy against the wall and the order: *hold him*. What you did. The man in crimson. The two women from the Phoenix. The captain, kneeling. The sky.`}${dead.length ? (dead.length === 1 ? ` The name.` : ` The names.`) : ''}
 
 He listens with his face doing nothing.
 
-${S.f.c6_key === 'bridgeburners' ? `"You held," he says, when you've finished. "With us. On the lawn." He looks down at the leg. "I'd rather have had the leg. I'll take the squad." And then, because he's Whiskeyjack, and because it's true: "Good."` : S.f.c6_key === 'cellars' ? `"Quick says you sat on the crates," he says. "I heard the frost stop going down. On the lawn. It stopped, and I didn't know why." He looks down the hill, toward the crossing. "Now I do." He doesn't ask what you took off the man with the phial. He looks at your coat, once, where the paper is. "Keep whatever you found," he says. "Somewhere I'll never find it." A beat. "Good."` : S.f.c6_steppedIn ? `"Paran says you were in the alley," he says. "Between her and the boy." He closes his eyes, for a moment, the only time you've ever seen him do it in front of anyone. "Hood's breath, Sergeant." He opens them. "Good."` : `"Paran says you were in the alley," he says. He doesn't ask what you did there. He looks at your face${SQUAD().includes('brisk') ? `, and at Brisk's,` : ','} and files what he finds, and doesn't say which drawer.`}
+${S.f.c6_key === 'bridgeburners' ? `"You held," he says, when you've finished. "With us. On the lawn."${S.f.c6_tyrantKnelt ? ` A pause. "It went down on one knee in front of you. I saw it. So did it."` : ''} He looks down at the leg. "I'd rather have had the leg. I'll take the squad." And then, because he's Whiskeyjack, and because it's true: "Good."` : S.f.c6_key === 'cellars' ? `"Quick says you sat on the crates," he says. "I heard the frost stop going down. On the lawn. It stopped, and I didn't know why." He looks down the hill, toward the crossing. "Now I do." He doesn't ask what you took off the man with the phial. He looks at your coat, once, where the paper is. "Keep whatever you found," he says. "Somewhere I'll never find it." A beat. "Good."` : S.f.c6_steppedIn ? `"Paran says you were in the alley," he says. "Between her and the boy." He closes his eyes, for a moment, the only time you've ever seen him do it in front of anyone. "Hood's breath, Sergeant." He opens them. "Good."` : `"Paran says you were in the alley," he says. He doesn't ask what you did there. He looks at your face${SQUAD().includes('brisk') ? `, and at Brisk's,` : ','} and files what he finds, and doesn't say which drawer.`}
 
 ${dead.length === 1 ? `Then he says the name. ${NAME(dead[0])}. The way he'd say it to Dujek. He knew ${C6H.her(dead)}. You didn't know he knew ${C6H.her(dead)}.` : dead.length ? `Then he says their names. ${C6H.names(dead)}. ${dead.length === 2 ? 'Both of them' : 'All of them'}, in order, the way he'd say them to Dujek. He knew them. You didn't know he knew them. He knew every one.` : ''}
 
@@ -2382,7 +2473,7 @@ The grey lock at her temple is wider. Not much. A finger's width. It doesn't mov
 
 ${S.f.c6_selfDrawn && S.f.c6_tuft === 'kept' ? `"The card's still blank," she says. "I keep checking. I thought it would have his face on it by now."
 
-` : ''}${S.f.c3_askedTuft ? (S.f.c6_tuft === 'kept' ? `"I owe you a thing," she says, very quietly. "From the Phoenix. What Kruppe said." She looks east. "I'll tell you. I don't know if it'll be *me* that tells you."` : `"Tomorrow," she says, looking east, toward the hills and the long road the Rhivi took. "I haven't forgotten. Kruppe's sentence. I'll know by then."`) : S.f.c3_kruppe ? `She's looking east, toward the hills and the long road the Rhivi took. "There's a thing Kruppe said at the Phoenix," she says. "I've never told you what it meant. I'm going to. Soon."` : ''}`,
+` : ''}${S.f.c3_askedTuft ? (S.f.c6_tuft === 'kept' ? `"I owe you a thing," she says, very quietly. "From the Phoenix. What Kruppe said." She looks east. "I'll tell you. I don't know if it'll be *me* that tells you."` : `"Tomorrow," she says, looking east, toward the hills${S.f.c5_sethBundle ? ` and the long road the Rhivi took` : ''}. "I haven't forgotten. Kruppe's sentence. I'll know by then."`) : S.f.c3_kruppe ? `She's looking east, toward the hills${S.f.c5_sethBundle ? ` and the long road the Rhivi took` : ''}. "There's a thing Kruppe said at the Phoenix," she says. "I've never told you what it meant. I'm going to. Soon."` : ''}`,
       ch:[{t:'Back to the steps.', go:'c6_close'}]}),
     c6_close_ohl:()=>{ const dead = C6H.dead(), Cnt = C6H.num(listCount());
       return {sp:'Ohl', scene:'fete_garden', txt:
@@ -2396,7 +2487,7 @@ ${dead.length ? `"I keep reading the last ${dead.length === 1 ? 'one' : 'ones'},
 
 ` : S.f.c6_key === 'bridgeburners' ? `"I don't write legs," he says, of Whiskeyjack. "Mallet's right, though. It won't be right." He looks at the house at the end of the lawn. "And the old priest. I didn't write him. He went into *that*. I don't know where that goes." He folds the oilcloth along its creases. "Nobody's dead until I know where they went."
 
-` : S.f.c6_key === 'cellars' ? `"There were four in the vault," he says. "Grey cloaks. I didn't write them." He turns the charcoal over. "I've decided they're not mine. I'm allowed one of those a year. I've used it."
+` : S.f.c6_key === 'cellars' ? `"Eight of them under the crossing," he says. "Grey cloaks. I didn't write them." He turns the charcoal over. "I've decided they're not mine. I'm allowed one of those a year. I've used it."
 
 ` : ''}${S.f.c5_ellisThrough ? `"Two spaces at the bottom, still. Toc. Ellis." He touches them. "Some lists close from the other side. I'm leaving them open. I'll leave them open till the cloth rots."` : `"The space for Toc is still there." He touches it. "Paran says he's still riding. I'm going to believe Paran. I've decided."`}
 

@@ -29,7 +29,7 @@ function hurt(u, n, crit){ if (u.hp <= 0) return; // already down: a second blas
   if (u.stanch && u.stanch.hp > 0 && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'held', '#9fe0b8'); blog(`${u.name} should have gone down. Ohl said no.`); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // Stanch
   if (u.immortal && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'holds', '#bfe8ff'); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // it does not fall
   if (u.side === 'e') tally('dealt', Math.min(n, u.hp)); else if (!u.ally) tally('taken', Math.min(n, u.hp));
-  u.hp = Math.max(0, u.hp - n); if (u.hp === 0 && u.side === 'e') tally('kills'); if (!(u.immortal && u.hp === 1)) float(u, '−' + n + (crit ? '!' : ''), crit ? '#ffcf7a' : '#f08a7c', crit); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
+  u.hp = Math.max(0, u.hp - n); if (u.hp === 0 && u.side === 'e') { tally('kills'); holdDown(u); } if (u.immortal && u.hp === 1 && u.side === 'e' && !u.knelt) { u.knelt = true; holdDown(u, true); } if (!(u.immortal && u.hp === 1)) float(u, '−' + n + (crit ? '!' : ''), crit ? '#ffcf7a' : '#f08a7c', crit); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
   if (u.side === 'p' && !u.ally) redFlash(); if (n >= 8 || crit) shakeMap();
   if (u.hp === 0) { u.deadAt = performance.now(); AUDIO.play('death'); sparks(u.x, u.y, 14, u.side === 'p' ? '#d6a24a' : '#9a3a30', .6); blog(u.side === 'p' ? `<em>${u.name} goes down!</em>` : `${u.name} falls.`); } else AUDIO.play('hurt'); }
 function heal(u, n){ const before = u.hp; u.hp = Math.min(u.maxhp, u.hp + n); if (u.side === 'p' && !u.ally) tally('healed', u.hp - before); if (u.hp > before) float(u, '+'+(u.hp-before), '#9fe0b8'); u.healed = performance.now(); }
@@ -89,6 +89,7 @@ function startBattle(id, opt={}){
   G.disp = {};
   fitBattle();
   if (opt.pre) { AUDIO.play('boom', .8); B.fx.push({kind:'boom', x:3.5, y:1, r:1, col:'#f2c46b', t:performance.now()}); sparks(3.5, 1, 30, '#f2c46b'); shakeMap(); foes().forEach(f => hurt(f, roll(1,10))); blog(typeof opt.pre === 'string' ? opt.pre : `Kettle's sharper skips across the ground and goes off in the middle of them. The whole ${placeWord(def)} hears it.`); }
+  if (opt.pre) { S.f.pre ??= {}; S.f.pre[id] = 1; if (def.preText) blog(`<em>${typeof def.preText === 'function' ? def.preText() : def.preText}</em>`); if (def.preFx) { try { def.preFx(B); } catch(e) { console.warn('preFx', e); } } } // what Kettle's opening sharper changed here (31c)
   if (def.nomagic) { blog(`<em>Otataral. The warrens are dead here.</em>`); if (SQUAD().includes('kettle') && S.inv.burner > 0) blog(`Kettle straps her burners down tight. "Not near that stuff. Burners and otataral don't argue, they just go."`); }
   if (def.nothrow) blog(`<em>Gas in the pipes. Nobody throws anything in here.</em>`);
   if (def.mortal) blog(`<em>Whoever falls here stays down.</em>`);
@@ -104,7 +105,7 @@ function newRound(){
   const ob = B.def.objective;
   if (ob && ob.type === 'survive' && B.round > ob.rounds && !B.over) { B.over = true; blog(`<em>Held.</em>`); endBeat(true); return; }
   // reinforcements: each lands on its tile, or the nearest free one if someone is standing there
-  (B.def.waves || []).filter(w => w.round === B.round).forEach(w => {
+  [...(B.def.waves || []), ...(B.xwaves || [])].filter(w => w.round === B.round).forEach(w => {
     w.foes.forEach(f => { const at = freeNear(f[1], f[2]); if (!at) return; const u = mkFoe(f[0], at.x, at.y); u.ini = d20() + u.init; u.arrived = performance.now(); B.units.push(u); B.initOrder.push(u); sparks(at.x, at.y, 24, '#9a86e0', .8); B.fx.push({kind:'ring', x:at.x, y:at.y, col:'#9a86e0', t:performance.now(), dur:900}); });
     if (w.text) blog(`<em>${w.text}</em>`); AUDIO.play('growl'); shakeMap(); });
   if (B.surprise) { B.order = B.initOrder.filter(u => u.side === B.surprise); B.surprise = null; B.surpriseRound = true; }
@@ -120,17 +121,17 @@ function nextTurn(){
   if (B.line && (B.line.u === u || B.line.u.hp <= 0)) B.line = null; // The Line holds until its bearer's next turn
   B.cur = u; B.moved = false; B.mvLeft = u.mv; B.acted = false; B.mode = null; B.aim = null; B.turn++; B.turnAt = performance.now();
   if (u.strain) u.strain = Math.max(0, u.strain - 1);
-  if (B.fires.some(f => f.x === u.x && f.y === u.y)) { blog(`${u.name} is caught in burner fire.`); hurt(u, roll(1,6)); }
+  { const fi = B.fires.find(f => f.x === u.x && f.y === u.y); if (fi) { blog(`${u.name} is caught in ${fi.txt || 'burner fire'}.`); hurt(u, roll(1,6)); } }
   if (u.hp <= 0) { B.busy = true; updBattleUI(); if (checkEnd()) return; return later(nextTurn, pace(600)); }
   if (u.stun) { u.stun = false; B.busy = true; blog(`${u.name} is dazed and loses the turn.`); float(u, 'dazed', '#c9bbff'); updBattleUI(); return later(nextTurn, pace(800)); }
   if (u.side === 'p' && !u.ally) { squadTurnStart(u); if (u.hp <= 0) { B.busy = true; updBattleUI(); if (checkEnd()) return; return later(nextTurn, pace(600)); } B.busy = false; B.mode = 'act'; updBattleUI(); barInView(); }
   else { B.busy = true; updBattleUI(); const turn = B.turn; later(() => ai(u, turn), pace(550)); } // not if the battle was left or restarted meanwhile
 }
-function endTurn(){ if (!B || B.over) return; B.busy = true; B.mode = null; B.aim = null; later(nextTurn, pace(250)); }
+function endTurn(){ if (!B || B.over) return; const u = B.cur; if (u && u.side === 'p' && !u.ally && u.hp > 0 && !B.acted && !u.steady) { u.steady = true; float(u, 'steady', '#e8c073'); blog(`${u.name} holds, steady. <em>+2 to the next attack or save.</em>`); } B.busy = true; B.mode = null; B.aim = null; later(nextTurn, pace(250)); }
 function checkEnd(){
   if (!B || B.over) return true;
   const ob = B.def.objective;
-  if (!foes().length && !(ob && ob.type === 'survive' && (B.def.waves || []).some(w => w.round > B.round))) { B.over = true; endBeat(true); return true; }
+  if (!foes().length && !(ob && ob.type === 'survive' && [...(B.def.waves || []), ...(B.xwaves || [])].some(w => w.round > B.round))) { B.over = true; endBeat(true); return true; }
   if (!squadUnits().length) { B.over = true; endBeat(false); return true; }
   return false;
 }
@@ -152,7 +153,7 @@ function win(){
     const names = dead.map(NAME), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
     note(dead.length ? `${head} ${list} did not get up.` : `${head} Everyone is still breathing.`, dead.length ? 'bad' : 'good');
   } else note(`${head} ${DIFF().carry ? '' : `${SQUAD().includes('ohl') ? 'Ohl patches up the squad' : 'The squad patches itself up'}; everyone is back on their feet.`}`, 'good');
-  carryWounds(); lootSalve();
+  carryWounds(); lootSalve(); holdBonus();
   S.scene = 'talk'; save(); AUDIO.play('win');
   if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good');
   updBattleUI();
@@ -259,7 +260,7 @@ function atkCalc(a, t, o={}){
   const wallBonus = t.side === 'p' && friendsOf(t).some(f => !f.ally && has(f.id,'shieldwall') && cheb(f,t) === 1) ? 2 : 0;
   const discipline = t.side === 'p' && !t.ally && SQUAD().some(id => has(id,'discipline')) ? 1 : 0;
   const aooBonus = o.aoo && !a.ally && a.side === 'p' && (has(a.id,'holdline') || has(a.id,'sappers_eye')) ? 2 : 0;
-  const bonus = (o.bonus || 0) + (mine && B.howlUntil >= B.round ? -1 : 0) + (!mine && B.foeRallyUntil >= B.round ? 2 : 0) + (!mine && t.clawMarkUntil >= B.round ? 2 : 0) + a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus + (a.dazzleUntil >= B.round ? -3 : 0) + (!mine && inDark(a.x, a.y) ? -2 : 0); // Blue Fire dazzles; Andii dark blinds
+  const bonus = (o.bonus || 0) + (mine && a.steady ? 2 : 0) + (mine && B.howlUntil >= B.round ? -1 : 0) + (!mine && B.foeRallyUntil >= B.round ? 2 : 0) + (!mine && t.clawMarkUntil >= B.round ? 2 : 0) + a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus + (a.dazzleUntil >= B.round ? -3 : 0) + (!mine && inDark(a.x, a.y) ? -2 : 0); // Blue Fire dazzles; Andii dark blinds
   const ghost = t.side === 'p' && !t.ally && has(t.id,'ghost') ? 2 : 0;
   const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost + (line ? 3 : 0) + (t.darkUntil >= B.round ? 2 : 0);
   return {bonus, ac, critOn:mine && S.card === 'assassin' ? 19 : 20, fl};
@@ -270,6 +271,8 @@ function attack(a, t, o={}){
   const mine = a.side === 'p', lucky = mine && a.luckyTurn === B.turn; let nat = d20();
   if (lucky) { const n2 = d20(); blog(`<em>The Lady pulls.</em> ${a.name} rolls ${SET.dice ? `${nat} and ${n2}` : 'twice'} and keeps the better.`); nat = Math.max(nat, n2); a.luckyTurn = -1; }
   const {bonus, ac, critOn, fl} = atkCalc(a, t, o);
+  if (mine && a.steady) a.steady = false; // spent on this blow
+  if (mine && !a.ally) a.fired = true; // a ranged squadmate who has fired is no longer posted up
   let crit = nat >= critOn;
   let hit = crit || (nat !== 1 && nat + bonus >= ac);
   if (hit && mine && t.cantRound === B.round) { t.cantRound = -1; if (!crit) { crit = true; blog(`<em>The hand-cant said this one, now.</em>`); } } // Claw Hand-Cant
@@ -342,6 +345,7 @@ async function opportunity(u, to){
 function useAb(k, x, y){
   const u = B.cur, a = AB[k];
   if (a.item) { S.inv[a.item]--; tally('thrown_' + a.item); }
+  if (a.boom || k === 'quickshot' || k === 'mark' || k === 'bash') u.fired = true;
   if (a.trick) { if (TRICKS[a.trick].use === 'chapter') spendTrick(a.trick); else { B.used[k] = 1; tally('tricksUsed'); } }
   if (!a.free) { B.acted = true; if (B.mvLeft < u.mv) B.moved = true; } B.mode = 'act'; B.aim = null; B.busy = true;
   a.run(u, x, y); castStrain(u, a.strain && u.id === 'tuft' && S.card === 'magi' ? a.strain - 1 : a.strain);
@@ -367,7 +371,8 @@ async function ai(u, turnId){
 const leaveCost = (u, x, y) => threatsAt(u, x, y).filter(e => e.aooTurn !== B.turn || (e.side === 'p' && !e.ally && has(e.id,'holdline'))).length;
 /* walk u along a path, paying free swings on the way; false if the battle or the turn went away meanwhile */
 async function aiWalk(u, path, gone){
-  for (const st of path) { if (await opportunity(u, st) || gone()) break; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); if (gone()) return false; }
+  for (const st of path) { if (await opportunity(u, st) || gone()) break; const was = {x:u.x, y:u.y}; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); await wait(160); if (gone()) return false;
+    if (u.side === 'e' && await postUp(u, was)) { if (gone()) return false; if (u.hp <= 0) break; } }
   return !gone();
 }
 async function aiTurn(u, turnId){
@@ -520,7 +525,7 @@ function updBattleUI(){
   if (!u || B.over) { ub.innerHTML = `<div class="bhint">${B.over ? 'The fighting stops.' : 'Rolling initiative…'}</div>`; return; }
   if (u.side === 'e' || u.ally) { ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag ${u.ally ? 'ally' : 'foe'}">${u.ally ? 'ally' : 'enemy turn'}</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.stun ? '<span class="stat">dazed</span>' : ''}</div><div class="bhint">${u.ally ? 'They fight for themselves. It happens to help.' : 'Watch the one ringed in red.'}</div>`; return; }
   const mvLeft = B.mvLeft ?? u.mv;
-  if (!B.moved && !B.busy) B.reach = reachSafe(u.x, u.y, (x,y) => free(x,y,u), mvLeft, (x,y) => leaveCost(u, x, y));
+  if (!B.moved && !B.busy) { B.reach = reachSafe(u.x, u.y, (x,y) => passFriend(x,y,u), mvLeft, (x,y) => leaveCost(u, x, y)); B.reach.forEach((n, k) => { if (n.d && !free(n.x, n.y, u)) B.reach.delete(k); }); } // through the squad, never ending on it
   // enemies in reach: ringed, with the chance to hit (and whether it flanks)
   if (!B.acted) foes().forEach(f => { if (cheb(u,f) > u.rng || !canShoot(u,f)) return; const c = atkCalc(u, f), k = K(f.x,f.y); B.hl.atk.add(k); B.hl.pct.set(k, hitPct(c)); if (c.fl) B.hl.flank.add(k); });
   // move tiles whose cheapest route still gives an enemy a free swing
@@ -538,7 +543,7 @@ function updBattleUI(){
       else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to ${a.darkness ? 'call it' : 'throw'}. ${cov.length ? `The ${a.darkness ? 'dark' : 'smoke'} covers ${cov.map(v => esc(v.name)).join(', ')}.` : `The ${a.darkness ? 'dark' : 'smoke'} covers empty ground.`} Nobody shoots into it or out of it.`; }
       else { const caught = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe), mine = caught.filter(v => v.side === 'p'), theirs = caught.length - mine.length;
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
-  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
+  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="bhint">${tapWord(hint)}</div>

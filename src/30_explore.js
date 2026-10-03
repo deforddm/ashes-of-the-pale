@@ -32,9 +32,9 @@ function exploreParticles(){
 const onCam = (x, y, m) => { const T = G.T, c = G.cam; return !G.pannable || ((x + 1 + m)*T > c.x && (x - m)*T < c.x + G.vw && (y + 1 + m)*T > c.y && (y - m)*T < c.y + G.vh); };
 /* ambience from the decor when an area names none: the Fete has a crowd and pipes, the Lakefront has water and gulls */
 const decorAmb = a => a.decor === 'estate_night' || a.decor === 'estate_terrace' || ((a.decor || '').startsWith('city') && a.map.some(r => r.includes('l'))) ? 'fete' : a.decor === 'lakefront' ? 'lake' : 'explore';
-/* Fete lanterns on a pole: red, amber, green, blue paper, swaying a little on the string */
+/* Fete lanterns on a pole: red, amber, green, gold paper (never blue: the city's gas lamps already are), swaying a little on the string */
 function drawFeteLanterns(ctx, T, x, y, t, street){
-  const px = x*T, py = y*T, cols = ['#d8503a','#e8a040','#4aa870','#4a7ad8'], xs = street ? [.14,.33,.67,.86] : [.24,.41,.58,.75];
+  const px = x*T, py = y*T, cols = ['#d8503a','#e8a040','#4aa870','#d8b84a'], xs = street ? [.14,.33,.67,.86] : [.24,.41,.58,.75];
   xs.forEach((k, i) => { const sag = street ? Math.sin((k < .5 ? k*2 : (k - .5)*2) * Math.PI) * T*.16 : Math.sin(k*Math.PI) * T*.12, ax = px + k*T, ay = py + T*.12 + sag, sw = Math.sin(t/760 + x*1.3 + y + i*1.7) * .16, c = cols[(x + y + i) % 4];
     const fl = .85 + Math.sin(t/180 + i*2.1 + x)*.08 + Math.sin(t/63 + i)*.05;
     const r = Math.max(T*.075, 2.2); glow(ctx, ax + Math.sin(sw)*T*.14, ay + T*.14, T*.8, c, .26*fl);
@@ -158,7 +158,7 @@ function drawExplore(t){
   // fog banks (lake mist on the Lakefront, frost-smoke in the frozen garden)
   fog.forEach(f => { f.x += f.v; if (f.x > 1.3) f.x = -.3; ell(ctx, f.x*cols*T, f.y*rows*T, f.w*cols*T, T*.9, a.decor === 'plain' || a.decor === 'hills' ? `rgba(120,130,90,${f.a*.6})` : lake ? `rgba(170,185,200,${f.a*.7})` : storm ? `rgba(180,210,230,${f.a})` : est ? `rgba(40,50,70,${f.a})` : `rgba(70,62,58,${f.a})`); });
   // drifting ash; Fete confetti and paper petals on the estate; ice in the frozen garden; nothing on the Lakefront
-  const PET = ['#d8503a','#e8a040','#4aa870','#4a7ad8','#e8d8c0','#c05a8a'];
+  const PET = ['#d8503a','#e8a040','#4aa870','#d8b84a','#e8d8c0','#c05a8a'];
   if (est && !storm) ash.forEach((s, i) => { s.y += s.v*.8; if (s.y > 1) s.y = 0; const x = (s.x + Math.sin(t/1300 + s.w)*.02) * cols*T, r = t/500 + s.w; ctx.save(); ctx.translate(x, s.y*rows*T); ctx.rotate(r); ctx.scale(1, Math.abs(Math.sin(r*1.3)) + .15); ctx.fillStyle = rgba(PET[i % PET.length], .75); ctx.fillRect(-s.s*1.2, -s.s*.8, s.s*2.4, s.s*1.6); ctx.restore(); });
   else if (storm) ash.forEach(s => { s.y += s.v*.6; if (s.y > 1) s.y = 0; const x = (s.x + Math.sin(t/2200 + s.w)*.03 + t*.000004) % 1 * cols*T; ctx.fillStyle = 'rgba(220,240,255,.6)'; ctx.fillRect(x, s.y*rows*T, s.s*1.2, s.s*1.2); if (s.s > 1.8) glow(ctx, x, s.y*rows*T, 4, '#bfe8ff', .3); });
   else if (!lake && !(a.decor && (a.decor.startsWith('plain') || a.decor.startsWith('hills')))) ash.forEach(s => { s.y += s.v; if (s.y > 1) s.y = 0; const x = (s.x + Math.sin(t/1600 + s.w)*.01) * cols*T; ctx.fillStyle = 'rgba(200,190,175,.4)'; ctx.fillRect(x, s.y*rows*T, s.s, s.s); });
