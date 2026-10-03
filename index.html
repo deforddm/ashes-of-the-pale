@@ -467,7 +467,7 @@ body.reduce .txt.god{animation:none}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.13.3';
+const VERSION = '3.13.4';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -4793,6 +4793,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.13.4', ['The same for the table games: whatever the bones or Kruppe\'s cups won or cost shows at the top as soon as you get up.']],
   ['3.13.3', ['The silver at the top of the screen now changes the moment you spend or win it, with a flash, instead of waiting for the conversation to close.']],
   ['3.13.2', ['Rumjugs and Sweetlard: somebody finally told the painter what their names meant.']],
   ['3.13.1', ['The crate lid at the Gadrobi crossing has been repainted, properly this time: both arms each, and the rest of them too. Sweets for the Sappers.']],
@@ -4899,6 +4900,7 @@ function mgClose(result){
   if (MG.keys) window.removeEventListener('keydown', MG.keys); MG.keys = null;
   if (MG.refit) window.removeEventListener('resize', MG.refit); MG.fit = MG.refit = null; if (MG.ro) { MG.ro.disconnect(); MG.ro = null; }
   el.hidden = true; el.innerHTML = ''; const d = MG.done; MG.done = null; MG.leave = null;
+  if (S) save(); // whatever the table won or cost shows on the HUD at once
   if (d) d(result || {});
 }
 const mgOpenNow = () => !$('#mg').hidden;

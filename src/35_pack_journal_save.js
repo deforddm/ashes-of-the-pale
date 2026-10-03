@@ -108,6 +108,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.13.4', ['The same for the table games: whatever the bones or Kruppe\'s cups won or cost shows at the top as soon as you get up.']],
   ['3.13.3', ['The silver at the top of the screen now changes the moment you spend or win it, with a flash, instead of waiting for the conversation to close.']],
   ['3.13.2', ['Rumjugs and Sweetlard: somebody finally told the painter what their names meant.']],
   ['3.13.1', ['The crate lid at the Gadrobi crossing has been repainted, properly this time: both arms each, and the rest of them too. Sweets for the Sappers.']],

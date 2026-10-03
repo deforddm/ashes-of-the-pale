@@ -22,6 +22,7 @@ function mgClose(result){
   if (MG.keys) window.removeEventListener('keydown', MG.keys); MG.keys = null;
   if (MG.refit) window.removeEventListener('resize', MG.refit); MG.fit = MG.refit = null; if (MG.ro) { MG.ro.disconnect(); MG.ro = null; }
   el.hidden = true; el.innerHTML = ''; const d = MG.done; MG.done = null; MG.leave = null;
+  if (S) save(); // whatever the table won or cost shows on the HUD at once
   if (d) d(result || {});
 }
 const mgOpenNow = () => !$('#mg').hidden;
