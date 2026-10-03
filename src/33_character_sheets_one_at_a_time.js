@@ -24,6 +24,8 @@ function openChars(i, tab){ requestAnimationFrame(() => { const c = $('#chars');
     <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of a tile next to an enemy gives that enemy one free swing a turn, wherever you step to. Once you have moved and then acted, your movement for the turn is spent. The deserters know both tricks.</p></div>
     <div class="sec"><h4>Abilities</h4><div class="abl">${abil}</div></div>
     ${talents.length ? `<div class="sec"><h4>Learned</h4><div class="abl">${talents.map(o => `<div><b>${o[1]}</b><span>${o[2]}</span></div>`).join('')}</div></div>` : ''}
+    ${S && tricksOf(id).length ? `<div class="sec trks"><h4>✦ Tricks</h4><div class="abl">${tricksOf(id).map(k => { const T = TRICKS[k], left = T.use === 'chapter' ? ` <small>${trickLeft(k)} of ${T.n} left this chapter</small>` : ' <small>once a fight</small>';
+      return `<div><b>${esc(T.name)}${left}</b><span>${esc(T.fx)}</span><i>${esc(T.lore)} Won at ${esc(T.where)}.</i></div>`; }).join('')}</div></div>` : ''}
     <div class="sec"><h4>Arms</h4><p>${c.weapon}.</p><p>${c.armour}.</p>${gearOf.map(it => `<p>${it.line}</p>`).join('')}</div>
     <div class="sec kit"><h4>Kit</h4>${kit}</div>
     <div class="sec"><h4>Carries</h4><ul>${c.gear.map(g => `<li>${g}</li>`).join('')}</ul></div>`;

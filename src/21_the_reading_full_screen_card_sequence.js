@@ -3,11 +3,16 @@ let cardAnim = null;
 /* opt.card: show that card and leave S.card alone. opt.self: Tuft draws for herself; the flanking cards never turn. */
 function cardSequence(done, opt = {}){
   const el = $('#cardfx'); el.hidden = false;
-  if (!opt.card && !S.card) S.card = ['oponn','obelisk','knight','assassin'][R(4)];
+  if (!opt.card && !S.card) S.card = dealCard(['oponn','obelisk','knight','assassin']);
   const cid = opt.card || S.card, self = !!opt.self;
   const picks = ['crown','sceptre','orb'].filter(k => k !== cid).sort(() => Math.random() - .5);
   const c = CARDS[cid] || {name:'?', fx:'', txt:'', hue:'#888'};
-  el.innerHTML = `<canvas id="ccv"></canvas><div class="cf" id="cfText"><div class="cn">${esc(c.name)}</div><div class="cfx">${esc(c.fx || '')}</div><div class="ct">${smartq(esc(c.txt || '').replace(/&quot;/g,'"'))}</div><button class="btn primary" id="cfGo">${self ? 'Put the card away' : S.chapter ? "Put the cards away" : "Descend"}</button></div>`;
+  /* Tattersail's Fold: once a chapter, the turned card goes back and another comes up from the same pool; keep either */
+  const second = opt.second, foldPool = (S.cardPool || []).filter(k => k !== cid && CARDS[k]), canFold = !self && !opt.card && !second && foldPool.length && typeof trickLeft === 'function' && trickLeft('fold') > 0;
+  const pc = second ? CARDS[second.prev] : null;
+  el.innerHTML = `<canvas id="ccv"></canvas><div class="cf" id="cfText"><div class="cn">${esc(c.name)}</div><div class="cfx">${esc(c.fx || '')}</div><div class="ct">${smartq(esc(c.txt || '').replace(/&quot;/g,'"'))}</div>
+    ${pc ? `<div class="cfold"><span class="fold">✦ Tattersail's Fold: or keep the first card,</span> <b>${esc(pc.name)}</b> <span>${esc(pc.fx || '')}</span></div>` : ''}
+    <div class="row cfrow"><button class="btn primary" id="cfGo">${second ? `Keep ${esc(c.name)}` : self ? 'Put the card away' : S.chapter ? "Put the cards away" : "Descend"}</button>${second ? `<button class="btn" id="cfKeep">Keep ${esc(pc.name)}</button>` : ''}${canFold ? `<button class="btn trk" id="cfFold">✦ Draw again · Tattersail's Fold</button>` : ''}</div></div>`;
   const cv = $('#ccv'), ctx = cv.getContext('2d'); const dpr = Math.min(2, window.devicePixelRatio || 1);
   const fit = () => { cv.width = el.clientWidth * dpr; cv.height = el.clientHeight * dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }; fit();
   const t0 = performance.now(); let finished = false, cues = {};
@@ -15,6 +20,9 @@ function cardSequence(done, opt = {}){
   AUDIO.play('shuffle');
   const end = () => { if (finished) return; finished = true; cardAnim = null; window.removeEventListener('resize', fit); el.hidden = true; el.innerHTML = ''; done(); };
   $('#cfGo').onclick = end;
+  if (second) $('#cfKeep').onclick = () => { S.card = second.prev; const fk = 'c' + S.chapter + '_drawnCard'; if (S.f[fk]) S.f[fk] = S.card; save(); end(); };
+  if (canFold) $('#cfFold').onclick = () => { if (finished) return; finished = true; cardAnim = null; window.removeEventListener('resize', fit); spendTrick('fold'); AUDIO.play('shuffle');
+    const nk = foldPool[R(foldPool.length)]; S.card = nk; const fk = 'c' + S.chapter + '_drawnCard'; if (S.f[fk]) S.f[fk] = nk; save(); cardSequence(done, {second:{prev:cid}}); };
   let skipTo = null; el.onclick = e => { if (e.target.id === 'cfGo') return; if (performance.now() - t0 < 6200) skipTo = 6200; };
   const TL = REDUCE() ? .35 : 1; // time scale
   cardAnim = () => {
@@ -48,6 +56,7 @@ function cardSequence(done, opt = {}){
     // captions
     ctx.fillStyle = '#9c8c78'; ctx.textAlign = 'center'; ctx.font = `italic ${Math.round(Math.min(20, W*.045))}px 'IM Fell English', serif`;
     const cap = self ? (t < 1500 ? 'Tuft shuffles. Her hands are not steady.' : t < 2900 ? 'One card. For herself. The first time.' : t < 4900 ? 'The cards on either side stay face down.' : t < 5800 ? 'She turns it over.' : '')
+      : second ? (t < 1500 ? 'Tuft folds the card back into the spread, the way Tattersail did it.' : t < 2900 ? 'Three again. The Deck lets her, mostly.' : t < 4900 ? '' : t < 5800 ? 'Another comes up.' : '')
       : t < 1500 ? 'Tuft shuffles without looking at her hands.' : t < 2900 ? 'Three cards. She never draws for herself.' : t < 3900 ? 'The first card refuses her.' : t < 4900 ? 'The second card refuses her.' : t < 5800 ? 'The third does not.' : '';
     if (cap) ctx.fillText(cap, cx, H*.74);
     if (t > 5600) { cue('flash', () => { const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }); $('#cfText').classList.add('show'); }

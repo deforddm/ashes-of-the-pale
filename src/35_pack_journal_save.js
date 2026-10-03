@@ -106,6 +106,12 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.11.0', ['Skill checks that matter. Tap a check and pick who handles it: each squadmate shows their odds and what is helping or hurting them (their stat, loyalty, a rattle, Oponn, and what the Fourth did earlier on the road). The likeliest is lit. Every check also shows its odds before you commit.',
+             'The story follows whoever rolled. If Tuft lies to the gate-clerk, Tuft does the lying; if Brisk bellows across the roofs, it is Brisk he hears.',
+             'Six ways a roll can land: a natural 20, clean work (+xp), success, "yes, but" (you missed by a hair: it happens, at a price), failure, and a natural 1 (rattled for the next check). Failures change something now, later on the road.',
+             '✦ Tricks. Ten hard checks, one or two a chapter, each teach whoever makes them a trick from the world: Tattersail\'s Fold, The Line, Rhivi Spirit-Song, the Lady\'s Pull, Blue Fire, Claw Hand-Cant, the Rope\'s Way, Otataral Dust, A Courtesy of Darkness and Omtose Rime. Some work once a fight, some have charges that come back each chapter. They are on the squad sheet and in the battle bar, marked ✦.',
+             'More hard checks in Chapters 5 to 7, and the two checks that used to be the only way forward (the barrow edge and the green door\'s ledger) now have three ways in.',
+             'Play a chapter again as soon as you have finished it, not just at the end of the book: from the chapter\'s end page, or the Deeds tab. The replay is a new save that starts with the squad, kit and tricks as they stood, and this save is kept.']],
   ['3.10.1', ['No more scrollbars where nothing needs scrolling. The title screen was always a little taller than the window; now it fits exactly.',
              'On a PC window too narrow for the side-by-side layout, a fight fits the window: the map comes down a size and the log shows the newest lines that fit.',
              'The tables fit the window too. When the talk runs long, the board gives up a little height instead of pushing the buttons off the bottom. Masks at the Fete lays its guests out three across on a wide screen.']],

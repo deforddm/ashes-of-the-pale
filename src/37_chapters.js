@@ -46,7 +46,7 @@ function showChapterEnd(){
     if (SQUAD().includes('ellis')) extra.push('Ellis rides with the Fourth. Toc\'s word, and yours.'); if (S.f.c2_ellisRefused) extra.push('Ellis stayed on the plain. Toc\'s word was not enough.');
     if (S.f.c2_late) extra.push('The wagon is a day late. Whiskeyjack does not forget days.');
     if (S.f.c2_outFought) extra.push('Rhivi blood on the grass. They will remember the squad that spilled it.');
-    if (S.f.c2_andiiFear) extra.push('The Andii were afraid of something on the plain. The sergeant saw it. Tuft would like it written down somewhere.');
+    if (S.f.c2_andiiFear) extra.push(`The Andii were afraid of something on the plain. ${S.f.c2_andiiFearBy && S.f.c2_andiiFearBy !== 'sgt' && TPL[S.f.c2_andiiFearBy] ? esc(NAME(S.f.c2_andiiFearBy)) : 'The sergeant'} saw it. Tuft would like it written down somewhere.`);
     if (S.f.c2_outSeth) extra.push('Sethand spent his word on the Rhivi for the Fourth. You owe him a thing you will not be able to pay.');
     if (S.f.c2_badge) extra.push('A Second Army badge from the barrow. Wrong regiment. Brisk keeps it anyway.');
     if (S.f.c2_croneSaw) extra.push('A Great Raven knows the sergeant\'s name now. That is not a comfort.');
@@ -90,6 +90,7 @@ function showChapterEnd(){
     if (S.f.cadreTrust) extra.push('Tattersail knows what the Fourth is for.'); if (S.f.clawFavour) extra.push('The Claw remembers a favour. That is not the same as owing one.');
     if (S.f.c1_refusedKnife) extra.push('You turned down a Claw\'s knife. Brisk noticed.');
   }
+  Object.entries(S.tricks || {}).filter(([k, t]) => t.ch === n && TRICKS[k]).forEach(([k, t]) => extra.push(`✦ ${esc(NAME(t.who))} learned a trick at ${TRICKS[k].where}: ${TRICKS[k].name}.`));
   const CH = CHAPTERS[n], safe = (f, d) => { try { const v = f(); return v == null ? d : v; } catch(e) { return d; } };
   if (n > 0 && CH && CH.extras) extra.push(...safe(() => CH.extras(), []).filter(Boolean)); // the chapter's own lines, after the engine's
   const next = CHAPTERS[n + 1], epi = n === 7; // there is no Chapter Eight: the last end screen opens the epilogue
@@ -104,18 +105,20 @@ function showChapterEnd(){
     <div class="kv" style="margin:16px 0">${SQUAD().slice(1).map(id => `<span>${TPL[id].name}</span><span class="pips">${loyLabel(S.loy[id])}</span>`).join('')}
       <span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.card ? `<span>Card drawn</span><span>${CARDS[S.card].name}</span>` : ''}</div>
     <p class="fine">${CHTEASE[n] || ''}</p>
-    <div class="row" style="margin-top:14px">${epi ? `<button class="btn primary" id="bEpi">Epilogue</button>` : next ? `<button class="btn primary" id="bNext">Chapter ${next.number}: ${next.title}</button>` : ''}<button class="btn" id="bSq">Squad</button><button class="btn" id="bSet2">Settings</button><button class="btn" id="bAgain">Title</button></div></div>`);
+    <div class="row" style="margin-top:14px">${epi ? `<button class="btn primary" id="bEpi">Epilogue</button>` : next ? `<button class="btn primary" id="bNext">Chapter ${next.number}: ${next.title}</button>` : ''}<button class="btn" id="bSq">Squad</button><button class="btn" id="bReplay">Play this ${n === 0 ? 'prologue' : 'chapter'} again</button><button class="btn" id="bSet2">Settings</button><button class="btn" id="bAgain">Title</button></div>
+    <p class="fine">Playing it again starts a new save, ${esc(replayName(n))}, from the start of the ${n === 0 ? 'prologue' : 'chapter'}; this one stays as it is. Every finished chapter is also on the Deeds page.</p></div>`);
   G.sceneKind = (CH && CH.endScene) || (n === 6 ? 'fete_garden' : n === 7 ? 'quorl_hill' : 'camp');
   if (epi) $('#bEpi').onclick = () => { AUDIO.play('click'); showFinale(0); };
   else if (next) $('#bNext').onclick = () => { AUDIO.play('click'); startChapter(n + 1); };
   $('#bSq').onclick = () => { AUDIO.play('click'); openChars(0); };
+  $('#bReplay').onclick = e => replayFromEnd(e.currentTarget, n);
   $('#bSet2').onclick = () => { AUDIO.play('click'); openSettings(); };
   $('#bAgain').onclick = () => { AUDIO.play('click'); showTitle(); };
 }
 const showEnd = showChapterEnd;
 function startChapter(n){
   const CH = CHAPTERS[n]; if (!CH) return showTitle();
-  S.chapter = n; S.card = null; S.scene = 'chintro'; S.node = null; S.bg = null; S.battle = null; S.bopt = null;
+  S.chapter = n; S.card = null; S.cardPool = null; refillTricks(); S.scene = 'chintro'; S.node = null; S.bg = null; S.battle = null; S.bopt = null;
   if (n >= 1) { const c = JSON.parse(JSON.stringify(S)); delete c.chsnap; c.log = []; S.chsnap ??= {}; S.chsnap[n] = c; } // replays start from here
   S.area = CH.area.id; S.pos = {...CH.area.start}; S.trail = [[-1,0],[1,0],[-1,1],[0,1],[1,1],[0,-1]].map(([dx,dy]) => ({x:S.pos.x+dx, y:S.pos.y+dy})); S.log = [];
   save(); showChapterIntro();

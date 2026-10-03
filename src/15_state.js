@@ -19,6 +19,7 @@ function migrate(s){
   s.gear ??= {}; s.picks ??= {}; Object.keys(TPL).forEach(id => { s.gear[id] ??= {}; s.picks[id] ??= []; }); s.squad.forEach(id => { s.loy[id] ??= 0; });
   if (s.ending && !(0 in s.chapters)) s.chapters[0] = s.ending;
   s.dead ??= {};
+  s.tricks ??= {}; s.rattled ??= {}; s.push ??= 0; // v3.11: tricks won on hard checks, a natural 1's rattle, the Lord's push
   s.inv ??= {}; s.inv.smoker ??= 0; // v3.7.1: smokers. Saves already past Hedge's cellar in Chapter 3 get the two he handed over there.
   if (!s.f.gotSmokers && (s.chapter > 3 || (s.fxd && s.fxd.c3_work_hedge))) { s.inv.smoker += 2; s.f.gotSmokers = 1; }
   // v3.7.3: the Phoenix's door moved off the crossing, up the alley into the Daru District; a save standing in its old doorway steps back into the street

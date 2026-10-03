@@ -3,6 +3,24 @@
 function c2LeaveBarrow(fx){ if (S.f.c2_barrowLeft) return; S.f.c2_barrowLeft = 1; S.f.c2_sethTrust = (S.f.c2_sethTrust || 0) + 1; fx(); }
 /* the mule has a name only if the squad heard Kettle give it one (the first stop at the wagon) */
 const c2Mule = (cap) => S.f.c2_wagon ? 'Pell' : cap ? 'The mule' : 'the mule';
+/* whoever a stored roller flag names, for text read after the roll has gone by: "you" for the sergeant (or anyone not here), else the name */
+const c2P = id => { const y = !(id && id !== 'sgt' && TPL[id] && SQUAD().includes(id)), he = id === 'ohl';
+  return {you:y, n:y ? 'you' : NAME(id), N:y ? 'You' : NAME(id), was:y ? 'were' : 'was', has:y ? 'have' : 'has', poss:y ? 'your' : NAME(id) + '\'s', them:y ? 'you' : he ? 'him' : 'her', they:y ? 'you' : he ? 'he' : 'she'}; };
+/* the same, for the chapter's end screen, which speaks of the sergeant in the third person */
+const c2Who = id => id && id !== 'sgt' && TPL[id] ? NAME(id) : 'the sergeant';
+/* the outriders' answers: the talk (Guile), the ✦ song (Wits 16), Sethand's word, shields. Offered again if the song goes wrong. */
+const c2OutCh = () => [
+  {t:'Through Sethand: you have come to bury her, not to take anything.', check:['guile',13], fx:()=>{ S.f.c2_outTalkTried=1; },
+    edges:id=>[S.f.c2_barrowCold && ['the Rhivi can see the barrow on Kettle', -1], S.f.c2_songWrong && ['they heard the horse-song', -1], id === 'tuft' && ['Tuft knew the dead woman', 1], id === 'kettle' && [S.f.c2_barrowCold ? 'they are pointing at Kettle' : 'they are pointing at Kettle\'s satchel', -2]],
+    near:{t:()=>!['sharper','burner'].includes(S.f.c2_outToll) ? `The man in front keeps an arrow on ${NAME(ROLL().who)} all the way through the line. ${NAME(ROLL().who)} comes out of it rattled: −1 on the next check.` : `The man in front will not lower his bow until Kettle has put a ${S.f.c2_outToll} in his hand.`,
+      fx:()=>{ if (S.inv.sharper > 0) { S.inv.sharper--; S.f.c2_outToll = 'sharper'; } else if (S.inv.burner > 0) { S.inv.burner--; S.f.c2_outToll = 'burner'; } else { S.f.c2_outToll = 'arrow'; (S.rattled ??= {})[ROLL().who] = 1; } }},
+    clean:{fx:()=>{ const w = ROLL().who; if (w !== 'sgt' && SQUAD().includes(w)) loy(w, 1); }},
+    go:'c2_out_talk', fail:'c2_out_fight'},
+  {t:'Answer them in Rhivi, with the words for the dead.', check:['wits',16], trick:'song', req:()=>!S.f.c2_songTried, fx:()=>{ S.f.c2_songTried=1; S.f.c2_songGiven = (S.f.c2_sethTrust || 0) >= 2 ? 1 : 0; },
+    edges:id=>{ const t = S.f.c2_sethTrust || 0; return [t >= 2 ? ['Sethand trusts you: he gives you the words', 2] : t >= 1 && ['Sethand mouths the words', 1], id === 'ohl' && ['Ohl argues with Hood in three tongues', 1], id === 'ellis' && ['Ellis has scouted Rhivi country', 1], id === 'kettle' && ['Kettle cannot carry a tune', -1]]; },
+    go:'c2_song', fail:'c2_song_wrong'},
+  {t:'"Sethand. Your word. Whatever it costs."', req:()=>(S.f.c2_sethTrust || 0) >= 2, go:'c2_out_seth'},
+  {t:'"Shields."', go:'c2_out_fight'}];
 const CH2 = {
   title:'The Rhivi Plain', number:'Two',
   intro:{loc:'The Rhivi Plain', sub:'Genabackis · three days south-east of Pale', cap:'Grass to every horizon, and one wagon on it, and the sky empty of quorls.',
@@ -108,6 +126,17 @@ const CH2 = {
   card:{ id:'raven', name:'The Great Raven', house:'Unaligned', hue:'#6a6f7a',
     txt:`A black bird on a black branch, and something dead beneath it that the painter did not bother to finish. Tuft does not put it back. "It's looking at us," she says. "Not the card. The bird."`,
     fx:'Your squad rolls +2 initiative this chapter.' },
+
+  /* the end screen's own lines: what the checks left behind */
+  extras:()=>{ const f = S.f, x = [];
+    if (f.c2_barrowCold) x.push(`Kettle ${f.c2_barrowMissWho ? `went into a barrow first, on ${f.c2_barrowMissWho === 'kettle' ? 'her own' : c2Who(f.c2_barrowMissWho) === 'the sergeant' ? 'the sergeant\'s' : c2Who(f.c2_barrowMissWho) + '\'s'} word that the stone had fallen` : 'had a hand inside a barrow before anyone read the stone'}. Her hands were cold ${f.c2_outSang ? 'until the Rhivi sang' : 'all the way to the hills'}.`);
+    if (f.c2_printsTrod) x.push(`${c2Who(f.c2_printsWho).replace(/^t/, 'T')} stood where the Hound went home. Crone looked at the boots for a long time.`);
+    if (f.c2_andiiStared) x.push(`A Tiste Andii looked back at ${c2Who(f.c2_andiiStaredWho)}, once, the way you look at a page you mean to find again.`);
+    if (f.c2_outSang) x.push('The Rhivi let the Fourth through on the song for the dead. Sethand says the grass taught it.');
+    if (f.c2_songWrong) x.push(`The outriders call ${c2Who(f.c2_songWho)} horse-singer. Sethand says it is not an insult. He says it is not not one.`);
+    if (f.c2_outToll === 'sharper' || f.c2_outToll === 'burner') x.push(`One of Kettle's ${f.c2_outToll}s is riding with the Rhivi. She wants it noted that it was a loan.`);
+    if (f.c2_horseHow === 'botched' && SQUAD().includes('ellis')) x.push('The mare took two strokes. Ellis has written it down as one.');
+    return x; },
 
   dlg:{
     /* ---- opening ---- */
@@ -237,41 +266,74 @@ Sethand has moved his horse to the far side of the wagon, and has not said anyth
       ch:[{t:'Leave it.'}]} : {sp:'The barrow', fx:()=>{S.f.c2_barrowSeen=1;}, txt: S.f.c2_barrowSeen ?
 `The four stones, the fallen one, the gap. ${S.f.c2_barrowLooked ? `Opened from the inside. You haven't stopped knowing that.` : `It is still dark in the gap in a way that has nothing to do with the sun.`}
 
-Kettle is standing a careful three paces off it, which is as close to obedience as Kettle comes.` :
+Kettle is standing a careful three paces off it${S.f.c2_barrowCold ? ', with her hands tucked into her armpits' : ''}, which is as close to obedience as Kettle comes.` :
 `Four stones, waist-high on Brisk, leaning together over a long low mound that the grass has not managed to cover. The stones are older than the grass. They are older than the word for grass. There is a gap on the east side where one of them has fallen, or been pushed, and it is dark in the gap in a way that has nothing to do with the sun.
 
 ${S.f.c2_sethBarrows ? `Sethand said *do not.* He said it once, which for Sethand is a speech.` : `Sethand, out ahead, has stopped his horse and is not looking this way. He has the stillness of a man who has decided not to be involved.`}
 
 Kettle has already found the gap. Of course she has.`,
-      ch:[{t:'Look at the fallen stone.', check:['wits',12], req:()=>!S.f.c2_barrowTried, fx:()=>{S.f.c2_barrowTried=1;}, go:'c2_barrow_open', fail:'c2_barrow_miss'},
+      ch:[{t:'Look at the fallen stone.', check:['wits',12], req:()=>!S.f.c2_barrowTried, fx:()=>{S.f.c2_barrowTried=1;},
+            edges:id=>[S.f.c2_sethBarrows && ['Sethand said do not', 1], id === 'kettle' && ['Kettle wants it to be a room', -1]],
+            near:{t:'Kettle had a leg in the gap before the stone was read. The hand she put on the inside of it has not been warm since.', fx:()=>{ S.f.c2_barrowCold=1; }},
+            clean:{t:'The scrapes going back in can be counted. Four.', fx:()=>{ S.f.c2_barrowFour=1; }},
+            go:'c2_barrow_open', fail:'c2_barrow_miss'},
           {t:'Go in.', go:'c2_barrow_in'},
           {t:S.f.c2_barrowLeft ? 'Leave it.' : S.f.c2_sethBarrows ? '"Leave it. Sethand said."' : '"Leave it."', fx:()=>c2LeaveBarrow(()=>{ loy('ohl',1); loy('kettle',-1); }), go:()=>startExplore()}]},
-    c2_barrow_open:()=>({sp:'The barrow', fx:()=>{S.f.c2_barrowLooked=1;}, txt:
-`The fallen stone didn't fall. The turf on the outside of it is torn up in a fan, and the stone lies on top of the torn turf, and the scrape-marks on its inner face go the wrong way.
+    c2_barrow_open:()=>({sp:'The barrow', fx:()=>{S.f.c2_barrowLooked=1; S.f.c2_barrowReader=ROLL().who || 'sgt';}, txt:
+`${by({
+  sgt:`The fallen stone didn't fall. The turf on the outside of it is torn up in a fan, and the stone lies on top of the torn turf, and the scrape-marks on its inner face go the wrong way.`,
+  ohl:`Ohl gets down by the stone the way he gets down by a wound, knees first, slowly, and doesn't touch it. "This did not fall, Sergeant." He points with the charcoal stub. "The turf is torn out in a fan, and the stone is lying on the torn turf, and the scrapes on the inner face go *out*. I have seen men push a lid like that. Never from that side."`,
+  kettle:`Kettle is on her knees at the stone before anyone can tell her not to be. "That's not fallen," she says, delighted, and then, less delighted: "That's not fallen. See the fan? Turf's torn *out*, and the stone's lying on it. I'd want a satchel charge to shift that, and I'd be proud of it, and whatever shifted it didn't have a satchel."`,
+  tuft:`Tuft doesn't go near it. She looks at it from where she stands for a long time, and then she says, very quietly, "It was pushed. The turf's torn out from under it, and the scrapes on the inside face go the wrong way."`,
+  brisk:`Brisk looks at it the way she looks at a wall somebody else built. "Pushed," she says. "From in." That's all, and it's enough.`,
+  _:`{who} crouches by the stone and doesn't touch it. "Didn't fall." The turf on the outside is torn up in a fan, and the stone lies on top of it, and the scrapes on its inner face go the wrong way.`})}
 
-Somebody opened this from inside. Not recently. Not so long ago either.
+Somebody opened this from inside. Not recently. Not so long ago either.${nearMiss() ? `
 
-Brisk has seen it too. Her shield comes off her back without her seeming to decide anything. "Sergeant."
+${by({kettle:`Kettle worked it out with one leg already in the gap`, sgt:`It took you long enough that Kettle already has one leg in the gap`, _:`It took {who} long enough that Kettle already has one leg in the gap`})} and a hand flat on the inside of the stone. She takes them both out, slowly, and puts the hand under her arm. "It's cold in there," she says. "Not weather."` : ''}${cleanRoll() ? `
 
-Tuft has moved to where she can see the gap and you can't see her. She does that. "Something came out," she says. "Then something went back. The going-back is newer."`,
+${by({sgt:`And you can count the scrapes going back in. Four sets, dragged, the way a man drags his feet when he has been dead a while. Four.`, _:`"Four," says {who}, and points: four sets of scrapes going back in, dragged, the way a man drags his feet when he has been dead a while.`})}` : ''}
+
+${ROLL().who === 'brisk' ? `Her shield is already off her back.` : `Brisk has seen it too. Her shield comes off her back without her seeming to decide anything. "Sergeant."`}
+
+${ROLL().who === 'tuft' ? `Then, from where she has moved to, where she can see the gap and you can't see her: "Something came out. Then something went back. The going-back is newer."` : `Tuft has moved to where she can see the gap and you can't see her. She does that. "Something came out," she says. "Then something went back. The going-back is newer."`}`,
       ch:[{t:'Go in anyway.', go:'c2_barrow_in'},
           {t:'"Nothing that opens its own grave is worth the walk. Leave it."', fx:()=>c2LeaveBarrow(()=>{ loy('brisk',1); loy('kettle',-1); }), go:()=>startExplore()}]}),
-    c2_barrow_miss:()=>({sp:'The barrow', txt:
-`It's a stone. It fell. Stones do.
+    /* a misread stone: Kettle goes in first, alone, and the barrow's cold stays in her hands (paid off at the ridge fire, by the outriders, and on the end screen) */
+    c2_barrow_miss:()=>({sp:'The barrow', fx:()=>{S.f.c2_barrowCold=1; S.f.c2_barrowMissWho=ROLL().who || 'sgt';}, txt:
+`${by({
+  sgt:`It's a stone. It fell. Stones do.`,
+  ohl:`Ohl looks at it for a long time. "It fell," he says. "Stones do. I have seen a great many things fall, Sergeant, and very few of them were pushed."`,
+  kettle:`Kettle gives it a kick. "Frost-heave," she says, with total confidence. "Seen it a hundred times." She is Falari. She has never seen frost in her life.`,
+  tuft:`Tuft looks at the stone, and then away from it. "It fell," she says, the way you'd say a thing to make it so.`,
+  brisk:`"Fell," says Brisk, who is not a woman for stones.`,
+  _:`{who} looks it over and shrugs. It's a stone. It fell. Stones do.`})}
 
-Kettle is halfway into the gap already, feet first, which is how she goes into anything. Her voice comes back hollow: "There's a room, Sergeant. There's a *room.*"`,
+Kettle is halfway into the gap already, ${by({kettle:'on her own say-so', sgt:'on your nod', _:'on that word'})}, feet first, which is how she goes into anything. Her voice comes back hollow: "There's a room, Sergeant. There's a *room.*"
+
+Then, after a moment, not hollow at all, and very small: "It's *cold* in here."`,
       ch:[{t:'Go in after her.', go:'c2_barrow_in'},
-          {t:'"Kettle. Out. Now."', fx:()=>c2LeaveBarrow(()=>{ loy('kettle',-1); loy('ohl',1); }), go:()=>startExplore()}]}),
+          {t:'"Kettle. Out. Now."', fx:()=>c2LeaveBarrow(()=>{ loy('kettle',-1); loy('ohl',1); }), go:'c2_barrow_out'}]}),
+    c2_barrow_out:()=>({sp:'The barrow', fx:()=>{S.f.c2_kettleOut=1;}, txt:
+`She comes out faster than she went in, backwards, which is the only way out of that gap, and stands up in the sun and doesn't say anything at all, which is how you know.
+
+Her hands are white to the wrist. She puts them under her arms. "It's a room," she says, eventually. "There's a slab, and nothing on it, and things in the corners that didn't get up. Yet. I didn't wait for *yet*."
+
+${S.f.c2_sethBarrows ? `Out ahead, Sethand has turned his horse round to watch. He doesn't say *I said*. He has the face for it, and lets the face say it.` : `Out ahead, Sethand has turned his horse round to watch. When he sees Kettle standing in the sun with her hands under her arms, he turns it back.`}`,
+      ch:[{t:'Ride on.', go:()=>startExplore()}]}),
     c2_barrow_in:()=>({sp:'The barrow', scene:'rhivi_barrow', txt:
 `Inside it is cold the way the tunnels under the Pale were cold, the cold that isn't weather. A passage of dry-laid stone, low enough that Brisk goes in bent double, opens into a chamber the size of a company tent with a stone slab in the middle of it and nothing on the slab.
 
-Nothing on the slab. Something in the corners.
+Nothing on the slab. Something in the corners.${S.f.c2_barrowFour ? ` Four, ${c2P(S.f.c2_barrowReader).you ? 'you said' : `${c2P(S.f.c2_barrowReader).n} said`}, at the stone, and the Fourth came in knowing it: shields up, spaced out, nobody talking.` : S.f.c2_barrowLooked ? ` Brisk came in first with her shield up, because somebody read the stone right, and that is the only reason the next part goes the way it does.` : S.f.c2_barrowMissWho && !S.f.c2_kettleOut ? `
+
+Kettle got here first. She's against the far wall with her back to the stone and her satchel held in front of her in both hands, very still, the way you hold still for a dog you don't know. "Sergeant," she says, in a small voice. "It didn't fall."` : ''}
 
 They stand up the way old men stand up, in stages. Four of them. Dry, brown, wound in what were clothes once, and their hands are the hands of things that have been digging.
 
 Tuft, very quietly: "They're not undead. They're *worse* than undead. They're patient."`,
-      ch:[{t:'"Shields. Back to the passage."', go:()=>startBattle('barrow',{surprise:'e'})},
-          {t:'Kettle has a sharper in her hand.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('barrow',{pre:true})}]}),
+      /* a stone read right means nothing gets the jump on the squad; a clean read (four) means the squad moves first */
+      ch:[{t:S.f.c2_barrowLooked ? '"Shields. Take them as they stand."' : '"Shields. Back to the passage."', go:()=>startBattle('barrow', S.f.c2_barrowFour ? {surprise:'p'} : S.f.c2_barrowLooked ? {} : {surprise:'e'})},
+          {t:'Kettle has a sharper in her hand.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('barrow', S.f.c2_barrowFour ? {pre:true, surprise:'p'} : {pre:true})}]}),
     c2_after_barrow:()=>({sp:'The barrow', scene:'rhivi_barrow', fx:()=>{ S.f.c2_barrowFought=1; gain('barrowtorc'); }, txt:
 `When it's done they don't fall so much as stop. Four brown shapes on the floor, arranged wrong, and the cold going out of the chamber like a tide going out.
 
@@ -315,21 +377,44 @@ A second figure kneels at the horse's head with both hands on it and her face tu
 
 Sethand has not come closer. He will not.`,
       ch:[{t:'Go to the man with the bow.', go:'c2_toc'},
-          {t:'Look at the ground where the spiral stops.', check:['wits',13], req:()=>!S.f.c2_printsTried, fx:()=>S.f.c2_printsTried=1, go:'c2_prints', fail:'c2_prints_miss'},
+          {t:'Look at the ground where the spiral stops.', check:['wits',13], req:()=>!S.f.c2_printsTried, fx:()=>S.f.c2_printsTried=1,
+            edges:id=>[S.f.c1_key === 'line' && ['the cadre row: you have seen Hounds before', 1], S.gear[id] && S.gear[id].trinket === 'houndtooth' && ['the Hound\'s tooth is warm', 1]],
+            near:{t:()=>`${NAME(ROLL().who)} reads it, but reads it on hands and knees in the middle of the spiral, where it stops.`, fx:()=>{ S.f.c2_printsTrod=1; S.f.c2_printsWho=ROLL().who; }},
+            clean:{t:'There is one more print beside the hoofprint: a boot.', fx:()=>{ S.f.c2_paranTurned=1; }},
+            go:'c2_prints', fail:'c2_prints_miss'},
           {t:'Go to the horse.', go:'c2_ellis'}]}),
     c2_prints:()=>({sp:'The ground', fx:()=>{S.f.c2_prints=1; loy('tuft',1);}, txt:
-`It takes you a minute because you're looking for the wrong thing. You're looking for where the tracks go. They don't go.
+`${by({
+  sgt:`It takes you a minute because you're looking for the wrong thing. You're looking for where the tracks go. They don't go.`,
+  ohl:`It takes Ohl a minute, because he's looking for the wrong thing: for where the tracks go, the way you look for where the blood goes. They don't go.`,
+  tuft:`Tuft finds it, because she isn't looking for tracks. She walks the spiral with her head on one side, as if listening for a draught under a door, and stops. "Here," she says. "It doesn't go anywhere from here."`,
+  kettle:`Kettle finds it, because Kettle reads ground the way she reads a fuse: where does it stop? "It stops," she says. "Sergeant. It just *stops*."`,
+  brisk:`Brisk finds it, because Brisk counts paces. She walks the spiral counting, and the count runs out.`,
+  _:`It takes {who} a minute, looking for the wrong thing: for where the tracks go. They don't go.`})}
 
 There is a print in the turf the size of a shield-boss, four-toed, deep as a man's hand. In front of it, where the next one should be, mid-stride, the grass is standing up. Untouched. As if the thing that made the print had been lifted off the world between one step and the next.
 
-There's a horse's hoofprint beside it. Also mid-stride. Also the last.
+There's a horse's hoofprint beside it. Also mid-stride. Also the last.${cleanRoll() ? ` And beside that, one more: a boot. A man's, the heel dug in hard, the toe pointing at the Hound. Whoever wore it didn't run. He turned *into* it.` : ''}${nearMiss() ? `
 
-Tuft has come up beside you. "Shadow," she says. She doesn't say it like a warren. "It didn't run away, Sergeant. It went *home*, and it took him."`,
+${by({sgt:`You read it on your hands and knees, in the middle of the spiral, with your palms flat on the torn turf where it stops. It's warm. Turf shouldn't be warm at dusk.`, _:`{who} reads it on hands and knees, in the middle of the spiral, palms flat on the torn turf where it stops. "It's warm," {who} says. Turf shouldn't be warm at dusk.`})} Out at the horse's head, the woman with the gloves has looked up.` : ''}
+
+${ROLL().who === 'tuft' ? `She doesn't look up from it. "Shadow," she says. She doesn't say it like a warren. "It didn't run away, Sergeant. It went *home*, and it took him."` : `Tuft has come up beside ${c2P(ROLL().who).n}. "Shadow," she says. She doesn't say it like a warren. "It didn't run away, Sergeant. It went *home*, and it took him."`}`,
       ch:[{t:'Go to the man with the bow.', go:'c2_toc'}]}),
-    c2_prints_miss:()=>({sp:'The ground', txt:
-`Torn turf. A lot of it. Something heavy turned round here, and something else was thrown, and the light is going, and you can't make the shapes into a story.
+    /* a misread spiral: whoever looked stood where the Hound went home (Toc, Ellis, the Andii and Crone all notice) */
+    c2_prints_miss:()=>({sp:'The ground', fx:()=>{S.f.c2_printsTrod=1; S.f.c2_printsWho=ROLL().who || 'sgt';}, txt:
+`${by({
+  sgt:`You go into the middle of it to see better, which is the mistake.`,
+  ohl:`Ohl goes and stands in the middle of it, where the spiral stops, and turns round once, slowly, the way he'd turn in a ward looking for the one who's gone quiet.`,
+  kettle:`Kettle walks the spiral the way a sapper walks a breach, right to the end of it, and stands on the end, and bounces a little. "Firm," she says.`,
+  tuft:`Tuft walks into the middle of it before she seems to know she's doing it, and stands there, and then, very quickly, doesn't.`,
+  brisk:`Brisk walks into the middle of it with her shield up, which is how Brisk walks into anything.`,
+  _:`{who} goes into the middle of it to see better, which is the mistake.`})}
 
-Kettle, helpfully: "That's a big dog."`,
+Torn turf. A lot of it. Something heavy turned round here, and something else was thrown, and the light is going, and the shapes won't make a story.
+
+${ROLL().who === 'kettle' ? `"That's a big dog," says Kettle, from the middle of it.` : `Kettle, helpfully: "That's a big dog."`}
+
+Out at the horse's head, the woman with the gloves has looked up for the first time. Not at the dog. At ${c2P(ROLL().who).n}, ${ROLL().who === 'tuft' ? 'who stood' : 'standing'} where it stopped. Then she looks down again.`,
       ch:[{t:'Go to the man with the bow.', go:'c2_toc'}]}),
     c2_toc:()=>({sp:'Toc the Younger', fx:()=>{S.f.c2_toc=1;}, txt:
 `He looks up when your shadow reaches him and not before. There's a burn across the left side of his face, new, shiny, and the eye on that side is gone, the lid sunk over nothing. He sees you take it in and lets you.
@@ -349,12 +434,14 @@ He nods at the ground where the spiral stops.
 
 He picks a burr off the bowstring.
 
-"I've served the Claw nine years, Sergeant, and I've never seen the Empire lose an argument that fast."
+"I've served the Claw nine years, Sergeant, and I've never seen the Empire lose an argument that fast."${S.f.c2_paranTurned ? `
+
+He doesn't look at the place where the spiral stops. "Your people found the boot. I hoped nobody would but me. He turned *into* it, Sergeant. I've been sitting here an hour trying to make that mean something else."` : ''}
 
 ${S.f.c1_key === 'line' ? `"You were at the Pale when they came through the tent lines. I heard. Held the row for the cadre." He looks at you with the one eye. "Then you know what I'm not saying."` : S.f.clawFavour ? `"You were at the Pale when they came through the tent lines. I heard. Held the tent for the grey cloaks." Something in his face shuts. "Then you'll know who to tell."` : `"You were at the Pale. Then you've heard them. That's enough. Nobody should have to see them twice."`}`,
       ch:[{t:'"Where\'s the captain?"', req:()=>!S.f.c2_tocCaptain, go:'c2_toc_captain'},
           S.f.c2_horseDone ? {t:'"And Ellis?"', go:'c2_toc_offer'} : {t:'"The horse."', go:'c2_ellis'}]}),
-    c2_toc_captain:()=>({sp:'Toc the Younger', fx:()=>{S.f.c2_tocCaptain=1;}, txt:
+    c2_toc_captain:()=>{ const p = c2P(S.f.c2_printsWho); return {sp:'Toc the Younger', fx:()=>{S.f.c2_tocCaptain=1;}, txt:
 `"Alive." He says it quickly, the way you'd say it to yourself. "I'd know. I don't know how I'd know. I'd know."
 
 "Adjunct Lorn is somewhere on this plain with something out of the barrows walking beside her. Paran was hers. He's still hers, wherever he is, and she'll want to be told, and I'm the one who tells her things. So I ride on. Alone, and fast, and probably wrong."
@@ -363,11 +450,11 @@ ${S.f.c2_horseDone ? '' : `He stands. It costs him something; the burn pulls.
 
 `}"I can't take Ellis. Not where I'm going. Not with what she is now." He looks over at the horse. "She'll tell you she's fine. She's Claw-trained; they teach you that before they teach you your name."
 
-${S.f.c2_prints ? `"You saw the prints. Where they stop." Not a question. "Don't tell her. She's been not-looking at them for an hour."` : `"There's a place over there where the ground's wrong. Don't let your people stand on it. I don't know why. I just wouldn't."`}${S.f.c2_horseDone ? '' : `
+${S.f.c2_prints ? `"You saw the prints. Where they stop." Not a question. ${S.f.c2_printsTrod ? `"${p.N} knelt in it to do it. I'd rather ${p.they} hadn't; I don't know why. And don't tell her.` : `"Don't tell her.`} She's been not-looking at them for an hour."` : S.f.c2_printsTrod ? `"There's a place over there where the ground's wrong. ${p.N} ${p.was} standing in it." He doesn't look at it. "${p.you ? `I'd stay out of it` : `I'd keep ${p.them} out of it`}. I don't know why. I just would."` : `"There's a place over there where the ground's wrong. Don't let your people stand on it. I don't know why. I just wouldn't."`}${S.f.c2_horseDone ? '' : `
 
 "The mare's hers. It's been dying since the Hound touched it, and she's been holding its head since, and I've asked her twice and I'm not going to ask a third time, because the third time I'd have to make it an order. I'd take it as a kindness, Sergeant. From a stranger. It's easier from a stranger."`}`,
       ch:[{t:'"What happened here?"', req:()=>!S.f.c2_tocHound, go:'c2_toc_hound'},
-          S.f.c2_horseDone ? {t:'"And Ellis?"', go:'c2_toc_offer'} : {t:'"The horse."', go:'c2_ellis'}]}),
+          S.f.c2_horseDone ? {t:'"And Ellis?"', go:'c2_toc_offer'} : {t:'"The horse."', go:'c2_ellis'}]}; },
     c2_toc_again:()=>({sp:'Toc the Younger', txt:
 `He's restringing the bow, which doesn't need it. "Sergeant." He nods at the horse. "Whenever you're ready. She isn't, and won't be, and that's the point."`,
       ch:[{t:'Go to the horse.', go:'c2_ellis'},
@@ -381,16 +468,19 @@ ${S.f.c2_prints ? `"You saw the prints. Where they stop." Not a question. "Don't
 
 Her voice is very exact. Every word is put down where it's meant to go, and none of them shake.
 
-${S.f.c2_tocCaptain ? `"He's asked you. I know. I'd like it noted that I didn't."` : `"Toc'll ask you. He's asked me twice. I'd like it noted that I didn't."`}
+${S.f.c2_tocCaptain ? `"He's asked you. I know. I'd like it noted that I didn't."` : `"Toc'll ask you. He's asked me twice. I'd like it noted that I didn't."`}${S.f.c2_printsTrod ? ((p) => `
+
+Then, still not looking up: "${p.you ? 'You stood' : `${p.N} stood`} where it stopped. ${p.you ? `Don't do it twice.` : `Don't let ${p.them} do it twice.`}"`)(c2P(S.f.c2_printsWho)) : ''}
 
 Ohl has come up on the horse's other side, slow, the way he does with everything that's dying, and put a hand flat on the mare's neck, and is saying something in Ehrlii that isn't for you.`,
-      ch:[{t:'Do it yourself. Quick, and once.', check:['might',11,'sgt'], go:'c2_horse_might', fail:'c2_horse_fail'},
+      /* the sergeant's own hand, and it is once or it isn't: no "yes, but". A botch is remembered by Sethand that night and by Ellis at the hills. */
+      ch:[{t:'Do it yourself. Quick, and once.', check:['might',11,'sgt'], near:false, edges:()=>[S.gear.sgt && S.gear.sgt.weapon === 'clawknife' && ['the grey cloak\'s knife is very sharp', 1]], go:'c2_horse_might', fail:'c2_horse_fail'},
           {t:'Ohl has the tea out.', go:'c2_horse_ohl'},
           {t:'"It\'s not my horse. Toc can do his own work."', fx:()=>{loy('ohl',-1); loy('brisk',-1);}, go:'c2_horse_refuse'}]}),
     c2_horse_might:()=>({sp:'The horse', fx:()=>{S.f.c2_horseDone=1; S.f.c2_horseHow='knife';}, txt:
 `You don't ask her to move and she doesn't. You do it the way the Untan garrison taught, the way you've done it for men: fast, once, at the place where it's over before it's felt.
 
-The mare goes still. Ellis's hands don't.
+The mare goes still. Ellis's hands don't.${S.gear.sgt && S.gear.sgt.weapon === 'clawknife' ? ` Her eyes go to the knife, once: no maker's mark, and until a moment ago no blood. "I know that knife," she says. That's all.` : ''}
 
 After a while she says, "Thank you." Then: "You've done that before." Then: "Not to a horse." She isn't asking.
 
@@ -401,7 +491,7 @@ She stands up, and takes the newer glove off, and you see the hand: burned, the 
     c2_horse_fail:()=>({sp:'The horse', fx:()=>{S.f.c2_horseDone=1; S.f.c2_horseHow='botched'; loy('ohl',1);}, txt:
 `You do it the way the garrison taught, and the mare moves, and it isn't once. It's twice. The second one is Ohl's, with the cudgel, exact and merciful and much too late to be either, and he says something to Hood that is not polite and is not in any language you know.
 
-Ellis doesn't flinch. That's the worst of it. She's been trained not to, and it worked.
+Ellis doesn't flinch. That's the worst of it. She's been trained not to, and it worked.${S.gear.sgt && S.gear.sgt.weapon === 'clawknife' ? ` She looks at the knife in your hand, and then away. "I know that knife."` : ''}
 
 "Thank you," she says, to Ohl, and then, to you, after a while, "and you." She means it. It's not a kindness. It's an accounting.
 
@@ -434,6 +524,8 @@ Ohl has gone to the wagon. He has not said anything, and it is very loud.`,
 `There is no burying a horse on the Rhivi Plain. There is cutting turf and laying it over the eyes, and putting the saddle-blanket across the neck, and standing there. Brisk cuts the turf. She doesn't ask why. She is a woman who understands that some things get covered.
 
 Kettle, quietly, to the mare: "Sorry." Then, to you: "She had a name. Ellis won't say it. I'm not naming a horse that's already got one."
+
+Sethand has not come into the flattened grass. He sits his horse at the edge of it and says something in Rhivi over the dead horses, low, the same few words over and over, with nearly a tune to them. He stops when he sees you listening, and does not start again until you have looked away.
 
 Toc has his own horse's saddle over his shoulder and is standing at Sethand's stirrup, out at the edge of the flattened grass, negotiating, in the way Toc seems to negotiate, which is to say he asks and then waits until the other man is embarrassed. Sethand hands over the reins of his pack-pony without a word. He'll want something for that. Later.
 
@@ -516,15 +608,17 @@ Sethand, from his horse, to nobody: "The ridge, before full dark. I said not to 
       ch:[{t:'Not yet.'}]},
 
     /* ---- the ridge: the fourth camp ---- */
-    c2_ridge_arrive:()=>({sp:'The fourth camp', scene:'plain_night', fx:()=>{S.f.c2_ridge=1;}, txt:
+    c2_ridge_arrive:()=>{ const m = c2P(S.f.c2_barrowMissWho); return {sp:'The fourth camp', scene:'plain_night', fx:()=>{S.f.c2_ridge=1;}, txt:
 `Night on the ridge. Two tents, because Brisk will not sleep in one with Kettle and Kettle will not sleep in one without Tuft, and Ohl sleeps in the wagon, and you sleep where you can see all of it. The fire is small and Brisk built it. The stars are the wrong stars; they have been since Pale, and nobody has said so.
 
 Sethand has come into the firelight. He has not done that on any night before. He sits with his back to the west, which is not where he has been looking.
 
 ${SQUAD().includes('ellis') ? `Ellis has taken the first watch without being told, and taken it out beyond the stakes where the tents can't see her. Brisk went out and looked at where she'd put herself, and came back, and said "Good," and that was Ellis's induction into the Fourth.` : `Nobody is talking about the horses. Ohl has the oilcloth open and is looking at it. He hasn't written anything. He's thinking about whether a horse counts, and you can see him decide that it does, and not write it anyway.`}
 
-Tuft is at the fire. That's new too.`,
-      ch:[{t:'The camp.', go:()=>startExplore()}]}),
+${S.f.c2_barrowCold ? `Kettle has her hands so near the flames that Brisk keeps looking at them. They have been cold since the barrow. ${S.f.c2_barrowMissWho === 'kettle' ? `"I said it fell," she says, to nobody. "I'd like that not noted."` : S.f.c2_barrowMissWho ? `"${m.you ? 'You' : m.N} said it fell${m.you ? ', Sergeant' : ''}," she says, ${m.you ? 'to the fire, not to you' : 'to nobody'}. "I'm not blaming. I'm *saying*."` : `She doesn't say why. Nobody asks.`}
+
+` : ''}Tuft is at the fire. That's new too.`,
+      ch:[{t:'The camp.', go:()=>startExplore()}]}; },
     c2_ridge_seth:()=>({sp:'Sethand', fx:()=>{S.f.c2_sethNight=1;}, txt:
 `He doesn't look up from the fire. "Malazan. Sit. It is your fire."
 
@@ -551,7 +645,7 @@ He spits into the fire, carefully, so that it doesn't hiss.
 
 "Because your mage has a Deck in her sleeve, and I have seen her not draw from it for four days, and tonight she is at the fire with it in her hand." He doesn't look at Tuft. "The Rhivi do not read the Deck. We do not need to. We have the grass, and the grass says what the Deck says, only slower and with fewer pictures."
 
-${S.f.c2_horseHow === 'tea' ? `"And because a man who can put a horse down that gently should not sit alone."` : `"And because your healer has not said a word since the horses, and a man that old should not sit alone with a thing like that."`} A nod toward the wagon, toward Ohl. "That is all. I will go back to my own fire when I have finished being here."`,
+${S.f.c2_horseHow === 'tea' ? `"And because a man who can put a horse down that gently should not sit alone."` : S.f.c2_horseHow === 'botched' ? `"And because your healer had to finish a thing at dusk that you began, and has not said a word since, and a man that old should not sit alone with a thing like that."` : `"And because your healer has not said a word since the horses, and a man that old should not sit alone with a thing like that."`} A nod toward the wagon, toward Ohl. "That is all. I will go back to my own fire when I have finished being here."`,
       ch:[{t:'"The dust-line."', req:()=>!S.f.c2_sethDustNight, fx:()=>S.f.c2_sethDustNight=1, go:'c2_seth_night_dust'},
           {t:'Let him have the fire.', go:'c2_seth_night_done'}]}),
     c2_seth_night_quiet:()=>({sp:'Sethand', txt:
@@ -592,7 +686,7 @@ ${SQUAD().includes('kettle') && !S.f.c2_bones ? `Kettle has two knucklebones out
 "One card, Sergeant. I don't want to. I think I have to." She doesn't look at Sethand, who is not looking at her with great skill. "Something's happening tonight. I can feel it in the warren like a draught under a door, and the Deck's warm, and it's never warm."
 
 ${SQUAD().includes('ellis') ? `Ellis, from the dark beyond the stakes, not loudly: "That thing got a man killed at Pale. A cadre mage read it three nights running and on the fourth the Hounds came." A pause. "I'm not saying it's the Deck's fault. I'm saying I've never seen it help." Tuft doesn't answer her. Tuft doesn't look at her. It is, you realise, the first thing Ellis has said that Tuft has heard.` : `Kettle: "Draw it. If it's bad we'll know it's bad. If it's good, Brisk can tell us why it's bad anyway."`}`,
-      ch:[{t:'Let her draw.', fx:()=>{ S.f.c2_drawn=1; S.card = ['raven','raven','raven','oponn','obelisk','knight'][R(6)]; }, go:()=>cardSequence(()=>talk('c2_card'))},
+      ch:[{t:'Let her draw.', fx:()=>{ S.f.c2_drawn=1; S.card = dealCard(['raven','raven','raven','oponn','obelisk','knight']); }, go:()=>cardSequence(()=>talk('c2_card'))},
           {t:'"Put it away. Not tonight."', fx:()=>{S.f.c2_noCard=1; loy('tuft',-1); loy('brisk',1); if (SQUAD().includes('ellis')) loy('ellis',1);}, go:'c2_fire_no'},
           {t:'Not yet.'}]},
     c2_card:()=>{ const c = (CARDS[S.card] || CH2.card); return {sp:'The Deck of Dragons', scene:'plain_night', txt:
@@ -674,16 +768,29 @@ You go, the wagon lurching on ground it was never meant for. The light doesn't g
     c2_outriders:()=>({sp:'Rhivi outriders', txt:
 `Six of them, then nine, then more than you want to count: small horses, small men, bows strung, arrows on the string and not yet drawn. They come out of the lit grass in a curve and stop at a distance that is exactly a bowshot, which is not an accident.
 
-The one in front says something in Rhivi. It has a sergeant's tone in it. Sethand answers, short. The man says it again, and this time he points at Kettle's satchel, and then at the light, and then at you, and the meaning is very clear in any language: *not one step*.
+The one in front says something in Rhivi. It has a sergeant's tone in it. Sethand answers, short. The man says it again, and this time he points at ${S.f.c2_barrowCold ? `Kettle: not the satchel, Kettle, her hands, which she has had under her arms since the barrow. He says a second word about her that Sethand does not translate. Then he points` : `Kettle's satchel, and then`} at the light, and then at you, and the meaning is very clear in any language: *not one step*.
 
-${SQUAD().includes('ellis') ? `Ellis, at your elbow, without moving her lips: "Eleven. Four more in the grass on the left. They're not here for us. They're here for whatever's behind them."` : `Tuft, at your elbow: "Sergeant. They're afraid of us. Not of the fire. Of *us.* Malazans and a burning mage. Think about how that looks."`}`,
-      ch:[{t:'"Sethand. Tell them we\'ve come to bury her, not to take anything."', check:['guile',13], go:'c2_out_talk', fail:'c2_out_fight'},
-          {t:'"Sethand. Your word. Whatever it costs."', req:()=>(S.f.c2_sethTrust || 0) >= 2, go:'c2_out_seth'},
-          {t:'"Shields."', go:'c2_out_fight'}]}),
+${SQUAD().includes('ellis') ? `Ellis, at your elbow, without moving her lips: "Eleven. Four more in the grass on the left. They're not here for us. They're here for whatever's behind them."` : `Tuft, at your elbow: "Sergeant. They're afraid of us. Not of the fire. Of *us.* Malazans and a burning mage. Think about how that looks."`}
+
+${(S.f.c2_sethTrust || 0) >= 2 ? `Sethand's hands are open on his reins. Under his breath, so low it is mostly breath, he is saying the words he said over the dead horses at dusk. He isn't saying them to the riders.` : `The man in front keeps coming back to one word, pointing at the light: the same word, every time. And there is a tune in your head that hasn't left since dusk, the few words Sethand said over the dead horses.`}`,
+      ch:c2OutCh()}),
     c2_out_talk:()=>({sp:'Rhivi outriders', fx:()=>{S.f.c2_outTalked=1; loy('ohl',1);}, txt:
-`You say it plainly, and Sethand says it plainly after you, and you watch it land: the word for *bury*, whatever it is in Rhivi, does something to the man in front. He looks at Ohl. Ohl has the flask out, and the oilcloth, and is looking back at him with the patience of a man who has argued with Hood in three languages and will learn a fourth if he has to.
+`${by({
+  sgt:`You say it plainly, and Sethand says it plainly after you, and you watch it land:`,
+  tuft:`Tuft says it. She says it to Sethand very quietly and very exactly, and then she adds one thing you didn't ask for: "Tell him I knew her." Sethand says all of it plainly after her, and you watch it land:`,
+  ellis:`Ellis says it, in one sentence, the right one: "Tell him we've come late to bury one of ours." Sethand says it plainly after her, and you watch it land:`,
+  kettle:`Kettle says it, with both hands held well away from the satchel, which for Kettle is a kind of oath. "Tell him we're here to bury her. Tell him we're good at it. We've had practice." Sethand says the first part plainly and leaves the rest on the grass, and you watch it land:`,
+  ohl:`Ohl says it, slowly, the way he'd say a thing at a bedside, and Sethand says it plainly after him, and you watch it land:`,
+  brisk:`Brisk says it in the regiment voice, the one for orders read out on parade, and Sethand says it plainly after her, and you watch it land:`,
+  _:`{who} says it plainly, and Sethand says it plainly after, and you watch it land:`})} the word for *bury*, whatever it is in Rhivi, does something to the man in front. He looks at Ohl. Ohl has the flask out, and the oilcloth, and is looking back at him with the patience of a man who has argued with Hood in three languages and will learn a fourth if he has to.
 
-A long pause. The light hums. Then the bows come down, not all at once, and the curve of riders opens in the middle like a hand.
+A long pause. The light hums. ${!nearMiss() ? `Then the bows come down, not all at once, and the curve of riders opens in the middle like a hand.` : !['sharper','burner'].includes(S.f.c2_outToll) ? `Then the bows come down, not all at once and not all of them. The man in front keeps an arrow on the string, and keeps it on ${c2P(ROLL().who).n}, all the way through the gap that opens in the curve of riders, and ${c2P(ROLL().who).you ? 'you feel' : `${c2P(ROLL().who).n} feels`} it between the shoulders for an hour afterwards.` : `Then the man in front holds out his hand. Not to you. To Kettle. Sethand doesn't translate; he doesn't need to. Kettle looks at you, and you nod, and she puts a ${S.f.c2_outToll} in the Rhivi's palm the way you'd hand over a sleeping child. He stows it in his saddle-bag, very carefully, and only then does his bow come down, and the rest come down with it, and the curve of riders opens in the middle like a hand.
+
+"He says Malazan fire does not go near the dead," says Sethand. "He says he will give it back." A pause. "He will not give it back."
+
+Kettle, under her breath: "It's a *loan*."`}${cleanRoll() ? `
+
+The man in front touches two fingers to his brow, at ${c2P(ROLL().who).n}, and Sethand looks at ${c2P(ROLL().who).them} as if ${c2P(ROLL().who).they} had grown an inch.` : ''}
 
 The man in front says one more thing, to Sethand, and Sethand translates without being asked, which is the first time.
 
@@ -697,10 +804,57 @@ The bows come down. All of them, at once, the way a field of grass goes down und
 He rides back. His face has not changed and everything about him has. "That is spent, Malazan. I will not be able to do it again on this plain for a year, and you owe me a thing you will not be able to pay. Ride through. Look. Do not touch. And do not ask what they carry."`,
       ch:[{t:'Ride through.', go:'c2_ashes'}]}),
     c2_out_fight:()=>({sp:'Rhivi outriders', txt:
-`Something goes wrong in the translation, or nothing does and it wouldn't have mattered. The man in front says a word that is the same in every language, and the bows come up.
+`${S.f.c2_outTalkTried ? by({
+  sgt:`Something goes wrong in the translation, or nothing does and it wouldn't have mattered.`,
+  tuft:`Tuft says it, and says *cadre*, because it's true, and Sethand translates it, because she asks him to. On this plain, tonight, with that light behind them, it is the worst word she could have found.`,
+  ellis:`Ellis says it in one sentence, and it's the right sentence, in a Claw scout's flat voice; and the man in front has heard that voice before, on this plain, saying other things.`,
+  kettle:`Kettle tells Sethand to tell them that the Fourth are here to bury her, and that they're very good at it, they've had practice. Sethand, Hood help him, translates all of it.`,
+  _:`{who} says it, and Sethand says it after, and something goes wrong between the one and the other.`}) : `Something goes wrong in the translation, or nothing does and it wouldn't have mattered.`} The man in front says a word that is the same in every language, and the bows come up.
 
 Brisk's shield is already there.`,
       ch:[{t:'Fight', go:()=>startBattle('outriders',{surprise:'e'})}]}),
+    /* ✦ the Rhivi Spirit-Song: the words Sethand said over the dead horses, with the man in front's word where the horse was */
+    c2_song:()=>{ const p = c2P(ROLL().who), given = !!S.f.c2_songGiven; return {sp:'Rhivi outriders', fx:()=>{ S.f.c2_outSang=1; S.f.c2_songWho=ROLL().who || 'sgt'; S.f.c2_sethTrust=(S.f.c2_sethTrust || 0) + 1; }, txt:
+`${given ? `Sethand gives you the words. He does it without turning his head, under his breath: the few words he said over the dead horses at dusk, and then, where the horse was, a different word, the one the man in front keeps saying at the light. Then he stops, and leaves the next breath empty for somebody else.` : `The words are the ones Sethand said over the dead horses at dusk, the same few, with nearly a tune. Somewhere in them is the word for *horse*. The man in front has been saying another word all this while, pointing at the light, the same word every time.`}
+
+${by({
+  sgt:`It's you. Marines don't sing; they count. You sing it anyway, the few words, low, with his word where the horse was.`,
+  ohl:`It's Ohl. He has a voice for it, which nobody knew: low, cracked down the middle, patient. "I have a rule," he says, before he starts. "I learn the words for the dead in every tongue I am likely to need them in. I made it at dusk." Then he sings it, with the man's word where the horse was.`,
+  tuft:`It's Tuft. She sings it the way she says *Yes, Sergeant*: very quietly, very exactly, as if anything louder would break. When she comes to the man's word she doesn't stop. She knows who it's for. It is the first thing anyone has let her do for Tattersail.`,
+  ellis:`It's Ellis. "They sing it over horses," she says, before. "I heard it from a ridge once, scouting with Toc. You change one word." She sings it flat and exact, the way she'd give a count, and changes the word.`,
+  kettle:`It's Kettle. She sings it loudly and badly and with total confidence, which is how she does everything, and gets every word right, which is not. She puts the man's word in the horse's place without being told; she's been listening to it the way she listens to a fuse.`,
+  brisk:`It's Brisk. She doesn't sing it, exactly. She calls it, in the regiment voice, the one for reading out the names after a field; and it turns out that is what the song is.`,
+  _:`It's {who}. {who} sings it low, the few words, with the man's word where the horse was.`})}
+
+For a breath nothing happens. Then the man in front closes his mouth on whatever he was going to say, and opens it again, and sings the next line. And the next. The riders take it up, one and then four and then all of them, low, the way you'd sing in a tent with a sick child in it, and the bows are down and nobody saw them lowered.
+
+Something comes with the song that wasn't in it at dusk. ${S.f.c2_barrowCold ? `Kettle's hands, cold since the barrow, are warm, and she looks at them as if they belonged to someone else.` : `Ohl's hands, which have not been still since the ridge, are still.`} Brisk lets her shield down an inch, which she has never done for anything she couldn't see the end of. Sung for the dead, the words carry the dead. Sung over the living, they carry something else, and for as long as it lasts the Fourth is standing in it.
+
+${given ? `Sethand doesn't look at you. "I did not teach you that," he says. "If the clans ask, I did not." A pause. "I will be asked."` : `Sethand is looking at ${p.n} the way a man looks at weather he did not forecast. "Nobody taught you that," he says. "I am telling you so you will know that nobody did."`}
+
+The man in front says one more thing, to Sethand, and Sethand translates it without being asked. "He says: *look. Do not touch. And do not ask what we carry.*"`,
+      ch:[{t:'Ride through.', go:'c2_ashes'}]}; },
+    /* the song gone wrong: sung word for word, horse and all. The outriders have a name for the singer now (Sethand says it at the hills). */
+    c2_song_wrong:()=>({sp:'Rhivi outriders', fx:()=>{ S.f.c2_songWrong=1; S.f.c2_songWho=ROLL().who || 'sgt'; }, txt:
+`${by({
+  sgt:`You sing it the way Sethand sang it at dusk: the same few words, the nearly-tune, word for word.`,
+  ohl:`Ohl sings it, low and cracked and patient, word for word as Sethand sang it at dusk.`,
+  tuft:`Tuft sings it, very quietly, very exactly, word for word as Sethand sang it at dusk.`,
+  ellis:`Ellis sings it flat and exact, word for word as she heard it from a ridge once, and as Sethand sang it at dusk.`,
+  kettle:`Kettle sings it loudly and with total confidence, word for word as Sethand sang it at dusk.`,
+  brisk:`Brisk calls it, in the regiment voice, word for word as Sethand sang it at dusk.`,
+  _:`{who} sings it, word for word as Sethand sang it at dusk.`})}
+
+Word for word. That's the trouble.
+
+The man in front lets it run to the end. Then he laughs, once, short, the way you'd laugh at a child who's put a helmet on backwards; and the riders behind him do not laugh at all.
+
+Sethand has closed his eyes. "That," he says, "is the song for a horse."${SQUAD().includes('kettle') ? `
+
+Kettle, very quietly: "We *did* do a horse today."` : ''}
+
+The bows haven't come up. They haven't come down either. And the man in front has a word for ${c2P(ROLL().who).n} now, which he says to the rider beside him, and which Sethand will not translate, and which, from the shape of it, has a horse in it.`,
+      ch:c2OutCh()}),
     c2_after_outriders:()=>({sp:'The grass at night', scene:'plain_night', fx:()=>{ S.f.c2_outFought=1; loy('ohl',-1); }, txt:
 `It's short, and bad, and then it stops, because the ones you've knocked down are being dragged back into the grass by the ones you haven't, and the curve of riders is a curve again, further off, and nobody is loosing.
 
@@ -747,7 +901,7 @@ She takes her hand off the glass. Where it was, there's a print, and the print s
 
 "I will not tell you, Malazan, and then you will know that I did not, and that is more than you should know. It is a thing the plain found in the fire. It is a thing that is ours now, and was not, and the Mhybe has it, and that is all. That is *all.*"
 
-The old woman across the circle has not looked up. The bundle in her arms is small. It is the size of a thing you don't say. The Rhivi around her are singing, very low, and it is not a song for the dead.
+The old woman across the circle has not looked up. The bundle in her arms is small. It is the size of a thing you don't say. The Rhivi around her are singing, very low, and it is not a song for the dead.${S.f.c2_outSang ? ((p) => ` ${p.N} ${p.you ? 'know' : 'knows'} the song for the dead now; ${p.they} sang it at the bowshot. This isn't it.`)(c2P(S.f.c2_songWho)) : ''}
 
 ${SQUAD().includes('ellis') ? `Ellis, at your elbow, in a voice with no weight in it at all: "It moved. Sergeant. Whatever it is. It moved." She doesn't say it again.` : `Kettle has stopped naming things. She's looking at the bundle and her lips are moving and nothing is coming out.`}`,
       ch:[{t:'Go to Tuft.', req:()=>!S.f.c2_ashesTuft, go:'c2_ashes_tuft'},
@@ -795,14 +949,17 @@ They stop at the edge of the firelight. They don't come into it. Their swords ar
 
 Brisk has her shield up. Kettle has her hand on the satchel and has not opened it. Tuft has not stood. Tuft is looking at them from the ground the way she looked at the light, and her lips are moving, and the word on them is a name you learned at the Pale from the sky, and it is *Rake*.
 
-The one in the middle looks at each of you in turn. Counts. Arrives at ${SQUAD().includes('ellis') ? 'six' : 'five'}.
+The one in the middle looks at each of you in turn. Counts. Arrives at ${SQUAD().includes('ellis') ? 'six' : 'five'}.${S.f.c2_printsTrod ? ` His eyes go back once, to ${c2P(S.f.c2_printsWho).poss} boots, and stay there a moment longer than they should.` : ''}
 
 "Malazans." A voice like a door in a very large house. "The light. Did you go to it?"
 
 That's the question. You understand, somehow, that it's the only one.`,
       ch:[{t:'"No. We had orders. East."', go:'c2_andii_no'},
           {t:'"We watched it. All night. We didn\'t go."', go:'c2_andii_no'},
-          {t:'Watch their faces while you answer.', check:['wits',12], go:'c2_andii_fear', fail:'c2_andii_no'}]}),
+          {t:'Answer them. Somebody watch their faces.', check:['wits',12],
+            edges:id=>[id === 'kettle' && S.f.c2_bones && ['Kettle has been reading tells since the bones', 1], S.f.c2_printsTrod && id === S.f.c2_printsWho && ['Hound-ground on these boots: the Andii keep looking', -1]],
+            near:{t:()=>`${NAME(ROLL().who)} sees it, and is seen seeing it.`, fx:()=>{ S.f.c2_andiiStared=1; S.f.c2_andiiStaredWho=ROLL().who; }},
+            go:'c2_andii_fear', fail:'c2_andii_caught'}]}),
     c2_andii_no:()=>({sp:'Tiste Andii', txt:
 `The one in the middle nods. It's a small movement. It has centuries in it.
 
@@ -814,21 +971,51 @@ Kettle, when they're gone: "They asked one thing and answered nothing. That's no
 
 "Tiste Andii," says Tuft, from the ground. "Rake's. Three of them. Nobody's ever seen three of them and not been in a war." She doesn't get up. "We're in one. We just haven't been told."`,
       ch:[{t:'Watch them go.', go:'c2_andii_go'}]}),
-    c2_andii_fear:()=>({sp:'Tiste Andii', fx:()=>{S.f.c2_andiiFear=1; loy('tuft',1);}, txt:
-`You answer, and while you answer you watch, and you see it.
+    c2_andii_fear:()=>({sp:'Tiste Andii', fx:()=>{S.f.c2_andiiFear=1; S.f.c2_andiiFearBy = ROLL().who || 'sgt'; loy('tuft',1);}, txt:
+`${by({
+  sgt:`You answer, and while you answer you watch, and you see it.`,
+  ohl:`You answer. Ohl watches their hands, because hands are where a healer looks first: the face is what a man has decided to show you, and the hands are what he hasn't. And Ohl sees it.`,
+  ellis:`You answer. Ellis doesn't look at their faces at all. She counts their hands, which is what she does with everything, and loses the count at the younger one's, because they will not stay still long enough to be counted.`,
+  kettle:`You answer. Kettle watches them ${S.f.c2_bones ? `the way she watched Hedge's hands over the bones, for the tell` : `the way she'd watch a lit fuse, for the moment it does the thing`}, and she finds it.`,
+  tuft:`You answer. Tuft watches them from the ground, with the name still on her lips, and she sees it first.`,
+  brisk:`You answer. Brisk watches them over the rim of her shield, which is how she watches everything, and she sees it.`,
+  _:`You answer, and while you answer {who} watches, and sees it.`})}
 
 Not in the one who asked. In the one on the left, who is younger, if that word means anything, and who has not stopped looking west since they stopped walking. His hands are empty and his hands are not still. And the one who asked has put himself half a pace in front of the younger one, the way Brisk puts a shield in front of Kettle without being asked, and it isn't for you.
 
 They are afraid. Not of the Malazans. Not of the plain. Of what they saw in the light, or of what came out of it after, or of what their lord will say when they tell him, and you don't know which, and you know it doesn't matter, because they are Tiste Andii and they have lived longer than the Empire and they are *afraid*.
 
-"No," the one in the middle says. "Nor did we." And they turn, and go, and the younger one looks back. Once. West.
+"No," the one in the middle says. "Nor did we."${nearMiss() ? ` And then, without turning his head, he looks at ${c2P(ROLL().who).n}. Only that. It is like being looked at by a door.` : ''} And they turn, and go, and the younger one looks back. Once. West.
 
-Tuft has seen it too. "They're the oldest thing on this plain," she says, when they're gone. "And they're scared of the second-oldest. I'd like that written down somewhere, Sergeant. I'd like somebody to have it."`,
+${ROLL().who === 'ellis' ? `"The young one's afraid of what they saw," Ellis says. "The old one's afraid of what the young one will do about it."
+
+` : ''}${ROLL().who === 'tuft' ? `"They're the oldest thing on this plain," Tuft says, when they're gone.` : `Tuft has seen it too. "They're the oldest thing on this plain," she says, when they're gone.`} "And they're scared of the second-oldest. I'd like that written down somewhere, Sergeant. I'd like somebody to have it."`,
       ch:[{t:'Watch them go.', go:'c2_andii_go'}]}),
+    /* a watch that was noticed: the one in the middle looks back at whoever was watching (Sethand and Crone both remark on it) */
+    c2_andii_caught:()=>{ const p = c2P(ROLL().who); return {sp:'Tiste Andii', fx:()=>{ S.f.c2_andiiStared=1; S.f.c2_andiiStaredWho=ROLL().who || 'sgt'; }, txt:
+`${by({
+  sgt:`You answer, and you watch while you answer, and you watch too hard. You're a sergeant; you have never in your life looked at a thing without wanting to know what it will do next, and the one in the middle feels it like a hand on his sleeve.`,
+  ohl:`You answer. Ohl watches the way he'd watch a wound, close and patient, and forgets, for a moment, that this one can watch back.`,
+  kettle:`You answer. Kettle stares. She doesn't mean to. She has never seen anything so tall, and she has never in her life been able to not look at a thing.`,
+  ellis:`You answer. Ellis watches the way the Claw taught her, which is very well; and the Claw never taught her what to do when the thing being watched has been watched by better for ten thousand years.`,
+  tuft:`You answer. Tuft watches from the ground, and her lips are still moving, and that is what does it: his lord's name, in a Malazan mouth, at his feet.`,
+  brisk:`You answer. Brisk watches over the rim of her shield, the way she watches everything; and the one in the middle has been watched over shields before, by better, and knows the feel of it.`,
+  _:`You answer. {who} watches too hard.`})}
+
+${ROLL().who === 'sgt' ? 'He' : 'The one in the middle'} turns his head and looks at ${p.n}, and only at ${p.them}, for the space of a long breath. It isn't anger. It is the look you give a page you mean to find again.
+
+${p.you ? `"No," he says. "Nor did we."` : `"No," he says, to ${p.n}, not to you. "Nor did we."`}
+
+Nothing else. They turn, all three at once without a word between them, and walk back into the grass toward the west, and the grass does not move to let them through.
+
+Kettle, when they're gone: "They asked one thing and answered nothing. That's not a patrol. That's a *sermon*."
+
+"Tiste Andii," says Tuft, from the ground. "Rake's." She doesn't get up. "And he looked at ${p.you ? 'you' : ROLL().who === 'tuft' ? '*me*' : p.n}, Sergeant. They don't look at *us*. Nobody's ever told me what it means when they do."`,
+      ch:[{t:'Watch them go.', go:'c2_andii_go'}]}; },
     c2_andii_go:()=>({sp:'The fourth camp', txt:
 `Grey in the east. The fire's out; nobody fed it after the Andii, and nobody noticed till now.
 
-Sethand puts his knife away. He has held it the whole time and it has been no use at all and he knows it. "The Andii do not walk," he says. "They fly, on the Moon, and they do not come down. They came down. For that." He looks west. "The clans will be talking about this when your Empire is a story."
+Sethand puts his knife away. He has held it the whole time and it has been no use at all and he knows it. "The Andii do not walk," he says. "They fly, on the Moon, and they do not come down. They came down. For that." He looks west. "The clans will be talking about this when your Empire is a story."${S.f.c2_andiiStared ? ((p) => ` He looks at ${p.n}. "And one of you read them. The Andii do not like to be read, Malazan; they would rather be feared. ${p.N} ${p.has} given one of them a face to keep, and they keep things a very long time."`)(c2P(S.f.c2_andiiStaredWho)) : ''}
 
 Something crosses the grey.
 
@@ -837,7 +1024,7 @@ It's big. It's slow. It's the wrong shape for a bird and it's a bird anyway, and
 
     /* ---- Crone ---- */
     c2_crone:()=>({sp:'Crone · Great Raven', fx:()=>{S.f.c2_crone=1;}, txt:
-`It's the size of a dog. Its feathers are black and its eyes are black and there is something in the eyes that is not a bird's and is not a person's and is very, very old. It cocks its head. It looks at Brisk's shield, and Kettle's satchel, and Tuft, longest.
+`It's the size of a dog. Its feathers are black and its eyes are black and there is something in the eyes that is not a bird's and is not a person's and is very, very old. It cocks its head. It looks at Brisk's shield, and Kettle's satchel, ${S.f.c2_printsTrod ? `and ${c2P(S.f.c2_printsWho).poss} boots, for a long and interested moment, ` : ''}and Tuft, longest.
 
 Then it opens its beak and laughs.
 
@@ -845,7 +1032,11 @@ Then it opens its beak and laughs.
 
 The voice is a crow's voice, cracked and dry, and the words are as clear as a lawyer's.
 
-"Crone, little soldiers. Eldest of the Great Ravens, and the one Anomander Rake sends when he wants a thing *seen*, because ravens see, and we remember, and we are so very hard to kill." It preens, once, an old woman settling a shawl. "I have been over the whole of this plain tonight and you are the most interesting thing on it, and that is not a compliment. Interesting things get *eaten*."`,
+"Crone, little soldiers. Eldest of the Great Ravens, and the one Anomander Rake sends when he wants a thing *seen*, because ravens see, and we remember, and we are so very hard to kill." It preens, once, an old woman settling a shawl. "I have been over the whole of this plain tonight and you are the most interesting thing on it, and that is not a compliment. Interesting things get *eaten*."${S.f.c2_printsTrod ? `
+
+The head turns to ${c2P(S.f.c2_printsWho).n}. "And *you*. You've been standing where a Hound went home. Ha! It's on your boots. Wipe them or don't. The Hounds won't mind."` : ''}${S.f.c2_andiiStared && S.f.c2_key === 'road' ? `
+
+"And one of you *stared* at my lord's children. Ha! They'll carry that face home. They carry everything home. It's why the Moon is so *heavy*."` : ''}`,
       ch:[{t:'"What did you see? Out there."', go:'c2_crone_saw'},
           {t:S.f.c2_key === 'light' ? '"Get off him."' : '"Get off my wagon."', fx:()=>loy('brisk',1), go:'c2_crone_off'}]}),
     c2_crone_saw:()=>({sp:'Crone', fx:()=>{S.f.c2_croneSaw=1;}, txt:
@@ -912,7 +1103,11 @@ ${SQUAD().includes('ellis') ? `Ellis has stopped too. She's looking at the blue 
 
 He turns the horse.
 
-"I do not know what your Empress wants with a thing like that. I know what the grass will do when it wakes. It will burn. Ride on to your city. I hope it is there when you reach it. I hope, Malazan, that you are."
+"I do not know what your Empress wants with a thing like that. I know what the grass will do when it wakes. It will burn. Ride on to your city. I hope it is there when you reach it. I hope, Malazan, that you are."${S.f.c2_songWrong ? ((p) => `
+
+He stops the horse again, half-turned. "The outriders have a name for ${p.n} now." Something happens at the corner of his mouth. "*Horse-singer.* It is not an insult. It is not not one. It will be at the Mhybe's fires before you are in your city."`)(c2P(S.f.c2_songWho)) : S.f.c2_outSang ? ((p) => `
+
+He stops the horse again, half-turned. "The song, at the bowshot. The clans will ask me who taught a Malazan the words for the dead." He looks at ${p.n}. "I will tell them the grass did. It is nearly true."`)(c2P(S.f.c2_songWho)) : ''}
 
 ${(S.f.c2_sethTrust || 0) >= 2 ? `And then, without looking back: "You listened. When I said *do not*, and when I said nothing. That is more than any Malazan. If the Fourth comes back across the plain, come by the Mhybe's fires. Say my name. It will be worth something, once."` : `He doesn't say anything else. He has said, by his count, more than enough.`}`,
       ch:[{t:'"Ellis. You\'ve seen it before."', req:()=>SQUAD().includes('ellis') && !S.f.c2_hillsEllis, go:'c2_hills_ellis'},
@@ -926,7 +1121,9 @@ She lets that sit.
 
 ${S.f.clawFavour ? `"Your grey cloak at the Pale. He'll have a letter there too. About you. It'll be *neat*." She finally looks at you. "I'm not telling you that to frighten you. I'm telling you so that when we walk past the green door you'll know why I don't."` : S.f.marked ? `"He'll know your name there, Sergeant. The one who wrote it down. That's what the house is for; it's where names go." She looks at you. "I'd walk past the green door on the far side of the street. That's not advice. It's what I'm going to do."` : `"I'd like not to go near the green door. I'd like that put in the ledger, next to the mule."`}
 
-${S.loy.ellis >= 1 ? `Then, drier: "Also, the fish is good. Lakefront. Say I sent you. Then run."` : `She goes back to the wagon. She walks on the side away from Tuft, still, and Tuft has noticed, and neither of them has said a word about the Deck since the ridge.`}`,
+${S.f.c2_horseHow === 'botched' ? `"And the mare. It was twice." She looks at you. "I've put it down as once. I'd like it left that way."
+
+` : ''}${S.loy.ellis >= 1 ? `Then, drier: "Also, the fish is good. Lakefront. Say I sent you. Then run."` : `She goes back to the wagon. She walks on the side away from Tuft, still, and Tuft has noticed, and neither of them has said a word about the Deck since the ridge.`}`,
       ch:[{t:'"Sethand. The dust-line."', req:()=>!S.f.c2_hillsDust, go:'c2_hills_dust'},
           {t:'The road. The city.', go:()=>startExplore()}]}),
     c2_hills_seth_again:()=>({sp:'Sethand', txt:
@@ -953,7 +1150,7 @@ ${S.f.c2_key === 'light' ? `Tuft walks beside the wagon, where you can see her. 
 
 ${SQUAD().includes('ellis') ? `Ellis is out ahead, on foot, where the ruts go up into the hills, with her bow strung and her burned hand gloved. She looks back once. Counts. Arrives at six, and checks it.` : S.f.c2_ellisRefused ? `Somewhere ahead, a scout with one eye is riding after an Adjunct with a woman who could have been the Fourth's, and Ohl has not mentioned it, and will not, and the not-mentioning has a shape.` : ``}
 
-Kettle: "${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}, and a crate I still haven't opened. I want that in the ledger."
+Kettle: "${numw(S.inv.sharper, true)} sharper${S.inv.sharper === 1 ? '' : 's'}, ${numw(S.inv.burner)} burner${S.inv.burner === 1 ? '' : 's'}, ${numw(S.inv.cusser)} cusser${S.inv.cusser === 1 ? '' : 's'}, ${S.f.c2_outToll === 'sharper' || S.f.c2_outToll === 'burner' ? `one ${S.f.c2_outToll} on loan to a Rhivi who isn't giving it back, ` : ''}and a crate I still haven't opened. I want that in the ledger."
 
 Brisk: "It's in."
 

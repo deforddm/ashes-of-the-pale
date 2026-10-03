@@ -37,13 +37,15 @@ const BOT = () => {
         if (pick) { const g = {}; m.querySelectorAll('[data-k]').forEach(b => (g[b.dataset.id] ||= []).push(b)); Object.values(g).forEach(a => a[Math.floor(Math.random() * a.length)].click()); if (!pick.disabled) pick.click(); return 'picks'; }
         m.hidden = true; return 'modal';
       }
-      const dice = $('#dice'); if (dice) { dice.click(); return 'dice'; }
-      if (!$('#cardfx').hidden) { const b = $('#cardfx').querySelector('button:not([disabled])'); if (b) { b.click(); return 'cardfx-btn'; } $('#cardfx').click(); return 'cardfx'; }
+      const dice = $('#dice'); if (dice) { const pull = $('#dPull'); if (pull && Math.random() < .5) { this.ev('pull: spun the coin'); pull.click(); return 'dice-pull'; } dice.click(); return 'dice'; }
+      if (!$('#cardfx').hidden) { const fold = $('#cfFold'); if (fold && Math.random() < .5) { this.ev('fold: drew again'); fold.click(); return 'cardfx-fold'; } const keep = $('#cfKeep'); if (keep && Math.random() < .5) { keep.click(); return 'cardfx-keep'; } const b = $('#cardfx').querySelector('button:not([disabled])'); if (b) { b.click(); return 'cardfx-btn'; } $('#cardfx').click(); return 'cardfx'; }
       if (view === 'title') { const b = $('#bNew') || $('#bNewSgt'); if (b) { b.click(); return 'new'; } }
       if (!sh.hidden) {
         const retry = $('#bRetry');
         if (retry) { const b = this.cur; if (b) { b.losses++; this.ev(`lost battle ${b.id} (attempt ${b.losses})`); } retry.click(); return 'retry'; }
-        const btns = [...sh.querySelectorAll('.choice')].filter(b => !b.disabled);
+        const pk = sh.querySelector('.choices.picker'); // who handles a check: mostly the likeliest, sometimes anyone
+        if (pk) { const ws = [...pk.querySelectorAll('[data-who]:not([disabled])')]; if (ws.length) { const w = Math.random() < .6 ? (pk.querySelector('.best') || ws[0]) : ws[Math.floor(Math.random() * ws.length)]; this.choices++; w.click(); return 'pick-roller'; } }
+        const btns = [...sh.querySelectorAll('.choice')].filter(b => !b.disabled && b.dataset.i != null);
         if (!btns.length) return 'wait-choice';
         const id = S.node; if (id && !this.visited[id]) { this.visited[id] = 1; this.nodeVisits++; }
         const opts = btns.map(b => { const c = curCh[+b.dataset.i]; let w = 1;

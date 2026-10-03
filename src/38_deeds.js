@@ -55,22 +55,30 @@ function deedsHTML(){
     ['Laying the charges', d('chargesClean') ? 'Every run, first time' : d('chargesLaid') ? 'All three runs laid' : 'Not yet'],
     ['The roof run', d('roofsUnseen') ? `Across unseen${d('roofsUnseen') > 1 ? ` (${d('roofsUnseen')} times)` : ''}` : d('roofSeen') ? `Seen ${d('roofSeen')} time${d('roofSeen') === 1 ? '' : 's'}; never across unseen` : 'Not yet'],
     ['Masks at the Fete', best ? `${best} of 5 named${d('masksAll') ? ', all five at least once' : ''}` : 'Not yet']];
-  const done = S && S.chapters && S.chapters[7] != null;
+  const done = replayable();
   return `<p class="fine">Across every sergeant on this device.</p>
     <h4 class="jh">The road</h4><div class="route"><canvas id="dRoute"></canvas></div>
     <ol class="deeds-road">${road}</ol>
     <h4 class="jh">At the tables</h4><div class="kv">${tables.map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join('')}</div>
     ${S ? `<h4 class="jh">Sergeant ${esc(S.name)}'s count</h4>${statsHTML(S)}` : ''}
-    ${S ? `<h4 class="jh">Play a chapter again</h4>${done ? `<p class="fine">Sergeant ${esc(S.name)} has finished the book. Start any chapter again as a new sergeant, ${esc(S.name)} (Ch <i>n</i>), with the squad as it stood then; this save stays as it is.</p>
-      <div class="row chsel">${[1, 2, 3, 4, 5, 6, 7].map(n => `<button class="btn" data-replay="${n}">${CHAPTERS[n] ? CHAPTERS[n].number : n}</button>`).join('')}</div><p class="fine" id="replayMsg"></p>` : `<p class="fine">Finish the book, and any chapter can be played again from here.</p>`}` : ''}`;
+    ${S ? `<h4 class="jh">Play a chapter again</h4>${done.length ? `<p class="fine">Any chapter Sergeant ${esc(baseName())} has finished can be played again, to try the other roads. It starts as a new save, ${esc(baseName())} (Ch <i>n</i>), with the squad, the kit and the tricks as they stood when that chapter began; this save stays as it is.</p>
+      <div class="row chsel">${done.map(n => `<button class="btn" data-replay="${n}">${replayLabel(n)}</button>`).join('')}</div><p class="fine" id="replayMsg"></p>` : `<p class="fine">Finish a chapter, and it can be played again from here.</p>`}` : ''}`;
 }
 function bindDeeds(){
   const cv = $('#dRoute'); if (cv) { routeAnim = t => { if (!cv.isConnected) { routeAnim = null; return; } drawRoute(cv, S || {chapter:0}, t); }; }
   document.querySelectorAll('[data-replay]').forEach(b => b.onclick = () => { const n = +b.dataset.replay, name = replayName(n), msg = $('#replayMsg');
-    if (roster().list.some(e => sameName(e.name, name)) && b.dataset.arm !== '1') { document.querySelectorAll('[data-replay]').forEach(x => delete x.dataset.arm); b.dataset.arm = '1'; msg.textContent = tapWord(`Sergeant ${name} already has a save. Tap ${CHAPTERS[n].number} again to start it over.`); return; }
+    if (roster().list.some(e => sameName(e.name, name)) && b.dataset.arm !== '1') { document.querySelectorAll('[data-replay]').forEach(x => delete x.dataset.arm); b.dataset.arm = '1'; msg.textContent = tapWord(`Sergeant ${name} already has a save. Tap ${replayLabel(n)} again to start it over.`); return; }
     AUDIO.play('click'); replayChapter(n); });
 }
-const replayName = n => `${S.name.slice(0, 12)} (Ch ${n})`;
+/* the chapters this sergeant has finished (the Prologue is 0), the name a replay's save takes, and its button */
+const replayable = () => S && S.chapters ? [0, 1, 2, 3, 4, 5, 6, 7].filter(n => S.chapters[n] != null && (n === 0 || CHAPTERS[n])) : [];
+const baseName = () => String(S.name).replace(/ \((Ch \d|Prologue)\)$/, '');
+const replayLabel = n => n === 0 ? 'Prologue' : CHAPTERS[n] ? CHAPTERS[n].number : String(n);
+const replayName = n => `${baseName().slice(0, 12)} (${n === 0 ? 'Prologue' : 'Ch ' + n})`;
+/* the chapter-end page's own replay button: a second tap if that replay save already exists */
+function replayFromEnd(b, n){ const name = replayName(n);
+  if (roster().list.some(e => sameName(e.name, name)) && b.dataset.arm !== '1') { b.dataset.arm = '1'; b.textContent = tapWord(`Tap again: ${name} starts over`); return; }
+  AUDIO.play('click'); replayChapter(n); }
 /* a finished sergeant, back at chapter n: the snapshot taken when they started it, or (for saves from before snapshots) the save as it
    finished with everything from chapter n on taken back out: the flags, the endings, the fallen (they stand up again) */
 function rebuildAt(base, n){
@@ -81,6 +89,7 @@ function rebuildAt(base, n){
   delete s.finPage; s.chapter = n; return s;
 }
 function replayChapter(n){
+  if (n === 0) { const base = S, s = newState(replayName(0)); s.diff = base.diff; S = s; save(); $('#modal').hidden = true; return showIntro(); } // the Prologue: a fresh start under the replay's name
   const base = S, snap = base.chsnap && base.chsnap[n], s = snap ? JSON.parse(JSON.stringify(snap)) : rebuildAt(base, n), name = replayName(n);
   s.name = name; delete s.sid; s.sid = sidFor(name); s.chsnap = JSON.parse(JSON.stringify(base.chsnap || {})); s.stats = {}; s.deeds = {};
   S = migrate(s); save(); $('#modal').hidden = true; startChapter(n);

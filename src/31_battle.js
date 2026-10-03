@@ -42,6 +42,7 @@ function mkParty(id, x, y){
   // veteran picks and talents
   if (has(id,'iron')) u.maxhp += 6; if (has(id,'keen')) u.atk += 1; if (has(id,'fleet')) u.mv += 1; if (has(id,'nerve')) u.init += 1;
   ['quorl','shadowstep','mockra','argument','quickshot'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
+  trickAbs(id).forEach(k => { if (AB[k]) u.ab.splice(u.ab.length - 1, 0, k); }); // tricks won on hard checks (16b, 31b)
   if (B && B.def.nomagic && u.magic) { u.rng = 1; if (id === 'tuft') { u.dmg = [1,4,1]; u.verb = 'jabs a knife at'; } } // otataral: a knife, or the cudgel
   u.hp = u.maxhp; return u;
 }
@@ -111,6 +112,7 @@ function nextTurn(){
   if (B.idx >= B.order.length) { newRound(); if (B.over) return; } // the objective was just met
   const u = B.order[B.idx];
   if (!u || u.hp <= 0) return nextTurn();
+  if (B.line && (B.line.u === u || B.line.u.hp <= 0)) B.line = null; // The Line holds until its bearer's next turn
   B.cur = u; B.moved = false; B.mvLeft = u.mv; B.acted = false; B.mode = null; B.aim = null; B.turn++; B.turnAt = performance.now();
   if (u.strain) u.strain = Math.max(0, u.strain - 1);
   if (B.fires.some(f => f.x === u.x && f.y === u.y)) { blog(`${u.name} is caught in burner fire.`); hurt(u, roll(1,6)); }
@@ -210,7 +212,7 @@ const AB = {
 /* Chub's cusser, Maud: Kettle carries her "for the one that matters" and won't fire her in an ordinary fight. The story spends her (the barrow in Chapter 5, or Ch'kess in Chapter 7). */
 const maudKept = () => !!(S && S.f && !S.f.c5_cusserUsed && S.f.c7_debt !== 'paid');
 const itemLeft = k => Math.max(0, (S.inv[k] || 0) - (k === 'cusser' && maudKept() ? 1 : 0));
-function abOk(u, k){ const a = AB[k]; if (!a) return false; if (a.strain && B && B.def.nomagic) return false; if (a.boom && B && B.def.nothrow) return false; if (a.item === 'cusser' && B && B.def.style === 'roof') return false; /* Fiddler's order: no cussers on the roofs */ if (a.item === 'burner' && B && B.def.nomagic) return false; /* burners and otataral: Kettle won't */ if (a.item && !(itemLeft(a.item) > 0)) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
+function abOk(u, k){ const a = AB[k]; if (!a) return false; if (a.trick && !trickOk(u, a)) return false; if (a.sorcery && B && B.def.nomagic) return false; if (a.strain && B && B.def.nomagic) return false; if (a.boom && B && B.def.nothrow) return false; if (a.item === 'cusser' && B && B.def.style === 'roof') return false; /* Fiddler's order: no cussers on the roofs */ if (a.item === 'burner' && B && B.def.nomagic) return false; /* burners and otataral: Kettle won't */ if (a.item && !(itemLeft(a.item) > 0)) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
 function scatter(u, x, y, failOn, dist){
   const nat = d20() + (S.card === 'oponn' ? 1 : 0);
   if (nat <= failOn && !has(u.id,'longfuse')) { const [dx,dy] = DIRS[R(8)]; let nx = x, ny = y;
@@ -237,22 +239,25 @@ function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => 
 /* the numbers behind a blow: the attacker's bonus, the target's armour, the lowest natural roll that crits, and whether it flanks */
 function atkCalc(a, t, o={}){
   const mine = a.side === 'p';
-  const fl = !o.aoo && flanked(a, t, o.from);
+  const line = lineCovers(t), fl = !o.aoo && !line && flanked(a, t, o.from); // The Line: no flanking anyone in it
   const wallBonus = t.side === 'p' && friendsOf(t).some(f => !f.ally && has(f.id,'shieldwall') && cheb(f,t) === 1) ? 2 : 0;
   const discipline = t.side === 'p' && !t.ally && SQUAD().some(id => has(id,'discipline')) ? 1 : 0;
   const aooBonus = o.aoo && !a.ally && a.side === 'p' && (has(a.id,'holdline') || has(a.id,'sappers_eye')) ? 2 : 0;
-  const bonus = a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus;
+  const bonus = a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus + (a.dazzleUntil >= B.round ? -3 : 0) + (!mine && inDark(a.x, a.y) ? -2 : 0); // Blue Fire dazzles; Andii dark blinds
   const ghost = t.side === 'p' && !t.ally && has(t.id,'ghost') ? 2 : 0;
-  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost;
+  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost + (line ? 3 : 0);
   return {bonus, ac, critOn:mine && S.card === 'assassin' ? 19 : 20, fl};
 }
 /* chance to hit in percent: a natural 1 always misses, a crit always hits */
 function hitPct(c){ let n = 0; for (let r = 1; r <= 20; r++) if (r >= c.critOn || (r !== 1 && r + c.bonus >= c.ac)) n++; return n * 5; }
 function attack(a, t, o={}){
-  const nat = d20(), mine = a.side === 'p';
+  const mine = a.side === 'p', lucky = mine && a.luckyTurn === B.turn; let nat = d20();
+  if (lucky) { const n2 = d20(); blog(`<em>The Lady pulls.</em> ${a.name} rolls ${SET.dice ? `${nat} and ${n2}` : 'twice'} and keeps the better.`); nat = Math.max(nat, n2); a.luckyTurn = -1; }
   const {bonus, ac, critOn, fl} = atkCalc(a, t, o);
-  const crit = nat >= critOn; if (crit && mine && !a.ally) tally('crits');
-  const hit = crit || (nat !== 1 && nat + bonus >= ac);
+  let crit = nat >= critOn;
+  let hit = crit || (nat !== 1 && nat + bonus >= ac);
+  if (hit && mine && t.cantRound === B.round) { t.cantRound = -1; if (!crit) { crit = true; blog(`<em>The hand-cant said this one, now.</em>`); } } // Claw Hand-Cant
+  if (crit && mine && !a.ally) tally('crits');
   const verb = o.verb || a.verb;
   const ranged = cheb(a, t) > 1;
   const lash = a.kind === 'tuft' && !B.def.nomagic;
@@ -265,7 +270,7 @@ function attack(a, t, o={}){
   const tagTxt = tags ? ` <span class="stat">[${tags}]</span>` : '';
   const land = ranged ? pace(200) : pace(140); // the blow lands when the bolt arrives or the lunge connects
   if (!hit) { blog(`${a.name} ${verb} ${t.name} and misses${tagTxt}${math}.`); later(() => { float(t, 'miss', '#a99a88'); if (!ranged) sparks(t.x, t.y - .2, 4, '#cfc8b8', .5); }, land); return {hit:false}; }
-  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0);
+  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0) + (t.rimeUntil >= B.round ? 2 : 0);
   blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${tagTxt}${math}.`);
   later(() => { if (t.hp <= 0) return; if (crit) sparks(t.x, t.y, 16, '#ffcf7a'); else sparks(t.x, t.y - .1, 5, '#f08a7c', .6);
     hurt(t, dmg, crit);
@@ -320,7 +325,8 @@ async function opportunity(u, to){
 function useAb(k, x, y){
   const u = B.cur, a = AB[k];
   if (a.item) { S.inv[a.item]--; tally('thrown_' + a.item); }
-  B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.mode = 'act'; B.aim = null; B.busy = true;
+  if (a.trick) { if (TRICKS[a.trick].use === 'chapter') spendTrick(a.trick); else { B.used[k] = 1; tally('tricksUsed'); } }
+  if (!a.free) { B.acted = true; if (B.mvLeft < u.mv) B.moved = true; } B.mode = 'act'; B.aim = null; B.busy = true;
   a.run(u, x, y); castStrain(u, a.strain && u.id === 'tuft' && S.card === 'magi' ? a.strain - 1 : a.strain);
   if (a.aoe) { updBattleUI(); return; } // blast() resumes the turn when it lands
   later(() => { B.busy = false; afterAct(); }, pace(350)); updBattleUI();
@@ -352,11 +358,11 @@ async function aiTurn(u, turnId){
   const b0 = B, gone = () => B !== b0 || B.turn !== turnId; // the battle was left or restarted, or the turn moved on, while this one played out
   const done = () => { updBattleUI(); if (!checkEnd()) endTurn(); };
   const inRange = () => foesOf(u).filter(p => cheb(u,p) <= u.rng && canShoot(u,p));
-  if (u.boss && u.kind === 'stone') { u.tc = (u.tc || 0) + 1; const adj = party().filter(p => cheb(u,p) === 1);
+  if (u.boss && u.kind === 'stone' && !u.otat) { u.tc = (u.tc || 0) + 1; const adj = party().filter(p => cheb(u,p) === 1);
     if (u.tc % 3 === 0 && adj.length) { blog(`<em>The Stonebound slams the floor.</em> Stone and grief in every direction.`); AUDIO.play('slam'); shakeMap();
       B.fx.push({kind:'boom', x:u.x, y:u.y, r:1, col:'#a08de0', t:performance.now()}); sparks(u.x, u.y, 40, '#9a86e0'); adj.forEach(p => hurt(p, roll(2,6)));
       await wait(900); if (gone()) return; return done(); } }
-  if (u.ai === 'raest') { u.tc = (u.tc || 0) + 1; // the Tyrant: a lance of Omtose Phellack on odd turns, a slow walk on even ones
+  if (u.ai === 'raest' && !u.otat) { u.tc = (u.tc || 0) + 1; // the Tyrant: a lance of Omtose Phellack on odd turns, a slow walk on even ones
     if (u.tc % 2 === 1) { const pool = party(), sq = pool.filter(p => !p.ally), tg = (sq.length ? sq : pool)[R((sq.length ? sq : pool).length)];
       if (tg) { u.facing = tg.x >= u.x ? 1 : -1; blog(`<em>The Tyrant speaks a word of Omtose Phellack.</em> The air around ${tg.name} turns to knives.`); AUDIO.play('shadow'); AUDIO.play('slam');
         B.fx.push({kind:'lance', from:{x:u.x,y:u.y}, to:{x:tg.x,y:tg.y}, col:'#bfe8ff', t:performance.now(), dur:1200}); await wait(420);
@@ -510,15 +516,15 @@ function updBattleUI(){
     if (!a.aoe) { hint = `${a.desc()} Tap a highlighted target, or the button again to cancel.`; a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y))); }
     else { for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= abRange(u,a)) B.hl.tgt.add(K(x,y));
       if (!B.aim) hint = `${a.desc()} Tap a tile to aim.`;
-      else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to throw. ${cov.length ? `The smoke covers ${cov.map(v => esc(v.name)).join(', ')}.` : 'The smoke covers empty ground.'} Nobody shoots into it or out of it.`; }
+      else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to ${a.darkness ? 'call it' : 'throw'}. ${cov.length ? `The ${a.darkness ? 'dark' : 'smoke'} covers ${cov.map(v => esc(v.name)).join(', ')}.` : `The ${a.darkness ? 'dark' : 'smoke'} covers empty ground.`} Nobody shoots into it or out of it.`; }
       else { const caught = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe), mine = caught.filter(v => v.side === 'p'), theirs = caught.length - mine.length;
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
-  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : ''].filter(Boolean).join(' · ');
+  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="bhint">${tapWord(hint)}</div>
-    <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? `<small>×${itemLeft(a.item)}</small>` : ''; const dis = B.acted || !abOk(u,k);
-      return `<button class="btn ${B.mode === k ? 'on' : ''}" id="ab_${k}" data-k="${k}" ${dis ? 'disabled' : ''}>${a.name}${cnt}</button>`; }).join('')}
+    <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? `<small>×${itemLeft(a.item)}</small>` : a.trick && TRICKS[a.trick].use === 'chapter' ? `<small>×${trickLeft(a.trick)}</small>` : ''; const dis = (B.acted && !a.free) || !abOk(u,k);
+      return `<button class="btn ${B.mode === k ? 'on' : ''} ${a.trick ? 'trk' : ''}" id="ab_${k}" data-k="${k}" ${dis ? 'disabled' : ''}>${a.trick ? '✦ ' : ''}${a.name}${cnt}</button>`; }).join('')}
       <button class="btn ${endHot ? 'primary' : ''}" id="bEnd">End turn</button></div>
     <p class="hint keys" aria-hidden="true">${u.ab.length > 1 ? `<kbd>1</kbd>–<kbd>${u.ab.length}</kbd>` : '<kbd>1</kbd>'} ${u.ab.length > 1 ? 'abilities' : 'ability'} · <kbd>Space</kbd> end turn · <kbd>Esc</kbd> cancel</p>`;
   ub.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
@@ -594,6 +600,10 @@ function drawBattle(t){
     if (B.ping && B.ping.u === u && now - B.ping.t < 1200) { const k = (now - B.ping.t) / 1200; ctx.strokeStyle = `rgba(233,223,201,${(1-k)*.9})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(cx, cy - T*.02, T*(.46 + (RM ? 0 : Math.sin(k*Math.PI*3)*.06)), T*.2, 0, 0, 7); ctx.stroke(); }
     if (u.side === 'p') glow(ctx, cx, cy - T*.4, T*1.6, '#e8b060', .06);
     if (u.veilUntil >= B.round) { glow(ctx, cx, cy - T*.4, T*.9, '#9a86e0', .25); }
+    if (u.rimeUntil >= B.round) glow(ctx, cx, cy - T*.4, T*.95, '#bfe8ff', .32);
+    if (u.dazzleUntil >= B.round) glow(ctx, cx, cy - T*.5, T*.7, '#6fb7ff', .22 + (RM ? 0 : Math.sin(t/120)*.06));
+    if (lineCovers(u)) { ctx.strokeStyle = 'rgba(232,192,115,.75)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(cx, cy + T*.06, T*.46, T*.19, 0, 0, 7); ctx.stroke(); }
+    if (u.cantRound === B.round) { ctx.fillStyle = '#f2c46b'; ctx.font = `${Math.round(T*.28)}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText('✋', cx, cy - T*1.05); }
     if (u.markedUntil >= B.round) { ctx.strokeStyle = 'rgba(242,196,107,.8)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.ellipse(cx, cy + T*.04, T*.4, T*.16, 0, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
     const arrive = u.arrived ? clamp((now - u.arrived) / 450, 0, 1) : 1;
     drawFigure(ctx, u.kind, cx, cy, sc, t, {phase:u.x*3 + u.y, dir:u.facing || (u.side === 'e' ? -1 : 1), still:u.stun, alpha:RM ? 1 : .15 + arrive*.85});
@@ -608,6 +618,7 @@ function drawBattle(t){
   });
   // smoke: grey billows over each smoked tile, thick enough to lose a figure in
   (B.smoke || []).filter(s => s.until >= B.round).forEach(s => { const px = s.x*T + T/2, py = s.y*T + T/2, fade = s.until === B.round ? .65 : 1;
+    if (s.dark) { ell(ctx, px, py, T*.56, T*.5, `rgba(4,3,10,${.78*fade})`); for (let i = 0; i < 3; i++) { const ph = t/(2400 + i*500) + hash(s.x, s.y, i)*6.28; ell(ctx, px + (RM ? 0 : Math.sin(ph)*T*.1), py + (RM ? 0 : Math.cos(ph)*T*.08), T*.42, T*.34, `rgba(40,30,80,${.22*fade})`); } return; }
     for (let i = 0; i < 4; i++) { const ph = t/(1900 + i*350) + hash(s.x, s.y, i)*6.28, ox = RM ? 0 : Math.sin(ph)*T*.12, oy = RM ? 0 : Math.cos(ph*.8)*T*.08;
       ell(ctx, px + ox + (i % 2 ? T*.2 : -T*.2), py + oy + (i < 2 ? -T*.16 : T*.14), T*.48, T*.38, `rgba(150,146,138,${.26*fade})`); }
     ell(ctx, px, py, T*.52, T*.44, `rgba(118,114,108,${.3*fade})`); });
