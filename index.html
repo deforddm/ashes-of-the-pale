@@ -463,7 +463,7 @@ body.reduce .txt.god{animation:none}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.13.1';
+const VERSION = '3.13.2';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -1964,21 +1964,24 @@ function drawPinup(cv){
     ctx.lineTo(hi, 110); ctx.lineTo(hi, 48); ctx.bezierCurveTo(hi, 32, wa, 24, wa, 14); ctx.bezierCurveTo(wa, 8, wa*1.06, -1, bu*.93, -8); ctx.bezierCurveTo(bu*1.01, -15, bu, -25, sh, -30);
     ctx.bezierCurveTo(sh, -37, sh*.9, -42, sh*.62, -43.6); ctx.quadraticCurveTo(17, -48.5, 8.5, -51); ctx.closePath(); };
   /* the skin of the upper chest: collarbones, the bust above the neckline, the cleavage between */
-  const chest = (o, skin) => { const {sh, bu, wa, hi, bx, by, rx, ry} = o;
-    hg(sh, bu, wa, hi); ctx.fillStyle = PR.lit(ctx, shade(skin, .1), shade(skin, -.42), -sh, sh); ctx.fill();
-    ctx.save(); hg(sh, bu, wa, hi); ctx.clip();
+  const fig = o => { hg(o.sh, o.bu, o.wa, o.hi); [-1, 1].forEach(sd => { ctx.moveTo(sd*o.bx + o.rx, o.by); ctx.ellipse(sd*o.bx, o.by, o.rx, o.ry, 0, 0, Math.PI*2, true); }); }; // the torso and the bust, as one shape
+  const chest = (o, skin) => { const {sh, bx, by, rx, ry} = o;
+    fig(o); ctx.strokeStyle = line; ctx.lineWidth = 2.2; ctx.stroke(); // the outline, before the fill covers its inside half
+    fig(o); ctx.fillStyle = PR.lit(ctx, shade(skin, .1), shade(skin, -.36), -bx - rx, (bx + rx)*1.7); ctx.fill();
+    ctx.save(); fig(o); ctx.clip();
     PR.soft(ctx, 0, -46, 14, 5, '#1a0a06', .28); // under the jaw's shadow
     [-1, 1].forEach(sd => { const cx = sd*bx;
-      ell(ctx, cx, by, rx, ry, PR.rad(ctx, cx - rx*.38, by - ry*.42, 1, rx*1.25, [[0, shade(skin, .2)], [.55, skin], [1, shade(skin, sd < 0 ? -.3 : -.5)]]));
-      ctx.strokeStyle = rgba('#3a1408', .5); ctx.lineWidth = .55; ctx.beginPath(); ctx.ellipse(cx, by, rx, ry, 0, Math.PI*(sd < 0 ? 1.05 : 1.45), Math.PI*(sd < 0 ? 1.55 : 1.95)); ctx.stroke(); // the upper curve
-      PR.soft(ctx, cx - rx*.3, by - ry*.45, rx*.4, ry*.24, '#fff0e0', .32); }); // light on it
-    PR.soft(ctx, 0, by - ry*.15, 2.6, ry*.7, '#2a0e06', .55); ctx.lineCap = 'round'; PR.stroke(ctx, rgba('#3a1408', .6), .6, () => { ctx.moveTo(-.6, by - ry*.62); ctx.quadraticCurveTo(-1.2, by - ry*.1, 0, by + ry*.5); }); // the cleavage
+      ell(ctx, cx, by, rx, ry, PR.rad(ctx, cx - rx*.38, by - ry*.42, 1, rx*1.25, [[0, shade(skin, .2)], [.55, skin], [1, shade(skin, sd < 0 ? -.28 : -.4)]]));
+      ctx.strokeStyle = rgba('#3a1408', .5); ctx.lineWidth = .6; ctx.beginPath(); ctx.ellipse(cx, by, rx, ry, 0, Math.PI*(sd < 0 ? 1.08 : 1.42), Math.PI*(sd < 0 ? 1.58 : 1.92)); ctx.stroke(); // the upper curve
+      PR.soft(ctx, cx - rx*.3, by - ry*.45, rx*.4, ry*.24, '#fff0e0', .34); }); // light on it
+    PR.soft(ctx, 0, by - ry*.15, 3, ry*.7, '#2a0e06', .55); ctx.lineCap = 'round'; PR.stroke(ctx, rgba('#3a1408', .6), .65, () => { ctx.moveTo(-.6, by - ry*.66); ctx.quadraticCurveTo(-1.4, by - ry*.1, 0, by + ry*.5); }); // the cleavage
     PR.stroke(ctx, rgba('#5a2412', .35), .6, () => { [-1, 1].forEach(sd => { ctx.moveTo(sd*3.5, -44.5); ctx.quadraticCurveTo(sd*11, -43, sd*sh*.55, -43.2); }); }); // collarbones
     ctx.restore(); };
   /* a sweetheart neckline: two curves over the bust meeting low in the middle; the garment runs down to the waist from it */
-  const sweet = (o, lift = 0) => { const {sh, bx, by, rx, ry} = o; ctx.moveTo(-sh - 1, -31 + lift);
-    ctx.bezierCurveTo(-bx - rx*.7, by - ry*.55 + lift, -bx + rx*.3, by - ry*.62 + lift, -1.2, by + ry*.32); ctx.lineTo(1.2, by + ry*.32);
-    ctx.bezierCurveTo(bx - rx*.3, by - ry*.62 + lift, bx + rx*.7, by - ry*.55 + lift, sh + 1, -31 + lift); };
+  const sweet = (o, lift = 0) => { const {bx, by, rx, ry} = o, W = bx + rx + 3; ctx.moveTo(-W, by - ry*.12 + lift);
+    ctx.bezierCurveTo(-bx - rx*.72, by - ry*.66 + lift, -bx + rx*.3, by - ry*.7 + lift, -1.2, by + ry*.3); ctx.lineTo(1.2, by + ry*.3);
+    ctx.bezierCurveTo(bx - rx*.3, by - ry*.7 + lift, bx + rx*.72, by - ry*.66 + lift, W, by - ry*.12 + lift); };
+  const wide = o => o.bx + o.rx + 3;
   /* a cup's shape under the cloth: a lit crown and the shadow beneath */
   const cups = (o, cloth) => { const {bx, by, rx, ry} = o; [-1, 1].forEach(sd => { const cx = sd*bx;
     PR.soft(ctx, cx - rx*.25, by + ry*.05, rx*.62, ry*.4, '#ffffff', sd < 0 ? .22 : .1); PR.soft(ctx, cx + sd*1, by + ry*.95, rx*.85, ry*.32, '#000000', .3);
@@ -2006,26 +2009,26 @@ function drawPinup(cv){
   /* -- Rumjugs: kerchief and red curls, a chemise and a laced bodice losing the argument, one arm flexed with the jug on it, the other on her hip -- */
   ctx.save(); ctx.translate(200, OY); ctx.scale(K, K);
   const RJ = {cy:-76, w:14.2, h:20, jaw:.84, chin:5.2, skin:'#e0a880', iris:'#4e6a34', lip:'#cc2e3a', browCol:'#a04a22', browW:1.15, arch:1.7, browL:.8, browR:1, rim:'#ffd890', rimA:.22, nose:.94, smileL:2.8, smileR:2.8, mouthW:5.2, teeth:true, look:.15, flush:'#e66a50', open:1.15};
-  const RB = {sh:37, bu:39, wa:29, hi:42, bx:11.6, by:-23, rx:12.6, ry:11.6};
+  const RB = {sh:37, bu:40, wa:29, hi:42, bx:22.6, by:-14, rx:24, ry:22}; // the name is not an accident
   bigHead(() => { [[-17, -66, 5], [-19, -74, 4.6], [17, -66, 5], [19, -74, 4.6], [-13, -59, 4], [13, -59, 4]].forEach(([x, y, s]) => curl(x, y, s, '#b44a24')); PR.neck(ctx, RJ, 8.6); }); // red curls behind; the neck
   chest(RB, RJ.skin);
-  ctx.save(); hg(RB.sh, RB.bu, RB.wa, RB.hi); ctx.clip();
+  ctx.save(); fig(RB); ctx.clip();
   // the chemise: wide straps over the shoulders, a ruffle at the top of the bodice
   [-1, 1].forEach(sd => { PR.path(ctx, [[sd*12, -48.5], [sd*23, -46], [sd*(RB.sh + 2), -36], [sd*(RB.sh + 2), -29], [sd*25, -27.5], [sd*14, -36]]); ctx.fillStyle = PR.lit(ctx, '#fbf4e2', '#b4a888', -RB.sh, RB.sh); ctx.fill(); ctx.strokeStyle = 'rgba(110,96,70,.8)'; ctx.lineWidth = .6; ctx.stroke(); });
-  ctx.beginPath(); sweet(RB, -2.4); ctx.lineTo(RB.sh + 2, 30); ctx.lineTo(-RB.sh - 2, 30); ctx.closePath(); ctx.fillStyle = '#f4ecd8'; ctx.fill(); // ruffle (the chemise above the bodice line)
+  ctx.beginPath(); sweet(RB, -2.4); ctx.lineTo(wide(RB), 30); ctx.lineTo(-wide(RB), 30); ctx.closePath(); ctx.fillStyle = '#f4ecd8'; ctx.fill(); // ruffle (the chemise above the bodice line)
   ctx.strokeStyle = 'rgba(120,104,76,.7)'; ctx.lineWidth = .5; ctx.beginPath(); sweet(RB, -2.4); ctx.stroke();
   // the bodice: quilted mustard, laced up the front, open at the top
-  const bod = () => { ctx.beginPath(); sweet(RB); ctx.lineTo(RB.sh + 3, 30); ctx.lineTo(-RB.sh - 3, 30); ctx.closePath(); };
-  bod(); ctx.fillStyle = PR.lit(ctx, '#e4ac40', '#6e4612', -RB.sh, RB.sh); ctx.fill();
+  const bod = () => { ctx.beginPath(); sweet(RB); ctx.lineTo(wide(RB), 30); ctx.lineTo(-wide(RB), 30); ctx.closePath(); };
+  bod(); ctx.fillStyle = PR.lit(ctx, '#e4ac40', '#6e4612', -wide(RB), wide(RB)*1.6); ctx.fill();
   ctx.save(); bod(); ctx.clip(); ctx.strokeStyle = 'rgba(90,50,10,.4)'; ctx.lineWidth = .6; ctx.beginPath(); for (let i=-12;i<12;i++){ ctx.moveTo(i*7, -40); ctx.lineTo(i*7 + 80, 40); ctx.moveTo(i*7, -40); ctx.lineTo(i*7 - 80, 40); } ctx.stroke();
   cups(RB, '#5a3408'); PR.path(ctx, [[-3.2, RB.by + RB.ry*.3], [3.2, RB.by + RB.ry*.3], [.6, 14], [-.6, 14]]); ctx.fillStyle = '#f0e6d0'; ctx.fill(); // the gap the laces don't close
   PR.stroke(ctx, '#4a2a10', .7, () => { for (let i=0;i<5;i++){ const y = RB.by + RB.ry*.4 + i*5.4, w = 3.6 - i*.55; ctx.moveTo(-w, y); ctx.lineTo(w, y + 4); ctx.moveTo(w, y); ctx.lineTo(-w, y + 4); } }); ctx.restore();
   bod(); ctx.strokeStyle = line; ctx.lineWidth = .9; ctx.stroke();
-  ctx.fillStyle = PR.lin(ctx, 0, 13, 0, 19, [[0, '#4a2a14'], [1, '#22120a']]); ctx.fillRect(-50, 13, 100, 6); ell(ctx, -6, 16, 4.2, 3.8, '#e0b048'); ell(ctx, -6, 16, 2.2, 1.8, '#3a2410'); // belt, brass buckle
-  ctx.fillStyle = PR.lit(ctx, '#6a4a30', '#2a1a10', -RB.hi, RB.hi); ctx.fillRect(-60, 19, 120, 100); // breeches
-  ctx.restore(); hg(RB.sh, RB.bu, RB.wa, RB.hi); ctx.strokeStyle = line; ctx.lineWidth = 1.1; ctx.stroke();
+  ctx.fillStyle = PR.lin(ctx, 0, 15, 0, 21, [[0, '#4a2a14'], [1, '#22120a']]); ctx.fillRect(-50, 15, 100, 6); ell(ctx, -6, 18, 4.2, 3.8, '#e0b048'); ell(ctx, -6, 18, 2.2, 1.8, '#3a2410'); // belt, brass buckle
+  ctx.fillStyle = PR.lit(ctx, '#6a4a30', '#2a1a10', -RB.hi, RB.hi); ctx.fillRect(-60, 21, 120, 100); // breeches
+  ctx.restore();
   // the hip arm: a puffed chemise sleeve, elbow out (behind Sweetlard's), hand on the hip
-  seg(RB.sh + 15, -6, 5.6, RB.sh - 3, 15, 4.4, RJ.skin); seg(RB.sh - 3, -37, 7.2, RB.sh + 15, -6, 5.8, RJ.skin); hipHand(RB.sh - 4, 18, 1, RJ.skin);
+  seg(RB.sh + 16, -4, 5.6, RB.sh - 4, 18, 4.4, RJ.skin); seg(RB.sh - 3, -37, 7.2, RB.sh + 16, -4, 5.8, RJ.skin); hipHand(RB.sh - 5, 21, 1, RJ.skin);
   PR.path(ctx, [[RB.sh - 8, -41], [RB.sh + 3, -44], [RB.sh + 8, -33], [RB.sh - 1, -28]]); ctx.fillStyle = PR.lit(ctx, '#fbf4e2', '#b4a888', RB.sh - 8, RB.sh + 8); ctx.fill(); ctx.strokeStyle = line; ctx.lineWidth = .8; ctx.stroke(); // the chemise sleeve, rolled
   bigHead(() => {
     RJ.under = (c, F) => PR.dots(c, F, 40, 'rgba(170,80,40,.32)', .5, [-3, 7, (x, y) => Math.abs(x) < 2.6 && y > 4]); // freckles
@@ -2054,28 +2057,28 @@ function drawPinup(cv){
   /* -- Sweetlard: victory rolls and a flower, a wink, an off-the-shoulder blouse over a green bodice, a floury half-apron, one hand on her hip and the honey-cakes up in the other (one with a fuse) -- */
   ctx.save(); ctx.translate(396, OY + 4); ctx.scale(K, K);
   const SL = {cy:-75, w:15.4, h:20.4, jaw:.98, chin:7, skin:'#c08460', iris:'#3a2414', lip:'#c8304a', browCol:'#1a100a', browW:1.5, arch:1.6, browL:-.9, browR:1.4, rim:'#ffd0a0', rimA:.2, nose:1.02, smileL:2.4, smileR:1.7, mouthW:5, look:-.1, flush:'#e05a60'};
-  const SB = {sh:38, bu:42, wa:31, hi:46, bx:12.6, by:-21.5, rx:13.8, ry:12.8};
+  const SB = {sh:38, bu:42, wa:31, hi:46, bx:24.6, by:-12, rx:26, ry:24};
   bigHead(() => { PR.path(ctx, [[-18, -96], [18, -96], [21, -66], [16, -58], [-16, -58], [-21, -66]]); ctx.fillStyle = PR.lit(ctx, '#3a2a20', '#0a0604', -21, 21); ctx.fill(); PR.neck(ctx, SL, 8.4); }); // hair behind; the neck
   // the hip arm first, its elbow over Rumjugs's
   chest(SB, SL.skin);
-  ctx.save(); hg(SB.sh, SB.bu, SB.wa, SB.hi); ctx.clip();
+  ctx.save(); fig(SB); ctx.clip();
   // the blouse, off the shoulders, gathered on a drawstring across the bust
-  const bl = () => { ctx.beginPath(); sweet(SB, 1); ctx.lineTo(SB.sh + 3, 30); ctx.lineTo(-SB.sh - 3, 30); ctx.closePath(); };
-  bl(); ctx.fillStyle = PR.lit(ctx, '#fdf8ee', '#b8ae9a', -SB.sh, SB.sh); ctx.fill(); ctx.save(); bl(); ctx.clip(); cups(SB, '#8a8070');
-  PR.stroke(ctx, 'rgba(120,108,88,.55)', .45, () => { for (let i=-9;i<=9;i++){ const x = i*3.6, y0 = SB.by - SB.ry*.25 + Math.abs(x)*.05; ctx.moveTo(x, y0 + 1); ctx.lineTo(x + (x < 0 ? -.6 : .6), y0 + 7); } }); ctx.restore(); // the gathers
+  const bl = () => { ctx.beginPath(); sweet(SB, 1); ctx.lineTo(wide(SB), 30); ctx.lineTo(-wide(SB), 30); ctx.closePath(); };
+  bl(); ctx.fillStyle = PR.lit(ctx, '#fdf8ee', '#b8ae9a', -wide(SB), wide(SB)*1.6); ctx.fill(); ctx.save(); bl(); ctx.clip(); cups(SB, '#8a8070');
+  PR.stroke(ctx, 'rgba(120,108,88,.55)', .45, () => { for (let i=-12;i<=12;i++){ const x = i*3.6, y0 = SB.by - SB.ry*.25 + Math.abs(x)*.05; ctx.moveTo(x, y0 + 1); ctx.lineTo(x + (x < 0 ? -.6 : .6), y0 + 7); } }); ctx.restore(); // the gathers
   ctx.strokeStyle = '#a8303a'; ctx.lineWidth = .8; ctx.beginPath(); sweet(SB, 2.2); ctx.stroke(); // the drawstring
   // the bodice: green, laced, from under the bust to a point below the waist
-  const bd = () => { ctx.beginPath(); ctx.moveTo(-SB.sh - 3, SB.by + SB.ry*.55); ctx.quadraticCurveTo(-SB.bx, SB.by + SB.ry*1.25, -1, SB.by + SB.ry*.95); ctx.lineTo(1, SB.by + SB.ry*.95); ctx.quadraticCurveTo(SB.bx, SB.by + SB.ry*1.25, SB.sh + 3, SB.by + SB.ry*.55); ctx.lineTo(SB.sh + 3, 18); ctx.lineTo(0, 26); ctx.lineTo(-SB.sh - 3, 18); ctx.closePath(); };
-  bd(); ctx.fillStyle = PR.lit(ctx, '#4aa676', '#123e26', -SB.sh, SB.sh); ctx.fill(); ctx.strokeStyle = line; ctx.lineWidth = .8; ctx.stroke();
-  PR.stroke(ctx, '#f4eedc', .7, () => { for (let i=0;i<5;i++){ const y = SB.by + SB.ry*1.05 + i*4.8, w = 2.8 - i*.25; ctx.moveTo(-w, y); ctx.lineTo(w, y + 3.6); ctx.moveTo(w, y); ctx.lineTo(-w, y + 3.6); } }); // lacing
+  const bd = () => { const W = wide(SB); ctx.beginPath(); ctx.moveTo(-W, SB.by + SB.ry*.6); ctx.quadraticCurveTo(-SB.bx, SB.by + SB.ry*1.28, -1, SB.by + SB.ry*.95); ctx.lineTo(1, SB.by + SB.ry*.95); ctx.quadraticCurveTo(SB.bx, SB.by + SB.ry*1.28, W, SB.by + SB.ry*.6); ctx.lineTo(W, 23); ctx.lineTo(0, 31); ctx.lineTo(-W, 23); ctx.closePath(); };
+  bd(); ctx.fillStyle = PR.lit(ctx, '#4aa676', '#123e26', -wide(SB), wide(SB)*1.5); ctx.fill(); ctx.strokeStyle = line; ctx.lineWidth = .8; ctx.stroke();
+  PR.stroke(ctx, '#f4eedc', .7, () => { for (let i=0;i<3;i++){ const y = SB.by + SB.ry*1.02 + i*4.6, w = 2.6 - i*.25; ctx.moveTo(-w, y); ctx.lineTo(w, y + 3.6); ctx.moveTo(w, y); ctx.lineTo(-w, y + 3.6); } }); // lacing
   // skirt, and the half-apron over it with flour and a heart on the pocket
-  ctx.fillStyle = PR.lit(ctx, '#3a9264', '#0e3420', -SB.hi, SB.hi); PR.path(ctx, [[-SB.sh - 4, 18], [0, 26], [SB.sh + 4, 18], [SB.hi + 8, 120], [-SB.hi - 8, 120]]); ctx.fill();
-  const ap = () => { ctx.beginPath(); ctx.moveTo(-24, 21); ctx.quadraticCurveTo(0, 25, 24, 21); ctx.lineTo(30, 120); ctx.lineTo(-30, 120); ctx.closePath(); };
-  ap(); ctx.fillStyle = PR.lit(ctx, '#fbf6ea', '#b4ab98', -30, 30); ctx.fill(); ctx.save(); ap(); ctx.clip(); for (let i=0;i<70;i++) ell(ctx, -26 + r()*52, 22 + r()*80, .5 + r()*1.4, .4 + r(), 'rgba(255,255,255,.7)'); ctx.restore(); ap(); ctx.strokeStyle = 'rgba(120,110,90,.8)'; ctx.lineWidth = .7; ctx.stroke();
-  ctx.fillStyle = '#e8e0cc'; ctx.fillRect(-SB.sh - 4, 19, SB.sh*2 + 8, 3.2); ctx.save(); ctx.translate(-9, 36); heart(0, 0, 5, '#d8443a'); ctx.restore();
-  ctx.restore(); hg(SB.sh, SB.bu, SB.wa, SB.hi); ctx.strokeStyle = line; ctx.lineWidth = 1.1; ctx.stroke();
+  ctx.fillStyle = PR.lit(ctx, '#3a9264', '#0e3420', -SB.hi, SB.hi); PR.path(ctx, [[-SB.sh - 4, 23], [0, 31], [SB.sh + 4, 23], [SB.hi + 8, 120], [-SB.hi - 8, 120]]); ctx.fill();
+  const ap = () => { ctx.beginPath(); ctx.moveTo(-24, 26); ctx.quadraticCurveTo(0, 30, 24, 26); ctx.lineTo(30, 120); ctx.lineTo(-30, 120); ctx.closePath(); };
+  ap(); ctx.fillStyle = PR.lit(ctx, '#fbf6ea', '#b4ab98', -30, 30); ctx.fill(); ctx.save(); ap(); ctx.clip(); for (let i=0;i<70;i++) ell(ctx, -26 + r()*52, 27 + r()*80, .5 + r()*1.4, .4 + r(), 'rgba(255,255,255,.7)'); ctx.restore(); ap(); ctx.strokeStyle = 'rgba(120,110,90,.8)'; ctx.lineWidth = .7; ctx.stroke();
+  ctx.fillStyle = '#e8e0cc'; ctx.fillRect(-SB.sh - 4, 24, SB.sh*2 + 8, 3.2); ctx.save(); ctx.translate(-9, 41); heart(0, 0, 5, '#d8443a'); ctx.restore();
+  ctx.restore();
   // the hip arm: a puffed sleeve, the elbow out over Rumjugs's, the hand on her hip
-  seg(-SB.sh - 16, -5, 5.8, -SB.sh + 4, 16, 4.6, SL.skin); seg(-SB.sh + 3, -37, 7.4, -SB.sh - 16, -5, 6, SL.skin); hipHand(-SB.sh + 5, 19, -1, SL.skin);
+  seg(-SB.sh - 17, -3, 5.8, -SB.sh + 4, 20, 4.6, SL.skin); seg(-SB.sh + 3, -37, 7.4, -SB.sh - 17, -3, 6, SL.skin); hipHand(-SB.sh + 5, 23, -1, SL.skin);
   sleeve(-SB.sh - 3.5, -31, 7.6, 7, .55, '#fdf8ee', '#b8ae9a');
   bigHead(() => {
     PR.face(ctx, SL); lift(SL); lashes(SL, -1); PR.soft(ctx, -8.5, -66, 4.8, 3, '#ff6a70', .32); PR.soft(ctx, 8.5, -66, 4.8, 3, '#ff6a70', .24);
@@ -4779,6 +4782,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.13.2', ['Rumjugs and Sweetlard: somebody finally told the painter what their names meant.']],
   ['3.13.1', ['The crate lid at the Gadrobi crossing has been repainted, properly this time: both arms each, and the rest of them too. Sweets for the Sappers.']],
   ['3.13.0', ['Squadmates can move through each other, as long as they have the movement to get past. Nobody can end a move on someone else\'s tile.',
              'Steady: a squadmate who ends a turn without doing anything gets +2 on their next attack or save.',
