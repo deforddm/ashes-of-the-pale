@@ -47,7 +47,7 @@ function updExplore(){
   if (!$('#quest')) return;
   const a = AREA();
   $('#quest').textContent = a.quest ? a.quest() : (typeof QUESTS !== 'undefined' && QUESTS[a.id]) ? QUESTS[a.id]() : (a.sub || '');
-  $('#silver').textContent = `${S.silver} silver`;
+  updSilver();
   $('#elog').innerHTML = S.log.map(l => `<div>${l}</div>`).join('');
   const hud = $('.hud'); if (G.cv && G.hudH != null && hud && hud.offsetHeight !== G.hudH) fitCanvas(ACOLS(), AROWS()); // a quest line that wraps differently moves the map: give it the room that's left
 }

@@ -64,7 +64,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .qline{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .qline #quest{font-family:var(--prose);font-style:italic;font-size:.98rem;letter-spacing:0;color:var(--ash);line-height:1.3;text-wrap:pretty}
 .qline #quest:not(:empty)::before{content:"◆";font-style:normal;font-size:.62em;color:var(--brass);margin-right:7px;vertical-align:.18em}
-.qline #silver{color:var(--brass);white-space:nowrap;font-size:.85rem}
+.qline #silver{color:var(--brass);white-space:nowrap;font-size:.85rem;display:inline-block;transform-origin:right center}
+.qline #silver.sup{animation:silverUp .9s ease-out}.qline #silver.sdown{animation:silverDown .9s ease-out}
+@keyframes silverUp{0%{color:#fff3c0;transform:scale(1.18);text-shadow:0 0 10px rgba(232,192,115,.8)}100%{color:var(--brass);transform:none;text-shadow:none}}
+@keyframes silverDown{0%{color:#e8826a;transform:scale(1.12)}100%{color:var(--brass);transform:none}}
+@media (prefers-reduced-motion:reduce){.qline #silver.sup,.qline #silver.sdown{animation:none}}
 .hudr{display:flex;align-items:center;gap:8px;font-family:var(--label);font-size:.85rem;color:var(--brass);white-space:nowrap}
 .cvwrap{width:100%;line-height:0;border:1px solid var(--line2);background:#060505;box-shadow:0 0 0 1px #000,0 12px 40px rgba(0,0,0,.7),inset 0 0 40px rgba(0,0,0,.8);position:relative;display:flex;justify-content:center;box-sizing:border-box}
 #cv.pan{touch-action:none;cursor:grab}
@@ -463,7 +467,7 @@ body.reduce .txt.god{animation:none}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.13.2';
+const VERSION = '3.13.3';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -1157,7 +1161,13 @@ function roster(){
 const sidFor = name => { const e = roster().list.find(e => sameName(e.name, name)); return e ? e.id : newSid(); };
 function save(){ if (!S) return; S.stats ??= {}; if (S.stats.silverSeen == null) S.stats.silverSeen = S.silver; else if (S.silver !== S.stats.silverSeen) { const d = S.silver - S.stats.silverSeen; S.stats[d > 0 ? 'silverIn' : 'silverOut'] = (S.stats[d > 0 ? 'silverIn' : 'silverOut'] || 0) + Math.abs(d); S.stats.silverSeen = S.silver; }
   try { S.sid ??= sidFor(S.name); localStorage.setItem(slotKey(S.sid), JSON.stringify(S));
-  const r = roster(); r.list = [rosterMeta(S), ...r.list.filter(e => e.id !== S.sid)]; localStorage.setItem(RKEY, JSON.stringify(r)); } catch(e) {} }
+  const r = roster(); r.list = [rosterMeta(S), ...r.list.filter(e => e.id !== S.sid)]; localStorage.setItem(RKEY, JSON.stringify(r)); } catch(e) {} updSilver(); }
+/* the silver on the HUD follows the purse: on every save and every conversation step, with a flash for which way it went */
+let silverShown = null;
+function updSilver(){ const el = typeof document !== 'undefined' && document.getElementById('silver'); if (!el || !S) return;
+  const t = `${S.silver} silver`; if (el.textContent === t) { silverShown = S.silver; return; }
+  el.textContent = t; if (silverShown != null && silverShown !== S.silver) { el.classList.remove('sup', 'sdown'); void el.offsetWidth; el.classList.add(S.silver > silverShown ? 'sup' : 'sdown'); }
+  silverShown = S.silver; }
 function loadSlot(id){ try { const s = localStorage.getItem(slotKey(id)); if (!s) return null; const o = JSON.parse(s); o.sid = id; return o; } catch(e) { return null; } }
 function loadSave(){ const e = roster().list[0]; return e ? loadSlot(e.id) : null; }
 function dropSlot(id){ try { localStorage.removeItem(slotKey(id)); const r = roster(); r.list = r.list.filter(e => e.id !== id); localStorage.setItem(RKEY, JSON.stringify(r)); } catch(e) {} }
@@ -1299,6 +1309,7 @@ function talk(id){
   if (n.onshow) { try { n.onshow(); } catch(e) { console.warn('onshow', e); } } // a node's own drawing (a painting, a map)
   bindChoices();
   dockSheet();
+  updSilver(); // a node's own fx can pay or charge after the save above
 }
 function bindChoices(){
   const sh = $('#sheet');
@@ -3453,7 +3464,7 @@ function updExplore(){
   if (!$('#quest')) return;
   const a = AREA();
   $('#quest').textContent = a.quest ? a.quest() : (typeof QUESTS !== 'undefined' && QUESTS[a.id]) ? QUESTS[a.id]() : (a.sub || '');
-  $('#silver').textContent = `${S.silver} silver`;
+  updSilver();
   $('#elog').innerHTML = S.log.map(l => `<div>${l}</div>`).join('');
   const hud = $('.hud'); if (G.cv && G.hudH != null && hud && hud.offsetHeight !== G.hudH) fitCanvas(ACOLS(), AROWS()); // a quest line that wraps differently moves the map: give it the room that's left
 }
@@ -4782,6 +4793,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.13.3', ['The silver at the top of the screen now changes the moment you spend or win it, with a flash, instead of waiting for the conversation to close.']],
   ['3.13.2', ['Rumjugs and Sweetlard: somebody finally told the painter what their names meant.']],
   ['3.13.1', ['The crate lid at the Gadrobi crossing has been repainted, properly this time: both arms each, and the rest of them too. Sweets for the Sappers.']],
   ['3.13.0', ['Squadmates can move through each other, as long as they have the movement to get past. Nobody can end a move on someone else\'s tile.',

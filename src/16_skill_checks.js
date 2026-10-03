@@ -126,6 +126,7 @@ function talk(id){
   if (n.onshow) { try { n.onshow(); } catch(e) { console.warn('onshow', e); } } // a node's own drawing (a painting, a map)
   bindChoices();
   dockSheet();
+  updSilver(); // a node's own fx can pay or charge after the save above
 }
 function bindChoices(){
   const sh = $('#sheet');
