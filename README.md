@@ -27,6 +27,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 - v3.4.0 — Chapter Five: The Gadrobi Hills. Lorn and Tool, the barrow, Hairlock's rent, Toc, the Hounds, the Herald card.
 - v3.6.0 — Chapters Six and Seven: The Fete, Outlaws — the end of the book. Estate and lakefront maps, the Tyrant, the Adjunct, otataral and mortal fights, the finale and a page per squadmate.
 - v3.7.0 — The polish pass. Every chapter proofread and checked for continuity, including every combination of the dead after the alley. Painted portraits, reworked sprites, tiles, backdrops and cards. A rebuilt procedural score and place-by-place ambience. Sturdier battles with hit chances, clearer turns and no clipped sprites. A close-up explore map that follows the sergeant. Proper curly quotes. Updates now wait for a tap instead of reloading mid-fight, and the fonts work offline.
+- v3.13.5 — Mockra Whisper turns an enemy on its own side for a turn (`u.turned`, handled at the top of `aiTurn`), so it no longer duplicates Phantom.
 - v3.13.4 — Closing a table game saves, so its winnings or losses reach the HUD at once.
 - v3.13.3 — The HUD silver follows the purse (`updSilver` in `src/15_state.js`, called from `save()` and `talk()`), with an up/down flash.
 - v3.13.2 — Rumjugs and Sweetlard true to their names: the bust is drawn as its own shape past the torso (`fig` in `src/19b_pinup.js`), about three times the size, the bodices refit around it.

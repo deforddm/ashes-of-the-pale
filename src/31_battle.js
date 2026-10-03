@@ -218,9 +218,13 @@ const AB = {
     run(u,x,y){ B.used.quorl = 1; const pt = {x,y}; AUDIO.play('bow'); B.fx.push({kind:'arc', from:{x:pt.x + 1.5, y:-3}, to:pt, t:performance.now(), dur:REDUCE() ? 1 : pace(480), drop:true}); later(() => { blast(pt, [[1,10,2],[1,6,0]], '#f2c46b'); AUDIO.play('boom', .8); sparks(pt.x, pt.y, 26, '#f2c46b'); }, REDUCE() ? 1 : pace(500)); blog(`${u.name} shows a lamp to the sky. Something with wings answers.`); }},
   shadowstep:{name:'Shadow Step', strain:1, desc:()=>'Step through Meanas to any free tile within 4. No free swings. Strain 1.', tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 4 && free(x,y,u) && !(x === u.x && y === u.y)) out.push({x,y,step:true}); return out; },
     run(u,x,y){ AUDIO.play('shadow'); sparks(u.x, u.y, 12, '#c9bbff', .4); u.x = x; u.y = y; sparks(x, y, 12, '#c9bbff', .4); blog(`${u.name} is somewhere else.`); }},
-  mockra:{name:'Mockra Whisper', strain:2, desc:()=>'An enemy within 4 hears something it believes and loses its next turn. Bosses resist on 12+. Strain 2.', tiles:u=>foes().filter(f => cheb(u,f) <= 4),
-    run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#c9bbff', t:performance.now(), dur:400, wob:true});
-      if (t.boss && d20() >= 12) { blog(`${t.name} shakes the whisper off.`); float(t,'resists','#a99a88'); } else { t.stun = true; blog(`${t.name} stops to listen to something that is not there.`); float(t,'dazed','#c9bbff'); } }},
+  /* Mockra, the warren of the mind: not a lost turn (that is Phantom) but a turned one. The enemy hears its own side say something
+     unforgivable and spends its next turn going for the nearest of them instead of the squad. */
+  mockra:{name:'Mockra Whisper', strain:2, desc:()=>'An enemy within 4 hears its own side whisper something unforgivable. On its next turn it goes for the nearest of them instead of you. Bosses resist on 12+. Strain 2.',
+    tiles:u=>foes().filter(f => cheb(u,f) <= 4 && !f.turned),
+    run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#e0a8d8', t:performance.now(), dur:400, wob:true});
+      if (t.boss && d20() >= 12) { blog(`${t.name} shakes the whisper off.`); float(t,'resists','#a99a88'); }
+      else { t.turned = true; sparks(t.x, t.y, 12, '#e0a8d8', .4); float(t,'turned','#e0a8d8'); blog(`${u.name} puts a word in ${t.name}'s ear, in a voice it knows. ${t.name} looks round at its own side, slowly.`); } }},
   argument:{name:'Argument with Hood', strain:3, desc:()=>'Once a fight: a downed squadmate within 2 stands up at 6 health. Strain 3.', ok:()=>!B.used.argument,
     tiles:u=>B.units.filter(p => p.side === 'p' && !p.ally && p.hp <= 0 && cheb(u,p) <= 2 && freeNear(p.x, p.y, p)),
     run(u,x,y){ const t = B.units.find(p => p.side === 'p' && !p.ally && p.hp <= 0 && p.x === x && p.y === y); if (!t) return; const at = freeNear(t.x, t.y, t); if (!at) return; // someone may be standing over the body
@@ -380,6 +384,15 @@ async function aiTurn(u, turnId){
   const b0 = B, gone = () => B !== b0 || B.turn !== turnId; // the battle was left or restarted, or the turn moved on, while this one played out
   const done = () => { updBattleUI(); if (!checkEnd()) endTurn(); };
   const inRange = () => foesOf(u).filter(p => cheb(u,p) <= u.rng && canShoot(u,p));
+  if (u.turned) { u.turned = false; // Mockra Whisper: this turn belongs to its own side
+    const own = B.units.filter(v => v !== u && v.hp > 0 && v.side === u.side && !v.immortal).sort((a, b) => cheb(u, a) - cheb(u, b)), near = own[0];
+    if (!near) { blog(`${u.name} turns on its own and finds nobody left to turn on. It stands there with the whisper.`); float(u, 'nobody', '#e0a8d8'); await wait(500); if (gone()) return; return done(); }
+    const can = () => near.hp > 0 && cheb(u, near) <= u.rng && canShoot(u, near);
+    if (!can()) { const path = findPath(u.x, u.y, (x,y) => free(x,y,u), (x,y) => cheb({x,y}, near) <= u.rng && canShoot({x,y}, near)); if (path && path.length) { if (!await aiWalk(u, path.slice(0, u.mv), gone)) return; } }
+    if (u.hp <= 0) return done();
+    if (can()) { u.facing = near.x >= u.x ? 1 : -1; blog(`<em>Whatever ${u.name} heard, it believed.</em>`); attack(u, near, {verb:near.name === u.name ? 'turns on the other' : 'turns on'}); await wait(650); }
+    else blog(`${u.name} goes for ${near.name} with murder in it, and can't get there.`);
+    if (gone()) return; return done(); }
   if (u.boss && u.kind === 'stone' && !u.otat) { u.tc = (u.tc || 0) + 1; const adj = party().filter(p => cheb(u,p) === 1);
     if (u.tc % 3 === 0 && adj.length) { blog(`<em>The Stonebound slams the floor.</em> Stone and grief in every direction.`); AUDIO.play('slam'); shakeMap();
       B.fx.push({kind:'boom', x:u.x, y:u.y, r:1, col:'#a08de0', t:performance.now()}); sparks(u.x, u.y, 40, '#9a86e0'); adj.forEach(p => hurt(p, roll(2,6)));
@@ -543,7 +556,7 @@ function updBattleUI(){
       else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to ${a.darkness ? 'call it' : 'throw'}. ${cov.length ? `The ${a.darkness ? 'dark' : 'smoke'} covers ${cov.map(v => esc(v.name)).join(', ')}.` : `The ${a.darkness ? 'dark' : 'smoke'} covers empty ground.`} Nobody shoots into it or out of it.`; }
       else { const caught = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe), mine = caught.filter(v => v.side === 'p'), theirs = caught.length - mine.length;
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
-  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
+  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', u.turned ? 'turned on its own' : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="bhint">${tapWord(hint)}</div>
@@ -639,6 +652,7 @@ function drawBattle(t){
     const w = T*.7, px = cx - w/2, py = cy + T*.3; ctx.fillStyle = '#0d0b09'; ctx.fillRect(px, py, w, Math.max(3, T*.08));
     ctx.fillStyle = u.side === 'p' ? (u.ally ? '#8fa6cf' : '#7fb394') : '#d9695a'; ctx.fillRect(px, py, w * u.hp / u.maxhp, Math.max(3, T*.08));
     if (u.stun) { ctx.fillStyle = '#e9dfc9'; ctx.font = `${Math.round(T*.3)}px sans-serif`; ctx.textAlign = 'left'; ctx.fillText('z', cx + T*.3, cy - T*.7 + Math.sin(t/300)*2); }
+    if (u.turned) { ctx.fillStyle = '#e0a8d8'; ctx.font = `bold ${Math.round(T*.32)}px sans-serif`; ctx.textAlign = 'left'; ctx.fillText('?', cx + T*.3, cy - T*.7 + Math.sin(t/260)*2); }
   });
   // smoke: grey billows over each smoked tile, thick enough to lose a figure in
   (B.smoke || []).filter(s => s.until >= B.round).forEach(s => { const px = s.x*T + T/2, py = s.y*T + T/2, fade = s.until === B.round ? .65 : 1;
