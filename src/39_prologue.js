@@ -6,6 +6,9 @@ const pYour = id => !id || id === 'sgt' ? 'your' : NAME(id) + '\'s';
 /* the grey cloak backs off a stand-off, but goes away with a name: shared by both "close ranks" checks at the tunnel mouth */
 const pClawNear = {t:()=>{ const w = ROLL().who; return w && w !== 'sgt' ? `He goes. But he goes looking at ${NAME(w)}, and says “${NAME(w)}” on his way past, pleasantly, as if he'd always known it. Nobody told him.` : `He goes. But he says “Another time” to you, specifically, the way a man makes an appointment.`; },
   fx:()=>{ S.f.p_clawNamed = ROLL().who || 'sgt'; }};
+/* the prologue's one new face on a battle map: Moreau, at the heart of the deserters' second ground (BATTLES.deserters.stage2).
+   The prologue has no chapter module, so he is added to FOES here, the way registerChapter() adds a chapter's foes. */
+Object.assign(FOES, {moreau:{name:'Moreau', sig:'M', kind:'deserter', hp:18, ac:14, atk:4, dmg:[1,8,2], rng:1, mv:4, init:2, sk:['parry'], verb:'cuts at'}});
 function tatRest(){
   const c = [{t:`"We'll bring it back."`, go:'tat_end'}];
   if (!S.f.askedJ) c.push({t:'Ask what\'s actually in the journal.', check:['wits',12], fx:()=>S.f.askedJ=1,
@@ -85,7 +88,7 @@ You carry ${S.silver} silver.`,
     ch:[
       {t:'Sharper, 6 silver', tag:`have ${S.inv.sharper}`, req:()=>S.silver>=6, fx:()=>{S.silver-=6;S.inv.sharper++;note('Bought a sharper.','good');}, go:'pell'},
       {t:'Burner, 5 silver', tag:`have ${S.inv.burner}`, req:()=>S.silver>=5, fx:()=>{S.silver-=5;S.inv.burner++;note('Bought a burner.','good');}, go:'pell'},
-      {t:'Healing salve, 3 silver', tag:`have ${S.inv.salve}`, req:()=>S.silver>=3, fx:()=>{S.silver-=3;S.inv.salve++;note('Bought a salve.','good');}, go:'pell'},
+      {t:'Healing salve, 5 silver', tag:`have ${S.inv.salve}`, req:()=>S.silver>=5, fx:()=>{S.silver-=5;S.inv.salve++;note('Bought a salve.','good');}, go:'pell'},
       {t:'"Got any cussers?"', req:()=>!S.f.askedCusser, fx:()=>S.f.askedCusser=1, go:'pell_cusser'},
       {t:'Leave'}]}),
   pell_cusser:()=>({sp:'Quartermaster Pell', txt:`"Cussers." He laughs without moving his face. "Your sapper's already got one, and I'd take it off her if I thought I'd live through the conversation."`, ch:[{t:'Back', go:'pell'}]}),
@@ -189,7 +192,8 @@ The lamp swings round. A long silence, then a thin voice: "Garrow's alive?" And 
 
 One of them is already running, back the way you came, toward the surface, the way a man runs who has somewhere to be. The other three come for you.`,
     ch:[{t:'Fight', go:()=>startBattle('deserters',{drop:[0]})}]}),
-  desert_half:()=>({sp:'North sapper tunnel', txt:
+  // the two who back away go deeper, not up: they fetch Moreau (the second ground)
+  desert_half:()=>({sp:'North sapper tunnel', fx:()=>{ S.f.p_desertHalf = 1; }, txt:
 `${by({tuft:`Tuft steps into the light with empty hands and talks to them the way you'd talk to a dog you don't know: low, level, nothing sudden. She tells them the roof is coming down. She sounds like someone who would know.`,
   kettle:`Kettle steps into the light with her hands empty and her satchel very much not, and explains, with total confidence, which of the beams over their heads she has already wired. None of them. She is very specific about which.`,
   sgt:`You step into the light with empty hands and a sergeant's voice.`,
@@ -205,13 +209,14 @@ One of them is already running, back the way you came, toward the surface, the w
 "Second Army," one of them says. He's grey under the dirt, and his badge is cut off, and the cut is clean. "We *were* Second Army. Go and ask your High Mage where the rest of it went."
 
 The lamp swings round. Someone cocks a crossbow.`, ch:[{t:'Fight', go:()=>startBattle('deserters',{})}]}),
+  // the fight comes in two grounds: the last thirty paces, where the dark has pooled, then the junction itself (BATTLES.stone)
   deep1:()=>({sp:'Collapsed junction', scene:'dark', txt:
-`The sapper tunnel ends in a chamber where three passages met before the ceiling came down. Varrow is here, or what's left of him, pinned under a beam with one hand still wrapped in a satchel strap.
+`Thirty paces on, the sapper tunnel ends in a chamber where three passages met before the ceiling came down. The lantern reaches just far enough to show you Varrow, or what's left of him, pinned under a beam with one hand still wrapped in a satchel strap.
 
-The air is wrong: cold, and too dark, as if the lantern light has to push through water. "Kurald Galain," Tuft whispers. "The Spawn's warren leaked down here. Meanas will love it. Denul won't."
+The air between here and there is wrong: cold, and too dark, as if the lantern light has to push through water. "Kurald Galain," Tuft whispers. "The Spawn's warren leaked down here. Meanas will love it. Denul won't."
 
-Something in the dark shifts its weight. Something big.${S.f.noisy ? ` It isn't waking up. It's been awake since your sharper went off, and it's been waiting.` : ''}`,
-    ch:[{t:'Reach for the satchel.', go:()=>startBattle('stone',{surprise:'e'})},
+The dark between you and Varrow moves, the way water moves when something under it does. Further in, something shifts its weight. Something big.${S.f.noisy ? ` It isn't waking up. It's been awake since your sharper went off, and it's been waiting.` : ''}`,
+    ch:[{t:'Go straight for the satchel.', go:()=>startBattle('stone',{surprise:'e'})},
         {t:'"Form up. Shields front."', go:()=>startBattle('stone',{surprise:'p'})}]}),
   journal:()=>({sp:'Collapsed junction', scene:'tunnel', fx:()=>{S.f.gotSatchel=1;}, txt:
 `Varrow's satchel is heavy with oilcloth-wrapped pages. The top sheet is dated the night of the assault.${S.f.p_tatKnots ? ` The oilcloth is tied three turns and a tuck. Tattersail will know.` : ''}`,

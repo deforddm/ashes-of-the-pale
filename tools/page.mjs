@@ -51,7 +51,7 @@ export async function openGame(br, url, opts = {}) {
   const errors = [];
   page.on('pageerror', e => errors.push(String(e && e.stack || e).split('\n').slice(0, 4).join(' | ')));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('console: ' + m.text()); });
-  const settings = Object.assign(opts.fast ? { master: 0, music: 0, sfx: 0, amb: 0, speed: 0.02, motion: 'off', shake: false } : {}, opts.settings || {});
+  const settings = Object.assign(opts.fast ? { master: 0, music: 0, sfx: 0, amb: 0, speed: +(process.env.ASHES_SPEED || 0.02), motion: 'off', shake: false } : {}, opts.settings || {});
   await page.addInitScript(({ settings, save }) => { try { localStorage.clear(); localStorage.setItem('ashes-of-the-pale-settings', JSON.stringify(settings)); if (save) localStorage.setItem('ashes-of-the-pale-v1', JSON.stringify(save)); } catch (e) {} }, { settings, save: opts.save || null });
   await page.goto(url);
   await page.waitForTimeout(500);

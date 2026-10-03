@@ -41,6 +41,7 @@ const BOT = () => {
       if (!$('#cardfx').hidden) { const fold = $('#cfFold'); if (fold && Math.random() < .5) { this.ev('fold: drew again'); fold.click(); return 'cardfx-fold'; } const keep = $('#cfKeep'); if (keep && Math.random() < .5) { keep.click(); return 'cardfx-keep'; } const b = $('#cardfx').querySelector('button:not([disabled])'); if (b) { b.click(); return 'cardfx-btn'; } $('#cardfx').click(); return 'cardfx'; }
       if (view === 'title') { const b = $('#bNew') || $('#bNewSgt'); if (b) { b.click(); return 'new'; } }
       if (!sh.hidden) {
+        const on = $('#bOn'); if (on) { this.ev('stage: push on'); on.click(); return 'push-on'; } // a fight's second area
         const retry = $('#bRetry');
         if (retry) { const b = this.cur; if (b) { b.losses++; this.ev(`lost battle ${b.id} (attempt ${b.losses})`); } retry.click(); return 'retry'; }
         const pk = sh.querySelector('.choices.picker'); // who handles a check: mostly the likeliest, sometimes anyone

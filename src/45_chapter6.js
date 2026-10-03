@@ -24,7 +24,18 @@ const C6H = {
     get not(){ return S.f.c6_badgeCold ? ['tuft'] : []; }, notWhy:{tuft:'has had her one courtesy from him'},
     edges:id => [S.f.c4_seen && ['the Andii on the roof know your faces', 2], id === 'tuft' && S.f.c4_tuftDark && ['the house knows her face', 2],
       S.f.c2_andii && ['you spoke with the Andii on the plain', 1], id === 'sgt' && S.f.c6_rakeStep && ['he has weighed you once already', 1]],
-    go:'c6_dark_ok', fail:'c6_dark_bad'})
+    go:'c6_dark_ok', fail:'c6_dark_bad'}),
+  /* the second ground of both terrace fights: the lead roof over the hall, chimney stacks for cover, and the great glass lantern
+     over the ballroom splitting the roof into two lanes. The one who spoke on the terrace went up here with the rest of the cell. */
+  roof:{ title:'The leads above the hall', style:'roof', warrenText:'Lead roofs and lake wind · two hundred masks under the glass · Meanas leans into the dark · Denul holds',
+    text:()=>`The upper terrace is yours. It isn't all of them.
+
+${S.f.c4_key === 'aside' ? `The old man from the alley isn't among the ones on the marble.` : `The one who spoke isn't among the ones on the marble.`} He went up while you were busy: up the drainpipe at the corner of the house with three of his behind him, onto the leads over the hall, to go along the roof to the far end and come down on the old man in dark red from above. You go up after him. Lead under your boots, chimney stacks, the wind off the lake, and in the middle of the roof the great glass lantern over the ballroom, lit from below, with two hundred masks going round under it. Nobody at a Fete ever looks up.
+
+${SQUAD().includes('kettle') ? `"Nothing heavy," Kettle says, very fast, looking down through the glass. "Nothing that *rolls*."` : ''}`,
+    map:["#..#....","........",".##..#..",".#....#.","..####..","..####..","........",".#....#.","........","##....##"],
+    party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+    foes:[['c6_guildbow',1,0],['guildveteran',4,1],['guildknife',1,1],['guildknife',6,2]] }
 };
 const CH6 = {
   title:'The Fete', number:'Six',
@@ -115,15 +126,23 @@ const CH6 = {
     house_guards:{title:'The stable yard behind the gate', warrenText:'Straw and lanterns · the Fete loud over the wall · warrens steady', warren:{meanas:1,denul:1}, music:'battle', style:'city',
       map:["##....##","........",".#.,,.#.","........","..#..#..","........","#..,,..#","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['houseguard',2,1],['houseguard',5,1],['houseguard',3,3],['housecaptain',4,0]], xp:200, after:'c6_after_guards'},
+      foes:[['houseguard',2,1],['houseguard',5,1],['houseguard',3,3],['housecaptain',4,0]], xp:200, after:'c6_after_guards',
+      /* the kitchen court through the carriage arch: a two-pace arch with halberds the far side of it, and a crossbow on the loft stair */
+      stage2:{ title:'The kitchen court, through the arch',
+        text:()=>`The yard is yours, and the captain is sitting in the straw. But somebody ran. The carriage arch at the end of the yard stands open on the kitchen court, and down the loft stair on the far side of it, in no hurry at all, comes the second watch: two more halberds, a crossbow at the stair-head, and the farrier in his leather apron, with the hammer he shoes Lady Simtal's horses with.
+
+${SQUAD().includes('brisk') ? `Brisk looks at the arch. Two paces wide, and seven feet of halberd on the far side of it, twice. "Narrow," she says. "Good. Narrow's honest."` : `The arch is two paces wide. The halberds on the far side of it are seven feet long apiece.`} Over the wall the Fete goes on, and nobody hears a thing.`,
+        map:["#.##...#","#......#","#..##..#","#......#","#.#....#","#....#.#","###..###","#......#","........","#......#"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['c6_housebow',1,0],['c6_farrier',4,1],['houseguard',5,3],['houseguard',3,4]] }},
     terrace_knives:{title:'The upper terrace', warrenText:'Marble and lake wind · the music forty paces off · Meanas leans into the dark · Denul holds', warren:{meanas:1.2,denul:1}, dark:true, music:'dark', style:'terrace',
       map:["#.#..#.#","........","..,,,,..",".#....#.","........","..#..#..","........","...,,...","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0]], xp:240, after:'c6_after_knives'},
+      foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0]], xp:240, after:'c6_after_knives', stage2:C6H.roof},
     terrace_knives_2:{title:'The upper terrace', warrenText:'Marble and lake wind · the music forty paces off · Meanas leans into the dark · Denul holds', warren:{meanas:1.2,denul:1}, dark:true, music:'dark', style:'terrace',
       map:["#.#..#.#","........","..,,,,..",".#....#.","........","..#..#..","........","...,,...","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0],['guildveteran',3,0]], xp:240, after:'c6_after_knives'},
+      foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0],['guildveteran',3,0]], xp:240, after:'c6_after_knives', stage2:C6H.roof},
     garden_hound:{title:'The lawn by the east wall', warrenText:'Wet grass and lantern-light · something of Shadow on the lawn · Meanas swells', warren:{meanas:1.3,denul:1}, dark:true, music:'dark', style:'garden',
       map:["#......#","..#..#..","........",".#....#.","...,,...","........","#..##..#","........","........","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
@@ -139,7 +158,32 @@ const CH6 = {
     the_mines:{title:'The vault under the Gadrobi crossing', warrenText:'Gas in the pipes · frost on the joints · one spark and there is no city · nobody throws anything', warren:{meanas:1,denul:1}, dark:true, music:'dark', style:'cellar', nothrow:true,
       map:["#..##..#","........",".##..##.","........","...,,...","#......#","..#..#..","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['clawknife',3,1],['assassin',1,1],['assassin',6,1],['clawmage',5,0]], xp:300, after:'c6_after_mines'},
+      foes:[['clawknife',3,1],['assassin',1,1],['assassin',6,1],['clawmage',5,0]], xp:300, after:'c6_after_mines',
+      /* the east gallery: the main running down the middle, two lanes and three crossings, and the man with the phial at the far end */
+      stage2:{ title:'The east gallery', warrenText:'Gas in the pipes · the mains running east under the Gadrobi District · nobody throws anything',
+        text:()=>`Four of them down on the wet brick. The fifth isn't here.
+
+He went backwards while you were busy, into the east gallery, where the mains run on under the Gadrobi District: lantern hooded, the phial held out from his body like a cup filled to the brim. The joints go on that way, and so do Hedge's munitions, and there are lights down there already. More grey cloaks, at more niches, with more small knives.
+
+${SQUAD().includes('kettle') ? `Kettle is in the gallery mouth before you are. "Eleven of Hedge's down there," she says. "And four cussers. I *counted* them in." Her voice doesn't shake at all, which is how you know.` : `The frost is thicker on the pipes this way. You can hear the clay tick.`}`,
+        map:["##.##.##","#..##..#","#......#","#..##..#",".#.##.#.","#..##..#","#......#","#..##..#","#......#","##....##"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['c6_clawhand',2,0],['clawmage',5,0],['assassin',6,1],['assassin',1,3]] }},
+    /* new (v3.12): the Fete finds the crossing in the late afternoon. Nobody throws anything over forty munitions. */
+    c6_bonfire:{title:'The Gadrobi crossing', warrenText:'City stone and Fete smoke · gas under the planks · nobody throws anything', warren:{meanas:1,denul:1}, music:'battle', style:'city', nothrow:true,
+      map:["#..##..#","........",".#....#.","...#.#..","..#,,...","...,,#..","..#.#...","........","#......#","##....##"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+      foes:[['c6_slaughterman',3,4],['c6_slaughterman',6,1],['c6_bull',1,1],['c6_bull',4,3],['c6_bull',5,0]], xp:200, after:'c6_after_bonfire',
+      /* the chandler's cellar: aisles of lamp-oil and tallow, a lantern going toward the old stair to the vault */
+      stage2:{ title:'The chandler\'s cellar', style:'cellar', warrenText:'Lamp-oil to the rafters · a lantern going toward the vault stair · nobody throws anything',
+        text:()=>`The crossing is yours: bull masks in the gutter, a cudgel smoking in the brazier, and Trotts putting stakes back in their holes with his arms folded, somehow.
+
+The big one in the apron isn't in the gutter. Neither are three of his. While you held the planks they went round by the street door into the chandler's, with a lantern, to see where the Malazans come up from. The chandler's cellar is lamp-oil and tallow to the rafters, and at the back of it, behind the tallow, is the old stair that goes down to the vault.
+
+${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's already going.` : `You go after the lantern.`}`,
+        map:["#.#..#.#","#......#","#.####.#","#......#","##.##.##","#......#","#.####.#","#......#","#......#","##....##"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['c6_foreman',4,1],['c6_slaughterman',6,3],['c6_bull',1,5],['c6_bull',5,5]] }},
     lorn_alley:{title:'An alley off the Daru District', warrenText:'Otataral · every warren is dead here · whoever falls stays down', warren:{meanas:0.2,denul:0.2}, dark:true, music:'dark', style:'city', nomagic:true, mortal:true,
       map:["##....##","#......#","#.#....#","#......#","#....#.#","#......#","#......#","#.#....#","#......#","#......#"],
       party:[[4,9],[3,6],[4,6],[3,7],[5,7],[4,7]], // the sergeant at the back with the boy; the line is already up against her
@@ -154,7 +198,15 @@ const CH6 = {
          bbfiddler:{name:'Fiddler', sig:'F', kind:'fiddler', hp:40, ac:15, atk:8, dmg:[1,8,3], rng:5, mv:4, init:4, verb:'puts a quarrel into'},
          bbhedge:{name:'Hedge', sig:'h', kind:'hedge', hp:40, ac:15, atk:7, dmg:[1,8,4], rng:1, mv:4, init:3, verb:'cracks a mallet across'},
          clawmage:{name:'Claw hand-mage', sig:'M', kind:'claw', hp:18, ac:14, atk:7, dmg:[2,6,2], rng:4, mv:4, init:4, verb:'looses a shadow-bolt at'},
-         lorn:{name:'The Adjunct', sig:'L', kind:'lorn', hp:90, ac:18, atk:9, dmg:[2,6,4], rng:1, mv:4, init:6, boss:true, immortal:true, attacks:2, verb:'cuts at'} },
+         lorn:{name:'The Adjunct', sig:'L', kind:'lorn', hp:90, ac:18, atk:9, dmg:[2,6,4], rng:1, mv:4, init:6, boss:true, immortal:true, attacks:2, verb:'cuts at'},
+         /* v3.12: the second grounds and the crossing */
+         c6_housebow:{name:'House crossbow', sig:'q', kind:'houseguard', hp:16, ac:14, atk:7, dmg:[1,10,2], rng:5, mv:3, init:3, sk:['pin'], verb:'puts a bolt into'},
+         c6_farrier:{name:'Simtal\'s farrier', sig:'f', kind:'bruiser', hp:26, ac:13, atk:7, dmg:[1,10,3], rng:1, mv:4, init:1, sk:['shove'], verb:'swings a farrier\'s hammer at'},
+         c6_guildbow:{name:'Guild crossbow', sig:'x', kind:'guildknife', hp:14, ac:14, atk:7, dmg:[1,10,2], rng:5, mv:5, init:4, sk:['pin'], verb:'looses a quarrel at'},
+         c6_clawhand:{name:'The man with the phial', sig:'K', kind:'claw', hp:30, ac:16, atk:8, dmg:[1,8,3], rng:1, mv:5, init:6, boss:true, sk:['mark','parry'], verb:'opens'},
+         c6_slaughterman:{name:'Gadrobi slaughterman', sig:'S', kind:'bruiser', hp:24, ac:13, atk:7, dmg:[1,10,2], rng:1, mv:4, init:2, sk:['shove'], verb:'swings a meat-hook at'},
+         c6_bull:{name:'Lad in a bull mask', sig:'b', kind:'thug', hp:14, ac:13, atk:6, dmg:[1,6,2], rng:1, mv:5, init:4, sk:['hitrun'], verb:'cracks a cudgel across'},
+         c6_foreman:{name:'The shambles foreman', sig:'B', kind:'bruiser', hp:34, ac:14, atk:8, dmg:[1,10,3], rng:1, mv:4, init:3, boss:true, sk:['shove'], verb:'brings a cleaver down on'} },
 
   gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
     fetemask:{name:'Fete mask', slot:'trinket', who:null, stat:{guile:1}, line:'A half-mask of dark red silk over stiffened linen, with a fringe of tiny brass bells along the lower edge that somebody has stuffed with wax so they will not ring. Murillio bought too many and could not choose. Guards do not wear masks. It is for after.'},
@@ -198,6 +250,8 @@ const CH6 = {
     if (S.f.c6_tuft === 'dark') x.push(tA ? 'A tall man in a black dragon mask looked at Tuft\'s badge once, and it went cold. She says the house was polite. She says it the way you say a thing you have decided to believe.' : 'A tall man in a black dragon mask looked at Tuft\'s badge once, and it went cold. She called the house polite, an hour before the alley.');
     if (S.f.c6_tuft === 'kept') x.push(tA ? 'Tuft did what the grey cloak said. Something looked out of her eyes at the Fete. She is still with the Fourth. So is whatever was looking.' : 'Tuft did what the grey cloak said. Something looked out of her eyes at the Fete, until the alley, where nothing can look out of anything.');
     if (S.f.c6_paranToc) x.push('Paran has Toc\'s message at last. He says Toc is still riding.');
+    if (S.f.c6_bonfireFought) x.push('Gadrobi slaughtermen in bull masks wanted the Works stakes for a Fete bonfire, over forty munitions. The Fourth kept them off it, and nobody died, and Trotts got a garland.');
+    else if (S.f.c6_bonfireTalked) x.push('Gadrobi slaughtermen in bull masks wanted the Works stakes for a Fete bonfire, and were told about the gas, and believed it. Trotts got a garland anyway.');
     if (S.f.c6_collRing) x.push('Coll has his ring back, and by morning, his house.');
     if (S.f.c6_captainMum) x.push('The captain of Simtal\'s house knew the shape of Coll\'s ring at the gate and told nobody. At dawn he held the door for Coll.');
     else if (S.f.c6_signetSeen && !S.f.c6_collRing) x.push('The captain of Simtal\'s house knew the shape of the ring in the sergeant\'s pocket. So, by now, does half the hill.');
@@ -284,7 +338,90 @@ Dusk is a few hours off. There are people in this vault you could talk to, and y
       ch:[{t:'Captain Paran, by the wall.', req:()=>!S.f.c6_vParan, fx:()=>{ S.f.c6_vParan=1; }, go:'c6_paran'},
           {t:'Fiddler and Hedge, and the blue bundle.', req:()=>!S.f.c6_vFid, fx:()=>{ S.f.c6_vFid=1; }, go:'c6_fid'},
           {t:'Kalam and the captain, by the ladder, talking low.', req:()=>!S.f.c6_vKalam && !!S.f.c6_vParan, fx:()=>{ S.f.c6_vKalam=1; }, go:'c6_kalam'},
-          {t:'Up the ladder. Dusk.', go:'c6_ladder'}]}),
+          {t:'Wait for dusk.', go:'c6_crossing'}]}),
+
+    /* ---- the crossing, late afternoon: the Fete wants the Works stakes for a bonfire (v3.12) ---- */
+    c6_crossing:()=>({sp:'Trotts · the crossing', scene:'fete_street', txt:
+`Late in the afternoon, when the light down the ladder-hole has gone from white to gold, Trotts says one word down it.
+
+"Sergeant."
+
+Trotts doesn't say things down holes. You're up the ladder before you've decided to be, and through the chandler's, where a Gadrobi woman who has been paid not to see anything is not seeing it from behind her counter, and out into the crossing.
+
+The Fete has found it. Gadrobi lads in bull masks, a dozen of them, slaughtermen from the shambles by the forearms, drunk since the noon bell and proud of it, are pulling up the Works stakes. Every Fete the Gadrobi District builds a bonfire at its crossings for the Lady of Spring, and this crossing's bonfire is going to be the Malazans' stakes, and the sign that says *Works*, and the planks. Two of them already have the sign. A big one in a leather apron has a foot on the planks over the ladder-hole and is looking down at the lantern-light between them, interested.
+
+Under the planks: the ladder, the vault, forty of Hedge's munitions and twelve Moranth cussers, asleep in the gas.
+
+Trotts is by the last stake with his arms folded, and the lads are giving him room. He hasn't moved. He won't. When Trotts moves somebody dies, and a dead Gadrobi on the Fete with a Malazan standing over him is the end of the Bridgeburners in this city.
+
+Whiskeyjack's voice comes up the hole behind you, not loud. "${S.f.c6_vFid ? `You're in her blue` : `Fiddler's got armbands for you. Put them on`}. Guards keep people off things. Keep them off that." A pause. "Nobody dies, Sergeant. It's a holiday."
+
+${SQUAD().includes('kettle') ? `Kettle is looking at the brazier, and then at the planks, and then at the brazier. "They want a *fire*," she says. "On *that*."` : ''}
+
+${SQUAD().includes('brisk') ? `Brisk sets her shield. "Nobody dies," she says, the way she'd repeat a ration count she didn't believe. "That's the hard kind."` : ''}`,
+      ch:[{t:'"Off the planks."', fx:()=>{ S.f.c6_bonfireFought=1; }, go:()=>startBattle('c6_bonfire',{})},
+          {t:'Tell them what is under the planks. Most of it.', check:['guile',16],
+           edges:id => [id === 'ellis' && ['she has her mother\'s Gadrobi', 2], id === 'kettle' && ['a sapper on gas, with numbers', 1], S.f.c6_vFid && ['Simtal\'s blue on your arm', 1]],
+           go:'c6_bonfire_ok', fail:'c6_bonfire_bad'}]}),
+    c6_bonfire_ok:()=>({sp:'The crossing', scene:'fete_street', fx:()=>{ S.f.c6_bonfireTalked=1; }, txt:
+`${by({
+  ellis:`Ellis does it. She walks out among the bull masks with her hands empty and says something in Gadrobi, low, the way you'd talk to a horse you didn't trust yet, and the man in the apron turns his head at the sound of it like a man hearing his own village. Then she says one sentence more. It's the right one.`,
+  kettle:`Kettle does it. It's true, every word, and she tells it the way she tells lies, with total confidence and far too much detail: what runs under the planks, and how a main goes when you light a fire on it, and how far, and what it does to a crossing and the chandler's and the street and the lads standing in it, with numbers. By the time she gets to the numbers nobody is standing on the planks.`,
+  sgt:`You tell them. Not about the munitions. About the gas: the main that runs under these planks, the bad joint the Works are mending, and what a bonfire on top of it does to a crossing on a holiday. You say it the way you'd say it to recruits, slowly, and you watch it go into them one at a time.`,
+  _:`{who} tells them. Not about the munitions. About the gas: the main under these planks, the bad joint, and what a bonfire on top of it does to a crossing on a holiday.`})}
+
+The man in the apron takes his foot off the planks. He looks down between them for a long moment at the lantern-light coming up, and you can see him think about gas, and holidays, and his mother's street.
+
+Then he laughs, a big wet Gadrobi laugh, and says something to the others, and they put the sign back. Crooked. They take two stakes anyway, for honour, and go off down the Gadrobi road singing about Gedderone. On the way past Trotts the smallest of them stops, and takes a garland of paper flowers off his own neck, and hangs it on the Barghast.
+
+Trotts allows it.
+
+From the ladder-hole: "Sergeant." A pause. "Sleep. You've an hour."`,
+      ch:[{t:'Down the ladder.', go:'c6_vault_sleep'}]}),
+    c6_bonfire_bad:()=>({sp:'The crossing', scene:'fete_street', txt:
+`${by({
+  ellis:`Ellis tries. She gets three words of Gadrobi out, and the man in the apron hears where her mother was from in the second one, and grins, and says something about hill people that makes the lads roar.`,
+  kettle:`Kettle tries. It's all true, and she tells it the way she tells lies, and halfway through the numbers one of the bull masks says *Malazan* in a voice that means he's just noticed what her accent is.`,
+  sgt:`You tell them about the gas. They've lived over gas all their lives. They laugh.`,
+  _:`{who} tells them about the gas. They've lived over gas all their lives. They laugh.`})}
+
+Not unkindly. It's a holiday. The man in the apron takes his foot off the planks, and takes the meat-hook off his belt, and says one word in Gadrobi that nobody needs translated.`,
+      ch:[{t:'"Shields!"', fx:()=>{ S.f.c6_bonfireFought=1; }, go:()=>startBattle('c6_bonfire',{surprise:'e'})}]}),
+    c6_after_bonfire:()=>({sp:'The crossing', scene:'fete_street', txt:
+`Nobody dies. You'll be prouder of that than of anything else you do tonight, and you'll never be able to tell anyone why.
+
+It takes longer than a fight that kills people. It's knees, and shield-rims, and the flat of a blade, and a cudgel taken off a boy and thrown in the brazier; and down in the chandler's cellar, at the end of it, the foreman's lantern going over between the oil barrels, and ${SQUAD().includes('kettle') ? `Kettle` : `you`} catching it an inch off the boards with the oil already running out of the burst reservoir, and holding it up, upright, at arm's length, ${SQUAD().includes('kettle') ? `like a sapper holding a fuse` : `the way you've seen a sapper hold a fuse`}, until somebody pinches the wick.
+
+The foreman sits on the chandler's step afterwards with a split lip and a hand pressed to his ribs, and laughs, and says something in Gadrobi that makes the chandler laugh too. ${SQUAD().includes('ellis') ? `Ellis, not to you, near you: "He says Malazans fight like Gadrobi grandmothers." A beat. "It's a compliment. Gadrobi grandmothers are terrible."` : ''}
+
+They go off down the Gadrobi road carrying each other. On the way past Trotts the smallest of them stops, with one eye shut, and takes a garland of paper flowers off his own neck and hangs it on the Barghast.
+
+Trotts allows it.
+
+${SQUAD().includes('ohl') ? `Ohl has been from lad to lad in the gutter with his hands, and has nothing to argue with Hood about, because Hood isn't coming for any of them. "Nobody for the list," he says, and sounds, for once, almost cheerful.` : ''}
+
+${SQUAD().includes('tuft') ? `Tuft is sitting on the chandler's step with her arms round her knees, watching the bull masks go. "They were so *happy*," she says. "Before."` : ''}
+
+From the ladder-hole: "Sergeant." A pause. "Sleep. You've an hour."`,
+      ch:[{t:'Down the ladder.', go:'c6_vault_sleep'}]}),
+    /* an hour's sleep in the vault before the Fete (Bridgeburner: the wounds close) */
+    c6_vault_sleep:()=>({sp:'The vault under the crossing', scene:'cellar', fx:()=>{ rest('An hour on the crates under the crossing, with the pipes hissing. The Fourth sleeps, or pretends, and gets up better than it lay down.'); }, txt:
+`An hour, Whiskeyjack said, and an hour is what you get: on the crates and the bare brick, with the pipes hissing on every side and the drums in the streets coming down the ladder-hole like weather.
+
+${SQUAD().includes('brisk') ? `Brisk sleeps sitting up, with her back against a crate and her shield across her knees, the way she has slept in every hole from Nathilog to the Pale. Her eyes are shut. You're fairly sure.` : ''}
+
+${SQUAD().includes('ohl') ? `Ohl makes tea on the lantern, and drinks it, and makes a face, and offers it round. "Technically," he says, before anyone can ask.` : ''}
+
+${SQUAD().includes('kettle') ? `Kettle lies on her back on the brick with her head on her satchel, counting the munitions in the walls under her breath, and falls asleep at thirty-one, before she can get to the end and start again.` : ''}
+
+${SQUAD().includes('tuft') ? `Tuft curls up round her little lamp, the way she has every night since the Pale, with the Andii cloak over her like a tent, so that all you can see of her is a little light that won't quite go through the cloth.` : ''}
+
+${SQUAD().includes('ellis') ? (S.f.c5_ellisHeld ? `Ellis doesn't sleep. She sits at the foot of the ladder with her back to the squad and watches the hole, and doesn't say anything to anybody.` : `Ellis sleeps the way scouts sleep, all at once, and wakes once, and looks at the ladder, and sleeps again.`) : ''}
+
+Across the vault Hedge is humming the same four notes over and over, and Fiddler isn't stopping him. *Sleep. Or pretend.* Tattersail's advice. You take it.
+
+When you open your eyes again, the light down the ladder-hole has gone blue.`,
+      ch:[{t:'Dusk.', go:'c6_ladder'}]}),
     c6_paran:()=>({sp:'Captain Paran', scene:'cellar', txt:
 `He hasn't moved from the wall. Close to, he's worse than he was in the vale: grey under the eyes, grey round the mouth, with the look of a man who has been awake so long that sleep has stopped being a thing he wants and become a thing he has heard of.
 
@@ -422,7 +559,7 @@ Quick Ben stands up off the rung, and the smile comes back, as if it had never b
     c6_street_arrive:()=>({sp:'The Estate District', scene:'fete_street', txt:
 `Up through the chandler's, out into the crossing, and the city has turned into something else while you were under it.
 
-Lanterns, first. Paper lanterns strung across every street from eave to eave, red and amber and green and gold, so that the blue gas lamps burn underneath them like something the city is trying to keep quiet about. Then masks. Every face you pass: birds and foxes and bulls and moons, silk and feathers and pasteboard, and here and there a plain black domino on somebody who couldn't afford a face and wanted one anyway. Music from three directions, none of it in time. Somebody has hung a garland of paper flowers on Trotts at the stakes. He has allowed it.
+Lanterns, first. Paper lanterns strung across every street from eave to eave, red and amber and green and gold, so that the blue gas lamps burn underneath them like something the city is trying to keep quiet about. Then masks. Every face you pass: birds and foxes and bulls and moons, silk and feathers and pasteboard, and here and there a plain black domino on somebody who couldn't afford a face and wanted one anyway. Music from three directions, none of it in time. Trotts is back at the stakes in his garland of paper flowers. He has allowed it to stay.
 
 You go up through the Daru District with the crowd, in Lady Simtal's blue, and the crowd opens round you without looking, which is what a crowd does for guards. Then the lamps are brass, and the houses stand back from the street behind walls, and you're in the Estate District, on the hill, and the street in front of Lady Simtal's gate is so full of the Fete that you can't see the cobbles.
 
@@ -665,7 +802,7 @@ ${SQUAD().includes('kettle') ? `Kettle's hand is on her satchel. "Stables," she 
       ch:[{t:'"Close up."', go:()=>startBattle('house_guards',{})},
           {t:'Kettle rolls a sharper across the cobbles, well away from the straw.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('house_guards',{pre:true})}]}),
     c6_after_guards:()=>({sp:'The stable yard', scene:'fete_street', fx:()=>{ S.f.c6_guardsFought=1; }, txt:
-`It's short, and loud for a moment, and then not, because the Fete on the other side of the wall swallows everything. When it's done the captain is sitting in the straw against the horse trough with a hand pressed to his ribs, breathing in short pulls, and his men are down around him, and none of them is dead, though one of them is thinking about it.
+`It isn't short, and it's loud for a while, and then not, because the Fete on the other side of the wall swallows everything: the yard, and the arch, and the kitchen court beyond it, where the farrier sits down at last against the well with his hammer in his lap and won't get up again for anyone. When it's done you walk back through the arch, and the captain is still sitting in the straw against the horse trough with a hand pressed to his ribs, breathing in short pulls, and his men are down around him and through the arch, and none of them is dead, though one of them is thinking about it.
 
 The captain looks at the ring. He looks at you.
 
@@ -958,11 +1095,11 @@ ${SQUAD().includes('brisk') ? `"Furniture," says Brisk. She considers the word. 
 ${SQUAD().includes('ohl') ? `Ohl is looking at the far end of the terrace, where the flash was. "I didn't hear anyone cry out," he says. "I'm choosing to be glad of that. I'm choosing very carefully."` : ''}`,
       ch:[{t:'Back to the rounds.'}]}),
     c6_after_knives:()=>({sp:'The upper terrace', scene:'fete_hall', fx:()=>{ S.f.c6_terraceFought=1; S.f.c6_knivesDone=1; gain('blackedblade'); }, txt:
-`It's short, and it's quiet, because it has to be: two hundred people are dancing forty paces away, and a scream on the upper terrace would stop the music, and nobody on either side wants the music stopped. Marble, and soot-black blades, and the lake wind.
+`It's quiet, because it has to be: two hundred people are dancing forty paces away, and then under your boots, and a scream on the upper terrace or a body through the glass would stop the music, and nobody on either side wants the music stopped. Marble, then lead, and soot-black blades, and the lake wind.
 
-${S.f.c4_key === 'aside' ? `The old man from the alley goes down last. He sits against the balustrade with his blade across his knees, the way he sat against the warehouse wall, and looks at you. "There," he says. "Asked twice." And then he goes back over the balustrade, the way he came, into the dark over the water, and you hear the splash a long time after, and you don't know if it was him going in or him getting away.` : `The older one goes back over the balustrade the way he came, into the dark over the water, with a hand pressed to his side, and you hear the splash a long time after. The rest don't go anywhere.`}
+${S.f.c4_key === 'aside' ? `The old man from the alley goes down last. He sits against a chimney stack with his blade across his knees, the way he sat against the warehouse wall, and looks at you. "There," he says. "Asked twice." And then he goes over the parapet on the lake side, into the dark over the water, and you hear the splash a long time after, and you don't know if it was him going in or him getting away.` : `The one who spoke goes over the parapet on the lake side, into the dark over the water, with a hand pressed to his side, and you hear the splash a long time after. The rest don't go anywhere.`}
 
-One of them has dropped his blade on the marble. Longer than the roof knives, blacked with soot from point to pommel so that not even the edge catches the lantern. A party knife. ${SQUAD().includes('ellis') ? `Ellis picks it up by the blade and holds it out to you hilt first, without looking at you. "For walking into lamplight," she says, "and out again, without anybody remembering."` : SQUAD().includes('brisk') ? `Brisk picks it up and hands it to you hilt first. "Black all over. Even the edge. They've thought about it." She looks at the balustrade. "Didn't think about us."` : `You pick it up. It's lighter than it looks.`}
+One of them has dropped his blade on the leads. Longer than the roof knives, blacked with soot from point to pommel so that not even the edge catches the lantern. A party knife. ${SQUAD().includes('ellis') ? `Ellis picks it up by the blade and holds it out to you hilt first, without looking at you. "For walking into lamplight," she says, "and out again, without anybody remembering."` : SQUAD().includes('brisk') ? `Brisk picks it up and hands it to you hilt first. "Black all over. Even the edge. They've thought about it." She looks at the balustrade. "Didn't think about us."` : `You pick it up. It's lighter than it looks.`}
 
 ${SQUAD().includes('ohl') ? `Ohl is kneeling by the one who didn't get up, with his hands on him, arguing quietly in Ehrlii. He loses. He usually does, with the ones he meets like this. He closes the man's eyes and doesn't take out the oilcloth.` : ''}
 
@@ -1781,7 +1918,7 @@ The lantern at the bottom of the ladder is lit. It shouldn't be. Everybody who h
 
 And there are people in it.
 
-Four of them. Grey cloaks, the cut you know, but not clean: mud to the knee and brick-dust to the elbow. One has a lantern. Three are working the niches along the base of the pipes where Hedge seated the munitions, cusser by cusser, with small knives and smaller phials: a notch cut into the wax that seals each one, a bead of something that smokes faintly in the cold set into the notch, and on to the next. Not hurrying. Moranth wax is thick. A bead in a notch is a slow clock, and they have set it slow enough to be up the ladder and three streets away when it runs out. Back by the ladder the one with the lantern holds a stoppered phial in his other hand, upright and well away from his body, the way you'd carry a cup filled to the brim.
+Five of them. Grey cloaks, the cut you know, but not clean: mud to the knee and brick-dust to the elbow. One has a lantern. Four are working the niches along the base of the pipes where Hedge seated the munitions, cusser by cusser, with small knives and smaller phials: a notch cut into the wax that seals each one, a bead of something that smokes faintly in the cold set into the notch, and on to the next. Not hurrying. Moranth wax is thick. A bead in a notch is a slow clock, and they have set it slow enough to be up the ladder and three streets away when it runs out. At the mouth of the east gallery, where the mains run on under the Gadrobi District, the one with the lantern holds a stoppered phial in his other hand, upright and well away from his body, the way you'd carry a cup filled to the brim.
 
 They look up.
 

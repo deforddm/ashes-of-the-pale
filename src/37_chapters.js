@@ -118,7 +118,7 @@ function showChapterEnd(){
 const showEnd = showChapterEnd;
 function startChapter(n){
   const CH = CHAPTERS[n]; if (!CH) return showTitle();
-  S.chapter = n; S.card = null; S.cardPool = null; refillTricks(); S.scene = 'chintro'; S.node = null; S.bg = null; S.battle = null; S.bopt = null;
+  S.chapter = n; S.card = null; S.cardPool = null; refillTricks(); S.wounds = null; S.gods = {ch:n, used:[]}; S.scene = 'chintro'; S.node = null; S.bg = null; S.battle = null; S.bopt = null;
   if (n >= 1) { const c = JSON.parse(JSON.stringify(S)); delete c.chsnap; c.log = []; S.chsnap ??= {}; S.chsnap[n] = c; } // replays start from here
   S.area = CH.area.id; S.pos = {...CH.area.start}; S.trail = [[-1,0],[1,0],[-1,1],[0,1],[1,1],[0,-1]].map(([dx,dy]) => ({x:S.pos.x+dx, y:S.pos.y+dy})); S.log = [];
   save(); showChapterIntro();

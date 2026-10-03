@@ -38,7 +38,7 @@ const TPL = {
     get quest(){ return squadQuest('tuft', `Something happened on the High Mage's staff that her transfer letter did not mention. Nobody has asked her what. The journal in the tunnels may answer it for them.`); },
     banter:[`She has taken to standing where you can't see her when she casts. It isn't tactical.`,`"The cards say nothing about you, Sergeant. I checked. That's a compliment from the Deck."`,`"When I was cadre, they used us like munitions. You use me like a marine. I'd like to keep it that way."`],
     rel:{brisk:'Stays behind the shield without being told. Brisk noticed.',kettle:'The only one she talks to after dark.',ohl:'He came closest to asking. She said "not yet" before he had finished. He has not tried again.',ellis:'Waits for her to say when to put the cards away. Ellis will not draw, but she watches every reading, and she always knows when.'}},
-  ohl:{name:'Ohl',role:'Healer · Denul',sig:'O',col:'#7fb394',hp:16,ac:13,atk:2,dmg:[1,6,0],rng:1,mv:4,init:0,st:{might:1,wits:3,guile:0},ab:['mend','salve'],magic:true,
+  ohl:{name:'Ohl',role:'Healer · Denul',sig:'O',col:'#7fb394',hp:16,ac:13,atk:2,dmg:[1,6,0],rng:1,mv:4,init:0,st:{might:1,wits:3,guile:0},ab:['mend','wash','stanch','salve'],magic:true,
     epithet:'Denul is a standing argument with Hood.',origin:'Ehrlitan, Seven Cities',age:58,service:'Twenty-two years, three armies',height:'Stooped. Was tall once and remembers it.',
     weapon:'A cudgel he calls a walking stick, and Denul, which he calls an argument',armour:'A healer\'s robe over an old hauberk. The robe has been washed. The hauberk has not',
     bio:`Old and patient, out of Seven Cities. Says Denul is less a warren than a standing argument with Hood, and that he is losing it one soldier at a time, but slowly. His hands do not shake. His voice does, sometimes, at night.`,
@@ -169,10 +169,32 @@ const BATTLES = {
   deserters:{title:'North sapper tunnel',warrenText:'Warrens steady down here.',warren:{meanas:1,denul:1},music:'battle',
     map:["..#..#..","........",".##....#","........","...##...","........","#.......","..#..##.","........","........"],
     party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-    foes:[['deserter',1,1],['deserter',4,1],['deserter',6,1],['xbow',3,0]],xp:100,after:'deep1'},
-  stone:{title:'Collapsed junction',warrenText:'Kurald Galain seeps in · Meanas surges · Denul falters',warren:{meanas:1.5,denul:0.6},dark:true,music:'dark',
-    map:["#......#","..#..#..","........","........",".#....#.","........","...##...","........","........","#......#"],
+    foes:[['deserter',1,1],['deserter',4,1],['deserter',6,1],['xbow',3,0]],xp:100,after:'deep1',
+    /* the second ground: Moreau's gallery, shored lanes between the posts, a crossbow at the far end, and one of them round behind by the old crawl */
+    stage2:{title:'The officers\' gallery',
+      text:()=>`Past the timber the tunnel bends into a gallery, shored and dry, where a row of officers came down the night the sky fell to watch the mines laid, and stayed. Somebody has laid them out along the wall. Somebody has cut every purse-string.${SQUAD().includes('ohl') ? ` Ohl looks along the faces. He knows two of them. He doesn't say which.` : ''}
+
+${S.f.p_desertHalf ? `The two who backed away into the dark didn't run. They went to fetch their sergeant: a grey man with his badge cut off clean, who puts down the purse he was counting and picks up a sword instead.` :
+  S.f.p_garrowCrossed ? `Their sergeant is a grey man with his badge cut off clean. "One of mine's gone up the tunnel with Garrow's name in his mouth," he says. "So nobody's going up after him."` :
+  S.f.noisy ? `Your sapper's sharper told the whole gallery you were coming. Their sergeant, a grey man with his badge cut off clean, has had time to pick his ground, and he has picked it well.` :
+  `Their sergeant is a grey man with his badge cut off clean, counting a dead captain's purse by a stub of candle. He finishes counting before he stands.`} ${S.f.knowDeserters ? `Garrow gave you his name at the pits. Moreau.` : `Somebody behind him calls him Moreau.`}`,
+      map:["#..##..#","#......#","#.#..#.#","#......#","#.#..#.#","#......#","#.#..#.#","#......#","##....##","#......."],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+      foes:[['moreau',3,1],['deserter',1,3],['xbow',5,0]],
+      waves:[{round:2,foes:[['deserter',7,9]],text:'One of them has come round by the old sapper crawl. He is behind you.'}],xp:50}},
+  /* the approach first, the Stonebound second: the junction is the prologue's climax and Varrow's satchel has to follow it directly,
+     so the extra ground is the last thirty paces of tunnel, where Kurald Galain has pooled and the shades come off the walls */
+  stone:{title:'The drowned stretch',warrenText:'Kurald Galain pools here · Meanas stirs · Denul thins',warren:{meanas:1.3,denul:0.8},dark:true,music:'dark',
+    map:["##....##","##....##","........","##....##","##.#..##","##....##","........","##....##","##....##","##....##"],
     party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-    foes:[['stone',3,2],['shade',1,3],['shade',6,3]],xp:150,after:'journal'},
+    foes:[['shade',2,0],['shade',5,1],['shade',3,3]],
+    waves:[{round:2,foes:[['shade',0,6],['shade',7,6]],text:'The dark comes out of the side passages, low, on both flanks.'}],xp:50,after:'journal',
+    stage2:{title:'Collapsed junction',warrenText:'Kurald Galain seeps in · Meanas surges · Denul falters',warren:{meanas:1.5,denul:0.6},
+      text:()=>`The last shade goes back into the dark it came out of, and the dark lets it. The lanterns have gone the colour of weak tea. Ahead, the sapper tunnel opens into the junction, and Varrow is three paces inside it, under his beam, with the strap still wrapped round his hand.
+
+You are halfway to him when the floor in the middle of the junction stands up.${S.f.noisy ? ` It was never asleep. It let you come this far.` : ''}${SQUAD().includes('brisk') ? ` Brisk's shield comes up. "Sergeant."` : ''}`,
+      map:["#......#","..#..#..","........","........",".#....#.","........","...##...","........","........","#......#"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+      foes:[['stone',3,2],['shade',1,3],['shade',6,3]],xp:150}},
 };
 

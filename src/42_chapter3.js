@@ -3,6 +3,9 @@
 const c3KnivesOpt = pre => { const f = S.f, o = pre ? {pre:true} : {};
   const s = f.c3_lieHeld ? (f.c3_lieThin ? null : 'p') : f.c3_lied ? 'e' : null; if (s) o.surprise = s;
   if (f.c3_lieDeep) o.drop = [3]; return o; };
+/* up the alley from the crossing: on the second night the big Gadrobi from the gate is waiting at the dogleg, once */
+const c3Arrive = to => { if (to === 'lane') { startExplore('daru_lane'); if (!S.f.c3_lane) talk('c3_lane_arrive'); } else { startExplore('daru_street'); talk('c3_daru_arrive'); } };
+const c3Up = to => () => { if (S.f.c3_workDone && !S.f.c3_cousins) { S.f.c3_upTo = to; return talk('c3_cousins'); } c3Arrive(to); };
 const CH3 = {
   title:'Blue Fire', number:'Three',
   intro:{loc:'Darujhistan', sub:'The Gadrobi District · dusk', cap:'Blue lamps coming on one at a time along the walls, and above the lake a mountain that nobody looks at.',
@@ -97,17 +100,45 @@ const CH3 = {
       map:["#..##..#","........","..#..#..","........","#......#","........","..#..#..","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['cutpurse',1,1],['cutpurse',6,1],['cutpurse',4,3],['bruiser',3,1],['bruiser',5,0]], xp:160, after:'c3_after_cutpurses',
-      waves:[{round:2, foes:[['cutpurse',1,0],['cutpurse',6,0]], text:'Two more drop off the wall at the far end of the lane.'}] },
+      waves:[{round:2, foes:[['cutpurse',1,0],['cutpurse',6,0]], text:'Two more drop off the wall at the far end of the lane.'}],
+      /* the mule bolts: a hayloft crossbow over open ground, and one narrow gate to get in by */
+      stage2:{ title:'The carters\' yard behind the gatehouse', warrenText:'Straw, dung and wet stone · the blue lamps hiss over the wall · warrens steady',
+        text:()=>{ const m = S.f.c2_wagon ? 'Pell' : 'the mule'; return `The lane is yours. The wagon isn't. Somewhere in the noise ${S.f.c2_wagon ? 'Pell the mule' : 'the mule'} decided he had been reached for once too often, and went: out of the arch and hard right through the gate of the carters' yard behind the gatehouse, wagon, crate and all. The rest of the lane's people were in the yard. They had been waiting for something like this, and they aren't fussy about what.
+
+A crossbow in the hayloft. A Gadrobi the size of a door with one hand on the bridle and ${m}'s teeth in his other sleeve. ${SQUAD().includes('kettle') ? `Kettle, white to the lips: "That's a *Moranth crate* on a *bolting mule*, Sergeant." She is already running.` : `Nobody says *Moranth crate* out loud. Nobody has to.`}`; },
+        map:["...#....","...#.,..","##.#.##.","........",".##...,.","......##","...,....","###..###","........","#......#"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['c3_loftbow',1,0],['bruiser',5,1],['cutpurse',7,3],['cutpurse',0,5],['cutpurse',6,6]] } },
     knives:{title:'The alley behind the dye-shop', warrenText:'No lamps back here · Meanas leans into the dark · Denul holds', warren:{meanas:1.3,denul:1}, dark:true, music:'dark', style:'city',
       map:["##....##","........",".#....#.","........","...##...","........","#......#","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['knife',1,1],['knife',6,1],['knife',2,3],['knife',5,3],['clawknife',3,0]], xp:200, after:'c3_after_knives',
-      waves:[{round:2, foes:[['knife',2,0],['knife',5,0]], text:'Two more come over the wall behind the racks.'}] } },
+      waves:[{round:2, foes:[['knife',2,0],['knife',5,0]], text:'Two more come over the wall behind the racks.'}],
+      /* the alley runs through the vat-house: lanes between the vats, poles that reach across them, a crossbow on the gallery stair */
+      stage2:{ title:'The Blue Hand\'s vat-house', warrenText:'Steam off the vats · blue light through the roof-slats · Meanas leans into the dark · Denul holds',
+        text:()=>`The blue at the far end of the alley is the street, and between you and the street, with its doors open at both ends, is the Blue Hand's vat-house: the alley runs straight through it. Of course it does. Madryn has had eleven years to decide where her alley goes.
+
+Inside, steam, and a sour mineral stink, and vats sunk in the floor like wells, indigo and madder, and the ones who could still run, waiting, with two big men in leather aprons holding the long poles they stir the cloth with. Up on the drying-gallery, among the hanging cloth, a crossbow. ${SQUAD().includes('ellis') ? `"Roof opposite," Ellis says, as if finishing a sentence she started at the foot of the street.` : SQUAD().includes('kettle') ? `Kettle, eyeing the vats: "Nobody shove me in one of those. I'll be blue till Hood comes for me, and he'll laugh."` : `Nobody says anything. The poles come up.`}`,
+        map:["#...#...","....#...","....##.#",".##.....",".##..##.",".....##.","..,..,..","#..##..#","........","#......#"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['c3_roofwatch',6,0],['c3_dyer',3,4],['c3_dyer',7,5],['knife',1,1],['knife',7,3]] } },
+    /* the second night, the dogleg in the alley up to Daru: the big one from the gate, his cousins, and a choke held under sling-stones */
+    c3_toughs:{title:'The dogleg in the alley', warrenText:'Blind walls · one lantern on the cobbles · warrens steady', warren:{meanas:1,denul:1}, music:'battle', style:'city',
+      map:["#......#","#.#..#.#","#......#","####..##","#......#","#.##...#","#......#","##..,..#","#......#","##....##"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+      foes:[['c3_grudge',4,4],['bruiser',3,1],['bruiser',6,2],['c3_slinger',1,0],['c3_slinger',6,0]], xp:160, after:'c3_after_cousins',
+      waves:[{round:3, foes:[['cutpurse',2,9],['cutpurse',5,9]], text:'Two thin ones come up the alley from the crossing end, knives held the Daru way. The lane at the gate has friends too.'}] } },
 
   foes:{ cutpurse:{name:'Daru cutpurse', sig:'c', hp:11, ac:12, atk:4, dmg:[1,6,1], rng:1, mv:5, init:3, verb:'stabs at'},
          bruiser:{name:'Gadrobi bruiser', sig:'G', hp:22, ac:13, atk:5, dmg:[1,10,2], rng:1, mv:4, init:1, verb:'swings a cudgel at'},
          knife:{name:'Hired knife', sig:'k', hp:13, ac:14, atk:5, dmg:[1,6,2], rng:1, mv:6, init:4, verb:'cuts at'},
-         clawknife:{name:'Claw', sig:'C', hp:26, ac:15, atk:6, dmg:[1,8,3], rng:1, mv:6, init:5, boss:true, verb:'opens'} },
+         clawknife:{name:'Claw', sig:'C', hp:26, ac:15, atk:6, dmg:[1,8,3], rng:1, mv:6, init:5, boss:true, verb:'opens'},
+         /* v3.12: the second grounds and the dogleg */
+         c3_loftbow:{name:'Hayloft crossbow', sig:'X', kind:'xbow', hp:10, ac:12, atk:4, dmg:[1,8,0], rng:5, mv:3, init:2, sk:['pin'], verb:'shoots at'},
+         c3_roofwatch:{name:'Roof-watcher', sig:'X', kind:'xbow', hp:12, ac:13, atk:5, dmg:[1,8,1], rng:5, mv:3, init:3, sk:['pin'], verb:'puts a bolt into'},
+         c3_dyer:{name:'Dyer\'s man', sig:'P', kind:'bruiser', hp:20, ac:12, atk:5, dmg:[1,8,2], rng:1, mv:4, init:2, sk:['reach','shove'], verb:'drives a vat-pole into'},
+         c3_grudge:{name:'The big one from the lane', sig:'G', kind:'bruiser', hp:30, ac:13, atk:6, dmg:[1,10,2], rng:1, mv:4, init:1, boss:true, sk:['shove'], verb:'brings his cudgel round at'},
+         c3_slinger:{name:'Gadrobi slinger', sig:'s', kind:'thug', hp:9, ac:12, atk:4, dmg:[1,4,1], rng:4, mv:5, init:3, sk:['pin'], verb:'slings a stone at'} },
 
   gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
     daruknife:{name:'Daru duelling knife', slot:'weapon', who:['sgt','ellis'], atk:1, line:'Long, thin, with a basket of brass wire round the grip. Far too good for the man who was carrying it. He had not stolen it recently; he had stolen it well.'},
@@ -128,6 +159,9 @@ const CH3 = {
     else if (f.c3_watchYoung) x.push('A young Watchman in the Daru District counted the road crew on his fingers, twice, and got the same number both times.');
     if (f.c3_blueFlash) x.push('The hole under the Gadrobi crossing breathed blue fire once, the height of a house. Whiskeyjack told the warden it was the gas.');
     if (f.c3_lieDeep) x.push('Madryn underlined the word north. A hired knife spent the night on the lakefront, watching the Council\'s houses for two men who never came.');
+    if (f.c3_cousins === 'paid') x.push('The big Gadrobi from the lane bought his cousins a round with the Fourth\'s ten silver, and tells it as a story in which he won.');
+    else if (f.c3_cousins === 'faced') x.push('The big Gadrobi from the lane tells his cousins it was the gas. In the Gadrobi District, it is usually the gas.');
+    else if (f.c3_cousins === 'fought') x.push('The big Gadrobi from the lane has stopped telling the story of the road crew. His cousins tell it for him, worse.');
     return x; },
 
   dlg:{
@@ -293,7 +327,9 @@ ${SQUAD().includes('brisk') ? `Brisk's shield was off her back before the first 
       ch:[{t:'"Brisk."', go:()=>startBattle('cutpurses', S.f.c3_pallickTip ? {surprise:'p'} : {})},
           {t:'Kettle has a sharper in her hand already.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('cutpurses', S.f.c3_pallickTip ? {pre:true, surprise:'p'} : {pre:true})}]}),
     c3_after_cutpurses:()=>({sp:'The lane by the Worry Gate', scene:'city_street', fx:()=>{ S.f.c3_gateFought=1; gain('daruknife'); }, txt:
-`It's short. City fights are; there's nowhere to run in a lane except the ends, and there are Malazans at both of them. The bigger of the two Gadrobi goes down last and hardest and gets up again on his hands and knees and crawls, with great dignity, into the dark, and nobody stops him.
+`It isn't long, for all that. City fights aren't; there's nowhere to run in a lane or a yard except the ends, and there are Malazans at both of them. The bigger of the two Gadrobi goes down last and hardest and gets up again on his hands and knees and crawls, with great dignity, into the dark, and nobody stops him.
+
+${S.f.c2_wagon ? 'Pell' : 'The mule'} is standing in the middle of the carters' yard between the shafts, eating somebody's hay, with the air of an animal who did all of it on purpose. The crate is still under the oilcloth.${SQUAD().includes('kettle') ? ' Kettle checks the seals twice anyway.' : ''}
 
 One of the thin ones has left his knife behind, on the cobbles, under the wagon. It's a duelling knife, long and fine, with a brass-wire basket round the grip. No cutpurse ever bought it. ${SQUAD().includes('ellis') ? `Ellis picks it up, weighs it, and hands it to you hilt first. "Daru noble's. Stolen from a man who'll have had the thief killed by now. It's a lovely thing. Don't wear it where a noble can see."` : `Brisk picks it up and hands it to you hilt first. "Pretty. Too long for a lane. Somebody's going to miss that."`}
 
@@ -590,7 +626,7 @@ Silence. Then, from above, from a bucket by the barrier, one word.
 
 Nothing comes back down the ladder. Nothing at all. That's worse.`,
       ch:[{t:'Up the ladder.', go:'c3_work_done'}]}),
-    c3_work_done:()=>({sp:'The second night', scene:'city_street', fx:()=>{ S.f.c3_workDone=1; S.f.c3_night2=1; gain('roadleather'); const up = gainXP(60); note('+60 experience. Road crew work.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
+    c3_work_done:()=>({sp:'The second night', scene:'city_street', fx:()=>{ S.f.c3_workDone=1; S.f.c3_night2=1; rest('Sleep till noon on the chandler\'s roof. Mallet looks at everyone\'s cuts on his way past with the bread, and says nothing, which from Mallet is a clean bill.'); gain('roadleather'); const up = gainXP(60); note('+60 experience. Road crew work.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
 `You sleep on the chandler's roof, all of you in a row under the eaves, and wake at noon to the sound of the city: carts and bells and a man shouting about fish, and under it, if you listen, the hiss. Mallet brings bread. Fiddler throws a crew jerkin at you, oiled leather with a guild mark burned in the back. "Look the part. Nobody looks twice at a man in one of those. Nobody looks *once*."
 
 Then dusk, and the lamps come on, street by street, and it's the second night.
@@ -962,18 +998,79 @@ The alley at the east end of the crossing runs up into the Daru District. It's t
     /* ---- exit: the alley east, to Daru ---- */
     c3_to_daru:()=> S.f.c3_msg ? {sp:'The alley east', txt:
 `The alley climbs out of the Gadrobi crossing between two blind walls. At the top, where the cobbles change, the Phoenix's painted bird hangs over the first door in Daru; past it the street climbs on, and the lamps are closer together and the doors have brass on them. After the eleventh bell.`,
-      ch:[{t:'Up into the Daru District.', go:()=>{ startExplore('daru_street'); talk('c3_daru_arrive'); }},
-          {t:'The Phoenix, at the top of the alley.', go:()=>{ startExplore('daru_lane'); if (!S.f.c3_lane) talk('c3_lane_arrive'); }},
+      ch:[{t:'Up into the Daru District.', go:c3Up('daru')},
+          {t:'The Phoenix, at the top of the alley.', go:c3Up('lane')},
           {t:'Not yet.'}]} : S.f.c3_reported ? {sp:'The alley east', txt:
 `The alley climbs out of the Gadrobi crossing between two blind walls, and at the top of it the cobbles change: smaller, squarer, laid by somebody who was paid properly. The Daru District starts there. So does the Phoenix, on the first corner, with a painted bird over its door and noise coming out round the edges of it.${S.f.c3_workDone && SQUAD().includes('ellis') ? `
 
 Ellis isn't at your shoulder, where she usually is. The last you saw of her, she was sitting on the lip of the dig.` : ''}`,
-      ch:[{t:'Up to the Phoenix.', go:()=>{ startExplore('daru_lane'); if (!S.f.c3_lane) talk('c3_lane_arrive'); }},
+      ch:[{t:'Up to the Phoenix.', go:c3Up('lane')},
           {t:'Not yet.'}]} : {sp:'The alley east', txt:
 `The alley climbs toward the Daru District, where road crews have no business after dark. Not yet. You've no reason to be up there, and Whiskeyjack would ask what the reason was.${S.f.c3_workDone && SQUAD().includes('ellis') ? `
 
 Ellis isn't at your shoulder, where she usually is. The last you saw of her, she was sitting on the lip of the dig.` : ''}`,
       ch:[{t:'Not yet.'}]},
+
+    /* ---- the dogleg: the big one from the gate, on the second night (once; see c3Up) ---- */
+    c3_cousins:()=>({sp:'The dogleg in the alley', scene:'city_street', txt:
+`Halfway up, where the alley doglegs between the blind walls and neither the crossing nor the Phoenix can see round the bend, somebody has set a lantern on the cobbles, turned low, and an upturned bucket behind it, and is sitting on the bucket.
+
+It's the big Gadrobi from the lane by the Worry Gate. He has a rag tied round his head and his cudgel across his knees, the way Whiskeyjack holds a sword, and you have the uncomfortable feeling he spent the day across the crossing, watching how. Behind him, filling the elbow of the alley: his cousins. You can tell they're his cousins. They have his face, at various stages of being punched. Two more at the top of the bend have slings hanging loose from their fists. The Gadrobi have slings because the Gadrobi have goats.
+
+He gets up. It takes a while; there is a great deal of him.
+
+"Road crew." Reasonably, the way he said it at the gate. "Last night you cost me a wagon I'd as good as sold, a night's work, and my good name in the Gadrobi District, which wasn't much of a name, but it was the one I had." He looks the Fourth over, and arrives at ${SQUAD().length === 6 ? 'six' : 'five'}, and checks it. "Ten silver, and we never met. Or no silver, and we meet."
+
+${SQUAD().includes('kettle') ? `Kettle, very low: "He's been *practising* that."` : `Somebody behind you lets a breath out through the nose.`}`,
+      ch:[{t:'"No silver."', go:()=>startBattle('c3_toughs')},
+          {t:'Pay him. Ten silver, and never met.', tag:'10 silver', req:()=>S.silver>=10, fx:()=>{ S.silver-=10; AUDIO.play('coin'); }, go:'c3_cousins_paid'},
+          {t:'Walk up to the big one. Make him want to go home.', check:['might',15],
+            edges:id => [id === 'brisk' && ['heavy infantry', 2], id === 'kettle' && S.inv.cusser > 0 && ['a cusser, held up to his lantern', 2]],
+            go:'c3_cousins_faced', fail:'c3_cousins_fail'}]}),
+    c3_cousins_paid:()=>({sp:'The dogleg in the alley', fx:()=>{ S.f.c3_cousins='paid'; if (SQUAD().includes('kettle')) loy('kettle',-1); }, txt:
+`He counts it. He counts it twice, the way everyone in this country counts the Fourth: arrives at ten, and checks it. Then it goes inside his shirt, and he picks up his lantern, and his bucket, and says, "Never met," and goes off down the dogleg toward the Gadrobi with his cousins behind him in a line, like ducklings that have been in a great many fights.
+
+${SQUAD().includes('brisk') ? `Brisk has the ledger out before he's round the bend. "Ten silver," she says, writing. "Alley." She shows you the line. She doesn't say anything else, and doesn't need to.` : ''}
+
+${SQUAD().includes('kettle') ? `Kettle, outraged, under her breath: "We could have *taken* them."${SQUAD().includes('brisk') ? ` "We could," says Brisk, putting the ledger away. "Then we'd be taking them again tomorrow, with more cousins."` : ''}` : ''}`,
+      ch:[{t:'On up the alley.', go:()=>c3Arrive(S.f.c3_upTo)}]}),
+    c3_cousins_faced:()=>({sp:'The dogleg in the alley', fx:()=>{ S.f.c3_cousins='faced'; const up = gainXP(40); note('+40 experience. Nobody had to.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
+`${by({
+  brisk:`Brisk walks up the alley until she is standing much too close to him, and sets her shield down on the cobbles between them, edge first, so that it rings off both walls, and leans on it. "Ninth Regiment," she says. "Heavy." It's the whole of what she says. He looks at the shield. He looks at the arm that goes with it.`,
+  kettle:S.inv.cusser > 0 ? `Kettle takes a cusser out of her satchel, clay-grey and round, and holds it up to his lantern so he can see it properly, and tells him, in the bright helpful voice of somebody explaining a recipe, exactly what it would do to the alley, and the walls, and the cousins, in order, by name if he'd like to give her the names. He doesn't give her the names.` : `Kettle opens her satchel and holds it out to him so he can look in. It's dark in there. She lets him look for a long time, smiling, and he finds he doesn't want to know.`,
+  ohl:`Ohl walks up to him, looks at the rag round his head, tuts, unwinds it, looks at the cut under it, and winds it back on properly, tight, with a surgeon's knot. "That wants a stitch," he says. "Not tonight. Tonight you go home and lie down." The big man stands there and lets him, the way you'd let a priest.`,
+  tuft:`Tuft doesn't walk up to him. She looks at him the way she looks at a card she has already turned, and says, very quietly, "Go *home*." His lantern chooses that moment to gutter, and burn blue, and go out. It's the gas. It's usually the gas. He doesn't know that.`,
+  ellis:`Ellis walks up to him with her bow unstrung in her good hand and says one sentence, low, that nobody else hears. He looks at her glove. He goes grey under the bruises.`,
+  sgt:`You walk up to him. You don't hurry. You stop where the cudgel can reach you, and stand there, and let him do the arithmetic, and watch him get it right.`,
+  _:`{who} walks up to him and stands there until he does the arithmetic.`})}
+
+He sits back down on his bucket. "Another night," he says, to the lantern, which is what men say in the Gadrobi District when they mean *never*, and his cousins go off the walls and down the dark side of the dogleg like water off a roof.${SQUAD().includes('kettle') && ROLL().who !== 'kettle' ? `
+
+Kettle, going past him, very politely: "Goodnight." He doesn't answer. She is pleased about it all the way to the top.` : ''}`,
+      ch:[{t:'On up the alley.', go:()=>c3Arrive(S.f.c3_upTo)}]}),
+    c3_cousins_fail:()=>({sp:'The dogleg in the alley', txt:
+`${by({
+  brisk:`Brisk sets her shield down on the cobbles, edge first, so that it rings. He looks at it with real interest, the way you'd look at a door you mean to kick in.`,
+  kettle:`Kettle holds up ${S.inv.cusser > 0 ? 'a cusser' : 'her open satchel'} and starts to explain. He lets her get as far as the walls.`,
+  tuft:`Tuft tells him to go home, quietly, and he leans down to hear her better, and smiles.`,
+  ohl:`Ohl tells him the cut on his head wants a stitch. He agrees that it does, and that somebody's going to pay for it.`,
+  ellis:`Ellis says her one sentence, low. He listens to it with his head on one side, and shrugs, which is not what that sentence is for.`,
+  sgt:`You walk up to him and stand there. He looks back, and weighs it, and comes down on the wrong side.`,
+  _:`{who} walks up to him and stands there. He looks back, and weighs it, and comes down on the wrong side.`})}
+
+Then he laughs. It's a good laugh, big and real, and it's the signal: the first sling-stone comes off the top of the bend before he has finished laughing.`,
+      ch:[{t:'Fight.', go:()=>startBattle('c3_toughs', {surprise:'e'})}]}),
+    c3_after_cousins:()=>({sp:'The dogleg in the alley', scene:'city_street', fx:()=>{ S.f.c3_cousins='fought'; }, txt:
+`The big one goes down last and hardest, the way he did at the gate, and gets up the way he did at the gate: onto his hands and knees, then his feet, then off down the dogleg toward the Gadrobi with enormous dignity and one hand on the wall. He stops for his bucket. Nobody stops him. His cousins have already gone the way cousins go, over the walls, carrying each other.
+
+${SQUAD().includes('brisk') ? `Brisk is looking back down the alley, past the bend, to where the brazier at the crossing throws a little orange on the walls. "He heard that," she says. "Whiskeyjack. He'll not ask."` : ''}
+
+${SQUAD().includes('kettle') ? `Kettle picks a sling-stone out of her collar: river-smooth, the size of a quail's egg. She looks at it. She puts it in the satchel, with the cussers. You watch her decide not to name it, and fail.` : ''}
+
+${SQUAD().includes('ohl') ? `Ohl has a cousin by the chin, the one who was too slow over the wall, and is looking at his split lip by the lantern. "Not on the list," he says, satisfied, and lets him go.` : ''}
+
+At the top of the alley, the cobbles change.`,
+      ch:[{t:S.f.c3_upTo === 'lane' ? 'Up to the Phoenix.' : 'Up into the Daru District.', go:()=>c3Arrive(S.f.c3_upTo)}]}),
 
     /* ---- the top of the alley: the Phoenix ---- */
     c3_lane_arrive:()=>({sp:'The Daru District', scene:'city_street', fx:()=>{S.f.c3_lane=1;}, txt:
@@ -1257,9 +1354,9 @@ ${SQUAD().includes('ellis') ? `Ellis, very quietly: "The one at the end is Claw.
       ch:[{t:'"Shields. Close up."', go:()=>startBattle('knives', c3KnivesOpt(false))},
           {t:'Kettle rolls a sharper down the alley.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('knives', c3KnivesOpt(true))}]}),
     c3_after_knives:()=>({sp:'The alley behind the dye-shop', scene:'city_street', fx:()=>{ S.f.c3_knivesFought=1; gain('lampchip'); }, txt:
-`The hired ones don't die well or badly. Two of them run, and one of them doesn't get up, and wet indigo runs over his hand and into the gutter, and the gutter takes it down to the street where it will go blue into somebody's well.
+`The hired ones don't die well or badly. The ones who can still run go out through the vat-house's street door, and one of them doesn't get up, and wet indigo runs over his hand and into the gutter, and the gutter takes it down to the street where it will go blue into somebody's well. The men in aprons have gone back to being dyers. Tomorrow one of them will be stirring a vat, and won't know you.
 
-The Claw is not among them. There's blood on the cobbles where he was, and more on the courtyard wall, and a smear of it at the top of the wall where he went over, and nothing after. He was hurt. He did the arithmetic. He left.
+The Claw is not among them. There's blood on the cobbles back in the alley where he was, and more on the courtyard wall, and a smear of it at the top of the wall where he went over, and nothing after. He was hurt. He did the arithmetic. He left.
 
 Round the dead one's neck, on a cord, a chip of blue lamp-glass. Daru knives wear them for luck. ${SQUAD().includes('kettle') ? `Kettle cuts it off with her knife and holds it up to the light from the street. "Pretty," she says. "Didn't work."` : `You cut it free. It's warm from him.`}
 
@@ -1267,7 +1364,7 @@ ${SQUAD().includes('brisk') ? `Brisk is looking at the blood on the top of the w
 
 ${SQUAD().includes('ohl') ? `Ohl is kneeling by the dead knife with his hands on the man's chest, though there's nothing to argue with Hood about. "Not ours," he says. "Not on the list." And then, after a moment, as if disappointed in himself: "Not on *a* list. That's worse."` : ''}
 
-${S.f.c3_watchYoung ? `At the far end of the alley, against the blue from the street, the young Watchman from the corner is standing with his pike in both hands. He has seen all of it. He looks at the dead knife, and at the blood on the wall, and at you, and counts you again, and gets the same number. Then he isn't there.
+${S.f.c3_watchYoung ? `In the vat-house's street door, against the blue from the street, the young Watchman from the corner is standing with his pike in both hands. He has seen all of it. He looks at the dead knife, and at the blood on the wall, and at you, and counts you again, and gets the same number. Then he isn't there.
 
 ` : ''}Up above, in the room over the courtyard, the lamp has gone out.`,
       ch:[{t:'The street.', go:()=>startExplore()}]}),

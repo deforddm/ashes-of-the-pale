@@ -9,7 +9,7 @@ let walking = false;
 
 function newState(name){
   name = name || 'Hask'; return migrate({v:1, sid:sidFor(name), name, scene:'intro', node:null, bg:null, silver:15, xp:0, lvl:1, card:null,
-    inv:{sharper:2, burner:1, cusser:1, salve:2, smoker:0},
+    inv:{sharper:2, burner:1, cusser:1, salve:1, smoker:0},
     loy:{brisk:0,kettle:0,tuft:0,ohl:0}, f:{}, pos:{x:5,y:8},
     trail:[{x:4,y:8},{x:6,y:8},{x:4,y:9},{x:5,y:9}], log:[], ending:null, battle:null, bopt:null});
 }
@@ -32,9 +32,9 @@ function migrate(s){
   return s;
 }
 /* difficulty, per sergeant: Story (gentler foes, easier checks), Soldier (as written), Bridgeburner (harder). Changeable any time. */
-const DIFFS = {story:{name:'Story', hp:.75, dmg:.7, atk:-1, dc:-2, blurb:'Softer fights and easier checks. For the story.'},
-  soldier:{name:'Soldier', hp:1, dmg:1, atk:0, dc:0, blurb:'The book as written.'},
-  bridgeburner:{name:'Bridgeburner', hp:1.25, dmg:1.2, atk:1, dc:1, blurb:'Tougher foes that hit harder, and less forgiving checks.'}};
+const DIFFS = {story:{name:'Story', hp:.75, dmg:.7, atk:-1, dc:-2, blurb:'Softer fights, easier checks, enemies without tricks, and the gods always answer. For the story.'},
+  soldier:{name:'Soldier', hp:1, dmg:1, atk:0, dc:0, blurb:'The book as written. Enemies have their tricks; a god answers once a chapter.'},
+  bridgeburner:{name:'Bridgeburner', hp:1.25, dmg:1.2, atk:1, dc:1, carry:true, blurb:'Tougher foes that hit harder, less forgiving checks, and wounds that carry from fight to fight until the squad rests.'}};
 const DIFF = () => DIFFS[(S && S.diff) || 'soldier'] || DIFFS.soldier;
 /* the count, kept on the save: the finale and the Deeds page read it */
 function tally(k, n = 1){ if (!S) return; S.stats ??= {}; S.stats[k] = (S.stats[k] || 0) + n; }

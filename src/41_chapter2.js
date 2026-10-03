@@ -8,6 +8,10 @@ const c2P = id => { const y = !(id && id !== 'sgt' && TPL[id] && SQUAD().include
   return {you:y, n:y ? 'you' : NAME(id), N:y ? 'You' : NAME(id), was:y ? 'were' : 'was', has:y ? 'have' : 'has', poss:y ? 'your' : NAME(id) + '\'s', them:y ? 'you' : he ? 'him' : 'her', they:y ? 'you' : he ? 'he' : 'she'}; };
 /* the same, for the chapter's end screen, which speaks of the sergeant in the third person */
 const c2Who = id => id && id !== 'sgt' && TPL[id] ? NAME(id) : 'the sergeant';
+/* Moreau's section ran from the north tunnels on Garrow's word in the prologue (desert_flee), so the men at the ridge are his */
+const c2Moreau = () => !!(S.f.garrowWord && !S.f.p_garrowCrossed);
+/* Brisk's ration count at dusk on day four, the same as she gave it at the horses */
+const c2Count = () => SQUAD().includes('ellis') ? 'Fifteen days, six' : 'Seventeen days, five';
 /* the outriders' answers: the talk (Guile), the ✦ song (Wits 16), Sethand's word, shields. Offered again if the song goes wrong. */
 const c2OutCh = () => [
   {t:'Through Sethand: you have come to bury her, not to take anything.', check:['guile',13], fx:()=>{ S.f.c2_outTalkTried=1; },
@@ -105,14 +109,53 @@ const CH2 = {
     barrow:{title:'The barrow', warrenText:'Something old under the stones · Meanas leans in · Denul holds', warren:{meanas:1.2,denul:1}, dark:true, music:'dark', open:true,
       map:["#..##..#","........","..#..#..","........","........",".#....#.","........","........","..#..#..","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['wight',2,1],['wight',5,1],['wight',3,3],['wight',6,4]], xp:140, after:'c2_after_barrow'},
+      foes:[['wight',2,1],['wight',5,1],['wight',3,3],['wight',6,4]], xp:140, after:'c2_after_barrow',
+      /* down the stair under the slab: a long stone room with burial niches in both walls, the squad coming up out of a two-wide stair mouth */
+      stage2:{title:'The burial chamber', warrenText:'Under the slab · the cold is older here · Meanas leans in · Denul holds', open:false,
+        text:()=>`The four are down, and the cold hasn't gone anywhere. It's coming up past the slab, and the slab isn't a slab: it's a lid, and something has pushed it a hand's width off a stair that goes down further than a barrow has any business going.
+
+${SQUAD().includes('brisk') ? `"Nothing at our backs," says Brisk, and goes down first, bent double, shield in front.` : `Nobody wants it at their backs.`}${SQUAD().includes('kettle') ? ` Kettle, behind her, very quietly: "There's another room." This time she doesn't sound pleased about it.` : ''}`,
+        map:["#.#..#.#","#......#","..#..#..","#......#","#..##..#","#......#","..#..#..","#......#","###..###","##....##"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['c2_keeper',4,1],['wight',0,2],['wight',7,6]],
+        waves:[{round:2, foes:[['wight',0,6]], text:'A niche you took for empty sits up.'}]}},
     outriders:{title:'The grass at night', warrenText:'Open ground · the light in the west throws two shadows', warren:{meanas:1.1,denul:1}, music:'battle', open:true,
       map:["........",".....#..","........","..#.....","........","........",".....#..","........","..#.....","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['rhivi',1,1],['rhivi',4,0],['rhivi',6,2]], xp:120, after:'c2_after_outriders'} },
+      foes:[['rhivi',1,1],['rhivi',4,0],['rhivi',6,2]], xp:120, after:'c2_after_outriders',
+      /* the curve falls back toward the light and forms again on a lit rise round the man in front; the riders hidden on the left come in on the flank */
+      stage2:{title:'The lit grass', warrenText:'Lit ground · the light close enough to read by',
+        text:()=>`The curve breaks and doesn't run. It falls back toward the light and forms again on a low rise where the grass is lit gold to the roots, and the man in front is in the middle of it now, bow strung, mouth shut.
+
+Sethand, behind you, has not drawn. "That one speaks for them. If he goes down, they will let you by." A breath. "I am telling you so you will know which one not to kill."${SQUAD().includes('ellis') ? ` Ellis, already moving: "The grass on the left. They'll come when we do."` : ''}`,
+        map:["..,..,..",".r....r.","........",",,..#...",",,......",",,....r.",",,......","........","..#.....","........"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['c2_front',4,1],['rhivi',6,2]],
+        waves:[{round:2, foes:[['rhivi',0,4]], text:'One of the riders in the grass on the left comes out of it at a run, low on his horse\'s neck.'}]}},
+    /* the new fight on the main road: Pale deserters waiting at the ridge for the wagon (c2_dusk). Avoidable by Guile 15 or ten silver. */
+    c2_deserters:{title:'The foot of the ridge', warrenText:'Dusk · tall grass · the shadows are long and Meanas likes them', warren:{meanas:1.1,denul:1}, music:'battle', open:true,
+      map:[",,,..r,,",",,..,,.,",".,,....,",",..#,,..","..,..,#,",",,......",".,..,,..","..W....,",",......,",",,....,,"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+      foes:[['c2_deserter',2,1],['c2_deserter',1,3],['c2_deserter',6,3],['c2_xbow',5,0]], xp:130, after:'c2_after_deserters',
+      /* up the slope to their camp on the crest: a broken line of thorn with two gaps, the sergeant in one, crossbows behind */
+      stage2:{title:'The crest', warrenText:'Full dark on the ridge · a cold fire-ring · thorn', dark:true, xp:70,
+        text:()=>`The ones in the grass are down, and the ones on the crest haven't come to help them, which tells you everything about who's in charge up there. The light is nearly gone. Up the slope, behind a broken line of thorn and rock, a crossbow ratchets, and a voice that isn't shouting gives an order you've given yourself.
+
+${SQUAD().includes('ellis') ? `Ellis: "Two gaps in the thorn. He's standing in the right-hand one." She doesn't say *he's good*. She doesn't have to.` : SQUAD().includes('brisk') ? `Brisk, looking at the thorn: "Two ways up. He'll be standing in one of them." She doesn't say *he's good*. She doesn't have to.` : ''}`,
+        map:["r..F..r.","........",",......,","##.##.##","........",".,....,.","...r....",",......,",",,....,,",",,....,,"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['c2_desertsgt',5,2],['c2_deserter',2,2],['c2_xbow',1,0],['c2_xbow',6,0]]}} },
 
   foes:{ wight:{name:'Barrow wight', sig:'w', hp:12, ac:13, atk:4, dmg:[1,8,1], rng:1, mv:4, init:1, verb:'claws at'},
-         rhivi:{name:'Rhivi outrider', sig:'R', hp:12, ac:13, atk:4, dmg:[1,6,2], rng:4, mv:6, init:3, verb:'looses at'} },
+         rhivi:{name:'Rhivi outrider', sig:'R', hp:12, ac:13, atk:4, dmg:[1,6,2], rng:4, mv:6, init:3, verb:'looses at'},
+         /* the barrow's own dead, on its bier under the slab: it never went out, so it never came back */
+         c2_keeper:{name:'Barrow-keeper', sig:'K', kind:'wight', hp:28, ac:14, atk:5, dmg:[1,10,2], rng:1, mv:3, init:1, boss:true, sk:['root'], verb:'closes a cold hand on'},
+         /* the one with a sergeant's tone in his voice (c2_outriders) */
+         c2_front:{name:'The man in front', sig:'M', kind:'rhivi', hp:22, ac:14, atk:5, dmg:[1,8,2], rng:4, mv:6, init:4, sk:['hitrun','pin'], verb:'looses at'},
+         /* Pale deserters, four days south and starving: Second Army kit with the badges cut away */
+         c2_deserter:{name:'Deserter', sig:'D', kind:'deserter', hp:13, ac:13, atk:4, dmg:[1,8,1], rng:1, mv:4, init:2, verb:'hacks at'},
+         c2_xbow:{name:'Deserter crossbow', sig:'X', kind:'xbow', hp:10, ac:12, atk:4, dmg:[1,8,1], rng:5, mv:3, init:2, sk:['pin'], verb:'shoots at'},
+         c2_desertsgt:{name:'Deserter sergeant', sig:'S', kind:'deserter', hp:24, ac:14, atk:5, dmg:[1,10,2], rng:1, mv:4, init:3, sk:['parry'], verb:'cuts at'} },
 
   gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
     barrowtorc:{name:'Barrow torc', slot:'trinket', who:null, hp:2, line:'A twist of black iron from a dead man\'s neck. It is heavier than it looks and colder than it should be. Tuft would not touch it.'},
@@ -136,6 +179,8 @@ const CH2 = {
     if (f.c2_songWrong) x.push(`The outriders call ${c2Who(f.c2_songWho)} horse-singer. Sethand says it is not an insult. He says it is not not one.`);
     if (f.c2_outToll === 'sharper' || f.c2_outToll === 'burner') x.push(`One of Kettle's ${f.c2_outToll}s is riding with the Rhivi. She wants it noted that it was a loan.`);
     if (f.c2_horseHow === 'botched' && SQUAD().includes('ellis')) x.push('The mare took two strokes. Ellis has written it down as one.');
+    if (f.c2_desTalked || f.c2_desPaid) x.push(`${c2Moreau() ? 'Moreau\'s section' : 'Eight deserters of the Second'} walked off a Rhivi ridge ${f.c2_desPaid ? 'ten silver richer' : 'on a word'}, south-west, toward the city. ${c2Moreau() ? 'That\'s twice. Garrow would want to know.' : 'Nobody in the Fourth has said where they think they went.'}`);
+    else if (f.c2_desFought && c2Moreau()) x.push('Garrow\'s word got Moreau out of the Pale and four days south. The Fourth was the fifth day.');
     return x; },
 
   dlg:{
@@ -335,15 +380,15 @@ Tuft, very quietly: "They're not undead. They're *worse* than undead. They're pa
       ch:[{t:S.f.c2_barrowLooked ? '"Shields. Take them as they stand."' : '"Shields. Back to the passage."', go:()=>startBattle('barrow', S.f.c2_barrowFour ? {surprise:'p'} : S.f.c2_barrowLooked ? {} : {surprise:'e'})},
           {t:'Kettle has a sharper in her hand.', tag:'uses 1 sharper', req:()=>S.inv.sharper>0, fx:()=>{S.inv.sharper--;}, go:()=>startBattle('barrow', S.f.c2_barrowFour ? {pre:true, surprise:'p'} : {pre:true})}]}),
     c2_after_barrow:()=>({sp:'The barrow', scene:'rhivi_barrow', fx:()=>{ S.f.c2_barrowFought=1; gain('barrowtorc'); }, txt:
-`When it's done they don't fall so much as stop. Four brown shapes on the floor, arranged wrong, and the cold going out of the chamber like a tide going out.
+`When it's done they don't fall so much as stop. Four brown shapes on the floor above, arranged wrong, and down here the big one folded across its own bier like a man who has sat down at the end of a long march. The cold goes out of the barrow like a tide going out.
 
-There's a torc on the slab that wasn't there before. Black iron. Nobody saw who put it down.
+There's a torc on the bier that wasn't there before. Black iron. Nobody saw who put it down.
 
-And in the corner where the last one stood, in the dust, a bronze badge. Malazan. Second Army. Kettle picks it up and reads it and hands it to Brisk without a word, which is a thing Kettle has never done in her life.
+And in the niche where the last one stood, in the dust, a bronze badge. Malazan. Second Army. Kettle picks it up and reads it and hands it to Brisk without a word, which is a thing Kettle has never done in her life.
 
 Brisk turns it over. Turns it back. "Ninth Regiment." Her voice is completely level. "Tav was Fourth. This isn't his."
 
-Ohl, from the passage: "Then it is someone's."`,
+Ohl, from the stair: "Then it is someone's."`,
       ch:[{t:'"Keep it. Wrong regiment. Right army."', fx:()=>{gain('secondbadge'); loy('brisk',1); S.f.c2_badge=1;}, go:'c2_barrow_badge'},
           {t:'"Leave it on the slab. Let the barrow have him."', fx:()=>{loy('ohl',1); loy('brisk',-1);}, go:'c2_barrow_leave'}]}),
     c2_barrow_badge:()=>({sp:'Brisk', txt:
@@ -601,15 +646,87 @@ Sethand, from his horse, to nobody: "The ridge, before full dark. I said not to 
 
     /* ---- exit: to the ridge ---- */
     c2_to_ridge:()=> S.f.c2_tocGone ? {sp:'East · the ridge', txt:
-`The ground rises ahead, not much, a long low back of land with the last light on it. Sethand is already up there with his horse's reins in his hand, looking west. He has been looking west all day.`,
-      ch:[{t:'Make camp on the ridge.', go:()=>{ startExplore('ridge'); talk('c2_ridge_arrive'); }},
+`The ground rises ahead, not much, a long low back of land with the last light on it. Sethand has ridden on to the foot of it and stopped there, off to one side of the ruts. He has been looking west all day. He isn't now. He's looking up at the crest.`,
+      ch:[{t:'Make camp on the ridge.', go:'c2_dusk'},
           {t:'Not yet.'}]} : {sp:'East · the ridge', txt:
 `Sethand is waiting by the ridge. ${S.f.c2_horseDone ? `Toc hasn't ridden yet.` : `Toc is still sitting with the horse.`} Whatever this is, it isn't finished, and you're the one who'll have to finish it.`,
       ch:[{t:'Not yet.'}]},
 
-    /* ---- the ridge: the fourth camp ---- */
-    c2_ridge_arrive:()=>{ const m = c2P(S.f.c2_barrowMissWho); return {sp:'The fourth camp', scene:'plain_night', fx:()=>{S.f.c2_ridge=1;}, txt:
-`Night on the ridge. Two tents, because Brisk will not sleep in one with Kettle and Kettle will not sleep in one without Tuft, and Ohl sleeps in the wagon, and you sleep where you can see all of it. The fire is small and Brisk built it. The stars are the wrong stars; they have been since Pale, and nobody has said so.
+    /* ---- the foot of the ridge: Pale deserters want the wagon (the chapter's road fight; talk, pay, or fight) ---- */
+    c2_dusk:()=>({sp:'The foot of the ridge', scene:'plain_dusk', txt:
+`Sethand doesn't turn round when the wagon comes up beside him. He's sitting his horse very still at the foot of the slope, and he hasn't taken his eyes off the crest.
+
+"Malazan." Quietly. "There are men on the hill. Yours. They have been watching the dead horses since noon, waiting for the one-eyed man to go, and now they are watching your wagon. I am telling you so you will know."
+
+${SQUAD().includes('ellis') ? `Ellis has stopped walking. "Eight," she says, without moving her lips. "Four in the grass by the ruts. Four on the crest: two crossbows, and one giving the orders." She has counted them twice. She is counting them again.` : `Then the grass by the ruts moves where there's no wind${SQUAD().includes('brisk') ? `, and Brisk's shield is off her back before anyone has said a word` : ''}.`}
+
+A voice from the crest, in Malazan, with a Second Army camp in every vowel: "That's far enough, Fourth. Leave the wagon and the mule and walk on. Nobody needs to be brave on a hill."
+
+${c2Moreau() ? `A man stands up on the crest against the last of the light, which is either brave or very tired. Grey under the dirt, Second Army kit with the badge cut away, and you know the face from a lamp in a tunnel under the Pale. Moreau. "Garrow's word," he says. "It got us out of the Pale. It doesn't feed us."${S.f.p_moreauPaid ? ` A pause. "${numw(S.f.p_moreauPaid, true)} silver, you gave me, under the Pale. It bought bread in the first village south. There hasn't been a second village."` : ''}` : `A man stands up on the crest against the last of the light: grey under the dirt, Second Army kit with the badge cut away and the cut gone ragged with days. "The Pale," he says, as if it were a regiment. "We walked out of it. We'd like to keep walking, and we'd like to eat while we do it."`}${SQUAD().includes('brisk') ? `
+
+Brisk, not loudly: "${c2Count()}." It's the count. She says it the way another woman would put her hand on a sword.` : ''}`,
+      ch:[{t:'"Shields. We\'re going up."', go:()=>startBattle('c2_deserters')},
+          {t:'Ellis has counted them. Hit them first.', req:()=>SQUAD().includes('ellis'), go:()=>startBattle('c2_deserters', {surprise:'p'})},
+          {t:'Talk them off the hill.', check:['guile',15],
+            edges:id=>[c2Moreau() && ['Moreau remembers Garrow\'s word', 3], id === 'ohl' && ['Ohl stitched the Second under Dujek', 2], id === 'kettle' && ['a Moranth crate on the wagon', 1], id === 'ellis' && ['deserters know a Claw voice', 1]],
+            near:{t:()=>S.f.c2_desTook === 'salve' ? 'They go, and a jar of salve goes with them off the tailboard, and nobody is quick enough to say no.' : S.f.c2_desTook === 'silver' ? 'They go, and some of the Fourth\'s silver goes with them, because somebody had to put something in a thin man\'s hand.' : `They go. The crossbow stays on ${NAME(ROLL().who)} all the way into the grass, and it's still there afterwards, behind the eyes: −1 on the next check.`,
+              fx:()=>{ if (S.inv.salve > 0) { S.inv.salve--; S.f.c2_desTook = 'salve'; } else if (S.silver > 0) { S.silver -= Math.min(3, S.silver); S.f.c2_desTook = 'silver'; } else { S.f.c2_desTook = 'nothing'; (S.rattled ??= {})[ROLL().who] = 1; } }},
+            go:'c2_des_talk', fail:'c2_des_fail'},
+          {t:'"Ten silver, and the road to the city. Take it and go."', tag:'10 silver', req:()=>S.silver >= 10, fx:()=>{ S.silver -= 10; AUDIO.play('coin'); loy('brisk',-1); loy('ohl',1); }, go:'c2_des_paid'}]}),
+    c2_des_talk:()=>({sp:'The foot of the ridge', scene:'plain_dusk', fx:()=>{ S.f.c2_desTalked=1; const up = gainXP(60); note('+60 experience. Talking them down is soldiering too.', 'good'); if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good'); }, txt:
+`${by({
+  sgt:`You tell them the only true thing you've got that's worth more than the wagon: the clans have moved off the dust-line, there are Rhivi in the grass in numbers tonight, and a wagon is a slow thing to be caught with. Eight men on foot are a quick one.`,
+  tuft:`Tuft talks. She doesn't raise her voice. She tells the grass, low and level, what the Rhivi do to men they find on the plain in Malazan kit and no regiment, and she sounds like somebody who has read the report.`,
+  ellis:`Ellis says one sentence, and it's the right one, and it's true: "I've counted you, and the Claw taught me what to do with a count." She doesn't say she's done with the Claw. They don't need to know that.`,
+  kettle:`Kettle climbs up on the wagon, puts one hand flat on the oilcloth, and explains with total confidence what a crate of Moranth munitions does to a hill when somebody puts a crossbow bolt into it. She has never once lied about munitions. She doesn't need to start.`,
+  ohl:`Ohl gets down off the driver's board, knees first, and stands where the grass can see him. "I stitched the Second under Dujek," he says. "Some of you I stitched. I would rather not do it again tonight, and I would very much rather not do the other thing."`,
+  brisk:`Brisk, in the regiment voice, the one for parade: "Second Army. *Fall out.*" And something in them older than the Pale very nearly does.`,
+  _:`{who} talks, low and level, about the Rhivi, and the dark, and how far it is to anywhere.`})}
+
+The grass is quiet long enough for the light to change. Then it moves: not toward you. Away, in ones and twos, up and over the crest, the way men back off from a dog they've decided isn't worth it. ${c2Moreau() ? `Moreau goes last. He stops on the skyline. "That's twice," he calls down. "Tell Garrow. Or don't. He'll know."` : `The grey one goes last, walking backwards until the far side of the hill has him.`}${cleanRoll() ? `
+
+Before he drops out of sight, his voice comes back down the slope: "There's a woman on the plain with a thing walking beside her. We lay in the grass a whole day while she went by. Whatever you're for, Fourth, don't be for that."` : ''}${SQUAD().includes('brisk') ? `
+
+Brisk lets her shield down an inch. "${c2Count()}," she says. "Still." It's as near as she comes to thanks.` : ''}`,
+      ch:[{t:'Up the ridge. Make camp.', go:()=>{ startExplore('ridge'); talk('c2_ridge_arrive'); }}]}),
+    c2_des_fail:()=>({sp:'The foot of the ridge', scene:'plain_dusk', txt:
+`${by({
+  sgt:`You get as far as *the Rhivi* before somebody in the grass decides he's heard this speech before, from an officer, at the Pale.`,
+  tuft:`Tuft starts to talk, low and level, and a voice in the grass says *cadre* the way you'd say a dirty word, and that's the end of it.`,
+  ellis:`Ellis says one sentence, in a Claw scout's flat voice; and these are men who have been running from that voice for four days.`,
+  kettle:`Kettle climbs up on the wagon and gets as far as *cussers* before it occurs to everyone in the grass at once that a wagon full of cussers is worth more than a wagon full of bread.`,
+  ohl:`Ohl stands where the grass can see him and gets three words in, and the grey one laughs, not unkindly. "Healer. We've all been stitched. Look where it got us."`,
+  brisk:`Brisk tries the regiment voice, and it's exactly the wrong voice. It's the one they ran from.`,
+  _:`{who} talks, and gets about four words in.`})}
+
+A crossbow answers. The bolt goes into the wagon's sideboard a hand from the oilcloth, and the grass stands up.`,
+      ch:[{t:'Fight', go:()=>startBattle('c2_deserters', {surprise:'e'})}]}),
+    c2_des_paid:()=>({sp:'The foot of the ridge', scene:'plain_dusk', fx:()=>{S.f.c2_desPaid=1;}, txt:
+`You count ten silver into your palm where the grass can see it, and throw it. It lands in the ruts in front of the wagon and lies there catching the last of the light.
+
+Nobody moves. Then a thin arm comes out of the grass and the silver's gone, ${c2Moreau() ? `and up on the crest Moreau lowers his hand. "Garrow's word, and now your silver," he calls down. He doesn't sound grateful. He sounds like a man adding up what he owes. "The city, then. If there's a city."` : `and up on the crest the grey one lowers his hand. "The city, then," he calls down. "If there's a city."`} They go off south-west through the grass, eight of them, not looking back, the way you'd walk out of a camp you weren't supposed to leave.${SQUAD().includes('brisk') ? `
+
+Brisk watches them until there's nothing to watch. "Ten silver, to deserters, for the road," she says. "That's going in the ledger exactly like that."` : ''}${SQUAD().includes('ohl') ? `
+
+Ohl, from the driver's board: "Cheap. I have priced the other thing, Sergeant. Many times."` : ''}`,
+      ch:[{t:'Up the ridge. Make camp.', go:()=>{ startExplore('ridge'); talk('c2_ridge_arrive'); }}]}),
+    c2_after_deserters:()=>({sp:'The crest', scene:'plain_night', fx:()=>{S.f.c2_desFought=1;}, txt:
+`It's done before the last of the light is. Eight men who walked out of the Pale and four days south, and stopped here, on a hill, over a wagon.${SQUAD().includes('brisk') ? `
+
+Brisk goes from one to the next with her shield still up and turns their collars over. Where the badges were there are only holes, cut and then frayed, and you can't tell a regiment from a hole. She does it anyway. She does all eight.${S.f.c2_badge ? ` The Ninth's badge is inside her gorget, with the letter. She doesn't take it out.` : ''}` : ''}${c2Moreau() ? `
+
+Moreau is the last. Garrow's word got him out of a tunnel under the Pale and four days south, and that was as far as it went. *Malazans running from Malazans*, Brisk said, in the tunnel. Nobody says anything now.` : ''}${SQUAD().includes('ohl') ? `
+
+Ohl kneels by ${c2Moreau() ? 'him' : 'the grey one who did the talking'} and closes his eyes for him. "Second Army," he says. "I may have stitched him once. I stitched most of the Second, once." He doesn't open the oilcloth. These aren't his. He tells Hood so, in Ehrlii, and it doesn't sound as if Hood agrees.` : ''}${SQUAD().includes('ellis') ? `
+
+Ellis has been down the far side of the crest and back. "No horses," she says. "There were three. They ate them." She goes and puts her hand on ${c2Mule()}'s neck, and leaves it there.` : ''}
+
+Sethand comes up the slope when it's over, and not before. He looks at the dead for a long time. "Malazans killing Malazans on a Rhivi hill," he says. "The clans will say it is how the Empire keeps warm."`,
+      ch:[{t:'Make camp.', go:()=>{ startExplore('ridge'); talk('c2_ridge_arrive'); }}]}),
+
+    /* ---- the ridge: the fourth camp (the chapter's rest, for Bridgeburner) ---- */
+    c2_ridge_arrive:()=>{ const m = c2P(S.f.c2_barrowMissWho); return {sp:'The fourth camp', scene:'plain_night', fx:()=>{ S.f.c2_ridge=1; rest('The fourth camp: Brisk\'s fire, Ohl\'s needle by Kettle\'s lamp, and sleep in shifts while it lasts. Wounds close, mostly.'); }, txt:
+`Night on the ridge. Two tents, because Brisk will not sleep in one with Kettle and Kettle will not sleep in one without Tuft, and Ohl sleeps in the wagon, and you sleep where you can see all of it. The fire is small and Brisk built it${S.f.c2_desFought ? `, in the deserters' fire-ring, because it was there` : ''}. The stars are the wrong stars; they have been since Pale, and nobody has said so.
 
 Sethand has come into the firelight. He has not done that on any night before. He sits with his back to the west, which is not where he has been looking.
 
@@ -856,7 +973,7 @@ Kettle, very quietly: "We *did* do a horse today."` : ''}
 The bows haven't come up. They haven't come down either. And the man in front has a word for ${c2P(ROLL().who).n} now, which he says to the rider beside him, and which Sethand will not translate, and which, from the shape of it, has a horse in it.`,
       ch:c2OutCh()}),
     c2_after_outriders:()=>({sp:'The grass at night', scene:'plain_night', fx:()=>{ S.f.c2_outFought=1; loy('ohl',-1); }, txt:
-`It's short, and bad, and then it stops, because the ones you've knocked down are being dragged back into the grass by the ones you haven't, and the curve of riders is a curve again, further off, and nobody is loosing.
+`It's bad, twice, and then it stops, because the man in front is down on the lit rise and the ones still in the saddle are dragging him and the others back into the grass, and the curve of riders is a curve again, further off, and nobody is loosing.
 
 Nobody is dead. Ohl went to the first one that fell and the Rhivi let him, which is a thing you'll think about later. He comes back with blood to the wrist and a face like a shut door.
 

@@ -23,6 +23,12 @@ const c1Wrong = () => by({tuft:`"Wrong night." Tuft, quietly, from beside the sh
   sgt:`"Wrong night. The Fourth held the cadre row for Tattersail. Ask her whose ledger you're in."`,
   _:`"Wrong night," says {who}. "The Fourth held the cadre row for Tattersail. Ask her whose ledger you're in."`});
 const c1Hounds = () => startBattle(S.f.c1_key === 'claw' ? 'hounds_claw' : 'hounds_line', {surprise:'e'});
+/* once Whiskeyjack and Tattersail are both done, the night goes on: Pell's wagon on the way back, two hours' sleep, then the Hounds */
+const c1Late = () => talk(S.f.c1_raid ? 'c1_night' : 'c1_raid');
+/* who the raiders at Pell's wagon are, by what the north tunnels did with Moreau's section */
+const c1Raiders = () => S.f.p_garrowCrossed ? `One of them you've seen before, by lamplight, forty paces into the north tunnels, running for the surface with Garrow's name. He's stopped running. He's found something worth stopping for.` :
+  S.f.garrowWord ? `None of them is Moreau. Moreau's section heard Garrow's word two nights ago and went deeper. These ones never heard it.` :
+  `None of them is Moreau's. What's left of Moreau's section is under the north quarter, where you left it. These are new. The Host makes new ones every night.`;
 const CH1 = {
   title:'Pale', number:'One',
   intro:{loc:'The Pale', sub:'Genabackis · two nights later', cap:'The tent lines under a bruised sky. Somewhere north, the cadre row has one lamp lit.',
@@ -79,10 +85,35 @@ const CH1 = {
     accounting:{title:'The picket line', warrenText:'Warrens quiet · the stakes cast two shadows each', warren:{meanas:1.1,denul:1}, music:'battle',
       map:["........","..#..#..","........","#......#","........","........",".#....#.","........","........","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['assassin',1,1],['assassin',4,0],['assassin',6,2]], xp:120, after:'c1_after_accounting'} },
+      foes:[['assassin',1,1],['assassin',4,0],['assassin',6,2]], xp:120, after:'c1_after_accounting',
+      /* the second ground: the Second's burial pits, which the squad has to walk round and the Claw do not; the one who spoke marks names */
+      stage2:{title:'The Second\'s burial field', warrenText:'Warrens quiet · lime on the pits, glowing where the moon should be',
+        text:()=>`The three at the stakes go down, and when you look again they aren't there. ${SQUAD().includes('tuft') ? `Tuft was right about *three I can see*. ` : ''}The one who spoke never came within reach of a spear: he's further on, where the way to the Bridgeburners' fire runs between the Second's burial pits, standing among the row of helmets as if he, too, were waiting for a wagon. Two more stand with him.
+
+"Sergeant." The same phrasing, the same neat hand. "An entry stays open until it's closed."${SQUAD().includes('brisk') ? ` Brisk looks at the helmets, and at the three of them standing among the Second's dead, and her shield comes up an inch higher than it needs to.` : ''}`,
+        map:["........","........","#####...","........","........","...#####","........","........","........","........"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['neathand',3,0],['assassin',1,1],['assassin',6,4]], xp:60} },
+    /* the new fight, on every road: deserters at Pell's wagon on the way back to the Fourth's fire, before the Hounds */
+    c1_wagon:{title:'Pell\'s wagon', warrenText:'Warrens quiet · one lantern on the wagon, swinging', warren:{meanas:1,denul:1}, music:'battle',
+      map:["##....##","#.......","........","..####..","........",".#....#.","........","#......#","........","........"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+      foes:[['deserter',1,2],['deserter',6,2],['deserter',2,4],['deserter',5,4],['xbow',4,1]], xp:90, after:'c1_raid_after',
+      /* the second ground: lanes between the tent rows, the big one holding the middle, a crossbow at the far end of it */
+      stage2:{title:'The tent lines', warrenText:'Warrens quiet · the Host asleep on both sides',
+        text:()=>`The ones at the tailboard are down. The rest were never at the tailboard: two of them already have a Moranth crate between them and are going into the tent lines with it, quick and careful, and the big one, who let go of Pell when the fighting started, goes after them walking backwards with a sapper's maul in both hands.
+
+The tents are full of the Host, asleep. Not one of them gets up.${SQUAD().includes('kettle') ? ` "Sharpers," Kettle says, watching how the two of them carry it. "Look at them. Like it might—" "Kettle." "Yes, Sergeant."` : ''}`,
+        map:[".##..##.",".##..##.",".##..##.","........",".##..##.",".##..##.","........",".##..##.","........","........"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['bigdeserter',3,4],['deserter',0,1],['deserter',7,2],['xbow',4,0]]} } },
 
   foes:{ hound:{name:'Hound of Shadow', sig:'H', hp:44, ac:15, atk:6, dmg:[2,6,2], rng:1, mv:6, init:4, boss:true, verb:'tears at'},
-         assassin:{name:'Claw', sig:'C', hp:14, ac:14, atk:5, dmg:[1,8,2], rng:1, mv:5, init:4, verb:'knifes'} },
+         assassin:{name:'Claw', sig:'C', hp:14, ac:14, atk:5, dmg:[1,8,2], rng:1, mv:5, init:4, verb:'knifes'},
+         // the one who spoke at the picket line, with the grey cloak's phrasing: writes a name down, and every Claw blade knows it
+         neathand:{name:'The neat hand', sig:'N', kind:'claw', hp:24, ac:15, atk:6, dmg:[1,8,2], rng:1, mv:5, init:5, sk:['mark','parry'], verb:'strikes out at'},
+         // the raiders' muscle at Pell's wagon: a sapper's maul from the north tunnels, and the weight to shove a marine off his feet
+         bigdeserter:{name:'The big one', sig:'V', kind:'deserter', hp:24, ac:13, atk:4, dmg:[1,10,2], rng:1, mv:3, init:0, sk:['shove'], verb:'brings a sapper\'s maul down on'} },
 
   gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
     heater:{name:'Second Army heater shield', slot:'armour', who:['brisk','sgt'], ac:1, line:'A heater shield with the Second\'s sigil burned off. Brisk did not ask whose.'},
@@ -99,7 +130,9 @@ const CH1 = {
     S.f.p_garrowCrossed && 'Garrow of the Second has not been seen at the pits since his word was said in the north tunnels, to the wrong men.',
     S.f.c1_accTatNamed && 'Tattersail\'s name was said aloud at a picket line, to people who keep ledgers. It is underlined now.',
     S.f.c1_kalamWary && 'Kalam spent an hour of the Hound night following the Fourth, to see who it was asking for. Nobody, it turned out.',
-    S.f.c1_hairlockLooked && !S.f.c1_sawHairlock && 'Nobody saw the puppet get down off its crate.'],
+    S.f.c1_hairlockLooked && !S.f.c1_sawHairlock && 'Nobody saw the puppet get down off its crate.',
+    S.f.c1_raidLet && 'Somewhere in the Host, a deserter of the Second has a crate of Moranth munitions and nothing left to lose. The Fourth walked past.',
+    S.f.c1_raidCrate && 'The big one went into the tent lines with a Moranth crate under his arm. Nobody went after him.'],
 
   dlg:{
     /* ---- opening ---- */
@@ -247,7 +280,7 @@ Quick Ben has looked up from the coals. "Interesting deck," he says, and means t
 "Sleep if you can. Report to the quartermaster in the morning for the wagon." ${S.f.c1_paran ? `A glance down the lines. "The captain's been round yours, I hear. Good. He's new, and he's trying, and the ones who try are the ones you get to keep."` : `"If the captain walks your lines tonight, be a marine at him; he's new, and he's trying, and the ones who try are the ones you get to keep."`} He looks at the cadre row, where the one lamp is still lit. ${S.f.c1_tent ? `"And you've seen Tattersail. Good. She doesn't ask twice. She just stops asking."` : `"And if Tattersail asks for you, go. She doesn't ask twice. She just stops asking."`}
 
 ${S.f.wjRegard > 0 ? `"Sergeant." As you turn. "All five. Keep doing that."` : S.f.wjRegard < 0 ? `He doesn't say anything as you turn. Kalam does, to nobody: "Fourth Squad."` : `Quick Ben lifts two fingers from his knee, which might be a farewell and might be a ward.`}`,
-      ch:[{t:'Walk the lines.', go:()=>{ if (S.f.c1_tent) talk('c1_night'); else startExplore(); }}]}),
+      ch:[{t:'Walk the lines.', go:()=>{ if (S.f.c1_tent) c1Late(); else startExplore(); }}]}),
     c1_wj_again:()=>({sp:'Whiskeyjack', txt:
 `"Sergeant." He doesn't look up from the fire. "You've got your orders. They don't get better with repeating."
 
@@ -410,7 +443,7 @@ ${S.ending === 'told' || S.ending === 'given' ? `Tattersail puts something in yo
 
 She's back to her cards before you reach the flap. "Sergeant. If you hear dogs tonight, they aren't."`,
       // with Whiskeyjack already seen, leaving the tent starts the Hounds: one last chance at Pell's wagon first
-      ch:[{t:'Leave the tent', go:()=>{ if (S.f.c1_wj) talk('c1_night'); else startExplore(); }},
+      ch:[{t:'Leave the tent', go:()=>{ if (S.f.c1_wj) c1Late(); else startExplore(); }},
           {t:'Stop at Pell\'s wagon on the way.', req:()=>!!S.f.c1_wj && S.silver >= 3, go:()=>{ sceneShell('camp_night'); talk('c1_pell'); }}]}),
     c1_tent_again:()=>({sp:'Tattersail', txt:
 `"Sergeant." She doesn't look up. "The cards haven't got better. Neither has the puppet. Go and sleep, or go and pretend to."`,
@@ -424,10 +457,10 @@ You carry ${S.silver} silver.`,
       ch:[
         {t:'Sharper, 6 silver', tag:`have ${S.inv.sharper}`, req:()=>S.silver>=6, fx:()=>{S.silver-=6;S.inv.sharper++;note('Bought a sharper.','good');AUDIO.play('coin');}, go:'c1_pell'},
         {t:'Burner, 5 silver', tag:`have ${S.inv.burner}`, req:()=>S.silver>=5, fx:()=>{S.silver-=5;S.inv.burner++;note('Bought a burner.','good');AUDIO.play('coin');}, go:'c1_pell'},
-        {t:'Healing salve, 3 silver', tag:`have ${S.inv.salve}`, req:()=>S.silver>=3, fx:()=>{S.silver-=3;S.inv.salve++;note('Bought a salve.','good');AUDIO.play('coin');}, go:'c1_pell'},
+        {t:'Healing salve, 5 silver', tag:`have ${S.inv.salve}`, req:()=>S.silver>=5, fx:()=>{S.silver-=5;S.inv.salve++;note('Bought a salve.','good');AUDIO.play('coin');}, go:'c1_pell'},
         {t:'Cusser, 14 silver', tag:`have ${S.inv.cusser}`, req:()=>S.silver>=14 && !S.f.c1_cusserSold, fx:()=>{S.silver-=14;S.inv.cusser++;S.f.c1_cusserSold=1;note('Bought a cusser. Pell looks at Kettle the way a man looks at weather.','good');AUDIO.play('coin');}, go:'c1_pell_cusser'},
         {t:'"You\'ve got a cusser."', req:()=>S.silver<14 && !S.f.c1_cusserSold && !S.f.c1_askedCusser, fx:()=>S.f.c1_askedCusser=1, go:'c1_pell_broke'},
-        {t:'Leave', go:()=>{ if (S.f.c1_wj && S.f.c1_tent && !S.f.c1_hounds) talk('c1_night'); }}]}), // on the way back from the tent, the night goes wrong
+        {t:'Leave', go:()=>{ if (S.f.c1_wj && S.f.c1_tent && !S.f.c1_hounds) c1Late(); }}]}), // on the way back from the tent: the wagon, a little sleep, then the night goes wrong
     c1_pell_cusser:()=>({sp:'Quartermaster Pell', txt:
 `Kettle takes it in both hands like an infant she has been told is hers. She turns it once to the light.
 
@@ -555,6 +588,76 @@ He's gone between the tents before you've decided whether that was an answer. It
 "Sergeant," he says to your back. "Good habit. Keep it."`,
       ch:[{t:'Walk on.', go:()=>startExplore()}]}),
     c1_claw_again:()=>({sp:'A grey cloak', txt:`He's where he was. He hasn't moved, and the ash hasn't landed on him, and you decide not to think about either.`, ch:[{t:'Leave'}]}),
+
+    /* ---- Pell's wagon: deserters on the way back to the Fourth's fire, every road (c1Late), then two hours' sleep ---- */
+    c1_raid:()=>({sp:'Pell\'s wagon', scene:'camp_night', fx:()=>{ S.f.c1_raid = 1; }, txt:
+`You're twenty paces past Pell's wagon, on the way back to your own fire, when Pell says *no*.
+
+He says it the way he says it to everybody, flat, before the question. Then he stops saying anything, which Pell never does. The lantern on the tailboard is swinging. There are men round the wagon with a pry-bar in the new Moranth seals, Malazan kit with the badges cut off, and one of them, a very big one, is holding the quartermaster up against a wheel by the front of his coat.
+
+${c1Raiders()}
+
+${SQUAD().includes('kettle') ? `Kettle has stopped walking. "Those are *Moranth* seals," she says, in the voice other people keep for children. "Somebody's going to throw those at a Malazan." ` : ''}Nobody in the tent lines has woken up. Nobody in the tent lines is going to.`,
+      ch:[{t:'Come at them out of the dark.', go:()=>startBattle('c1_wagon',{surprise:'p'})},
+          {t:'Shout for the provosts, and let them think the Fist is coming.', check:['guile',15],
+            edges:()=>[S.f.knowDeserters && ['Garrow\'s line: the Fist is still counting heads', 2], S.f.p_garrowCrossed && ['one of them knows your faces', -1]],
+            // yes, but: they run, and the big one takes a crate with him (the end screen)
+            near:{t:'They run. But the big one takes a crate with him, under one arm, as if it weighed nothing, and nobody is fool enough to chase a man carrying Moranth munitions at a run.', fx:()=>{ S.f.c1_raidCrate = 1; }},
+            go:'c1_raid_scare', fail:'c1_raid_called'},
+          {t:'Leave it. Pell can count his own crates.', go:'c1_raid_let'}]}),
+    c1_raid_scare:()=>({sp:'Pell\'s wagon', fx:()=>{ S.f.c1_raidScared = 1; const up = gainXP(60); note('+60 experience. The right shout in the right voice is soldiering too.','good');
+        if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good');
+        if (!S.f.c1_raidCrate) { S.inv.sharper++; note('Pell, off the books: +1 sharper.','good'); } }, txt:
+`${by({brisk:`"Provosts!" Brisk, in the regiment voice, the one that carries down a line of shields and into the next camp. "The Fist's provosts! Wagon lines, *now!*"`,
+  kettle:`"Provosts!" Kettle, at the top of her lungs, and then, inspired: "They've got the *list!* Second Army! Every name!"`,
+  tuft:`Tuft doesn't shout. She says "The Fist is still counting heads" into the dark between two tents, quietly, and Meanas carries it round behind them so that it comes from everywhere at once.`,
+  sgt:`"Provosts!" you bawl, in the voice the Untan garrison taught you for exactly this. "Wagon lines! The Fist is still counting heads!"`,
+  _:`"Provosts!" {who} shouts into the dark. "Wagon lines! The Fist is still counting heads!"`})}
+
+The pry-bar comes out of the seal. Somebody says a word that isn't an order, and then they're going, all of them, into the tent lines, low and quick, the way men go who have been running for two nights and know the shape of it.
+
+Pell picks himself up off the wheel. He looks at the seals, and at you, and at the dark the provosts are not coming out of. "Adequate," he says.${S.f.c1_raidCrate ? ` Then he counts the crates, and says a much worse word.` : ` Then he takes a sharper out of the broken crate and puts it in ${SQUAD().includes('kettle') ? 'Kettle\'s hands' : 'yours'}. "Off the books," he says. "The books never liked you."`}`,
+      ch:[{t:'Back to the fire.', go:'c1_sleep'}]}),
+    // the bluff that didn't take: they know exactly where the provosts are tonight
+    c1_raid_called:()=>({sp:'Pell\'s wagon', txt:
+`${by({brisk:`"Provosts!" Brisk, in the regiment voice. "Wagon lines, *now!*"`,
+  kettle:`"Provosts!" Kettle, at the top of her lungs. "They've got the *list!*"`,
+  tuft:`Tuft says "The Fist is still counting heads" into the dark between two tents, and Meanas carries it, and it comes out sounding like a girl hiding between two tents.`,
+  sgt:`"Provosts!" you bawl. "Wagon lines! The Fist is still counting heads!"`,
+  _:`"Provosts!" {who} shouts. "The Fist is still counting heads!"`})}
+
+The big one doesn't even turn round. "The provosts are on the north wall tonight, marine," he says, to Pell, conversationally. "We checked. We're deserters. We're not idiots."
+
+Then he does turn round, and so do the rest of them, and they come at the voice.`,
+      ch:[{t:'Fight', go:()=>startBattle('c1_wagon',{surprise:'e'})}]}),
+    // walking past: Kettle doesn't forgive it, and somebody in the Host has a crate of Moranth munitions (the end screen)
+    c1_raid_let:()=>({sp:'Pell\'s wagon', fx:()=>{ S.f.c1_raidLet = 1; if (SQUAD().includes('kettle')) loy('kettle',-1); }, txt:
+`You walk on. Behind you a seal gives with a sound like a knuckle, and Pell doesn't say no, and then doesn't say anything.
+
+${SQUAD().includes('kettle') ? `Kettle walks the rest of the way to the fire looking back over her shoulder. "Moranth," she says, to nobody. "Do you know what they *want* for those?" Nobody answers. She isn't asking about the price.` : `Nobody looks back. Nobody has to.`}${SQUAD().includes('brisk') ? `
+
+Brisk says nothing at all, which is what Brisk says when she's decided you were right and doesn't like it.` : ''}`,
+      ch:[{t:'Back to the fire.', go:'c1_sleep'}]}),
+    // win() has already paid the fight's xp
+    c1_raid_after:()=>({sp:'Pell\'s wagon', scene:'camp_night', fx:()=>{ S.f.c1_raidFought = 1; S.inv.sharper++; note('Pell, off the books: +1 sharper.','good'); AUDIO.play('coin'); }, txt:
+`The crate comes back in one piece, which is the only way anybody wanted it to come back.
+
+Pell comes out from under his own wagon, where he went at some point without anyone seeing him do it, and counts the crates. He counts them again. He writes something in the ledger, and then, after a struggle you can watch on his face, takes a sharper out of the broken crate and puts it in ${SQUAD().includes('kettle') ? 'Kettle\'s hands' : 'yours'}.
+
+"Off the books," he says. "The books never liked you."
+
+The Host sleeps through all of it. In the morning somebody will find what's left in the tent lines and put it down to the dogs, and it will be true enough.`,
+      ch:[{t:'Back to the fire.', go:'c1_sleep'}]}),
+    /* two hours' sleep before the Hounds: on Bridgeburner the squad's wounds close here (rest() does nothing on the other difficulties) */
+    c1_sleep:()=>({sp:'The Fourth\'s fire', scene:'camp_night', fx:()=>{ rest(`The Fourth sleeps two hours by its own fire${SQUAD().includes('ohl') ? ', and Ohl stitches what needs it' : ''}. Wounds close, mostly.`); }, txt:
+`The Fourth's fire has burned down to the size of a hand, and nobody has tried to steal it.${SQUAD().includes('brisk') ? ` Brisk takes the first watch without being asked, which is the only way Brisk takes anything.` : ''}
+
+${S.f.c1_raidFought && SQUAD().includes('ohl') ? `Ohl goes round the squad with the lamp, the needle and the tea, in that order, and nobody argues with any of the three.` : S.f.c1_raidLet && SQUAD().includes('kettle') ? `Kettle sits with her back to Pell's wagon and her satchel in her lap and doesn't count anything, which is worse than counting.` : SQUAD().includes('ohl') ? `Ohl makes the tea. Nobody drinks it. He makes it anyway; it's medicine, technically.` : ''}${SQUAD().includes('tuft') ? ` Tuft lies down with her back to the cadre row and doesn't close her eyes. You can tell from the way she doesn't move.` : ''}
+
+*Sleep*, Tattersail would say. *Or pretend.*
+
+You sleep. It's two hours. It isn't enough, and then it's over.`,
+      ch:[{t:'Wake.', go:'c1_night'}]}),
 
     /* ---- the Hounds ---- */
     c1_night:()=>({sp:'The camp at night', scene:'camp_night', fx:()=>{S.f.c1_hounds=1;}, txt:
@@ -739,6 +842,10 @@ ${S.f.c1_key === 'line' ? `"You held the row. For the cadre. That's going to mat
 ${S.f.c1_accTatNamed ? `"And you said Tattersail's name to the Claw at the picket line." He doesn't say how he knows. "She was in their ledger already. Now she's in it next to you."
 
 ` : ''}${S.f.c1_kalamWary ? `Kalam doesn't look round. "You asked about the captain," he says, to the fire. "I spent an hour finding out who for. Nobody, it turns out." A pause you could fit a knife into. "That's rarer than you'd think."
+
+` : ''}${S.f.c1_raidFought || S.f.c1_raidScared ? `"Pell tells me somebody tried his wagon tonight," Whiskeyjack says, "and the Fourth ${S.f.c1_raidCrate ? 'saw them off, less one crate' : 'stopped them'}." Something that isn't quite a smile. "Pell doesn't tell me things. Take it as a commendation. It's the only kind he's got."
+
+` : S.f.c1_raidLet ? `"Somebody tried Pell's wagon tonight," Whiskeyjack says. "They got a crate. Pell says the Fourth walked past." He lets it sit. "Pell says a lot of things."
 
 ` : ''}"Wagon leaves at dawn. Baggage, Rhivi guide, the Fourth. South-east across the plain, over the Gadrobi Hills, then Darujhistan. Eleven days. We'll be there a week before you. Try not to be interesting on the way."`,
       ch:[{t:'"Sir."', go:'c1_close'}]}),

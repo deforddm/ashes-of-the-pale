@@ -418,3 +418,10 @@ kbd{display:inline-block;min-width:1.2em;padding:0 4px;margin:0 1px;border:1px s
 #cardfx .cfold{font-family:var(--label);font-size:.8rem;color:var(--mute);margin-top:8px;padding:6px 8px;border:1px solid var(--line);border-radius:2px}
 #cardfx .cfold b{color:var(--ink);font-weight:500}#cardfx .cfold .fold{color:#f2d48a}
 #cardfx .cfrow{justify-content:center;flex-wrap:wrap;gap:8px;margin-top:10px}
+/* v3.12 the gods' answer, carried wounds */
+.sp.godsp{color:#f2d48a;text-shadow:0 0 14px rgba(242,196,107,.45);letter-spacing:.06em}
+.txt.god{font-style:italic;color:#e9dfc9;border-left:2px solid rgba(242,196,107,.5);padding-left:12px;animation:godIn 1.6s ease-out both}
+@keyframes godIn{from{opacity:0;filter:blur(3px)}to{opacity:1;filter:none}}
+body.reduce .txt.god{animation:none}
+.btn.sm{min-height:30px;padding:3px 9px;font-size:.78rem;margin-left:8px}
+.kv.wounds span:nth-child(even){display:flex;align-items:center;flex-wrap:wrap;gap:4px}

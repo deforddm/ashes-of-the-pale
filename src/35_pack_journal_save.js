@@ -6,6 +6,7 @@ function openModal(tab){
     pack:()=>`<div class="kv"><span>Silver</span><span>${S.silver}</span><span>Sharpers</span><span>${S.inv.sharper}</span><span>Burners</span><span>${S.inv.burner}</span><span>Cussers</span><span>${S.inv.cusser}</span>${S.inv.smoker > 0 || S.f.gotSmokers ? `<span>Smokers</span><span>${S.inv.smoker}</span>` : ''}<span>Healing salves</span><span>${S.inv.salve}</span>
       <span>Squad level</span><span>${S.lvl} (${S.xp}/${LEVELS[S.lvl] ?? '—'} xp)</span>${S.card ? `<span>Deck reading</span><span>${CARDS[S.card].name}</span>` : ''}</div>
       ${S.card ? `<div class="cardinline" style="margin-top:12px"><canvas id="icard" width="240" height="360"></canvas></div><p class="fine" style="text-align:center">${CARDS[S.card].fx}</p>` : ''}
+      ${S.wounds ? `<h4 class="jh">Wounds carried (Bridgeburner)</h4><div class="kv wounds">${SQUAD().map(id => woundOf(id) == null ? '' : `<span>${esc(NAME(id))}</span><span>${woundOf(id)} / ${S.wounds[id + '_max'] || '?'} health ${S.inv.salve > 0 && woundOf(id) < (S.wounds[id + '_max'] || 0) ? `<button class="btn sm" data-salve="${id}">Salve +8</button>` : ''}</span>`).join('')}</div><p class="fine">Wounds close when the squad rests: at the start of a chapter, or where the story lets them sleep.</p>` : ''}
       <p class="fine" style="margin-top:10px">Moranth munitions hit everything in the blast, your own squad included. Warren magic builds strain; past ${STR_MAX}, the caster pays in blood.</p>`,
     deeds:()=>deedsHTML(),
     journal:()=>`${journalHead()}<div class="route sm"><canvas id="jRoute"></canvas></div><h4 class="jh">Notes</h4><ul class="jl">${[
@@ -38,6 +39,7 @@ function openModal(tab){
     <div>${body[tab]()}</div></div>`);
   m.querySelectorAll('.tab').forEach(b => b.onclick = () => { AUDIO.play('click'); if (b.dataset.t === 'squad') { m.hidden = true; openChars(0); } else openModal(b.dataset.t); });
   $('#bClose').onclick = () => { AUDIO.play('click'); m.hidden = true; };
+  m.querySelectorAll('[data-salve]').forEach(b => b.onclick = () => { salveOut(b.dataset.salve); openModal('pack'); }); // Bridgeburner: a salve between fights
   if (tab === 'pack' && S.card) inlineCard($('#icard'), S.card, false);
   if (tab === 'deeds') bindDeeds();
   if (tab === 'journal') { const cv = $('#jRoute'); routeAnim = t => { if (!cv.isConnected || $('#modal').hidden) { routeAnim = null; return; } drawRoute(cv, S, t); }; }
@@ -106,6 +108,14 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.12.0', ['Fights have higher stakes. Most fights now go on into a second area: clear the first ground and push on into the next, with your wounds, your strain, your spent munitions and your once-a-fight abilities carried over. A squadmate who went down gets dragged back up at a quarter of their health.',
+             'Seven new fights, one in every chapter: deserters at Pell\'s wagon, deserters on the ridge, a grudge in the alley, a Guild clan on the plank home, barrow-robbers at the dig, a bonfire over the munitions, and the Worry Gate on the way out.',
+             'Enemies have tricks of their own: hounds pounce and howl, Claw assassins step through shadow behind you, knives make you bleed, crossbows pin you, wights chill, bruisers shove, veterans parry, the Claw mage dazes, the grey cloak marks a target. Watch the log.',
+             'When the whole squad goes down, a god answers for the most loyal of them: Hood for Brisk, Oponn for Kettle, Shadowthrone for Tuft, Soliel for Ohl, Cotillion for Ellis, and Fener, the soldiers\' god, for anyone. Each answers once a chapter, and only for a squadmate whose loyalty is above nothing. When nobody is left to answer, the chapter starts again. On Story, the gods always answer.',
+             'Ohl has two new hands: Denul Wash (heals everyone close to him a little) and Stanch (holds one squadmate at 1 health until his next turn).',
+             'Salves are scarce: the squad starts with one, Pell charges 5 silver, and one jar turns up among the dead each chapter from Chapter Two.',
+             'Bridgeburner: wounds now carry from fight to fight until the squad rests (a new chapter, or a night\'s sleep in each chapter). The pack shows them and lets you use a salve between fights.',
+             'Enemies get tougher chapter by chapter on Soldier and Bridgeburner. Story keeps the old pitch: softer foes, no enemy tricks.']],
   ['3.11.0', ['Skill checks that matter. Tap a check and pick who handles it: each squadmate shows their odds and what is helping or hurting them (their stat, loyalty, a rattle, Oponn, and what the Fourth did earlier on the road). The likeliest is lit. Every check also shows its odds before you commit.',
              'The story follows whoever rolled. If Tuft lies to the gate-clerk, Tuft does the lying; if Brisk bellows across the roofs, it is Brisk he hears.',
              'Six ways a roll can land: a natural 20, clean work (+xp), success, "yes, but" (you missed by a hair: it happens, at a price), failure, and a natural 1 (rattled for the next check). Failures change something now, later on the road.',

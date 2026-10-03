@@ -26,6 +26,7 @@ function float(u, txt, col, big){ const now = performance.now(), n = B.fx.filter
 function hurt(u, n, crit){ if (u.hp <= 0) return; // already down: a second blast or a late blow does nothing
   if (u.side === 'p' && !u.ally && DIFF().dmg !== 1) n = Math.max(1, Math.round(n * DIFF().dmg)); // the difficulty, on every wound the squad takes
   if (u.side === 'p' && !u.ally && S.card === 'herald' && u.hp - n <= 0 && !B.used.herald) { B.used.herald = true; n = u.hp - 1; blog(`<em>The Herald turns its head.</em> ${u.name} stays standing at 1 health.`); float(u, 'spared', '#8fa38a'); }
+  if (u.stanch && u.stanch.hp > 0 && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'held', '#9fe0b8'); blog(`${u.name} should have gone down. Ohl said no.`); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // Stanch
   if (u.immortal && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'holds', '#bfe8ff'); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // it does not fall
   if (u.side === 'e') tally('dealt', Math.min(n, u.hp)); else if (!u.ally) tally('taken', Math.min(n, u.hp));
   u.hp = Math.max(0, u.hp - n); if (u.hp === 0 && u.side === 'e') tally('kills'); if (!(u.immortal && u.hp === 1)) float(u, '−' + n + (crit ? '!' : ''), crit ? '#ffcf7a' : '#f08a7c', crit); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
@@ -44,9 +45,11 @@ function mkParty(id, x, y){
   ['quorl','shadowstep','mockra','argument','quickshot'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
   trickAbs(id).forEach(k => { if (AB[k]) u.ab.splice(u.ab.length - 1, 0, k); }); // tricks won on hard checks (16b, 31b)
   if (B && B.def.nomagic && u.magic) { u.rng = 1; if (id === 'tuft') { u.dmg = [1,4,1]; u.verb = 'jabs a knife at'; } } // otataral: a knife, or the cudgel
-  u.hp = u.maxhp; return u;
+  u.hp = u.maxhp; const w = DIFF().carry ? woundOf(id) : null; if (w != null) u.hp = clamp(w, 1, u.maxhp); // Bridgeburner: the wounds the squad carried in
+  return u;
 }
-function mkFoe(k, x, y, extra=0){ const f = FOES[k], hp = Math.max(1, Math.round((f.hp + extra) * DIFF().hp)); return {id:k, kind:k, side:'e', ...f, atk:(f.atk || 0) + DIFF().atk, maxhp:hp, hp, col:'#d9695a', x, y}; }
+function mkFoe(k, x, y, extra=0){ const f = FOES[k], fs = foeScale(), hp = Math.max(1, Math.round((f.hp + extra) * DIFF().hp * fs.hp)), sk = foeSkills(k, f), dmg = f.dmg ? [f.dmg[0], f.dmg[1], (f.dmg[2] || 0) + fs.dmg] : f.dmg;
+  return {id:k, kind:k, side:'e', ...f, dmg, sk, parryLeft:sk.includes('parry') ? 1 : 0, rng:sk.includes('reach') ? Math.max(f.rng || 1, 2) : f.rng, atk:(f.atk || 0) + DIFF().atk + fs.atk, maxhp:hp, hp, col:'#d9695a', x, y}; }
 function mkAlly(k, x, y){ const f = FOES[k]; return {id:'ally_' + k, kind:k, side:'p', ally:true, ...f, name:f.name + ' (ally)', maxhp:f.hp, hp:f.hp, col:'#9fb3d9', x, y, ab:[]}; }
 /* the nearest free tile to x,y (itself if free), ring by ring out to 4, the straight neighbours first */
 function freeNear(x, y, self){ if (free(x,y,self)) return {x,y};
@@ -56,15 +59,16 @@ function freeNear(x, y, self){ if (free(x,y,self)) return {x,y};
   return null; }
 
 function startBattle(id, opt={}){
-  const def = BATTLES[id];
+  const def = battleDef(id, opt.stage); // a second area is the same fight on a new map (31c)
   if (!def) { S.scene = 'explore'; S.battle = null; save(); return startExplore(); } // a save pointing at a fight that no longer exists
   // the satchel as it was when the fight began: a fight resumed after a reload starts over with it, whatever was saved mid-fight
   if (S.scene === 'battle' && S.battle === id && S.binv) S.inv = Object.assign({}, S.binv); else S.binv = Object.assign({}, S.inv);
   S.scene = 'battle'; S.battle = id; S.bopt = opt; S.node = null; S.bg = 'tunnel'; if (def.mortal) S.f.lastFallen = []; save();
   const snap = JSON.stringify(S);
   view = 'battle'; AUDIO.setScene(def.music || 'battle');
-  B = {def, id, opt, snap, warren:def.warren, units:[], order:[], idx:-1, round:0, fires:[], smoke:[], fx:[], parts:[], log:[], used:{}, cur:null, moved:false, acted:false, mode:null, aim:null, busy:true, over:false, turn:0, anim:null};
+  B = {def, id, opt, snap, warren:def.warren, units:[], order:[], idx:-1, round:0, fires:[], smoke:[], fx:[], parts:[], log:[], used:Object.assign({}, opt.used || {}), cur:null, moved:false, acted:false, mode:null, aim:null, busy:true, over:false, turn:0, anim:null};
   SQUAD().forEach((pid,i) => { const p = def.party[i] || def.party[def.party.length - 1]; const at = freeNear(p[0], p[1]) || {x:p[0], y:p[1]}; B.units.push(mkParty(pid, at.x, at.y)); });
+  if (opt.carry) B.units.forEach(u => { if (u.side === 'p' && opt.carry[u.id] != null) { u.hp = clamp(opt.carry[u.id], 1, u.maxhp); u.strain = (opt.strain && opt.strain[u.id]) || 0; } }); // into the second area as they came out of the first
   (def.allies || []).forEach(a => { const at = freeNear(a[1], a[2]); if (at) B.units.push(mkAlly(a[0], at.x, at.y)); });
   def.foes.forEach((f,i) => { if (opt.drop && opt.drop.includes(i)) return; B.units.push(mkFoe(f[0], f[1], f[2], f[0]==='stone' && S.f.noisy ? 10 : 0)); });
   const squadInit = (SQUAD().some(id => has(id,'sappers_eye')) ? 2 : 0) + (S.card === 'raven' ? 2 : 0);
@@ -88,6 +92,7 @@ function startBattle(id, opt={}){
   if (def.nomagic) { blog(`<em>Otataral. The warrens are dead here.</em>`); if (SQUAD().includes('kettle') && S.inv.burner > 0) blog(`Kettle straps her burners down tight. "Not near that stuff. Burners and otataral don't argue, they just go."`); }
   if (def.nothrow) blog(`<em>Gas in the pipes. Nobody throws anything in here.</em>`);
   if (def.mortal) blog(`<em>Whoever falls here stays down.</em>`);
+  if (def.isStage2) blog(`<em>${def.title}. The second ground.</em>`);
   if (def.objective) blog(`<em>${def.objective.text}</em>`);
   if (def.allies && def.allies.length) blog(`Others fight beside you tonight. They are not yours.`);
   if (B.surprise === 'p') blog(`Surprise: your squad moves first.`);
@@ -118,7 +123,7 @@ function nextTurn(){
   if (B.fires.some(f => f.x === u.x && f.y === u.y)) { blog(`${u.name} is caught in burner fire.`); hurt(u, roll(1,6)); }
   if (u.hp <= 0) { B.busy = true; updBattleUI(); if (checkEnd()) return; return later(nextTurn, pace(600)); }
   if (u.stun) { u.stun = false; B.busy = true; blog(`${u.name} is dazed and loses the turn.`); float(u, 'dazed', '#c9bbff'); updBattleUI(); return later(nextTurn, pace(800)); }
-  if (u.side === 'p' && !u.ally) { B.busy = false; B.mode = 'act'; updBattleUI(); barInView(); }
+  if (u.side === 'p' && !u.ally) { squadTurnStart(u); if (u.hp <= 0) { B.busy = true; updBattleUI(); if (checkEnd()) return; return later(nextTurn, pace(600)); } B.busy = false; B.mode = 'act'; updBattleUI(); barInView(); }
   else { B.busy = true; updBattleUI(); const turn = B.turn; later(() => ai(u, turn), pace(550)); } // not if the battle was left or restarted meanwhile
 }
 function endTurn(){ if (!B || B.over) return; B.busy = true; B.mode = null; B.aim = null; later(nextTurn, pace(250)); }
@@ -134,30 +139,41 @@ function endBeat(won){
   const ob = B.def.objective;
   B.banner = {txt:won ? (ob ? 'Held' : 'Victory') : 'The Fourth is down', col:won ? '#e8c073' : '#e0574a', t:performance.now()};
   B.mode = null; B.aim = null; B.reach = null; updBattleUI();
+  if (won && B.def.stage2 && !B.def.isStage2) { B.banner.txt = 'The way on'; return later(stageBreak, pace(1100)); }
   later(won ? win : lose, pace(won ? 1300 : 1500));
 }
 function win(){
   if (!B) return;
-  tally('won'); const up = gainXP(B.def.xp), head = `${B.def.objective ? 'Held' : 'Victory'}. +${B.def.xp} experience.`;
+  tally('won'); const xp = Math.round((B.def.xp || 0) * XPK), up = gainXP(xp), head = `${B.def.objective ? 'Held' : 'Victory'}. +${xp} experience.`;
   if (B.def.mortal) { // the fallen stay down: the sergeant gets up with a scar, everyone else is dead
     const fallen = B.units.filter(u => u.side === 'p' && !u.ally && u.hp <= 0).map(u => u.id);
     if (fallen.includes('sgt')) S.f.sgtScar = 1;
     const dead = fallen.filter(id => id !== 'sgt'); S.f.lastFallen = dead; dead.forEach(id => kill(id));
     const names = dead.map(NAME), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
     note(dead.length ? `${head} ${list} did not get up.` : `${head} Everyone is still breathing.`, dead.length ? 'bad' : 'good');
-  } else note(`${head} ${SQUAD().includes('ohl') ? 'Ohl patches up the squad' : 'The squad patches itself up'}; everyone is back on their feet.`, 'good');
+  } else note(`${head} ${DIFF().carry ? '' : `${SQUAD().includes('ohl') ? 'Ohl patches up the squad' : 'The squad patches itself up'}; everyone is back on their feet.`}`, 'good');
+  carryWounds(); lootSalve();
   S.scene = 'talk'; save(); AUDIO.play('win');
   if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good');
   updBattleUI();
   talk(B.def.after);
 }
 function lose(){
-  AUDIO.play('lose'); tally('retries'); save();
-  const sh = $('#sheet'); sh.hidden = false;
-  sh.innerHTML = `<div class="sp">The squad goes down in the dark</div><div class="txt"><p>Hood's gate is a long walk, and no one in the Fourth is in a hurry to make it. Try it again.</p></div>
-    <div class="choices"><button class="choice" id="bRetry">Retry the fight</button></div>`;
-  const snap = B.snap; // the save as it stood when the fight began: items, health, the lot
-  $('#bRetry').onclick = () => { AUDIO.play('click'); sh.hidden = true; const st = S.stats; S = migrate(JSON.parse(snap)); if (st) S.stats = st; startBattle(S.battle, S.bopt || {}); }; // the count remembers the lost fight
+  AUDIO.play('lose'); tally('retries');
+  const who = patronNext(), P = who && PATRONS[who], sh = $('#sheet'); sh.hidden = false;
+  if (P) { S.gods.used.push(who); tally('godsAnswered'); }
+  save();
+  const story = DIFF() === DIFFS.story, left = story ? null : (() => { const ch = S.gods; const n = [...SQUAD().filter(id => id !== 'sgt' && PATRONS[id] && (S.loy[id] || 0) > 0), 'sgt'].filter(id => !ch.used.includes(id)).length; return n; })();
+  if (P) sh.innerHTML = `<div class="sp godsp">${esc(P.title)}</div><div class="txt god">${fmt(P.txt(who))}</div>
+    <div class="note trick">The Fourth's road would have ended here. ${who === 'sgt' ? 'The soldiers\' god' : `${esc(NAME(who))}'s god`} would not let it.${story ? '' : ` ${esc(P.god)} will not answer again this chapter. ${left ? `${left} more ${left === 1 ? 'god is' : 'gods are'} still listening.` : 'No one else is listening.'}`}</div>
+    <div class="choices"><button class="choice" id="bRetry">Rise, and fight it again</button></div>`;
+  else sh.innerHTML = `<div class="sp godsp">No one answers</div><div class="txt god">${fmt(`Every god who had a reason to listen has already spent it this chapter. Hood's gate opens the rest of the way, and it is very quiet on the other side.\n\nAnd then it is morning, and the Fourth is where this chapter began, with all of it still to do, and nobody quite able to say why they are so tired.`)}</div>
+    <div class="choices"><button class="choice" id="bRetry">Begin the chapter again</button></div>`;
+  sh.scrollTop = 0;
+  const snap = B.snap; // the save as it stood when the fight (or its second area) began: items, health, the lot
+  $('#bRetry').onclick = () => { AUDIO.play('click'); sh.hidden = true; const st = S.stats, gods = S.gods;
+    if (!P) return chapterAgain();
+    S = migrate(JSON.parse(snap)); if (st) S.stats = st; S.gods = gods; startBattle(S.battle, S.bopt || {}); }; // the count and the gods remember the lost fight
 }
 
 /* abilities */
@@ -243,9 +259,9 @@ function atkCalc(a, t, o={}){
   const wallBonus = t.side === 'p' && friendsOf(t).some(f => !f.ally && has(f.id,'shieldwall') && cheb(f,t) === 1) ? 2 : 0;
   const discipline = t.side === 'p' && !t.ally && SQUAD().some(id => has(id,'discipline')) ? 1 : 0;
   const aooBonus = o.aoo && !a.ally && a.side === 'p' && (has(a.id,'holdline') || has(a.id,'sappers_eye')) ? 2 : 0;
-  const bonus = a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus + (a.dazzleUntil >= B.round ? -3 : 0) + (!mine && inDark(a.x, a.y) ? -2 : 0); // Blue Fire dazzles; Andii dark blinds
+  const bonus = (o.bonus || 0) + (mine && B.howlUntil >= B.round ? -1 : 0) + (!mine && B.foeRallyUntil >= B.round ? 2 : 0) + (!mine && t.clawMarkUntil >= B.round ? 2 : 0) + a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus + (a.dazzleUntil >= B.round ? -3 : 0) + (!mine && inDark(a.x, a.y) ? -2 : 0); // Blue Fire dazzles; Andii dark blinds
   const ghost = t.side === 'p' && !t.ally && has(t.id,'ghost') ? 2 : 0;
-  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost + (line ? 3 : 0);
+  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost + (line ? 3 : 0) + (t.darkUntil >= B.round ? 2 : 0);
   return {bonus, ac, critOn:mine && S.card === 'assassin' ? 19 : 20, fl};
 }
 /* chance to hit in percent: a natural 1 always misses, a crit always hits */
@@ -257,6 +273,7 @@ function attack(a, t, o={}){
   let crit = nat >= critOn;
   let hit = crit || (nat !== 1 && nat + bonus >= ac);
   if (hit && mine && t.cantRound === B.round) { t.cantRound = -1; if (!crit) { crit = true; blog(`<em>The hand-cant said this one, now.</em>`); } } // Claw Hand-Cant
+  if (hit && !crit && t.parryLeft > 0 && t.side === 'e') { t.parryLeft--; hit = false; later(() => { float(t, 'parried', '#cfc8b8'); AUDIO.play('sword'); }, pace(140)); blog(`${t.name} turns ${a.name}'s blow aside. <em>Parried.</em>`); }
   if (crit && mine && !a.ally) tally('crits');
   const verb = o.verb || a.verb;
   const ranged = cheb(a, t) > 1;
@@ -273,7 +290,7 @@ function attack(a, t, o={}){
   const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0) + (t.rimeUntil >= B.round ? 2 : 0);
   blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${tagTxt}${math}.`);
   later(() => { if (t.hp <= 0) return; if (crit) sparks(t.x, t.y, 16, '#ffcf7a'); else sparks(t.x, t.y - .1, 5, '#f08a7c', .6);
-    hurt(t, dmg, crit);
+    hurt(t, dmg, crit); foeRiders(a, t, dmg);
     if (S.card === 'chains' && a.side === 'e' && t.side === 'p' && !t.ally && a.hp > 0) { hurt(a, 2); sparks(a.x, a.y, 10, '#9a9aa6', .5); blog(`<em>The chains bite back.</em> ${a.name} takes 2.`); }
     updBattleUI(); }, land);
   return {hit:true, dmg};
@@ -369,6 +386,7 @@ async function aiTurn(u, turnId){
         if (gone() || B.over) return; shakeMap(); sparks(tg.x, tg.y, 34, '#bfe8ff', 1.1); B.fx.push({kind:'boom', x:tg.x, y:tg.y, r:1, col:'#bfe8ff', t:performance.now()});
         hurt(tg, roll(2,8,2)); party().filter(p => p !== tg && cheb(p, tg) === 1).forEach(p => { hurt(p, roll(1,8,0)); sparks(p.x, p.y, 12, '#bfe8ff', .7); });
         updBattleUI(); await wait(800); if (gone()) return; return done(); } } }
+  if (u.side === 'e' && u.sk && u.sk.length) { if (await foeSpecial(u, gone)) { if (gone()) return; return done(); } if (gone()) return; }
   const opp = foesOf(u);
   if (opp.length) {
     // score every reachable tile: in reach of a target, flanking it if it can, but never paying a free swing for a flank; a crossbow
@@ -401,6 +419,7 @@ async function aiTurn(u, turnId){
     for (let i = 1; i < (u.attacks || 1); i++) { if (gone() || B.over || u.hp <= 0) break; // more than one blow a turn
       const nx = tg.hp > 0 && cheb(u, tg) <= u.rng && canShoot(u, tg) ? tg : inRange().sort((a,b) => a.hp - b.hp)[0]; if (!nx) break; attack(u, nx, {verb:u.verb2 || 'cuts again at'}); await wait(650); } }
   if (gone()) return;
+  if (u.side === 'e') { await foeAfter(u, gone); if (gone()) return; }
   done();
 }
 
@@ -519,7 +538,7 @@ function updBattleUI(){
       else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to ${a.darkness ? 'call it' : 'throw'}. ${cov.length ? `The ${a.darkness ? 'dark' : 'smoke'} covers ${cov.map(v => esc(v.name)).join(', ')}.` : `The ${a.darkness ? 'dark' : 'smoke'} covers empty ground.`} Nobody shoots into it or out of it.`; }
       else { const caught = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe), mine = caught.filter(v => v.side === 'p'), theirs = caught.length - mine.length;
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
-  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : ''].filter(Boolean).join(' · ');
+  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="bhint">${tapWord(hint)}</div>

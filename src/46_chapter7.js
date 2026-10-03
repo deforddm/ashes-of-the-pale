@@ -178,10 +178,41 @@ const CH7 = {
     last_accounting:{title:'The last accounting', warrenText:'Open water on three sides · Meanas thin · Denul steady', warren:{meanas:0.9,denul:1}, music:'battle', style:'dock',
       map:["##,,,.##","#..,...#","..,.....","..#..#..","........",".#....#.","........","...,,...","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
-      foes:[['greycloak',4,1],['assassin',1,2],['assassin',6,2],['clawcrossbow',3,0],['clawmage',5,0]], xp:320, after:'c7_after_accounting'} },
+      foes:[['greycloak',4,1],['assassin',1,2],['assassin',6,2],['clawcrossbow',3,0],['clawmage',5,0]], xp:320, after:'c7_after_accounting',
+      /* the second ground: the long pier. A neck two shields wide, the head of the pier where the last of his people wait, and a
+         jetty on each side that only joins the pier at the top, so the crossbow in the boat at the end of the right one has to be
+         walked round to or shot over the water */
+      stage2:{ title:'The long pier', warrenText:'Planks over open water · Meanas thin · Denul steady',
+        text:()=>`He isn't down. He went to one knee on the wet stone and got up again, and now he's walking back along the long pier with a hand flat against his side and the book under his arm, not hurrying, the way he has walked behind you since the Pale. Where he passes, the pier fills up behind him. Two in grey come up the ladders out of the moored boats with their knives held low. At the pier head a bigger one steps out from behind the stacked eel-traps as if he'd been standing there all night, which he has, and beside him a second pair of empty hands, with the air going dark around them. In the last boat on the right-hand jetty somebody is winding a crossbow${S.f.c7_vellWarned ? `. The Guild had a word with the man on the chandlery roof. Nobody has had a word with this one` : ''}.
+
+The neck of the pier is two shields wide and wet the whole way. ${C7H.has('brisk') ? `Brisk looks at it and settles her shield on her arm. "Narrow," she says. "Good."` : `Whoever goes out along it first goes first alone.`}${C7H.has('kettle') ? ` Behind you Kettle is counting the satchel under her breath, and doesn't like the number.` : ''}`,
+        map:["#,,,,,,#",",,,,,,,,",",##,,##,",",##,,##,",",#,,,,#,","##,,,,##","###,,###","#,,,,,,#","#......#","........"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['clawknife',3,0],['clawmage',4,0],['assassin',1,1],['assassin',6,1],['clawcrossbow',7,4]],
+        waves:[{round:2, foes:[['assassin',0,4]], text:'Another comes up a ladder out of a moored boat on the left-hand jetty, wet to the knees and not minding.'}] } },
+
+    /* the new fight on the road out (v3.12): the lane by the Worry Gate, which tried the Fourth's wagon on the way in, tries the
+       Fourth's satchel on the way out. First the arch (twenty paces of it, the lane opening on the right going out, the gang's
+       cudgels across the far mouth and a crossbow beyond), then the tanners' yard in Worrytown, rows of pits to fight between */
+    c7_worrygate:{title:'The Worry Gate', warrenText:'City stone · twenty paces of arch · warrens steady', warren:{meanas:1,denul:1}, music:'battle', style:'city',
+      map:[".#...#..","........","#...,..#","##....##","##....##","##......","##....,#","##....##","#......#","........"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+      foes:[['c7_gatebow',2,0],['cutpurse',5,1],['bruiser',3,3],['bruiser',4,3],['knife',7,5],['cutpurse',6,6]], xp:260, after:'c7_after_worry',
+      waves:[{round:2, foes:[['cutpurse',7,5],['knife',6,5]], text:'Two more come out of the lane, low and fast, knives held the Daru way.'}],
+      stage2:{ title:'The tanners\' yard', warrenText:'Worrytown · tanning pits and drying frames · warrens steady',
+        text:()=>`They break at the far mouth of the arch the way a lane breaks, all at once and in every direction, and you'd let them go. The big one doesn't let you. He walks back through Worrytown with his friends round him and a cart-axle on his shoulder, past the goat-pens and into the tanners' yard, and stops in the middle of it, and turns round; and you understand that the yard is where he meant this to happen all along.
+
+Pits in rows, full of things nobody should name, with planks between them a man can stand on if he's careful. Hides on drying frames like the flags of a very ugly country. ${C7H.has('kettle') ? `"Oh, that *smell*," says Kettle, with something like respect. "That's not a smell. That's a *position*."` : `The smell comes out of the pits and stands in front of you like one more Gadrobi with a cudgel.`}`,
+        map:["#..,...#",".##..##.","........",".#.##.#.","........","#..##..#","........",".#.##.#.","........","........"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['c7_bigone',4,1],['c7_gatebow',3,0],['knife',1,2],['knife',6,2],['cutpurse',0,4],['cutpurse',7,4]],
+        waves:[{round:3, foes:[['bruiser',1,0]], text:'Somebody comes out of the drying-shed with a hide-scraper and a grievance.'}] } } },
 
   foes:{ greycloak:{name:'The grey cloak', sig:'C', kind:'claw', hp:44, ac:17, atk:9, dmg:[1,10,4], rng:1, mv:6, init:7, boss:true, verb:'opens'},
-         clawcrossbow:{name:'Claw crossbow', sig:'x', kind:'assassin', hp:16, ac:14, atk:8, dmg:[1,10,2], rng:5, mv:4, init:5, verb:'shoots at'} },
+         clawcrossbow:{name:'Claw crossbow', sig:'x', kind:'assassin', hp:16, ac:14, atk:8, dmg:[1,10,2], rng:5, mv:4, init:5, verb:'shoots at'},
+         /* the Worry Gate's lane, grown up since the spring */
+         c7_bigone:{name:'The big one', sig:'G', kind:'bruiser', hp:34, ac:14, atk:6, dmg:[1,10,3], rng:1, mv:4, init:1, boss:true, verb:'swings a cart-axle at', sk:['shove']},
+         c7_gatebow:{name:'Worrytown crossbow', sig:'X', kind:'xbow', hp:12, ac:12, atk:6, dmg:[1,8,1], rng:5, mv:3, init:3, verb:'shoots at', sk:['pin']} },
 
   gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
     moranthchit:{name:'Moranth chit', slot:'trinket', who:['kettle'], hp:2, line:'A curved scrap of black chitin the size of a thumbnail, cut from a moult, with one notch filed in its edge. The Black Moranth give them to those they have finished counting with. Kettle wears it on a thong at her throat and touches it when she is frightened, which is how you will always know.'},
@@ -219,6 +250,9 @@ const CH7 = {
     else if (f.c7_ellisWalked) x.push('Ellis read her name at the green door and walked east along the quay alone.');
     if (f.c7_clawPage) x.push(`The grey cloak closed his book on the Lakefront, but tore one page out of it first and kept it. It has ${C7H.nm(f.c7_clawPage, 'the sergeant')}'s name on it.`);
     if (f.c7_ledgerRead) { if (f.c7_ledgerOther) x.push('To save Ellis\'s line, somebody else\'s from the river quarter went on the Claw\'s fire. She carries that too.'); if (f.c7_ohlHand) x.push('Ohl looked at Ellis\'s hand on the step of the green door. She said no. He looked anyway.'); }
+    if (f.c7_worryFought) x.push('The lane by the Worry Gate tried the Fourth one last time, on the way out, and ended up in a tanning pit. Pallick wrote it down as the gas.');
+    else if (f.c7_worryPaid) x.push('Twenty silver went up the arch of the Worry Gate in a rag, on the way out. Pallick keeps a column for it.');
+    else if (f.c7_worryFaced) x.push('The lane by the Worry Gate looked at the Fourth on the way out, counted, and stepped back into the dark.');
     if (f.c7_tav) x.push(f.c7_letter === 'brisk' ? 'Tav is on the Host\'s rolls of the living. Brisk opened the letter.' : f.c7_letter === 'sgt' ? 'Tav is on the Host\'s rolls of the living. His letter to Brisk is in the sergeant\'s hands.' : 'Tav is on the Host\'s rolls of the living.');
     x.push({paid:'Kettle handed a cusser back to a Black Moranth. Square.', spent:'Kettle told a Black Moranth what Chub\'s cusser was spent on, and he called it square.', owed:'Kettle still owes the Moranth. She kept the cusser, and the spoon, and knows whose they are.', closed:'The Moranth closed Kettle\'s debt. The dead do not owe.'}[f.c7_debt] || '');
     if (f.c7_chub === 'signed') x.push('Kettle signed for Chub on a Moranth slate, two clicks and a hiss. Twelve hands signed. Chub is square.'); else if (f.c7_chub === 'carried') x.push('Kettle asked to sign for Chub. The Moranth said the dead do not sign; the dead are carried. She carries him.');
@@ -940,7 +974,7 @@ ${!hill && !gone ? `Across the quay, on the step by the green door, the grey clo
       ch:[{t:'Back to the grey cloak.', req:()=>!hill && !S.f.c7_clawDone, go:()=>talk(C7H.friend() ? 'c7_claw_offer' : 'c7_claw_close')},
           {t:'Let her sit a while.', req:()=>hill || !!S.f.c7_clawDone}]}; },
     c7_after_accounting:()=>({sp:'The end of the pier', scene:'lakefront_dawn', fx:()=>{ S.f.c7_clawFought=1; S.f.c7_clawDone=1; S.f.c7_clawGone=1; gain('clawpen'); }, txt:
-`It's short and ugly and wet. Dock fights are; there's water on three sides and nowhere to go but in. ${S.f.c7_vellWarned ? `No quarrels come from the chandlery roof. Somebody on it has been had words with.` : `A quarrel from the chandlery roof takes a splinter the size of a hand out of a piling beside your head, and then another, and then ${C7H.has('kettle') ? 'Kettle' : C7H.has('ellis') ? 'Ellis' : 'somebody'} gets a sightline, and then no more.`} The hand-mage in the doorway goes down with shadow still coming off its fingers like smoke off a snuffed wick. The two with knives go into the lake, one and then the other, and don't come up. The Claw don't leave their dead where anybody can count them.
+`It's ugly and wet, and longer than it should be. Dock fights are; there's water on three sides and nowhere to go but in, and a pier to be driven out along. ${S.f.c7_vellWarned ? `No quarrels come from the chandlery roof. Somebody on it has been had words with.` : `A quarrel from the chandlery roof takes a splinter the size of a hand out of a piling beside your head, and then another, and then ${C7H.has('kettle') ? 'Kettle' : C7H.has('ellis') ? 'Ellis' : 'somebody'} gets a sightline, and then no more.`} The hand-mage in the doorway goes down with shadow still coming off its fingers like smoke off a snuffed wick. The two with knives go into the lake, one and then the other, and don't come up. Out on the long pier the ones he kept back go the same way: the second pair of empty hands, the big one by the eel-traps, the crossbow in the boat; off the planks, one by one, into the grey water. The Claw don't leave their dead where anybody can count them.
 
 The grey cloak is the last.
 
@@ -990,7 +1024,7 @@ He lets you. That's the word for what he does.
 "Sergeant," he says to your back, pleasantly. ${fr ? `"I'll take that as a no. I'll write it so."${tell ? ` A pause. "Whiskeyjack has a copy of your evening at the dye-shop, by the way. In my hand. It went up the road an hour ago. Madryn told you not this year. It's a new year somewhere."` : ''}` : `"The entry stays open, then. It'll keep. Entries do."`}${C7H.has('tuft') && C7H.leashed() ? ` And, lower: "Good morning, mage. I'll see you when you're called."` : ''}
 
 You don't turn round. It's the hardest thing you've done all year.`,
-      ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }}]}; },
+      ch:[{t:'East, to the hill.', go:'c7_worry'}]}; },
 
     /* ---- Ellis: out of the grey ---- */
     c7_ellis_back:()=>({sp:'Ellis', fx:()=>{ S.f.c7_ellisSeen=1; }, txt:
@@ -1273,14 +1307,103 @@ ${st === 'settled' ? `He ties a knot and looks at it and doesn't like it. "You s
 
 The man in the grey cloak is still on the step by the green door. He hasn't moved. He's watching you look at the road, with the book under his arm and his boots clean, and you understand that he'll write it down if you walk past him, and that he'll write it down either way.`,
       ch:[{t:'Not yet.'},
-          {t:'Walk past him. East.', go:'c7_claw_avoid'}]} : {sp:'The Gadrobi road', txt:
-`East along the quay, and up through the Gadrobi District, and out through the gate you came in by. The hill is an hour on. The quorls leave at noon.`,
-      ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }},
+          {t:'Walk past him. East.', go:'c7_claw_avoid'}]} :
+      /* the rest (v3.12, Bridgeburner): the quay steps in the sun, between the accounting and the road out */
+      {sp:'The Gadrobi road', fx:()=>{ S.f.c7_rested=1; rest('The Fourth sits on the quay steps in the sun for the length of a bell. Wounds close, mostly.'); }, txt: S.f.c7_rested ?
+`The steps at the turn of the quay are where you left them, warm in the sun. Beyond them the Gadrobi District, and the gate you came in by, and the road. The hill is an hour on. The quorls leave at noon.` :
+`East along the quay to where it turns, and a flight of old steps goes down into the lake, the stone already warm, the sun full on it.
+
+The Fourth sits down on them. Nobody gives the order. ${C7H.has('ohl') ? `Ohl gets a fire going in half a fish-crate and makes tea, because it's morning and he always has. It's technically medicine. Everybody drinks it. Nobody says what it tastes like.` : C7H.isDead('ohl') ? `Somebody passes a flask along the step, and it isn't tea, and nobody says that either.` : `Somebody passes a flask along the step. Nobody asks what's in it.`} ${C7H.has('kettle') ? `Kettle goes to sleep sitting up with her cheek on the satchel, which is a thing only a sapper can do.` : ''} ${C7H.has('brisk') ? `Brisk unbuckles her greaves and sets them on the step beside her, side by side, the way you'd set down a pair of boots in a house you meant to stay in.` : ''} ${C7H.has('tuft') ? `Tuft sits a step lower than everyone else, with her face turned up to the empty sky and her eyes shut.` : ''}${C7H.dead().length ? ` There's room on the step for ${C7H.dead().length > 1 ? 'more' : 'one more'}. Nobody sits in it.` : ''}
+
+The gulls argue. The sun comes the rest of the way up. For the length of a bell, nobody in the Fourth counts anything.
+
+Then the gate you came in by, and the road. The hill is an hour on. The quorls leave at noon.`,
+      ch:[{t:'East, to the hill.', go:'c7_worry'},
           {t:'Not yet.'}]},
+
+    /* ---- the Worry Gate (v3.12): Pallick writes the Fourth out, and the lane that tried the wagon in the spring tries the satchel ---- */
+    c7_worry:()=>{ const f = S.f, d = C7H.dead(), b = C7H.has('brisk'), k = C7H.has('kettle');
+      if (f.c7_worryDone) return {sp:'The Worry Gate', scene:'city_street', txt:
+`Pallick doesn't look up. "You're written out, Sergeant," he tells the ledger. "Go and be written somewhere else."`,
+        ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }}]};
+      const name = f.c3_trueName ? `"Sergeant {sgt}." He finds the page without looking for it; he has had it open since dawn, you think. "Unta, from the vowels. In, the spring. Out, this morning." He writes it.`
+        : f.c3_falseName ? `He says the name off the headstone in Unta, carefully, to get it right, the way he said it in the spring. "It held," he says. "This city knows you by it. I'd keep it." He writes it.`
+        : f.c3_briskVoice ? (b ? `He looks at Brisk, and something in him that has been thirty years at this desk lights up very slightly, the way a lamp does. "Paviors," he says. "Section four. Outbound, exempt." He writes it. He underlines it.` : `"Paviors," he says. "Section four." He looks along the Fourth for the one who cited it, and doesn't find her, and doesn't ask. He writes it anyway, *Paviors, outbound, exempt*, and underlines it.`)
+        : f.c3_paid ? `"Road crew, one wagon, paid, no name," he says, finding the line. "Outbound, no name." He writes it. "The Council will be bereft again."`
+        : `"No name in, no name out." He writes it. "The Council will bear up."`;
+      return {sp:'The Worry Gate', scene:'city_street', txt:
+`Up through the Gadrobi District in the full light, where last night's smoke is still lying in the streets like a dog that won't move, past doorways with shutters propped in them and people on the steps with nothing to say, to the Worry Gate.
+
+The arch is twenty paces of dark with the morning at the far end of it. Carts are going out through it one behind another, slow, a man at each mule's head and a sheet over what's in the back: out to the pits past the tanneries, where the city puts what it can't keep. At the desk under the arch, with his lamp lit against the dark and ink to the second knuckle, Pallick is writing them out. One line each. He doesn't look up for the carts.
+
+He looks up for you.
+
+"Outbound," he says. ${name} ${d.length ? `He looks along the Fourth and counts, the way everyone does, and writes a number, and it isn't the number he wrote in the spring. He doesn't ask. He has been writing the dead out of this gate since first light; he knows a short count when he sees one.` : `He looks along the Fourth and counts, the way everyone does, and writes the number down.`}
+
+"Mind the lane," he says, to the ledger. "It's the same lane. Going out, it's on the other side." He turns a page. "The Watch is inside this morning, carrying shutters. The lane has noticed."
+
+So it has.
+
+${f.c3_gateFought ? `The big one comes out first. You know him: the Gadrobi with a face like a wall that has been punched a great deal and decided to be proud of it, who went down last and hardest in the spring and crawled away into the dark with great dignity. He has had all summer to think about it. He's brought friends.` : `A big Gadrobi comes out first, with a face like a wall that has been punched a great deal and decided to be proud of it. He's brought friends.`} Thin ones with knives held the Daru way, point down along the forearm. Two as broad as he is, with cudgels, across the far mouth of the arch. Out past it on the Worrytown side, somebody with a crossbow, sitting on a water-butt as if he'd paid for the seat.
+
+"Malazans," says the big one, reasonably. He stays where he is; he has friends for the rest. "Going out the gate with packs on, the morning after. Everybody in Worrytown can count, Malazan. You're not coming back." He nods at the satchel on ${k ? `Kettle's` : 'your'} hip. "${f.c3_gateFought ? `Last time it was a crate, and I didn't know what was in it. This time I do.` : `Moranth. We know what's in it.`} Just the satchel. Keep the rest."
+
+${k ? `"No," says Kettle, in the voice you'd use to tell somebody the time. Her hand is flat on the satchel flap.` : ''}${b ? `${k ? ' ' : ''}Brisk's shield comes off her back.` : ''}`,
+      ch:[{t:'"Shields."', go:()=>startBattle('c7_worrygate')},
+          {t:'Kettle rolls a sharper up the arch.', tag:'uses 1 sharper', req:()=>k && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('c7_worrygate', {pre:true})},
+          {t:'Stare him down.', check:['might',15],
+           edges:id=>[S.f.c3_gateFought && ['he remembers the spring', 1], S.f.c7_clawFought && ['Claw blood on your boots', 1], id === 'ohl' && ['the healer\'s bag, open', 1], C7H.dead().length && ['the squad is short', -1]],
+           go:'c7_worry_faced', fail:'c7_worry_fail'},
+          {t:'Count out twenty silver.', tag:'20 silver', req:()=>S.silver >= 20, fx:()=>{ S.silver -= 20; S.f.c7_worryPaid=1; S.f.c7_worryDone=1; AUDIO.play('coin'); }, go:'c7_worry_paid'}]}; },
+    c7_worry_faced:()=>{ const w = ROLL().who || 'sgt', near = nearMiss(); return {sp:'The Worry Gate', scene:'city_street', fx:()=>{ S.f.c7_worryFaced=1; S.f.c7_worryDone=1; }, txt:
+`${by({
+sgt:`You don't say anything. You walk up the arch toward him at a marching pace with the Fourth at your back, and you don't stop until you're close enough to smell last night's wine on him. Then you stop, and you let him count you.`,
+brisk:`Brisk walks up the arch until she's standing much too close to him, shield on her arm, and looks at him over the rim of it for a long moment. "We were up all night," she says, in the regiment voice, the one that comes out of the chest like a drum. "Things came up out of the ground. We're still here." She lets him do the sum. "Think what that says about the things."`,
+kettle:`Kettle walks up to him with her hand in the satchel, and takes it out again with something round and clay-grey in it, black wax on the seal, and holds it up between them the way you'd show a man a coin. "You want the satchel," she says kindly. "This is what's in the satchel. Do you want it now? I can do now."`,
+ohl:`Ohl walks up to him with his healer's bag open on his arm. "I've had my hands inside a great many people since midnight, child," he says. "I'm tired, and I'm old, and I know exactly where everything is in a man. I'm asking you, as a professional courtesy, not to add to the number."`,
+tuft:`Tuft walks up to him and says nothing at all. She only looks at him, the way she looks at a card she has already read, until he looks away first.`,
+ellis:`Ellis walks up to him and says one sentence, and it's the right one. "I'd like it noted," she says, "that I'm the friendly one."`,
+_:`{who} walks up the arch to him and says it plainly: the Fourth has been up all night with worse than him, and is still standing, and would very much like to go on standing somewhere else.`})}
+
+The big one looks at ${C7H.rw(w)} for as long as it takes a cart of the dead to go by. Then along the rest of the Fourth. Then, for a long moment, at the crossbow on the water-butt, who has found something very interesting to look at in the sky.
+
+"Another time, Malazan," he says, with great dignity, and steps back into the lane, and the lane takes him, and the ones with knives, and the ones with cudgels.
+
+${near ? `They let you by. The crossbow on the water-butt watches you all the way out through Worrytown to the tanneries, and you feel it between your shoulders every step, and the Fourth walks a little faster than a squad should.` : `Nobody watches you out through Worrytown. Nobody in Worrytown watches anything this morning that might watch them back.`}
+
+Behind you at the desk Pallick writes something, and blots it. "He says that to everyone," he remarks to the ledger, and turns the page.`,
+      ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }}]}; },
+    c7_worry_fail:()=>({sp:'The Worry Gate', scene:'city_street', txt:
+`${by({sgt:`He counts you. He takes his time about it, and enjoys it.`, brisk:`He hears her out. He even nods, the way a man nods at a good point well made.`, kettle:`He looks at the thing in her hand, and then at the hand, which is shaking, and smiles.`, ohl:`He looks at the old man's open bag, and the old man's hands, and laughs, not unkindly.`, _:`He hears {who} out, and nods, and smiles.`})}
+
+"You're tired, Malazan," he says. "I can see it from here. That's rather the point of this morning."
+
+He doesn't give a signal. He doesn't need one. The lane comes out of the lane, and the crossbow on the water-butt has stopped looking at the sky.`,
+      ch:[{t:'"Shields."', go:()=>startBattle('c7_worrygate', {surprise:'e'})}]}),
+    c7_worry_paid:()=>({sp:'The Worry Gate', scene:'city_street', txt:
+`You count twenty silver out of the purse in the dark of the arch, where everybody can hear it, and knot it in a rag, and throw it underarm up the arch. He catches it without looking, the way a man catches a thing he has been catching all his life, and weighs it in his palm, and makes a face that says it's light, and that light will do.
+
+"Malazan arithmetic," he says, and steps back into the lane, and the lane takes him. On the Worrytown side the crossbow goes back to looking at the sky.
+
+${C7H.has('brisk') ? `Brisk watches the rag go and says nothing at all, which from Brisk is a ledger entry.` : ''} ${C7H.has('kettle') ? `Kettle takes her hand off the satchel flap one finger at a time.` : ''}
+
+Behind you Pallick writes something, and blots it. "Toll," he says to the ledger. "Unofficial. Outbound." He turns the page. "I keep a column."`,
+      ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }}]}),
+    c7_after_worry:()=>({sp:'The tanners\' yard', scene:'city_street', fx:()=>{ S.f.c7_worryFought=1; S.f.c7_worryDone=1; }, txt:
+`It takes longer than the lane did in the spring. They've had all summer to think about it, and a tanners' yard has more corners than a lane. But they're Worrytown, and you're the Fourth, and the Fourth has had a year. In the end the big one is sitting in a tanning pit up to his chest in something nobody should be up to the chest in, with his cart-axle floating beside him, and his friends are in Worrytown's many doorways, and the doorways are shut.
+
+"Satchel," he says from the pit, with great dignity, the way a man states a position he's no longer in a position to hold.
+
+${C7H.has('kettle') ? `"No," says Kettle kindly, and goes on scraping her boot on the edge of the pit.` : `Nobody answers him. Nobody needs to.`} ${C7H.has('ohl') ? `Ohl looks down at him a moment, professionally, and then holds out a hand. The big one looks at the hand as if it were a trick. It isn't. Ohl gets him out. "Wash," Ohl tells him. "In the lake. Not the near end."` : ''}
+
+${C7H.has('brisk') ? `Brisk wipes her spear on a hide on a drying frame, and looks at it, and wipes it again. "Last time through this gate we had ${S.f.c2_wagon ? 'Pell' : 'a mule'}," she says. "I miss the mule."` : ''}
+
+Back under the arch Pallick hasn't moved from his desk. He didn't move for the noise, either. "The Watch will want to know about the lane," he says, writing. "I'll tell them it was the gas." He blots it. "It is usually the gas."`,
+      ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }}]}),
 
     /* ---- the quorl hill ---- */
     c7_hill_arrive:()=>{ const pend = C7H.pendingTell(); return {sp:'The Gadrobi road · a hill east of the city', scene:'quorl_hill', fx:()=>{ S.f.c7_hill=1; }, txt:
-`East along the quay and out through the Worry Gate you came in by from the hills, through Worrytown, past the tanneries and the goat-pens and the shrine to a god whose face somebody chiselled off with care. The road climbs into brown hills. An hour out, from the top of a rise, you see them.
+`${S.f.c7_worryDone ? `Out through Worrytown, past the tanneries and the goat-pens and the shrine to a god whose face somebody chiselled off with care.` : `East along the quay and out through the Worry Gate you came in by from the hills, through Worrytown, past the tanneries and the goat-pens and the shrine to a god whose face somebody chiselled off with care.`} The road climbs into brown hills. An hour out, from the top of a rise, you see them.
 
 Quorls.
 

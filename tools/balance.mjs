@@ -41,9 +41,9 @@ const optFor = id => id === 'stone' ? { surprise: Math.random() < .5 ? 'e' : 'p'
 /* Ellis joins at "where the horses died", after the barrow; she can be gone through the rent (Ch5) and back in Ch7 */
 const ellisCan = (id, ch) => ch >= 2 && id !== 'barrow';
 /* the satchel as the story has filled it by then (see header) */
-const HEDGE = new Set(['knives']); // Ch3 fights after the second night with Hedge
+const HEDGE = new Set(['knives', 'c3_toughs']); // Ch3 fights after the second night with Hedge
 const satchel = (id, ch) => LEAN ? { sharper: 0, burner: 0, cusser: 0, salve: 0, smoker: 0 }
-  : (ch >= 4 || HEDGE.has(id)) ? { sharper: 2, burner: 1, cusser: 2, salve: 2, smoker: 2 } : { sharper: 2, burner: 1, cusser: 1, salve: 2, smoker: 0 };
+  : (ch >= 4 || HEDGE.has(id)) ? { sharper: 2, burner: 1, cusser: 2, salve: 2, smoker: 2 } : { sharper: 2, burner: 1, cusser: 1, salve: ch >= 2 ? 2 : 1, smoker: 0 };
 const CARDPOOL = { 0: ['oponn', 'obelisk', 'knight', 'assassin'], 1: ['hounds', 'hounds', 'hounds', 'oponn', 'knight', 'assassin'],
   2: ['raven', 'raven', 'raven', 'oponn', 'obelisk', 'knight'], 3: ['knight', 'knight', 'oponn', 'assassin', 'obelisk', 'magi'],
   4: ['assassin', 'assassin', 'knight', 'knight', 'oponn', 'herald'], 5: ['herald', 'herald', 'obelisk', 'hounds', 'knight', 'oponn'],
@@ -183,6 +183,9 @@ const INIT = () => {
       if (can(u, 'argument') && strainOk(u, 3)) { const t = AB.argument.tiles(u)[0]; if (t) return tryAb('argument', t.x, t.y); }
       if (can(u, 'mend')) { const t = AB.mend.tiles(u).filter(p => !p.ally && pct(p) < .45).sort((a, b) => pct(a) - pct(b))[0];
         if (t && (strainOk(u, 3) || (pct(t) < .25 && u.strain + 3 <= STR_MAX + 1 && u.hp > 8))) return tryAb('mend', t.x, t.y); }
+      // Denul Wash when two or more close by are hurt; Stanch on someone about to drop with enemies on them
+      if (can(u, 'wash') && strainOk(u, 4) && sq.filter(p => !p.ally && cheb(p, u) <= 2 && pct(p) < .65).length >= 2) return tryAb('wash', u.x, u.y);
+      if (can(u, 'stanch') && strainOk(u, 2)) { const t = AB.stanch.tiles(u).filter(p => pct(p) < .25 && minD(p, opp) <= 1)[0]; if (t) return tryAb('stanch', t.x, t.y); }
       // a salve on yourself or the one beside you when it is bad (one a fight: the satchel has to last)
       if (can(u, 'salve') && W.st.salves < spec.salveCap) {
         const ohl = sq.find(p => p.id === 'ohl'), mendSoon = ohl && ohl !== u && !B.def.nomagic && ohl.strain <= 3;
@@ -241,13 +244,22 @@ const INIT = () => {
     const st = W.st = { downs: 0, downed: {}, dmgTaken: 0, aooOnSquad: 0, aooOnFoe: 0, mun: 0, cussers: 0, salves: 0, abil: {}, units: {}, errors: [], policyStuck: 0, policyFail: 0 };
     W.open = null; W.ts = null;
     try { W.setup(spec); } catch (e) { return { err: 'setup: ' + e.message }; }
-    const b0 = B, t0 = performance.now(); W.anchor = {}; B.units.forEach(u => { if (u.side === 'p' && !u.ally) W.anchor[u.id] = { x: u.x, y: u.y }; });
+    let b0 = B, rounds0 = 0, stages = 1; const t0 = performance.now(); W.anchor = {}; B.units.forEach(u => { if (u.side === 'p' && !u.ally) W.anchor[u.id] = { x: u.x, y: u.y }; });
     const squadMax = B.units.filter(u => u.side === 'p' && !u.ally).reduce((s, u) => s + u.maxhp, 0);
     let sig = '', since = performance.now(), end = '';
     for (;;) {
       await new Promise(r => setTimeout(r, 2));
       if (B !== b0) { end = 'replaced'; break; }
-      if (B.over) { end = 'over'; break; }
+      if (B.over) {
+        // a second area: wait for the breath between, push on, and keep playing the same fight
+        if (b0.def.stage2 && !b0.def.isStage2 && b0.banner && b0.banner.txt === 'The way on') {
+          let on = null; for (let i = 0; i < 400 && !(on = document.getElementById('bOn')); i++) await new Promise(r => setTimeout(r, 10));
+          if (!on) { end = 'stage-stuck'; break; }
+          if (W.open && B === b0) closeTurn(); rounds0 += b0.round; on.click(); await new Promise(r => setTimeout(r, 30));
+          if (B === b0 || !B) { end = 'stage-stuck'; break; }
+          b0 = B; stages++; W.anchor = {}; B.units.forEach(u => { if (u.side === 'p' && !u.ally) W.anchor[u.id] = { x: u.x, y: u.y }; }); sig = ''; since = performance.now(); continue;
+        }
+        end = 'over'; break; }
       if (B.round > spec.maxRounds) { end = 'stalemate'; break; }
       const now = performance.now(), sg = [B.turn, B.busy, B.round, B.units.map(u => u.hp + ':' + u.x + ',' + u.y).join(';')].join('|');
       if (sg !== sig) { sig = sg; since = now; } else if (now - since > 6000) { end = 'stuck'; break; }
@@ -260,7 +272,7 @@ const INIT = () => {
     const sqU = b0.units.filter(u => u.side === 'p' && !u.ally);
     const won = end === 'over' && !!b0.banner && b0.banner.txt !== 'The Fourth is down';
     const ob = b0.def.objective, held = won && ob && ob.type === 'survive' && b0.round > ob.rounds;
-    const res = { won, end, rounds: held ? ob.rounds : b0.round, ms: Math.round(performance.now() - t0), // a held fight lasted its rounds (the engine's counter is one past)
+    const res = { won, end, stages, rounds: rounds0 + (held ? ob.rounds : b0.round), ms: Math.round(performance.now() - t0), // a held fight lasted its rounds (the engine's counter is one past)
       hpLost: won ? sqU.reduce((s, u) => s + (u.maxhp - Math.max(0, u.hp)), 0) / squadMax : 1,
       downs: st.downs, downedN: Object.keys(st.downed).length, upAtEnd: sqU.filter(u => u.hp > 0).length,
       dead: b0.def.mortal ? (won ? sqU.filter(u => u.hp <= 0 && u.id !== 'sgt').map(u => u.id) : sqU.filter(u => u.id !== 'sgt').map(u => u.id)) : [],
