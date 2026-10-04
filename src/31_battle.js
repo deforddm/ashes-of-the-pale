@@ -15,7 +15,6 @@ const inB = (x,y) => x>=0 && y>=0 && x<8 && y<10;
 const wall = (x,y) => !inB(x,y) || B.def.map[y][x] === '#';
 const free = (x,y,self) => !wall(x,y) && !B.units.some(u => u !== self && u.hp > 0 && u.x === x && u.y === y);
 const veilPen = () => Math.round(5 * B.warren.meanas);
-const phantomDC = () => 13 + (B.warren.meanas > 1 ? 3 : 0);
 const pace = ms => ms * SET.speed; // combat pace setting (Slow / Normal / Fast)
 /* a timer that belongs to this battle: it does nothing if the battle was won, left, restarted or replaced meanwhile */
 function later(fn, ms){ const b0 = B; return setTimeout(() => { if (B && B === b0) fn(); }, ms); }
@@ -127,7 +126,7 @@ function nextTurn(){
   if (u.side === 'p' && !u.ally) { squadTurnStart(u); if (u.hp <= 0) { B.busy = true; updBattleUI(); if (checkEnd()) return; return later(nextTurn, pace(600)); } B.busy = false; B.mode = 'act'; updBattleUI(); barInView(); }
   else { B.busy = true; updBattleUI(); const turn = B.turn; later(() => ai(u, turn), pace(550)); } // not if the battle was left or restarted meanwhile
 }
-function endTurn(){ if (!B || B.over) return; const u = B.cur; if (u && u.side === 'p' && !u.ally && u.hp > 0 && !B.acted && !u.steady) { u.steady = true; float(u, 'steady', '#e8c073'); blog(`${u.name} holds, steady. <em>+2 to the next attack or save.</em>`); } B.busy = true; B.mode = null; B.aim = null; later(nextTurn, pace(250)); }
+function endTurn(){ if (!B || B.over) return; const u = B.cur; if (u && u.blindTurns > 0) u.blindTurns--; /* Phantom wears off one of its own turns at a time */ if (u && u.side === 'p' && !u.ally && u.hp > 0 && !B.acted && !u.steady) { u.steady = true; float(u, 'steady', '#e8c073'); blog(`${u.name} holds, steady. <em>+2 to the next attack or save.</em>`); } B.busy = true; B.mode = null; B.aim = null; later(nextTurn, pace(250)); }
 function checkEnd(){
   if (!B || B.over) return true;
   const ob = B.def.objective;
@@ -199,11 +198,12 @@ const AB = {
   veil:{name:'Veil', strain:2, desc:()=>`Meanas illusion on a squadmate within 4: enemies take −${veilPen()} to hit them for 2 rounds. Strain 2.`,
     tiles:u=>party().filter(p => cheb(u,p) <= 4),
     run(u,x,y){ const t = unitAt(x,y); t.veilUntil = B.round + 2; AUDIO.play('magic'); sparks(t.x, t.y, 14, '#c9bbff', .4); blog(`${u.name} folds shadow around ${t.name}. They blur at the edges.`); float(t,'veiled','#c9bbff'); }},
-  phantom:{name:'Phantom', strain:3, desc:()=>`An enemy within 5 chases a Meanas phantom and loses its next turn unless it resists (DC ${phantomDC()}). Strain 3.`,
+  /* Phantom (Meanas): shadow folded over an enemy's eyes for two rounds. It fights phantoms; half the blows that would land go into the dark. */
+  phantom:{name:'Phantom', strain:2, desc:()=>'Meanas shadow over the eyes of an enemy within 5 for its next 2 turns: it swings at phantoms, and half the blows that would have landed go into the dark (−50% to hit). Strain 2.',
     tiles:u=>foes().filter(f => cheb(u,f) <= 5),
-    run(u,x,y){ const t = unitAt(x,y); const r = d20() + (t.boss ? 4 : 2); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#9a86e0', t:performance.now(), dur:400, wob:true});
-      if (r >= phantomDC()) { blog(`${t.name} sees through the phantom${SET.dice ? ` (${r} vs ${phantomDC()})` : ''}.`); float(t,'resists','#a99a88'); }
-      else { t.stun = true; blog(`${t.name} lunges after a phantom that isn't there${SET.dice ? ` (${r} vs ${phantomDC()})` : ''}.`); float(t,'fooled','#c9bbff'); sparks(t.x, t.y, 12, '#c9bbff', .4); } }},
+    run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#9a86e0', t:performance.now(), dur:400, wob:true});
+      t.blindTurns = 2; float(t,'blinded','#9a86e0'); sparks(t.x, t.y, 14, '#6a58b0', .45);
+      blog(`${u.name} pulls Meanas down over ${t.name}'s eyes. For its next two turns it will be fighting phantoms.`); }},
   mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${has('ohl','triage') ? 6 : 3}${B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
     tiles:u=>party().filter(p => cheb(u,p) <= (has(u.id,'triage') ? 4 : 3)),
     run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,has(u.id,'triage') ? 6 : 3) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
@@ -220,7 +220,7 @@ const AB = {
     run(u,x,y){ AUDIO.play('shadow'); sparks(u.x, u.y, 12, '#c9bbff', .4); u.x = x; u.y = y; sparks(x, y, 12, '#c9bbff', .4); blog(`${u.name} is somewhere else.`); }},
   /* Mockra, the warren of the mind: not a lost turn (that is Phantom) but a turned one. The enemy hears its own side say something
      unforgivable and spends its next turn going for the nearest of them instead of the squad. */
-  mockra:{name:'Mockra Whisper', strain:2, desc:()=>'An enemy within 4 hears its own side whisper something unforgivable. On its next turn it goes for the nearest of them instead of you. Bosses resist on 12+. Strain 2.',
+  mockra:{name:'Mockra Whisper', strain:3, desc:()=>'An enemy within 4 hears its own side whisper something unforgivable. On its next turn it goes for the nearest of them instead of you. Bosses resist on 12+. Strain 3.',
     tiles:u=>foes().filter(f => cheb(u,f) <= 4 && !f.turned),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#e0a8d8', t:performance.now(), dur:400, wob:true});
       if (t.boss && d20() >= 12) { blog(`${t.name} shakes the whisper off.`); float(t,'resists','#a99a88'); }
@@ -281,6 +281,7 @@ function attack(a, t, o={}){
   let hit = crit || (nat !== 1 && nat + bonus >= ac);
   if (hit && mine && t.cantRound === B.round) { t.cantRound = -1; if (!crit) { crit = true; blog(`<em>The hand-cant said this one, now.</em>`); } } // Claw Hand-Cant
   if (hit && !crit && t.parryLeft > 0 && t.side === 'e') { t.parryLeft--; hit = false; later(() => { float(t, 'parried', '#cfc8b8'); AUDIO.play('sword'); }, pace(140)); blog(`${t.name} turns ${a.name}'s blow aside. <em>Parried.</em>`); }
+  let dark = false; if (hit && a.blindTurns > 0 && R(2) === 0) { hit = false; crit = false; dark = true; } // Phantom: half the blows that would land go into the dark
   if (crit && mine && !a.ally) tally('crits');
   const verb = o.verb || a.verb;
   const ranged = cheb(a, t) > 1;
@@ -293,7 +294,7 @@ function attack(a, t, o={}){
   const tags = [o.aoo ? 'free attack' : '', fl ? 'flanking +2' : ''].filter(Boolean).join(', ');
   const tagTxt = tags ? ` <span class="stat">[${tags}]</span>` : '';
   const land = ranged ? pace(200) : pace(140); // the blow lands when the bolt arrives or the lunge connects
-  if (!hit) { blog(`${a.name} ${verb} ${t.name} and misses${tagTxt}${math}.`); later(() => { float(t, 'miss', '#a99a88'); if (!ranged) sparks(t.x, t.y - .2, 4, '#cfc8b8', .5); }, land); return {hit:false}; }
+  if (!hit) { blog(dark ? `${a.name} ${verb} ${t.name} and hits a phantom instead: the blow goes into the dark${tagTxt}${math}.` : `${a.name} ${verb} ${t.name} and misses${tagTxt}${math}.`); later(() => { float(t, dark ? 'into the dark' : 'miss', dark ? '#9a86e0' : '#a99a88'); if (!ranged) sparks(t.x, t.y - .2, 4, '#cfc8b8', .5); }, land); return {hit:false}; }
   const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0) + (t.rimeUntil >= B.round ? 2 : 0);
   blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${tagTxt}${math}.`);
   later(() => { if (t.hp <= 0) return; if (crit) sparks(t.x, t.y, 16, '#ffcf7a'); else sparks(t.x, t.y - .1, 5, '#f08a7c', .6);
@@ -556,7 +557,7 @@ function updBattleUI(){
       else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to ${a.darkness ? 'call it' : 'throw'}. ${cov.length ? `The ${a.darkness ? 'dark' : 'smoke'} covers ${cov.map(v => esc(v.name)).join(', ')}.` : `The ${a.darkness ? 'dark' : 'smoke'} covers empty ground.`} Nobody shoots into it or out of it.`; }
       else { const caught = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe), mine = caught.filter(v => v.side === 'p'), theirs = caught.length - mine.length;
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
-  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', u.turned ? 'turned on its own' : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
+  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', u.turned ? 'turned on its own' : '', u.blindTurns > 0 ? `blinded by shadow (−50% to hit, ${u.blindTurns} turn${u.blindTurns > 1 ? 's' : ''})` : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="bhint">${tapWord(hint)}</div>
@@ -652,6 +653,7 @@ function drawBattle(t){
     const w = T*.7, px = cx - w/2, py = cy + T*.3; ctx.fillStyle = '#0d0b09'; ctx.fillRect(px, py, w, Math.max(3, T*.08));
     ctx.fillStyle = u.side === 'p' ? (u.ally ? '#8fa6cf' : '#7fb394') : '#d9695a'; ctx.fillRect(px, py, w * u.hp / u.maxhp, Math.max(3, T*.08));
     if (u.stun) { ctx.fillStyle = '#e9dfc9'; ctx.font = `${Math.round(T*.3)}px sans-serif`; ctx.textAlign = 'left'; ctx.fillText('z', cx + T*.3, cy - T*.7 + Math.sin(t/300)*2); }
+    if (u.blindTurns > 0) { const hx = cx, hy = cy - T*.62; for (let i=0;i<3;i++){ const ph = t/420 + i*2.1; ctx.fillStyle = `rgba(28,18,52,${.5 - i*.1})`; ctx.beginPath(); ctx.ellipse(hx + Math.cos(ph)*T*.07, hy + Math.sin(ph*1.3)*T*.03, T*(.3 - i*.05), T*(.1 + i*.02), Math.sin(ph)*.2, 0, 7); ctx.fill(); } ctx.strokeStyle = 'rgba(154,134,224,.55)'; ctx.lineWidth = Math.max(1, T*.03); ctx.beginPath(); ctx.ellipse(hx, hy, T*.3, T*.1, 0, 0, 7); ctx.stroke(); } // Phantom: shadow over the eyes
     if (u.turned) { ctx.fillStyle = '#e0a8d8'; ctx.font = `bold ${Math.round(T*.32)}px sans-serif`; ctx.textAlign = 'left'; ctx.fillText('?', cx + T*.3, cy - T*.7 + Math.sin(t/260)*2); }
   });
   // smoke: grey billows over each smoked tile, thick enough to lose a figure in

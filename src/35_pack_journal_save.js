@@ -108,6 +108,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.13.7', ['Tuft\'s Phantom is a blinding shadow now: an enemy within 5 has Meanas over its eyes for its next two turns, and half the blows that would have landed go into the dark. Strain 2.', 'Mockra Whisper (an enemy turns on its own side) costs strain 3, so the bigger trick costs more.']],
   ['3.13.6', ['Broke at the bones? Hedge (Chapter One) or Fiddler (Chapter Three) will spot you five silver to sit in. Win, and they take their five back off the top; lose, and it goes on the Bridgeburners\' slate.']],
   ['3.13.5', ['Tuft\'s Mockra Whisper is no longer a second Phantom. Phantom (Meanas, an illusion) still costs an enemy its turn; Mockra Whisper (the mind) turns an enemy on its own side for a turn, and it goes for the nearest of them instead of you. Bosses may still shake it off.']],
   ['3.13.4', ['The same for the table games: whatever the bones or Kruppe\'s cups won or cost shows at the top as soon as you get up.']],
