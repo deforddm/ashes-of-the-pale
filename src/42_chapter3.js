@@ -6,6 +6,11 @@ const c3KnivesOpt = pre => { const f = S.f, o = pre ? {pre:true} : {};
 /* up the alley from the crossing: on the second night the big Gadrobi from the gate is waiting at the dogleg, once */
 const c3Arrive = to => { if (to === 'lane') { startExplore('daru_lane'); if (!S.f.c3_lane) talk('c3_lane_arrive'); } else { startExplore('daru_street'); talk('c3_daru_arrive'); } };
 const c3Up = to => () => { if (S.f.c3_workDone && !S.f.c3_cousins) { S.f.c3_upTo = to; return talk('c3_cousins'); } c3Arrive(to); };
+/* Fiddler's five at the bones, settled after the game (bonesSettle in 36_minigames.js leaves S.f.bonesSpotLast) */
+const c3Spot = () => { const k = S.f.bonesSpotLast; if (!k) return '';
+  return k.back >= k.lent ? `\n\nFiddler holds out his hand, palm up, without looking, and you put his five in it. He counts them by weight. "That's the first time my silver's come back from a game Hedge was in," he says. "I'll have it framed."`
+    : k.back > 0 ? `\n\nFiddler takes back what's left of his five, ${k.back} silver, and doesn't ask for the rest. "Call it tuition," he says. Hedge, through the onion: "Call it *mine.*"`
+    : `\n\nFiddler watches his last silver go across the cobbles to Hedge. "That's the first time my silver's ever gone to him on purpose," he says. Hedge, stacking it: "On purpose is the best way."`; };
 const CH3 = {
   title:'Blue Fire', number:'Three',
   intro:{loc:'Darujhistan', sub:'The Gadrobi District · dusk', cap:'Blue lamps coming on one at a time along the walls, and above the lake a mountain that nobody looks at.',
@@ -448,6 +453,7 @@ ${S.f.c3_fid ? `His eyes go past you, once, to the chandler's shutters, and the 
 ${S.f.c3_sorry ? `"And Sergeant. Her." He doesn't point. He doesn't need to. "You've talked to her already. I can see it on you; the back of your neck's still up." He rubs his own. "Don't do it again. Don't look at her long enough for her to notice." He smiles, and it isn't a joke, and he knows you know. "Squad advice. Free. Late."` : `"And Sergeant. Her." He doesn't point. He doesn't need to. "Don't talk to her. Don't look at her long enough for her to notice." He smiles, and it isn't a joke, and he knows you know. "Squad advice. Free. First and only."`}`}`,
       ch:[{t:'"Who is she?"', go:'c3_fiddler_sorry'},
           {t:'"Bones?"', tag:'Bones', req:()=>!!S.f.c3_workDone && S.silver >= 1 && (S.f.c3_bonesNet || 0) < 15, go:'c3_bones'},
+          {t:'"Bones? I haven\'t a coin."', tag:'Bones', req:()=>!!S.f.c3_workDone && S.silver < 1 && (S.f.c3_bonesNet || 0) < 15, go:'c3_bones'},
           {t:'Leave him.'}]}),
     c3_bones:()=>({sp:'Fiddler', txt:
 `"Bones." Fiddler considers the word as if it were a fuse. Then he whistles, two notes, and Hedge comes round the hole from the far side with his onion. "Sergeant wants a game."
@@ -456,8 +462,13 @@ ${S.f.c3_sorry ? `"And Sergeant. Her." He doesn't point. He doesn't need to. "Yo
 
 "I always keep it honest," says Fiddler. "That's why you always lose."
 
-${S.f.c1_bones === 'won' ? `Hedge squints at you. "Wait. Pale. The blanket. You're the one took Fid's silver." He looks at Fiddler with dawning joy. "*You* sit out. I'll get it back for you."` : S.f.c1_bones === 'lost' ? `Hedge squints at you. "Pale. The blanket. You're the one Fid cleaned out." He beams. "Welcome back."` : ''}`,
-      ch:[{t:'Deal.', tag:'Bones', go:()=>playBones({opp:'hedge', chat:'fiddler', stakes:[1,3,5], place:'c3', cap:15, after:r => { S.f.c3_bonesLast = r.games ? (r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even') : 'left'; talk('c3_bones_after'); }})},
+${S.f.c1_bones === 'won' ? `Hedge squints at you. "Wait. Pale. The blanket. You're the one took Fid's silver." He looks at Fiddler with dawning joy. "*You* sit out. I'll get it back for you."` : S.f.c1_bones === 'lost' ? `Hedge squints at you. "Pale. The blanket. You're the one Fid cleaned out." He beams. "Welcome back."` : ''}${S.silver < 1 ? `
+
+Hedge looks at your hands, and then at your purse, and then, meaningfully, at Fiddler. Fiddler sighs through his nose, counts five silver out of his own and puts them on the cobbles in front of you. "Take his money with mine," he says. "It'll mean more. I'll have my five back off the top, if there is a top."
+
+"There won't be," says Hedge, happily. "I've got the onion."` : ''}`,
+      ch:[{t:'Deal.', tag:'Bones', req:()=>S.silver >= 1, go:()=>playBones({opp:'hedge', chat:'fiddler', stakes:[1,3,5], place:'c3', cap:15, after:r => { S.f.c3_bonesLast = r.games ? (r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even') : 'left'; talk('c3_bones_after'); }})},
+          {t:'Take Fiddler\'s five. Deal.', tag:'Bones', req:()=>S.silver < 1, go:()=>{ bonesSpot(5); playBones({opp:'hedge', chat:'fiddler', stakes:[1,3,5], place:'c3', cap:15, after:r => { S.f.c3_bonesLast = r.games ? (r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even') : 'left'; bonesSettle(); talk('c3_bones_after'); }}); }},
           {t:'"Another time."'}]}),
     c3_bones_after:()=>({sp:'Hedge and Fiddler', txt:
 `${(S.f.c3_bonesNet || 0) >= 15 ? `"That's the crate money," says Hedge, faintly. "That was the crate money, Fid." Fiddler, very calm: "There isn't any crate money." Hedge: "There *was.*"` :
@@ -466,7 +477,8 @@ ${S.f.c1_bones === 'won' ? `Hedge squints at you. "Wait. Pale. The blanket. You'
 
 Fiddler, pocketing his share of your silver: "He'll tell that story for a month. Your name's not in it. You're welcome."` :
   S.f.c3_bonesLast === 'even' ? `"Square," says Fiddler. "That's the worst result there is. Nobody learns anything."` :
-  `Hedge puts the bones back under his cap. "Suit yourself. We'll be here. We're always here, lately."`}`,
+  `Hedge puts the bones back under his cap. "Suit yourself. We'll be here. We're always here, lately."`}${c3Spot()}`,
+      onshow:()=>{ S.f.bonesSpotLast = null; },
       ch:[{t:'Leave them to it.'}]}),
     c3_fiddler_sorry:()=>({sp:'Fiddler', fx:()=>{S.f.c3_fidSorry=1;}, txt:
 `"Sorry." He lets that sit until you understand it's a name. "Recruit. Fishing village on Itko Kan. Came to us young." A long pause, the kind a sapper leaves while the acid decides. "She's the best we've got at some things. I don't like the things."

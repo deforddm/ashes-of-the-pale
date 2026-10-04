@@ -91,6 +91,11 @@ const BONES_CHAT = {
   fiddler:{name:'Fiddler', to:{meBust:['"Skull. Hard luck."'], meBig:['"Bank it, Sergeant. That\'s free advice, and it\'s worth what you pay."'], meHood:['He winces for you, briefly, like a man stepping on a nail.'], meWin:['"Hedge, you owe the Sergeant. Don\'t eat it."']}},
   brisk:{name:'Brisk', to:{meBust:['"Should have banked."'], meBig:['"Bank it, Sergeant."'], meHood:['Brisk closes her eyes, briefly, in something like prayer.'], meWin:['"She\'ll pretend she let you."']}},
 };
+/* a broke sergeant at the Bridgeburners' blanket gets spotted a stake: the winnings over it are the sergeant's, the losses the
+   spotter's. Kept out of the earned/spent count (S.stats.silverSeen moves with it). bonesSettle() returns {lent, back}. */
+function bonesSpot(n){ S.silver += n; S.stats ??= {}; if (S.stats.silverSeen != null) S.stats.silverSeen += n; S.f.bonesSpot = n; S.f.bonesSpotLast = null; save(); }
+function bonesSettle(){ const n = S.f.bonesSpot || 0; if (!n) return null; const back = Math.min(n, Math.max(0, S.silver));
+  S.silver -= back; if (S.stats && S.stats.silverSeen != null) S.stats.silverSeen -= back; S.f.bonesSpot = 0; S.f.bonesSpotLast = {lent:n, back}; save(); return S.f.bonesSpotLast; }
 /* opt: {opp, chat, stakes:[silver...] or null, stakeText (no silver: what's played for), place, after(result)} */
 function playBones(opt){
   const O = BONES[opt.opp], C = BONES_CHAT[opt.chat], pick = a => a[R(a.length)];

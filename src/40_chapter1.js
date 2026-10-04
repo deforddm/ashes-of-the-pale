@@ -39,6 +39,11 @@ const c1Late = () => talk(S.f.c1_raid ? 'c1_night' : 'c1_raid');
 const c1Raiders = () => S.f.p_garrowCrossed ? `One of them you've seen before, by lamplight, forty paces into the north tunnels, running for the surface with Garrow's name. He's stopped running. He's found something worth stopping for.` :
   S.f.garrowWord ? `None of them is Moreau. Moreau's section heard Garrow's word two nights ago and went deeper. These ones never heard it.` :
   `None of them is Moreau's. What's left of Moreau's section is under the north quarter, where you left it. These are new. The Host makes new ones every night.`;
+/* Hedge's five at the bones, settled after the game (bonesSettle in 36_minigames.js leaves S.f.bonesSpotLast) */
+const c1Spot = () => { const k = S.f.bonesSpotLast; if (!k) return '';
+  return k.back >= k.lent ? `\n\nHedge has his hand out before you're up off the blanket. Five silver go back into his boot. "Pleasure doing business," he says. "Fid. Fid, look. A marine paid me back."`
+    : k.back > 0 ? `\n\nHedge takes back what's left of his five, ${k.back} silver, counts it twice, and tucks it in his boot. "The rest's on the Bridgeburners' slate," he says. Fiddler: "We haven't got a slate." Hedge: "We have now."`
+    : `\n\nHedge watches the last of his five go across the blanket to Fiddler. "Still in the squad," he says, generously. "Never left it. Fid'll look after it for me." Fiddler, pocketing it: "I will not."`; };
 const CH1 = {
   title:'Pale', number:'One',
   intro:{loc:'The Pale', sub:'Genabackis · two nights later', cap:'The tent lines under a bruised sky. Somewhere north, the cadre row has one lamp lit.',
@@ -507,8 +512,20 @@ Hedge has been looking at her satchel. "You're the one put a sharper down the no
 "It was mostly awake," says Kettle.` : ''}` : ''}` :
 `${S.f.c1_bones === 'won' ? `"Here's trouble," says Hedge. Fiddler moves the silver pile an inch closer to his own knee.` : S.f.c1_bones === 'lost' ? `"Back for more?" Hedge makes room on the blanket. "Fid's buying. With your silver."` : `The blanket, the bones, the pile of silver that keeps changing sides. Hedge makes room without being asked.`}`,
       ch:[{t:'Sit in against Fiddler.', tag:'Bones', req:()=>S.silver >= 1 && (S.f.c1_bonesNet || 0) < 15, go:()=>playBones({opp:'fiddler', chat:'hedge', stakes:[1,3,5], place:'c1', cap:15, after:r => { if (r.games) S.f.c1_bones = r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even'; else S.f.c1_bones ||= 'looked'; S.f.c1_bonesLast = r.games ? (r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even') : 'left'; talk('c1_bones_after'); }})},
+          {t:'Sit in. You haven\'t a coin to your name.', tag:'Bones', req:()=>S.silver < 1 && (S.f.c1_bonesNet || 0) < 15, go:'c1_bones_spot'},
           {t:'"You\'ve had enough of my silver."', req:()=>(S.f.c1_bonesNet || 0) >= 15, go:'c1_bones_after'},
           {t:'Leave them to it.', fx:()=>{ S.f.c1_bones ||= 'looked'; }}]}),
+    /* broke: Hedge puts five down for you, and gets it back off the top if you win */
+    c1_bones_spot:()=>({sp:'Hedge', txt:
+`You turn out your purse. Hedge watches it come up empty with the deep sympathy of a man whose purse has been empty for most of his career.
+
+"Here." He digs in his boot and comes up with five silver, warm, and stacks them on your side of the blanket. "On me. Win it off Fid and I'll have it back off the top. Lose it and, well." He waves the onion. "It goes to Fid, and Fid's squad, so it never really left."
+
+"It left," says Fiddler.
+
+"It's a *loan*, Fid. Between marines."`,
+      ch:[{t:'Take the five and sit in.', tag:'Bones', go:()=>{ bonesSpot(5); playBones({opp:'fiddler', chat:'hedge', stakes:[1,3,5], place:'c1', cap:15, after:r => { if (r.games) S.f.c1_bones = r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even'; else S.f.c1_bones ||= 'looked'; S.f.c1_bonesLast = r.games ? (r.net > 0 ? 'won' : r.net < 0 ? 'lost' : 'even') : 'left'; bonesSettle(); talk('c1_bones_after'); }}); }},
+          {t:'"Not on borrowed silver."', fx:()=>{ S.f.c1_bones ||= 'looked'; }}]}),
     c1_bones_after:()=>({sp:'Hedge and Fiddler', txt:
 `${(S.f.c1_bonesNet || 0) >= 15 ? `"We're cleaned out," Fiddler says, with the calm of a man who has been cleaned out before and expects to be again. "Go and buy something with our silver, Sergeant. Something we'd hate."` :
   S.f.c1_bonesLast === 'won' ? `Fiddler counts your silver across the blanket without a word, and then, as you get up, one word: "Hands." He nods at them. "Good hands. Wasted on a marine."
@@ -516,7 +533,8 @@ Hedge has been looking at her satchel. "You're the one put a sharper down the no
 Hedge is delighted. "He *lost!* Fid lost to a marine. I'm telling everyone. I'm telling Whiskeyjack."` :
   S.f.c1_bonesLast === 'lost' ? `Hedge sweeps your silver onto his side of the blanket, then, thinking about it, onto Fiddler's. "His, technically." He beams. "Come back when you've got more silver and less sense, Sergeant. We'll be here. We're always here. That's the Bridgeburners."` :
   S.f.c1_bonesLast === 'even' ? `"Square," says Fiddler, and sounds, for the first time tonight, almost pleased.` :
-  `Hedge shrugs. "Suit yourself. The bones'll keep. So will Fid. Nothing hurts him."`}`,
+  `Hedge shrugs. "Suit yourself. The bones'll keep. So will Fid. Nothing hurts him."`}${c1Spot()}`,
+      onshow:()=>{ S.f.bonesSpotLast = null; },
       ch:[{t:'Back to the fire.'}]}),
     c1_pits:()=> S.f.c1_pits ? {sp:'The Second\'s burial field', txt:
 `The pits are where they were. Brisk doesn't come this way twice in a night, and doesn't ask why you did.`,
