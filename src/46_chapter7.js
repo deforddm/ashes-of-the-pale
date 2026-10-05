@@ -675,7 +675,9 @@ ${C7H.pendingTell() ? `"Kalam's given me a word to carry up the hill," he adds, 
     c7_paran:()=>({sp:'Captain Paran', fx:()=>{ S.f.c7_paran=1; }, txt:
 `The end of the easternmost pier. He's standing with his back to the city and the lake in front of him, grey and flat all the way to the far shore; and on the far shore, north, a thin line of smoke going straight up in the still air. There's a skiff tied under the pier, wet to the thwarts, with a spade in it.
 
-He has two swords. His own, at his hip, the ordinary-looking one in the worn scabbard. And another, point down on the planks in front of him with both his hands on the pommel: a plain sword with a plain hilt in plain leather, and you can feel it from ten paces off, the way you feel a sheer drop behind you in the dark.
+He has one sword, and it isn't his. The worn scabbard is still at his hip, and there's nothing in it. The sword is point down on the planks in front of him with both his hands on the pommel: a plain sword with a plain hilt in plain leather, and you can feel it from ten paces off, the way you feel a sheer drop behind you in the dark.
+
+He sees you look at the empty scabbard. "I gave it back," he says. That's all he says about it.
 
 ${C7H.has('tuft') ? (C7H.tuft() === 'glove' ? `Tuft walks all the way out along the pier with you. "It's all right," she says, to your look. "There's nothing left in me for it to eat."` : `Tuft stops at the foot of the pier and won't come any further. You don't ask her to.`) : ''}
 
@@ -1473,7 +1475,7 @@ They're on the grass of a long brown hill just north of the road, a dozen of the
 
 ${C7H.has('kettle') ? `Kettle stops dead in the road. She has checked the sky for quorls every day since Nathilog, the way you'd check for weather. Now they're on the ground in front of her, on the grass, close enough to touch. "Oh," she says. "Oh, they're *here*."` : ''}
 
-A litter by the biggest of them, and on it a man with a leg splinted out straight and a sword across his knees. A dark small man beside him, cross-legged in the grass. A captain with two swords, looking at nothing. And down on the road east, where it bends round the foot of the hill, a Rhivi party with pack-ponies, and a woman on a grey mare with a bundle in good red wool held against her chest, and a rider at their head sitting his horse like a man who has decided to be patient.
+A litter by the biggest of them, and on it a man with a leg splinted out straight and a sword across his knees. A dark small man beside him, cross-legged in the grass. A captain with an empty scabbard and somebody else's sword, looking at nothing. And down on the road east, where it bends round the foot of the hill, a Rhivi party with pack-ponies, and a woman on a grey mare with a bundle in good red wool held against her chest, and a rider at their head sitting his horse like a man who has decided to be patient.
 
 On a barrow-stone at the top of the hill, a raven the size of a dog is watching all of it and laughing, very quietly, to itself.
 
@@ -1657,7 +1659,7 @@ ${S.f.c4_key === 'shield' ? `"The second one stopped," he says after a while, to
 He goes back to watching the quorls. The conversation is over. It was over before it started; he just let you have it.`,
       ch:[{t:'Leave him.'}]}),
     c7_paran_hill:()=>({sp:'Captain Paran', fx:()=>{ S.f.c7_paranHill=1; }, txt:
-`He's standing by a quorl with his hands behind his back, watching a Moranth rider check a strap that doesn't need checking. Lorn's sword is across his back now, in a plain scabbard somebody has found for it. His own is at his hip.
+`He's standing by a quorl with his hands behind his back, watching a Moranth rider check a strap that doesn't need checking. Lorn's sword is across his back now, in a plain scabbard somebody has found for it. The worn one at his hip is still empty. He hasn't taken it off.
 
 "Sergeant." He doesn't turn. "I'm short of soldiers. ${S.f.c7_paran ? `I said so on the pier. I'll say it again, in case it matters to whatever you're deciding.` : `I'll say it once, in case it matters to whatever you're deciding.`}" A pause. "If Whiskeyjack won't have you, I will. I don't care what anybody's written about you in any book. I've been written about. It isn't catching."`,
       ch:[{t:'"Captain. Toc asked me to tell you something."', req:()=>!S.f.c6_paranToc && !S.f.c7_paranToc, go:'c7_paran_toc'},

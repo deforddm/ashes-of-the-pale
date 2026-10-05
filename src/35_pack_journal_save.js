@@ -25,7 +25,7 @@ function openModal(tab){
       S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak is paying attention to your squad.`) : '',
       S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
       S.f.c3_kruppeRumour ? `Kruppe, caught palming a coin at the Phoenix: the Guild's roof watchers sweep on a count of eight, and never look straight down.` : '',
-      S.f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : `Brisk's brother, Second Army: not yet found.`, S.f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>${glossHTML()}`,
+      S.f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : `Brisk's brother, Second Army: not yet found.`, S.f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>${typeof visionsHTML === 'function' ? visionsHTML() : ''}${glossHTML()}`,
     save:()=>`${S ? `<p class="fine">Playing as <b class="who">Sergeant ${esc(S.name)}</b>. The game saves itself on this device as you play, under your sergeant's name. Anyone else can start their own sergeant from the title, and each keeps a save of their own.</p>
       <div class="row" style="margin:8px 0 16px"><button class="btn" id="bSwitch">Switch sergeant</button></div>
       <label class="fine" for="exp">Sergeant ${esc(S.name)}'s save code. Copy it somewhere safe to move them to another device, or to keep them from a cleared browser.</label>
@@ -42,6 +42,7 @@ function openModal(tab){
   m.querySelectorAll('[data-salve]').forEach(b => b.onclick = () => { salveOut(b.dataset.salve); openModal('pack'); }); // Bridgeburner: a salve between fights
   if (tab === 'pack' && S.card) inlineCard($('#icard'), S.card, false);
   if (tab === 'deeds') bindDeeds();
+  if (tab === 'journal' && typeof bindVisions === 'function') bindVisions(m);
   if (tab === 'journal') { const cv = $('#jRoute'); routeAnim = t => { if (!cv.isConnected || $('#modal').hidden) { routeAnim = null; return; } drawRoute(cv, S, t); }; }
   if (tab === 'save') {
     if ($('#bCopy')) $('#bCopy').onclick = () => { const ta = $('#exp'), b = $('#bCopy'); ta.focus(); ta.select(); AUDIO.play('click');

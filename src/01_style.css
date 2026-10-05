@@ -435,3 +435,28 @@ body.reduce .txt.god{animation:none}
 .allocrow{align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
 .pinup{display:flex;justify-content:center;margin:10px 0 14px}
 .pinup canvas{width:min(360px,86%);height:auto;aspect-ratio:600/760;border-radius:3px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.85))}
+/* Through the Deck: visions. The talk UI, gone violet and grey, with an italic header, so a vision never reads as the Fourth's own present */
+body.vision{--vio:#b9a8ff}
+body.vision .vhud .kick{font-family:var(--label);letter-spacing:.18em;font-size:.72rem;color:var(--warren);text-transform:uppercase}
+body.vision .vhud .loc{font-style:italic;color:#d9d0f4;font-family:var(--prose)}
+body.vision .vhud .sub{font-style:italic;color:var(--warren2)}
+body.vision .vhud::after{background:linear-gradient(90deg,transparent,var(--warren),transparent)}
+body.vision .vscene canvas{filter:saturate(.55) contrast(1.05)}
+body.vision .vscene{border-color:rgba(154,134,224,.45);box-shadow:inset 0 0 80px rgba(0,0,0,.9),0 0 24px rgba(120,90,220,.12)}
+body.vision .vscene .cap{color:#c9c0e4;background:linear-gradient(180deg,#0e0b14,#0a0810);border-top-color:rgba(154,134,224,.3)}
+.vtitle{position:absolute;left:0;right:0;top:0;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none;text-align:center;padding:0 16px;
+  background:radial-gradient(ellipse at center,rgba(10,6,20,.82),rgba(10,6,20,.2) 70%);animation:vtitle 3.4s ease-out both}
+.vtitle span{font-family:var(--label);letter-spacing:.22em;font-size:.72rem;color:var(--warren);text-transform:uppercase}
+.vtitle b{font-family:var(--prose);font-style:italic;font-weight:400;font-size:1.35rem;color:#e6defa;text-shadow:0 0 18px rgba(154,134,224,.6)}
+@keyframes vtitle{0%{opacity:0}18%{opacity:1}70%{opacity:1}100%{opacity:0}}
+body.reduce .vtitle{animation-duration:1.2s}
+@media (max-width:519px){.vtitle{height:220px}}
+body.vision #sheet{background:linear-gradient(180deg,#1b1724,#120f18);border-color:rgba(154,134,224,.45)}
+body.vision #sheet::before{background:linear-gradient(180deg,rgba(154,134,224,.1),transparent)}
+body.vision #sheet .sp{font-style:italic;color:var(--warren2);font-family:var(--prose)}
+body.vision #sheet .txt{color:#ddd5ea}
+body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
+.btn.vis{border-color:rgba(185,168,255,.6);color:#c9bbff}
+#cardfx .btn.vis{box-shadow:0 0 14px rgba(154,134,224,.25)}
+.vlist{list-style:none;padding-left:0}.vlist li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.vlist .btn.sm{margin-left:0;white-space:nowrap}
+.vlist .vnm em{color:var(--warren2)}

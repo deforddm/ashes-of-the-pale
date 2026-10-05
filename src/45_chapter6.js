@@ -1892,7 +1892,7 @@ You don't see him cross the lawn. He's just there, between, with the ordinary sw
 
 Into it. Not off it. The sword *drinks* it, the way dry sand drinks water, and the white is gone, and Paran is standing on the frozen lawn with the sword in his hand and his eyes open and nobody behind them.
 
-He's gone somewhere. You can see it. His body is here, standing, and he is not. For one long breath, and two, and three, he stands there empty as a coat on a peg, while the Tyrant stares at him with its tusked face; and then he comes back into himself all at once, and staggers, and looks down at the sword in his hand as if it had said something to him.`,
+He's gone somewhere. You can see it. His body is here, standing, and he is not. For one long breath, and two, and three, he stands there empty as a coat on a peg, while the Tyrant stares at him with its tusked face; and then the frost-light flickers, the way a candle does when a door opens somewhere else in the house, and the place where he stood is empty. No body. No sword. Two boot-prints in the frost, and the frost already closing over them.`,
       ch:[{t:'"Down!"', go:'c6_bb_hedge'}]}; },
     c6_bb_hedge:()=>({sp:'Hedge', scene:'garden_storm', fx:()=>{ S.f.c6_azath=1; if (SQUAD().includes('kettle') && S.inv.cusser > (maudKept() ? 1 : 0) && !S.f.c6_hedgeCusser) { S.f.c6_hedgeCusser=1; S.inv.cusser -= 1; loy('kettle',1); } }, txt:
 `It isn't you who shouts it. It's Hedge.
@@ -2306,9 +2306,9 @@ Kettle thinks about it. "I'm never not tipping there again."` : ''}
 
 You wait. You don't know why you wait. It isn't your alley, and it isn't your business, and you're very tired of being in other people's alleys tonight.
 
-After a while there are footsteps from the other way. A man in a dust-coloured captain's cloak, with a sword at his hip, walking fast, following the blood.
+After a while there are footsteps from the other way. A man in a dust-coloured captain's cloak, walking fast, following the blood. There's a scabbard at his hip with nothing in it, slapping his thigh at every step.
 
-Paran.`,
+Paran. The last time you saw him he was standing on a frozen lawn, and then he wasn't. Wherever he's been since, it's in his face.`,
       ch:[{t:'Follow him.', go:'c6_alley_paran'}]}),
     c6_alley_paran:()=>({sp:'The Adjunct', scene:'alley_night', fx:()=>{ S.f.c6_lornEnd=1; }, txt:
 `She's lying at the end of the alley by a rain-barrel, on her back on the wet cobbles, with her sword beside her hand where it fell.${S.f.c6_lornKnelt ? ` One knee of her breeches is torn through and grey with cobble-grit. You put that there. It's the only mark on her that's yours.` : ''}
@@ -2333,7 +2333,7 @@ You look again, and the doorway's empty.
 
 ${SQUAD().includes('ohl') ? `Ohl has taken a step toward the woman on the cobbles. He stops, because the otataral is there and Denul isn't, and because she's dead, and because Paran is there. "I'd have tried," he says, very quietly, to nobody. He takes out the oilcloth.` : ''}
 
-Paran gets up. He puts her sword through his belt beside his own. He gathers her up in his arms, the Adjunct of the Empress, the Empress's own hand, and she's smaller than you'd have thought, and he carries her up the alley past you, and he doesn't look at you, and you stand aside to let him by, because that is a thing a soldier does.
+Paran gets up. He puts her sword through his belt, beside the empty scabbard. He gathers her up in his arms, the Adjunct of the Empress, the Empress's own hand, and she's smaller than you'd have thought, and he carries her up the alley past you, and he doesn't look at you, and you stand aside to let him by, because that is a thing a soldier does.
 
 "Sergeant," he says, going past. Only that.`,
       ch:[{t:'Dawn.', fx:()=>{ if (SQUAD().includes('ohl') && !S.f.c6_ohlLorn) { S.f.c6_ohlLorn=1; S.f.listAdds = (S.f.listAdds || 0) + 1; } }, go:'c6_dawn'}]}),
@@ -2361,7 +2361,7 @@ Whiskeyjack is on a bench by the fountain with his leg out in front of him, spli
 
 ${S.f.c6_wjLeg ? `You were there when it broke. You heard it.` : S.f.c6_key === 'cellars' ? `He broke it on the lawn in the night, holding the garden, while you were under the city scraping acid out of wax. You didn't hear it. You'd have liked to have been there to hear it, which is a strange thing to want.` : `He broke it on the lawn in the night, holding the garden, while you were in an alley. You weren't there.`}
 
-Paran is standing at the edge of the yard of mounds with a sword through his belt beside his own. It isn't his. ${S.f.c6_lornEnd ? `You know whose.` : `He sees you looking. "The Adjunct's dead," he says, when you come level with him. One sentence, flat, like weather, the way he told you his own death in the hills. He doesn't give you another.`}
+Paran is standing at the edge of the yard of mounds with a sword through his belt and an empty scabbard at his hip. The sword isn't his. Where his own went, he doesn't say. ${S.f.c6_lornEnd ? `You know whose.` : `He sees you looking. "The Adjunct's dead," he says, when you come level with him. One sentence, flat, like weather, the way he told you his own death in the hills. He doesn't give you another.`}
 
 Across the lawn, the doors of the big house stand open, and a very big man in plain brown clothes is walking up the steps and in through them, slowly, like a man coming home late who doesn't want to wake anyone.${S.f.c6_collRing ? ` There's a ring on his hand.` : ''} Coll.${S.f.c6_captainMum ? ` In the doorway a grey-templed man in blue is holding the door for him, and has cut the silver off his shoulder.` : ''}
 

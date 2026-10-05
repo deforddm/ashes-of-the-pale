@@ -1,8 +1,10 @@
-# Ashes of the Pale: story bible (prologue to Chapter 5)
+# Ashes of the Pale: story bible (prologue to Chapter 7, the whole game)
 
-For the writers of Chapter 6 (The Fete) and Chapter 7 (Outlaws). The sources are `src/16_skill_checks.js` (prologue `DLG`), `src/40_chapter1.js` to `src/44_chapter5.js`, `src/14_data.js` (TPL), `src/37_chapters.js` (CHEND/CHTEASE) and the engine. Quotes are verbatim; `*x*` is the game's own emphasis markup.
+Written against game v3.13.7 (commit dbb8562), 2026-10-05.
 
-**Notation.** `[if X]` means the line only appears when X is true. "Always" means every playthrough reaches it. A **key** is the value passed to `chapterEnd(n, key)` and stored in `S.chapters[n]` and `S.f.cN_key`. Loyalty is `S.loy[id]`, clamped to −3..+3.
+For the writers and maintainers of every chapter. The sources are `src/16_skill_checks.js` (prologue `DLG` and `SCENES`), `src/39_prologue.js`, `src/40_chapter1.js` to `src/44_chapter5.js`, `src/45_chapter6.js`, `src/46_chapter7.js`, `src/14_data.js` (TPL, CARDS, `squadQuest`), `src/16b_tricks.js` (`TRICKS`), `src/31c_stakes.js` (`PATRONS`, the gods' answers), `src/38_deeds.js` (Deeds and the route), `src/15_state.js` (`listCount`, `kill`), `src/37_chapters.js` (CHEND/CHTEASE, the finale) and the engine. Quotes are verbatim; `*x*` is the game's own emphasis markup. Canon beat IDs (`P.1`, `2.1`, `24.3`, `E.3`) refer to `bible/canon-chronology.md`, the book-order chronology of *Gardens of the Moon*.
+
+**Notation.** `[if X]` means the line only appears when X is true. "Always" means every playthrough reaches it. A **key** is the value passed to `chapterEnd(n, key)` and stored in `S.chapters[n]` and `S.f.cN_key`. Loyalty is `S.loy[id]`, clamped to −3..+3. A flag ending in `Who`, `By`, `Missed` (and several Ch6–7 roller flags such as `c6_rakeNod`, `c7_emptyBy`) holds a **squad id** (`'sgt'` or a squadmate), not a 1. §8 items carry a severity tag: **[story-breaking]** (a player can see a contradiction that undoes a beat), **[continuity]** (a fact disagrees with another fact), **[cosmetic]** (wording, dead code, naming), **[canon]** (disagrees with the novel).
 
 ---
 
@@ -10,163 +12,251 @@ For the writers of Chapter 6 (The Fete) and Chapter 7 (Outlaws). The sources are
 
 | Ch | Key flag | Values | Main consequences |
 |---|---|---|---|
-| Prologue | `S.ending` = `S.chapters[0]` | `given` / `told` / `burned` / `claw` | `knowTruth`, `partial`, `marked`, `decoy`, `clawFooled`, `gaveClaw` |
-| 1 Pale | `S.f.c1_key` | `line` / `claw` | `cadreTrust` / `clawFavour`; `c1_acc*` (line + marked only) |
-| 2 Rhivi Plain | `S.f.c2_key` | `light` / `road` | `c2_late`, `c2_out*`, Ashes vs Andii visit; Ellis: `c2_ellisJoined` / `c2_ellisRefused` |
-| 3 Blue Fire | `S.f.c3_key` | `report` / `refuse` | `c3_told` + `clawFavour` + 40 silver / `marked` + alley knives; `c3_wjTold` |
-| 4 Assassins | `S.f.c4_key` | `shield` / `aside` | `c4_vell`, `c4_guildKnows` / `c4_seen`, `c4_tuftDark`, `c4_reprisalFought` |
-| 5 Gadrobi Hills | `S.f.c5_key` | `through` / `hold` | With Ellis: `c5_ellisThrough` (she is gone) / `c5_ellisHeld`. Without Ellis: `c5_tuftMarked` / `c5_tuftHeld` |
+| Prologue | `S.ending` = `S.chapters[0]` | `given` / `told` / `burned` / `claw` | `knowTruth`, `partial`, `marked` (+`markedPale`), `decoy`, `clawFooled`, `gaveClaw`; the `p_*` flags (Fold, knots, the grey cloak's view of names, Garrow and Moreau) |
+| 1 Pale | `S.f.c1_key` | `line` / `claw` | `cadreTrust` / `clawFavour`; `c1_acc*` (line + marked only); Pell's wagon (`c1_raid*`); `c1_houndDown`; `c1_paranWon` |
+| 2 Rhivi Plain | `S.f.c2_key` | `light` / `road` | `c2_late`, `c2_out*`, Ashes vs Andii visit; Ellis: `c2_ellisJoined` / `c2_ellisRefused`; `c2_des*` (deserters at dusk) |
+| 3 Blue Fire | `S.f.c3_key` | `report` / `refuse` | `c3_told` + `clawFavour` + 40 silver / `marked` + alley knives; `c3_wjTold`; `c3_cousins` (the dogleg) |
+| 4 Assassins | `S.f.c4_key` | `shield` / `aside` | `c4_vell`, `c4_guildKnows` / `c4_seen`, `c4_tuftDark`, `c4_reprisalFought`; `c4_clanFought` (both roads); `c4_run` |
+| 5 Gadrobi Hills | `S.f.c5_key` | `through` / `hold` | With Ellis: `c5_ellisThrough` (she is gone) / `c5_ellisHeld`. Without Ellis: `c5_tuftMarked` / `c5_tuftHeld`. `c5_collDown` (always), `c5_dig*` |
+| 6 Fete | `S.f.c6_key` | `bridgeburners` / `cellars` / `alley` | `c6_tuft` (`glove`/`shadow`/`dark`/`kept`); `c6_wjLeg` / `c6_orders` / `c6_steppedIn` + `c6_lornEnd`; on the alley path only, `S.dead` + `lastFallen` + `sgtScar`; `c6_paranToc`, `c6_collRing`, `c6_guildPassed`/`c6_terraceFought`, `c6_houndKnew`/`c6_houndFought` |
+| 7 Outlaws | `S.f.c7_key` | `outlaw` / `empire` / `city` / `disband` | `c7_follow` {id: bool}; the accounting (`c7_clawDeal` `took`/`refused`, `c7_pardonEmpty`, `c7_clawTalked` / `c7_clawBought` / `c7_clawFought` / `c7_clawAvoided`); `c7_wjKnows` (`told`/`claw`/`kalam`) and `c7_wjReport` (`ok`/`near`/`heard`); Ellis (`c7_ellisBack` / `c7_ellisLeft` / `c7_ellisJoined` / `c7_ellisWalked`, `c7_ledger`); `c7_tav`, `c7_letter`; `c7_debt` (`paid`/`spent`/`owed`/`closed`), `c7_chub`; `c7_tattersail`; `c7_tuftCut` |
 
-**Where the story stands at the end of Ch5.** Dawn on the long ridge in the Gadrobi Hills, three days' walk east of Darujhistan. Toc the Younger has been pulled through Hairlock's rent. Hairlock was torn apart by two Hounds of Shadow. Lorn and Tool have gone to the city. Raest is waking under the barrow (*thud*, … *thud*). Paran has ridden ahead and asked the Fourth to "Tell Whiskeyjack I'm coming… Tell him about Toc. I'd rather he heard it from someone who saw." The Rhivi bundle is on the ridge, and the woman holding it is looking west toward the city. Crone has flown west. CHTEASE 5: "everyone the Fourth has met is going to be at Lady Simtal's."
+**Where the story stands at the end of the game.** Noon on a brown hill east of Darujhistan, on the Gadrobi road (`quorl_hill`). Moon's Spawn went west at first light, and the sky "has nothing in it". The Empress has outlawed Dujek's Host. Whiskeyjack (leg splinted, "It'll never be right") is Dujek's second, and Paran has the Bridgeburners and Lorn's sword; he buried Lorn on the north shore of the lake (`c7_paran`). Kalam, Fiddler, Crokus and Apsalar have sailed for Itko Kan, and Crokus has thrown Oponn's coin into the lake (`c7_crokus`). The Azath stands in Simtal's garden with Rallick inside it (`c7_kruppe`). Coll has his house back. The Rhivi party, with Tattersail reborn in the bundle, is going east with Sethand. Tool walks north-east alone (`c7_close_end [c5_toolSaw]`). Crone delivers Rake's "*The small ones may go.*" and flies west (`c7_crone`). The grey cloak's book on the Fourth is closed, drowned, kept open, or bought off with a pardon (§3). Then the Fourth goes north with the outlawed Host, west to the Empire, back into the city, or stands down. The finale gives one page to the road taken, a fate page for each living squadmate, a page for each one gone, the sergeant's page, and the coda with the campaign summary. There is no Chapter 8. `CH7.tease`: "The Book of the Fallen goes on without the Fourth, mostly."
 
-**Squad size.** Possible squads are 5 (Ellis refused in Ch2, or went through in Ch5) or 6. The sergeant and the four TPL veterans can never leave. `unrecruit('ellis')` sets `S.f.ellisGone=1`.
+- **At the end of Ch6.** Dawn after the Gedderone Fete, in Lady Simtal's garden in the Estate District. The young Azath stands where Lorn buried the Finnest: "a small wrong house of living wood", with a yard of mounds, one of them fresh. The Tyrant (Raest, in Mammot's body) is inside it. Mammot is dead. Turban Orr is dead, killed by Rallick in the duel with the tall guest (Rake) as his second. Lady Simtal went through "a small door… with a gilt handle", and the door is shut (`c6_simtal`). Coll walks into his own house. Murillio sits on the steps and does not go in. Whiskeyjack's leg is splinted to a halberd shaft ("It's not going to be right", Mallet). Lorn is dead: Blues wounded her, Meese and Irilta finished her, and Paran carried her away with her otataral sword (`c6_alley_paran`, or reported at `c6_dawn`). Rake has fought the pale thing with Dragnipur over the city (`c6_bb_sky` / `c6_mines_sky` / `c6_alley_sky`). Moon's Spawn is "moving… West. Away." The Fourth sits on the terrace steps in Simtal's blue with the armbands torn off; on the alley path some of them may be dead. Tuft's High Mage thread is cut three ways (`glove`/`shadow`/`dark`) or kept (`kept`). CHTEASE 6: "Next: Outlaws. Dawn on the Lakefront, an Empire that has outlawed its own army, the Claw come for its last accounting, and a sky with nothing in it for the first time since Pale."
+- **At the end of Ch5.** Dawn on the long ridge in the Gadrobi Hills, three days' walk east of Darujhistan. Toc the Younger has been pulled through Hairlock's rent. Hairlock was torn apart by two Hounds of Shadow. Coll was cut down by the Adjunct on the ride (`c5_collDown`). Paran: "The Adjunct's gone to the city… With the Imass. I'm to follow." (`c5_dawn`). Raest is waking under the barrow (*thud*, … *thud*). Paran has ridden ahead: "Tell Whiskeyjack I'm coming," he says. "Tell him —" And stops; then "tell Whiskeyjack about Toc. I'd rather he heard it from someone who saw." The Rhivi bundle is on the ridge, and the woman holding it is looking west toward the city. Crone has flown west. CHTEASE 5: "everyone the Fourth has met is going to be at Lady Simtal's."
+
+**Squad size.**
+- Prologue to Ch5: 5 (Ellis refused in Ch2, or went through in Ch5) or 6. The sergeant and the four TPL veterans cannot leave before Ch6. `unrecruit('ellis')` sets `S.f.ellisGone=1`.
+- **If Ellis is in the squad at Ch6, `c5_ellisHeld` is always set**: the only Ch5 outcomes with Ellis present are through (she is gone) and hold.
+- **Ch6 is the only chapter where squadmates die**, and only in `lorn_alley` (`mortal:true`, stepped-in alley path). `kill(id)` removes the id from `S.squad`, records `S.dead[id]={ch:6, where}` and clears the id's gear. If the sergeant falls they get up again with `S.f.sgtScar=1`.
+- **Ch7 can only add.** `recruit('ellis')` in `c7_ellis_take` (through-path return) or `c7_ellis_join` (refused-path, at the green door). Nobody dies in Ch7 (neither battle is `mortal`). Squadmates who will not follow the chosen road stay in `S.squad` with `c7_follow[id]===false` and still get a fate page. The final count is `C7H.countFollow(key)` = 1 + followers.
+
+**Systems since v3.11 that touch story (all chapters).**
+- **Who rolled.** The player picks the roller for every check, and `S.lastRoll` = `{who, stat, tier, ok, pass, margin, nat}`. Six tiers: crit / clean / ok / near ("yes, but": `go` happens, at a cost) / fail / fumble (rattled). Many nodes store the roller (`S.f.x = ROLL().who`), which later text reads back.
+- **Ten tricks** (`S.tricks[k] = {who, ch, left}`; `TRICKS` in `16b_tricks.js`, prologue to Ch6; Ch7 adds none), earned on optional ✦ hard checks; see §4. The carrier is whoever rolled; `trickBy(k)` returns that id while they are still in the squad.
+- **The gods answer** when the whole squad goes down: the most loyal squadmate with loyalty > 0 first, once a chapter each (on Story they always answer), then Fener for the sergeant (`PATRONS` in `31c_stakes.js`; `S.gods = {ch, used}`). See §5.
+- **Sharper openings** (`preUsed(battleId)`) and **hold-out takedowns** (`heldDowns(battleId)`, `S.f.lastHold`) are both story-readable.
+- **Ohl's list count** is `listCount()` = 211 + light + aside + each key of `S.dead` + `S.f.listAdds` (`15_state.js`). Ch6 raises `listAdds` (`c6_ohlLorn`); Ch7 lowers it (`c7_ohl_cross`).
+- **Table games** (`36_minigames.js`): bones (Ch1–3), Kruppe's cups (Ch3), the charges (Ch3), the roof run (Ch4), the masks (Ch6). `S.deeds` counts the results (`38_deeds.js`).
 
 ---
 
 ## 1. Per-squadmate arcs
 
 ### The Sergeant (`sgt`, name `S.name`, default "Hask")
-- **TPL.** Untan, eleven years a marine, three under Dujek. Keeps the pay ledger. The quest line: "The Fourth came through the siege with all five still breathing. Somewhere in Onearm's Host, somebody has noticed." Carries a Second Army whistle "no longer used" and a knife "nobody has seen drawn".
-- **Gender.** The prose is second person and never gives the sergeant a gender. The one slip is Whiskeyjack's "all five of his squad" in `c1_wj_boast`. Keep it neutral.
-- **Recurring beat: everyone counts the Fourth.** Tattersail: "You came back with all five," she says. "That's a nice touch." Paran: "yours is the first one that came with a face attached." Whiskeyjack: "Sergeant." As you turn. "All five. Keep doing that." `[wjRegard>0]` Whiskeyjack, the Andii, Ellis and Sethand all count as well. The chapter closes repeat "You count twice."
+- **TPL.** Untan, eleven years a marine, three under Dujek. Keeps the pay ledger. The quest line: "The Fourth came through the siege with all five still breathing. Somewhere in Onearm's Host, somebody has noticed." Carries a Second Army whistle "no longer used" and a knife "nobody has seen drawn". `squadQuest('sgt')` switches to the Dujek line once `c7_dujek` is set.
+- **Gender.** The prose is second person and never gives the sergeant a gender. (v1 claimed a slip in `c1_wj_boast`; there is none. The line is "a sergeant who walked all five out of a hole".) Hedge's "*Does* she… Does he. Does the Sergeant." at `c3_bones` is deliberate. Keep it neutral.
+- **Recurring beat: everyone counts the Fourth.** Tattersail: "You came back with all five," she says. "That's a nice touch." Paran: "yours is the first one that came with a face attached." Whiskeyjack: "Sergeant." As you turn. "All five. Keep doing that." `[wjRegard>0]` Whiskeyjack, the Andii, Ellis and Sethand all count as well. The young Watchman counts the squad on his fingers (`c3_watchYoung`). In Ch7 Dujek: "You came up out of the Pale with all five. I noticed" (`c7_sending_dujek`). The chapter closes repeat "You count twice"; the game's last close is "You count. All N. / N. You count twice." (`c7_close_end`).
+- **Paran's stare** (`c1_paran`). "Give him the count, and hold his eyes" is Might 11 with `near:false`; Brisk or Kettle can say the line ("Five, sir" comes from the roller, `c1Five`). Lose the stare and `c1_paranWon` = the roller; Paran tells Whiskeyjack on his way to the cadre row (`c1_wj_last`).
 - **The sergeant's name on paper, and who holds it.**
-  - The prologue grey cloak, if `S.f.marked`: "I know the name now. {sgt}. It's a good name… Try to keep it attached." (`c1_claw`)
-  - Pallick's ledger. `c3_trueName` means the real name was given, and Madryn quotes it back ("Pallick sends his regards… Unta, from the vowels"). `c3_falseName` means a name "off a headstone in Unta", and that is the name Vell learns in Ch4. `c3_paid` means five silver and no name.
+  - The prologue grey cloak, if `S.f.marked` (`claw_marked` also sets `markedPale`): "I know the name now. {sgt}. It's a good name… Try to keep it attached." (`c1_claw`)
+  - `p_clawNamed` (a "yes, but" at the tunnel stand-off): the grey cloak says a **squadmate's** name, or "Another time" to the sergeant. Echo in `c1_claw`: "He nods to {name}, by name. Nobody has told him it."
+  - `p_clawFaces` (a "yes, but" on the grave-detail lie): "I remember faces, Sergeant. It's a failing." (`c1_claw`). `p_clawLiar` / `p_clawDoubt` (the lie failed): at the tunnel mouth he says *grave detail* to the liar alone.
+  - `c1_clawNoticed` ("yes, but" on the tent question): "You watch eyes. Keep at it." (`c1_after_claw`).
+  - `c1_accTatNamed` (the accounting "yes, but", or `c1_acc_named` on a failure): Tattersail's name goes into the Claw ledger. Whiskeyjack: "She was in their ledger already. Now she's in it next to you." (`c1_wj_last`).
+  - Pallick's ledger. `c3_trueName` means the real name was given, and Madryn quotes it back ("Pallick sends his regards… Unta, from the vowels"). `c3_falseName` means a name "off a headstone in Unta", and that is the name Vell learns in Ch4. `c3_paid` means five silver and no name. In Ch7 Pallick writes the Fourth **out** under whichever of these it is, or "Paviors… Section four" (`c7_worry*`): "I keep a column."
   - Crone knows the name if `c2_croneSaw` (CHEND 2: "A Great Raven knows the sergeant's name now").
-  - The Tiste Andii know the squad's faces if `c4_seen`.
-- **Whiskeyjack's report formula.** "in order, without anything in it that isn't so". It was set up in Ch3 (`c3_wj_good`), used at the Ch4 dawn debrief, and ends Ch5 as the next job: "a report to give in order".
+  - The Tiste Andii know the squad's faces if `c4_seen`; Rake reads them at the Fete (`c6_rake`).
+  - Ch6 `c6_claw` `[marked by Madryn, not at the Pale]`: "{sgt}. Madryn's list. I read it this morning; your name is in her best hand." `[c6_clawNoted]` (the near-miss on the Might 12 in `c6_tuft_cold`): "He has a very good memory for sergeants."
+  - Ch7: the grey cloak's ledger ends "*Entry closed by*" with "nothing after *by*", and the first line's margin reads "*all five*" (`c7_claw_ledger`).
+- **Whiskeyjack's report formula.** "in order, without anything in it that isn't so". Set up in Ch3 (`c3_wj_good`), used at the Ch4 dawn debrief, the next job at the end of Ch5, used twice in Ch6 (noon `c6_report`; dawn `c6_dawn_wj`: "The captain came in yesterday… He said you'd seen it, and you'd tell it right"), and the hard check of Ch7: `c7_wj`, Wits 16, **sergeant only**, offered only when `!C7H.wjTrust()`. Its text is `C7H.wjReportTxt()`, a sentence per chapter. Pass → `c7_wj_report` (`c7_wjReport='ok'`, or `'near'`: "I'll put you where it's worst"); fail → `c7_wj_report_fail` (`'heard'`): "I know… It was a good report… It doesn't change what I said."
+- **Ch6.**
+  - **Toc's message delivered** (optional, `c6_paran_toc` from `c6_paran` or `c6_paran_garden`; `c6_paranToc`, ohl +1): "*Tell him Toc kept riding.*" Paran: "It means he wasn't going back to her… So he's still doing it. Wherever that is. He's still riding." / "You carried that a long way. It was heavier than it looked." If missed, Ch7 re-offers it (`c7_paran_toc`).
+  - **Glove holder.** The otataral glove is on Brisk if `otatglove` is her equipped trinket; otherwise the sergeant holds it (the `gw` variable in `c6_qb_glove`, `c6_garden_arrive`, `c6_tuft_card`, `c6_tuft_glove`).
+  - **Tricks:** A Courtesy of Darkness (`dark`, Guile 17, `c6_dark_ok`, `c6_rakeNod` = roller) and Omtose Rime (`rime`, Might 17, `c6_rime_ok`, `c6_rimeHeld` = roller). Either can go to whoever rolls.
+  - **Alley (mortal).** If the sergeant falls they get up: `S.f.sgtScar=1`, the portrait changes, "there's a new ache in you that you suspect is going to be there for the rest of your life." With Ohl and Brisk both dead, the sergeant writes the names in the **pay ledger** "under the wages they won't draw" and carries Ohl's oilcloth (`c6_alley_fallen`).
+  - **Cellars.** The sergeant carries the Claw's standing order "inside your coat, against your ribs" (`c6_orders`). Whiskeyjack: "Keep whatever you found. Somewhere I'll never find it." Without Kettle, the sergeant burns a hand on the acid and stops the timers alone.
+- **Ch7.**
+  - **"Somebody has noticed" is paid** (`c7_sending_dujek`, `c7_dujek`): Dujek through Quick Ben's bone: "The Fourth. {sgt}'s?… You came up out of the Pale with all five. I noticed… most of them are latrines." Narration: "Somewhere in Onearm's Host, somebody has noticed… It was him."
+  - **Confession** (when `C7H.pendingTell()` = `c3_told && !c3_wjTold && !c7_wjKnows`). On the bench (`c7_confess`, `c7_wjKnows='told'`, brisk +1, ellis +1): "I know… Not who. Kalam smelt it on the squad before the roofs… I wanted you to come and tell me." / "That's luck. It isn't forgiveness." On the hill, ahead of Mallet (`c7_hill_tell`, `told` + `c7_toldHill`): "You told me yourself. Late. But before anybody could… Good." Or the sergeant lets Mallet carry Kalam's word (`c7_hill_word`, `c7_wjKnows='kalam'`).
+  - **The fate page** (`C7H.fateSgt(k)`, title "Stood down" / "All N" / "The pay ledger"). `[outlaw]` the Second Army whistle: "Three short. Muster." Dujek: "{sgt}," and that's the whole of it; `[wjTrust]` Whiskeyjack counts the Fourth, `[!wjTrust]` "Whiskeyjack never counts the Fourth again. Paran does". `[empire]` a Genabaris captain: `[took]` "reads it twice… and stands up"; otherwise "There isn't a column for it. You watch him rule one." `[city]` the whistle hangs on a nail in the gatehouse and comes down "on the night of every Gedderone Fete". `[disband]` "alone on a hill for the first time in eleven years… Kruppe had a room"; `[Brisk]` "*Still counting?*" / `[else Kettle]` "*Two sharpers, one burner. Same as this morning.*" Always: the pay ledger is closed with "*paid*" against each name, and "*One mule[, Pell,] left with the Paviors' Guild at the Gadrobi crossing in lieu of wages.*"; `[dead]` their names under a line, "no column for what [they're] owed"; "You remember the names of the dead… The knife nobody has seen drawn is still undrawn." `[sgtScar]` the alley scar. `[c7_letter==='sgt']` Brisk's letter. Close: "The Fourth came up out of the dark at the Pale with all five… You count twice."
+  - **The rhyme with the prologue** (`C7H.coda` p2): "Three days after the Pale fell, a sergeant came into a tent on the cadre row with a satchel and all five, and a mage… said it was a nice touch" (`[S.ending==='claw']` "empty hands… without looking up from her cards").
+- **Status at the end.** TPL quest **paid**. The knife: still undrawn (by design). The whistle: resolved per road.
 
 ### Brisk (`brisk`): brother Tav, Second Army
-- **TPL.** From Cawn. Her brother "Tavore-by-no-relation, called Tav" joined the Second a year before she joined the Third. Quest: "He isn't on any list yet, living or dead. Brisk checks the pits when nobody is watching." She carries "A letter from Tav, three years old, sealed."
+- **TPL.** From Cawn. Her brother "Tavore-by-no-relation, called Tav" joined the Second a year before she joined the Third. Quest: "He isn't on any list yet, living or dead. Brisk checks the pits when nobody is watching." She carries "A letter from Tav, three years old, sealed." God: **Hood** (she "has never prayed. She has always saluted.").
 - **Ch1, burial field** (`c1_pits`, optional, `S.f.c1_pits`). She finds a heater shield with the Second's sigil burned off: "Tav wrote a letter. Three years ago. I never opened it. I thought I'd open it when I found him… If I open it now it means something."
   - Take it: `gain('heater')`, brisk +1. "Not his… His had a notch top left. This one's clean."
   - Leave it: `S.f.c1_leftShield`, ohl +1, brisk −1.
   - Wait: `S.f.c1_waitedBrisk`, brisk +1. "He's not in this one." She says it to the pit, not to you. "I'd know."
-- **Ch2, barrow** (optional fight, `c2_barrowFought`). She finds a Ninth Regiment badge: "Tav was Fourth. This isn't his."
+- **Ch1, The Line** (`c1_line_ok` / `c1_line_fail`): she calls "Nathilog" and the shields lock. On a failure `c1_lineGap` = the roller, and `c1Gap()` gives "A hand's width… On the plain, we drill it."
+- **Ch2, barrow** (optional fight, `c2_barrowFought`). A Ninth Regiment badge: "Tav was Fourth. This isn't his."
   - Keep it: `S.f.c2_badge`, `gain('secondbadge')`, brisk +1. She puts it "inside her gorget, where the letter is": "He could've known Tav. Marched with him. Somebody did."
   - Leave it: brisk −1, ohl +1. "He stays with the ones that killed him. That's the Second all over."
   - That night `[c2_badge]`: "If Tav's dead, I want to have known it before somebody tells me. I don't know how that works. I'm working on it."
-- **Ch3** (`c3_wagon`). `[c2_badge]` The badge is now on a thong round her wrist: "Tav'd never desert. I'm looking anyway. It's a habit. Like the count." Otherwise: "A city this size… has a pay-ledger somewhere with every name in it."
-- **Ch5** `[c5_ellisThrough]` "I said it to Tav, the day he joined the Second. *We don't leave people.*"
-- **Status.** Tav is **unresolved**: not found, not on any list, and the letter is **still sealed**. The Ch7 regroup with Dujek's Host (the remains of the Second) is the natural place to pay it off.
-- **Her other arc: the ledger and "we don't leave people".** She keeps the ration count and writes the chapter's cost into it: "Mule's Pell." / "One day lost, west, on the sergeant's order." / `[report]` "Forty silver, received. I won't write what for. I'll know." / `[aside]` "I wrote *stood aside*… I didn't write [by order]. It'd be true, and it'd be a lie."
-  - The phrase **"we don't leave people"** first appears in Ch5. `[through, Ellis]` "We don't leave people… Nine years. That's the whole of it." A breath. "You just did." Then: "I don't know if you were wrong. That's what I can't forgive. I don't *know*."
-  - `[c5_briskHeld]` She tackles Ellis unbidden, and only if `S.loy.brisk>=2`: "Claw-trained. Good elbow." / "I've been not-looked-at before. It's what the shield's for."
-- **Shield-wall theme.**
-  - `[shield]` "That's what a line is for… Not the ones behind it that'd have lived anyway. The ones that wouldn't." She keeps a bit of the bend in the rim: "So I know which dent was for something."
-  - The Nathilog story: four of nine lost holding a line "in front of an empty tent".
-  - `[aside]` "Whiskeyjack said watch… We watched." In the reprisal alley: "I'd have stood".
-- **Loyalty.** Up for caution, discipline and the line. Down for Claw deals (`c3_report` −2), `c2_ride` −2 and `aside` −2.
+- **Ch3** (`c3_wagon`). `[c2_badge]` The badge is on a thong round her wrist: "Tav'd never desert. I'm looking anyway. It's a habit. Like the count." Otherwise: "A city this size… has a pay-ledger somewhere with every name in it." At the dogleg (`c3_cousins_faced`) she says "Ninth Regiment… Heavy." (a slip, §8).
+- **Ch5.** `[c5_ellisThrough]` "I said it to Tav, the day he joined the Second. *We don't leave people.*" If she makes the otataral trick she stores the dust "in her gorget, next to the letter she doesn't open" (`c5_ot_ok`).
+- **The ledger and "we don't leave people".** She keeps the ration count and writes the chapter's cost into it: "Mule's Pell." / "One day lost, west, on the sergeant's order." / "Ten silver, to deserters, for the road" (`c2_des_paid`) / `[report]` "Forty silver, received. I won't write what for. I'll know." / "Ten silver," she says, writing. "Alley." (`c3_cousins_paid`) / `[aside]` "I wrote *stood aside*… I didn't write [by order]. It'd be true, and it'd be a lie." / "In line before they stood" (`c5_rise`).
+  - **"We don't leave people"** first appears in Ch5. `[through, Ellis]` "We don't leave people… Nine years. That's the whole of it." A breath. "You just did." Then: "I don't know if you were wrong. That's what I can't forgive. I don't *know*."
+  - `[c5_briskHeld]` She tackles Ellis unbidden, only if `S.loy.brisk>=2`: "Claw-trained. Good elbow." / "I've been not-looked-at before. It's what the shield's for."
+- **Shield-wall theme.** `[shield]` "That's what a line is for… Not the ones behind it that'd have lived anyway. The ones that wouldn't." She keeps a bit of the bend in the rim: "So I know which dent was for something." The Nathilog story: four of nine lost holding a line "in front of an empty tent". `[aside]` "Whiskeyjack said watch… We watched." In the reprisal alley: "I'd have stood".
+- **Ch6.**
+  - Halberd: "Hat," she says, to Kettle (`c6_steward`, `simtalhalberd`). "Furniture… Furniture's what gets broken first" (`c6_orders`).
+  - `[bridgeburners]` She carries Whiskeyjack (`c6_bb_leg`, brisk +1): "We don't leave people," she says, to nobody at all, and lifts. Close: "I didn't know I meant *him* too. I didn't know it went out that far."
+  - `[alley, stepped in, with deaths]` "We didn't leave her/them. We stood where they stood, and they fell there, and that isn't leaving… I'm going to keep saying that until I believe it."
+  - Ledger: `[cellars]` "*One vault. Forty and twelve. Not fired.*" / "Best thing we've ever done. Nobody will ever know." `[aside]` "I wrote *stood aside*" (or "Twice… I've written it twice now" if `c4_key==='aside'`). If Ohl dies she writes the dead in the ration ledger, "Ohl first", and draws a line under the count.
+  - `[steppedIn]` The rim has "two bends… side by side" (`c4_key==='shield'`) or one.
+  - Tav: hand on the gorget at every close: "Not yet," she says, to it. `[dies in the alley]` "Tav's letter is still inside her gorget, sealed."
+  - Loyalty: +1 `c6_coll_ring`, `c6_card_no`, `c6_rake_step`, `c6_tuft_glove` (only if she holds the glove), `c6_bb_leg`, `c6_alley_step`; −1 `c6_tuft_shadow`, `c6_tuft_kept` (not on `cold`); −2 `c6_alley_aside`.
+- **Ch7: Tav is resolved.**
+  - At the sending she comes to attention over the bone (`c7_sending_tav`, `c7_askedTav`). Dujek: "Ask the Moranth… Ask for the living first."
+  - At Ch'kess's rolls (`c7_rolls`, sets `c7_tav='alive'` whoever reads them): "*Tav, of Cawn. Fourth Regiment. Living.*" / "Living," says Ch'kess, helpfully. / "Yes," says Brisk. "I can read." The rolls are optional (through `c7_qm`); if never read `c7_tav` is unset, but every fate page still has her find him or know of him.
+  - **The letter is opened** (`c7_letter`, `c7_letter='brisk'`, brisk +1). Text `C7H.letter()`, addressed "*Bris,*": "*I still owe you four coppers from the Cawn wharf. I'm not paying. Come and get them.*" / "*Don't stand in front of things. I know you. You'll stand in front of things.*" Brisk: "Four coppers… The *bastard*." `[c6_steppedIn || c6_key==='bridgeburners' || c4_key==='shield']` "Too late, Tav."
+  - **If Brisk died in Ch6.** Dujek: "Was," says the voice. The letter is in the sergeant's coat `[c2_badge]` "with the badge off her wrist". `c7_letter_sgt`: `c7_letter='sgt'`, `c7_letterAct` = `opened` / `sent` (to Tav by the Moranth, seal unbroken) / `carried`.
+  - **"We don't leave people", answered** (`c7_ellis_take` `[through, Ellis taken back]`): "We don't leave people," she says. "You left." / "I came back," says Ellis. / "That's the half nobody says." She puts a hand on Ellis's shoulder, "which she has never done to anyone".
+  - Other beats: `c7_trotts`, they bare their teeth at each other, "*Him*… I'll miss." `[Brisk dead]` Trotts gives the sergeant a bone from his hair. The Worry Gate: "I miss the mule." The pardon: `[took]` "Sergeant." / `[refused]` "Outlaws," she says, trying it.
+  - **Who she follows** (`C7H.wouldFollow`): `outlaw` if loy ≥ −1; `empire` / `city` only if loy ≥ 2; `disband` → north to Tav.
+  - **Fate page** ("Four coppers" if read, else "The line"): `[outlaw, follows]` "a big man at a cook-fire who can't sing, singing… 'Four coppers / Tav,' she says. He turns round." `[outlaw, not following]` a transfer to the Fourth Regiment: "*Rations short. Count them twice.*" `[empire]` "He doesn't need me standing in front of him. You might." `[city]` the Phoenix door; every letter to Tav ends "*four coppers*" / "*no*". `[won't follow]` she plants her shield. `[dead]` "It means you carry them." / the dents list ("a Hound… a Tiste Andii… a Jaghut tyrant… an Adjunct"). Loyalty ≥2 "Sergeant."; ≤−2 "She salutes correctly. It's the coldest thing she knows how to do."
+- **Loyalty drivers.** Up for caution, discipline and the line. Down for Claw deals (`c3_report` −2, `c7_claw_took` −2), `c2_ride` −2, `aside` −2, `c6_alley_aside` −2.
+- **Status at the end.** Tav and the letter **paid**. The Ninth Regiment badge **open** (only "the badge off her wrist" if she is dead). "I don't *know*" `[through]` **partly** (answered only if Ellis is taken back).
 
 ### Kettle (`kettle`): the Moranth debt, the cussers, the spoon
-- **TPL.** Falari; ran powder for a smuggler; learned munitions from Chub, "who lost three fingers". Quest: "Owes a Moranth quartermaster something she won't name… keeps checking the sky for quorls." Gear: "A spoon she will not explain."
-- **The Moranth debt has never been touched in the prologue or Ch1–5.** Quorls come up only as the Black Moranth flying the Bridgeburners south (Ch1–2). Tuft `[loy≥2]`: "The quorls went south-east. Not south." This is **fully open**, and her level-3 talent "Quorl Signal" (a Moranth drop) is a natural hook for it.
-- **The spoon.** It appears only in `c1_claw` `[decoy]`: "a spoon listed under *equipment*". It is still unexplained.
+- **TPL.** Falari; ran powder for a smuggler; learned munitions from Chub, "who lost three fingers". Quest: "Owes a Moranth quartermaster something she won't name… keeps checking the sky for quorls." Gear: "A spoon she will not explain." God: **Oponn** ("The Lady pulls…").
+- **The Moranth debt before Ch7.** Untouched in the prologue to Ch6. Quorls come up only as the Black Moranth flying the Bridgeburners south (`c1_brief`, Ch2 intro). Tuft `[loy≥2]`: "The quorls went south-east. Not south." Ch1 raid (`c1_raid_let`, kettle −1): "Moranth… Do you know what they *want* for those?" is the only other Moranth beat.
+- **The spoon.** Only `c1_claw` `[decoy]` ("a spoon listed under *equipment*") until Ch7.
 - **Named cussers.**
-  - **Maud** is her starting cusser (`c1_start`: "The cusser's called Maud, if anyone's asking." Nobody is.).
-  - **Gerrun** is bought from Pell for 14 silver (`S.f.c1_cusserSold`): "After a sapper. He's dead. It's a compliment."
-  - **Hedge's cusser** is gifted in Ch3 (`c3_work_hedge`, `S.inv.cusser += 1`, always): "Don't name it; I can see you want to name it."
-  - **Chub's cusser.** In Ch5 she says the one she has "carried since Nathilog" was Chub's: "*keep it for the one that matters, girl, you'll know it*". The text never says which named cusser this is. Maud is the likeliest.
-  - Current count is `S.inv.cusser`, which may be 0 because cussers can also be thrown in battle.
-- **Arc in Ch1–5: permission to throw.**
-  - Ch1 `[c1_accBluffed]`: she walks out with the cusser, "This is Maud/Gerrun," "Say hello." (kettle +1, brisk −1; "Never. Again.")
+  - **Maud**, her starting cusser (`c1_start`: "The cusser's called Maud, if anyone's asking." Nobody is.).
+  - **Gerrun**, bought from Pell for 14 silver (`S.f.c1_cusserSold`): "After a sapper. He's dead. It's a compliment."
+  - **Hedge's cusser**, gifted in Ch3 (`c3_work_hedge`, `S.inv.cusser += 1`, always): "Don't name it; I can see you want to name it."
+  - **Chub's cusser.** Ch5 narration (`c5_wards` cusser node): "She's carried it since Nathilog." Kettle: "Chub gave me that one at Nathilog… *keep it for the one that matters, girl, you'll know it*". **Ch7 settles it: Chub's is Maud** (`c7_debt_paid [!c5_cusserUsed]`: "Maud… She was Chub's. She was yours.").
+  - Current count is `S.inv.cusser`; `maudKept()` (`31_battle.js`) protects one in battle while `c7_debt !== 'paid'`.
+- **Arc: permission to throw.**
+  - Ch1 `[c1_accBluffed]`: she walks out with the cusser: "This is Maud," or Gerrun if sold ("Say hello."; kettle +1, brisk −1; "Never. Again.").
   - Ch2: she names the mule **Pell** (`c2_wagon`, kettle +1): "It does the same face." She walks eleven days beside the Bridgeburners' sealed crate without opening it.
-  - Ch3: she opens the crate at last. `c3_kettleSeal`: Whiskeyjack says "Noted… Open it." Then: "Four," she says at last, to Whiskeyjack. "Sir. I *told* them."
-  - Ch4: she refuses to throw on a roof (`c4_kettleNo`): "I throw that up here and I don't take three knives off a roof. I take the Gadrobi District off the map… I'm telling you why so you don't think I've gone soft."
-  - Ch5: Whiskeyjack says yes ("Throw it at anything else you like"). `[c5_cusserUsed]` She throws it at the barrow wards: "That's awful," she says. "Isn't it. That's an awful thing to feel." / "It was *beautiful*, though. Wasn't it." / "I don't think it mattered, Sergeant. I think I just couldn't carry it any more." If she had a cusser and didn't throw it: "Maybe I've gone Fiddler."
-- **Ellis.** They trade arrows for fuse-cord. `[c5_ellisThrough]` "She had my fuse-cord… Two lengths. She never said what for." This is a planted object for Ellis's return.
-- **The decoy ledger.** `[S.f.decoy]` Her munitions ledger went to the Claw in the prologue. It comes back **only if** she talks to the grey cloak in Ch1 (`c1_claw`). If `decoy && !c1_claw`, the Claw still has it.
+  - Ch3: she opens the crate (`c3_kettleSeal`): Whiskeyjack: "Noted… Open it." Then: "Four," she says at last, to Whiskeyjack. "Sir. I *told* them." She may learn Blue Fire; if so she counts "two of something new, which she has named" (`c3_after_knives`).
+  - Ch4: she refuses to throw on a roof (`c4_kettle_no`; `c4_cusserHeld` set in `c4_guild` if she has one): "I throw that up here and I don't take four knives off a roof. I take the Gadrobi District off the map. Us on it." / "I'm telling you why so you don't think I've gone soft."
+  - Ch5: Whiskeyjack says yes ("Throw it at anything else you like"). `[c5_cusserUsed]` she throws it at the barrow wards: "That's awful," she says. "Isn't it. That's an awful thing to feel." / "It was *beautiful*, though. Wasn't it." / "I don't think it mattered, Sergeant. I think I just couldn't carry it any more." `[c4_cusserHeld]` "The roof, with the knives coming…". If she had one and didn't throw: "Maybe I've gone Fiddler." Close: "And the one at the dig doesn't count… under *never again*".
+- **Sapper consequences** (every opening sharper has a specific echo):
+  - Prologue: the deserters (`S.f.noisy`). Hedge in Ch1: "You're the one put a sharper down the north tunnels… In a *tunnel*." (`c1_bones`).
+  - Ch2 barrow (`preUsed('barrow')`): `c2_barrow_heard`; the plain hears it, `c2_sethTrust` −1, "Sethand's Malazans"; the thing walking beside the Adjunct stops and turns its head (`c2_hills_dust`); Sethand in Ch5: "Grave-fire" (`c5_seth`).
+  - Ch3 lane (`cutpurses`): a cracked lamp-pipe; Pallick writes *not the gas*; Hedge is delighted (`c3_hedgeGate`).
+  - Ch3 alley (`knives`): the Daru Watch whistles all night. Fiddler: "Then yes. Don't tell Hedge I said."
+  - Ch4 roofs (`guild_roofs` / `guild_roofs_2`): a hole into an old woman's attic. Kettle: "Tuesday." Rallick and Kalam both use it as an edge.
+  - Ch4 roof hold (`andii_roof`): she lit the Andii's face, and everyone looked. Ch4 plank (`c4_clan`): a burning flue on the Daru ridge. Ch4 reprisal: "A lane's a barrel."
+  - Ch5 wards (`barrow_wards`): the Adjunct looks at Kettle, "line item" not "smudge" (`c5_lorn`). Ch5 dig (`c5_dig`): "I knocked on a Jaghut's door… And it knocked *back*", into the ledger "under *never again*".
+  - Ch6: no munitions in the garden. Fiddler: "There's a city under that lawn, and it's full of gas, and it's full of *us*." Every sharper option has a `preText`/`preFx` and is noticed afterwards; Fiddler at `c6_after_guards` / `c6_after_hound`: "Not a sharper… Hood's breath, Falari. You *woke* it." `[garden_hound pre]` a root runs from the Azath's yard to Kettle's scorch.
+  - Ch7: `preUsed('last_accounting')` → `c7_shipGone`: "It was on the *quay*!" `[preUsed('c7_worrygate')]` a new crack in the Worry Gate arch.
+- **Tricks she may carry:** Blue Fire (+2 edge), the Rope's Way (+2 "Falari rigging"), Otataral (+1).
+- **Ellis.** They trade arrows for **trip-cord** (the source and TPL say trip-cord, not fuse-cord). `[c5_ellisThrough]` "She had my trip-cord. Ellis. Two lengths."
+- **The decoy ledger.** `[S.f.decoy]` Her munitions ledger went to the Claw in the prologue. It comes back **only if** she talks to the grey cloak in Ch1 (`c1_claw`). If `decoy && !c1_claw`, the Claw still has it; in Ch7 it is only read out in `c7_claw_close` and never returned.
+- **Ch6.**
+  - Hedge's cusser (`c6_fid`): `[c5_cusserUsed]` "Was it good?" / "It was *beautiful*." / "I'm so proud." `[cusser left, not used]` "You've gone Fiddler." / "I heard that." `c6_hedge_garden`: "If it *comes* to it — you'll know. Like Chub said." / "He said it to *all* of us."
+  - `[bridgeburners]` `c6_bb_hedge`: she gives it back (`c6_hedgeCusser`, `S.inv.cusser −1`, kettle +1). "*This* one… You'll know, Chub said." Close: "Put it in the ledger, Sergeant. *Returned to owner.*"
+  - `[cellars]` her arc (`c6_after_mines`, `c6_mines_kettle`, kettle +2): she presses her bare hand over an acid-eaten plug, then stops the timers one by one with tallow. "Sometimes you point me at a thing and I make it *not* go… That's the hard half. Chub never told me that half." / "Twelve," she says. "Sir. I *told* them." She cries "without making any sound at all". Close: "Chub lost three fingers. I've got a scar… I'm catching him up." / "Forty and twelve. Nobody'll ever know. Hedge'll know. I'll tell him. He'll cry, and he'll pretend it's the onion."
+  - Alley: "There's no warren in a sharper. There's just a sharper." `[dead]` "The tall thing on the roof was the first thing I couldn't make stop being a thing. This is the second."
+  - Close (`c6_close_kettle`): "Not the same as this morning. Nothing's the same as this morning."
+  - Loyalty: +1 `c6_crokus`, `c6_cake`, `c6_crokusLet`, `c6_tuft_glove`, `c6_bb_hedge`, `c6_alley_step`; +2 `c6_mines_kettle`; −1 `c6_tuft_kept` (not `cold`), `c6_alley_aside`.
+- **Ch7: the Moranth debt, at last** (`c7_qm`, the Black Moranth quartermaster **Ch'kess**, "two clicks and a hiss"): "Twelve went into the crate at Nathilog… Eleven came out in hands that signed. One came out in the hand that was short three fingers… The debt walked to you. And the measure." **The debt is Chub's cusser. The spoon** is "black horn, small, with a notch in the bowl": the Moranth measure. "He never said the spoon was *yours*."
+  - `c7_debt`: `paid` (`c7_debt_paid`; needs `S.inv.cusser>0`; −1 cusser, `gain('moranthchit')`, kettle +1; `[c5_cusserUsed]` "Not Chub's. Chub's went up at the barrow", and she returns Hedge's, Gerrun or a Host one; Ch'kess: "Twelve… Square… Keep the measure." / "I'm *light*.") / `spent` (`c7_debt_spent`, on `c5_cusserUsed || S.inv.cusser<=0`: "The one that mattered is the one that is thrown… Spent is square.") / `owed` (`c7_debt_owed`, "Not yet.": "Owed is a thing that is… It is lighter carried by two.") / `closed` (Kettle dead, set in `c7_qm`'s fx: "We do not collect from the dead… We carry them.").
+  - **Signing for Chub** (Guile 16, Kettle only, needs `C7H.square()`): `c7_chub='signed'` ("Twelve hands signed… Chub is square") or `c7_chub_no` → `'carried'` ("The dead do not sign. The dead are carried.").
+  - The rolls, Toc: `c7_toc_asked` → `c7_moranthMark` (Kettle: "I'm on that one too. Since Nathilog."). Ellis's cord `[c7_ellisBack]`: "Mine… You never said what for." / "I'm saying now." Fiddler (`c7_fiddler`): "Boats and munitions: never… I'm telling you so you'll remember I told you." She hugs him. Hedge (`c7_hedge`) varies with the debt; signed: he takes off his cap. "Onion." The quorls: "Oh, they're *here*." / "They're *warm*… Chub said they were warm."
+  - **Who she follows**: `outlaw` loy ≥ −1; `empire` only if square and loy ≥ 0; `city` only if square and loy ≥ −1; `disband` → goes with the Moranth.
+  - **Fate page** ("Twelve hands" / "Square" / "The spoon"): the quorl she names, the empire ship ("No quorls over the sea"), the Paviors' Guild job, or the Moranth munitions train. "The spoon is explained now. She still won't explain it." (or, never visiting Ch'kess, "The spoon is still in her kit, unexplained"). Loyalty ≥2: "That's love, in the sapper trade."
+- **Status at the end.** Debt and spoon **paid if Ch'kess is visited** (optional). Chub **paid**. Maud **paid**. The decoy ledger **open**.
 
-### Tuft (`tuft`): the High Mage, the cadre, Shadow. Her arc resolves at the Fete.
-- **TPL.** A Mouse Quarter foundling; joined the cadre at sixteen; "a season attached to the High Mage's staff"; transferred out "with a letter that said nothing". She "goes very still when someone says 'High Mage'", "never draws a card for herself", "sleeps with a lamp lit" and carries "a cadre badge she does not wear".
+### Tuft (`tuft`): the High Mage, the cadre, Shadow. Her arc resolves at the Fete; Ch7 keeps her promise.
+- **TPL.** A Mouse Quarter foundling; joined the cadre at sixteen; "a season attached to the High Mage's staff"; transferred out "with a letter that said nothing". Traits: "Goes very still when someone says \"High Mage\"", "Never draws a card for herself", "sleeps with a lamp lit"; gear: "A cadre badge she does not wear". God: **Shadowthrone** (a Hound lies across her legs; "Tuft, when she can talk again, says it was polite").
 - **Prologue.**
-  - Reading the journal gives `knowTruth` ("*Moved before the Spawn attacked. Not after.*… Tuft stops breathing"). A failed read gives `partial` (the name *Tayschrenn*).
+  - Reading the journal (`journal_read`) gives `knowTruth` ("*Moved before the Spawn attacked. Not after.*… Tuft stops breathing"). A failed read gives `partial` (the name *Tayschrenn*). `p_reader` = whoever read it; with `told` + `p_reader==='tuft'`, Tattersail says "She read the underlined line herself" (`c1_tent`).
+  - **Tattersail's Fold** (`p_fold_ok`): Tattersail notices in Ch1 ("a pair of hands that learned her fold in a single watching", `c1_tent`). If it fails, `p_foldFail`: "Three cards refuse her. The fourth does not." / "They talk to each other," she says, not looking at anyone. "Decks." (prologue `card`).
   - `final_told` tuft +1, `final_burn` tuft −1, `claw_took` tuft −2.
 - **Ch1.**
-  - Quick Ben (`c1_qbTuft`, a Wits 12 check): "How's the High Mage's staff these days?"
-  - **Tattersail's plant** (`c1_tuft_plant`, always, so `S.f.c1_plant` is effectively always 1): "I sewed one like it onto a girl's collar eighteen months ago, on the High Mage's staff… He doesn't let people leave, Sergeant. He let her. I'd like to know what he thinks he still has of hers." The paragraph after that varies by `knowTruth` / `partial` / neither. Three possible replies:
-    - `c1_plantDeny`: "don't ask her why. Ask her who taught her."
-    - `c1_plantMarine` (tuft +1): "there's a card in her deck she's never drawn for herself. When she does, be standing next to her."
-    - The ask reply (no flag): "it'll come looking like a favour or an order, and it'll come from someone who outranks both of us. Do nothing until you've asked her."
-  - At the close. `[line]` "Sergeant." She doesn't turn round. "Thank you." `[claw]` "One of them knew my name… Not the one you'd think. The other one." That grey-cloak Claw is **still unexplained**.
+  - Quick Ben (`c1_qbTuft`, Wits 12): "How's the High Mage's staff these days?"
+  - **Tattersail's plant** (`c1_tuft_plant`, always, so `S.f.c1_plant` is always 1): "I sewed one like it onto a girl's collar eighteen months ago, on the High Mage's staff… He doesn't let people leave, Sergeant. He let her. I'd like to know what he thinks he still has of hers." The next paragraph varies by `knowTruth` / `partial` / neither. Replies: `c1_plantDeny` ("don't ask her why. Ask her who taught her."); `c1_plantMarine` (tuft +1: "there's a card in her deck she's never drawn for herself. When she does, be standing next to her."); the ask reply, no flag ("it'll come looking like a favour or an order, and it'll come from someone who outranks both of us. Do nothing until you've asked her.").
+  - Close (`c1_close`). `[line]` "Sergeant." She doesn't turn round. "Thank you." `[claw]` "The grey cloak. At the tent, when his people held with us. He called me by my name." A long silence. "Not the one you'd think. The other one." Answered in Ch6 `c6_claw` `[c1_key==='claw']`: "One of yours knew my name," Tuft says… "At the Pale. At the tent. Not you. The other one." / "We all know all their names," says the grey cloak, kindly. "It's the job."
 - **Ch2.**
   - She knows the light is Tattersail before anyone says it: "That's her… that's Tattersail. That's Thyr".
-  - `[light]` At the ashes (`c2_ashesTuft`) she names Bellurdan and Nightchill: "Somebody sent a man who didn't want to go. I was on that staff." Her replies set `c2_tuftSteadied` / `c2_tuftStood` (+1 each) or "Up" (−1).
-  - `[light]` She **starts wearing the cadre badge** (`c2_close`). `[road]` She walks in the tall grass and doesn't wear it.
+  - `[light]` At the ashes (`c2_ashesTuft`) she names Bellurdan and Nightchill: "Somebody sent a man who didn't want to go. I was on that staff." Replies set `c2_tuftSteadied` / `c2_tuftStood` (+1 each) or "Up" (−1). If she sings the song (`c2_song`), it is "the first thing anyone has let her do for Tattersail."
+  - `[light]` She **starts wearing the cadre badge** (`c2_close`). `[road]` She walks in the tall grass and doesn't wear it. `[c2_andiiStared && Tuft]` "And he looked at *me*… They don't look at *us*." (`c2_andii_caught`).
   - Refusing her draw (`c2_noCard`, after `c1_noCard`): "That's twice."
 - **Ch3.**
-  - Murillio notices the badge `[light]`: "To somebody who's dead." Otherwise he notices the unfaded mark where it was.
-  - **Kruppe's sentence** at the door (`c3_kruppe`, optional): the Rhivi carry "a thing out of a fire that was a woman… is a child now in a blanket, and will be a woman again sooner than any child should, and will *remember*". Tuft goes white.
-  - `c3_askedTuft`: "When I know, you'll be the first, Sergeant. I promise." `[loy≥2]` "She's not gone. That's what he meant." **The promised explanation is still owed.**
-  - `[report]` tuft +1: "You kept a door open."
-  - Sorry `[no Ellis]`: "There's something in her… Like a hand in a glove."
-  - Magi card: "It's for me."
-- **Ch4: Kurald Galain.**
-  - At the Andii slaughter she feels "longing". In `c4_vell_tuft`: "I want you to know I *want* it to look at us, and that's why you shouldn't listen to me."
-  - She takes the **Andii cloak** on both paths ("It doesn't quite take the lamplight").
-  - `[aside]` tuft +2, `S.f.c4_tuftDark`: "It knows what I am now. It knows my face… I'm not frightened." / "It's a *house*, Sergeant. Somebody lives in it… somebody in the house came to the window." / "Don't tell Ohl. He'll write it down."
-  - `[shield]` tuft −1: "That was a fool with a shield. It got lucky, and the luck had a name, and the name was in a *sack*."
-  - Herald drawn in Ch4: she keeps that card "in her other sleeve, by itself". **No flag records this** because `S.card` resets every chapter.
+  - Murillio notices the badge `[light]`: "To somebody who's dead." Otherwise the unfaded mark where it was.
+  - **Kruppe's sentence** (`c3_kruppe`, optional): the Rhivi carry "a thing out of a fire that was a woman… is a child now in a blanket, and will be a woman again sooner than any child should, and will *remember*". Tuft goes white.
+  - `c3_askedTuft`: "When I know, you'll be the first, Sergeant. I promise." `[loy≥2]` "She's not gone. That's what he meant."
+  - `[report]` tuft +1: "You kept a door open." Sorry `[no Ellis]`: "There's something in her… Like a hand in a glove." Magi card: "It's for me."
+- **Ch4: Kurald Galain.** At the Andii slaughter she feels "longing". `c4_vell_tuft`: "I want you to know I *want* it to look at us, and that's why you shouldn't listen to me." She takes the **Andii cloak** on both paths ("It doesn't quite take the lamplight"). `[aside]` tuft +2, `S.f.c4_tuftDark`: "It knows what I am now. It knows my face… I'm not frightened." / "It's a *house*, Sergeant. Somebody lives in it… somebody in the house came to the window." / "Don't tell Ohl. He'll write it down." `[shield]` tuft −1: "That was a fool with a shield. It got lucky, and the luck had a name, and the name was in a *sack*." Herald drawn (`c4_card`): she keeps that card "in her other sleeve, by itself". **No flag records it** (`S.card` resets every chapter).
 - **Ch5: otataral and Shadow.**
-  - Near Lorn: "There's a hole in the world, Sergeant… and she's carrying it."
-  - Near the bundle: "don't let me go near that."
-  - **Tuft's choice only exists if Ellis is not in the squad.**
-    - `[through]` She goes to the threshold. A Hound smells her hand, and she comes back with a grey lock at the left temple: `S.f.c5_tuftMarked`, tuft +2, ohl −1, brisk −1. "I think it'll know me now… I think *someone* will." / "I think I'd rather be nothing than be *noticed*. And I think it's too late to choose." / Meanas comes "*easier*… somebody's propped it." Ohl: "Something's got a thumb on her… Like a man holding his place in a book."
-    - `[hold]` `S.f.c5_tuftHeld`, tuft −2, brisk +1: "Yes, Sergeant." / "I hate that you knew."
-  - Ch5 close (not marked): "Somebody sent them… We weren't the only ones watching this hill."
-- **Plants for the Fete. None are resolved.**
-  - Tayschrenn and "what he thinks he still has of hers".
-  - The card she has never drawn for herself.
-  - `c4_tuftDark` (Kurald Galain looked back).
-  - `c5_tuftMarked` (Shadow's thumb). **It is mutually exclusive with Ellis being in the squad at Ch5.**
-  - Tattersail reborn (the bundle).
-  - Her promise to explain.
-  - Her fear of the otataral glove.
-  - CHEND says Tuft calls the dark and the threshold "polite" (the `c4_tuftDark` and `c5_tuftMarked` extras). **She never says "polite" in dialogue.** Ch6 can give her the word.
-- **Deck-refusal tally.** `c1_noCard`, `c2_noCard`, `c3_noCard`, `c4_noCard`, `c5_noCard` (plus the prologue's `noCard`). By Ch4–5 "She's past saying it."
+  - Near Lorn: "There's a hole in the world, Sergeant… and she's carrying it." Near the bundle: "don't let me go near that."
+  - Otataral (`c5_ot_ok`): "Keep it downwind of me *for ever*". On a failure she sits across the fire from the dusted one (`c5_otDusted`); at the close `C5H.red()` puts her eyes on whoever carries the dust.
+  - Tuft cannot try `c5_hairlock_end` "Be nothing" ("still shining with Meanas").
+  - **Tuft's choice exists only if Ellis is not in the squad.** `[through]` She holds the threshold, comes back to the line when the spawn reach the squad, then walks back up to the lip once it is held, so the Hounds pass her there ("She heard *threshold*; she didn't hear *once*", `c5_after_rent` via `C5H.tuftOut()`). A Hound smells her hand; she comes back with a grey lock at the left temple: `S.f.c5_tuftMarked`, tuft +2, ohl −1, brisk −1. "I think it'll know me now… I think *someone* will." / "I think I'd rather be nothing than be *noticed*. And I think it's too late to choose." / Meanas comes "*easier*… somebody's propped it." Ohl: "Something's got a thumb on her… Like a man holding his place in a book." `[hold]` `S.f.c5_tuftHeld`, tuft −2, brisk +1: "Yes, Sergeant." / "I hate that you knew."
+  - Close (`c5_close_tuft`, not marked): "Somebody sent them… Somebody who knew exactly where that puppet would be… We weren't the only ones watching this hill."
+- **Ch6: the arc resolves.**
+  - **The plant is answered** (`c6_ladder`, `c6_qb_glove`, `c6_qbCollar`). Quick Ben's smile "stops, the way a clock stops." "Somebody's looking out of your collar, girl." `[road]` "pack" instead: "Not well. There's a lot of canvas in the way." / "Every cadre badge that was ever sewn has a bit of him in it… he looks out of them." / "Something has to *eat* it." His eyes go to the glove. `[light]` Tuft: "I've been wearing a window since the plain. I've been wearing it *for her*." `[road]` "Fourteen months. Not since the staff."
+  - **The squad draw** at Simtal's gate (`c6_gate` → `c6_card`). Refusing sets `c6_noCard` (tuft −1, brisk +1). `[chains]` "I don't know this one… It's *tonight*."
+  - **The self-draw** (`c6_tuft_ask` or `c6_tuft_round` → `c6_tuft_card`, `c6_selfDrawn`): "There's a card in here I've never drawn for myself… I'd like you to be standing next to me." `[c1_plantMarine]` recalls Tattersail's line. The card is **blank**: "It's *nobody's*… It isn't anybody's *yet*." She keeps it "inside her tunic, against her chest, the way Brisk keeps her letter." "Nineteen years… I've never once turned one for me" (`c6_tuft_ask`).
+  - **The cut** (`S.f.c6_tuft`, §3): "polite", at last, in dialogue. glove: "It isn't polite… Everything else was *polite*." shadow: "It was *polite*… It put its head down and it *asked*." dark: "It was *polite*, Sergeant. Everything that's ever been kind to me has been something I was told to be afraid of."
+  - **Her promise** `[c3_askedTuft]`: "Tomorrow. I'll tell you tomorrow. I promise I'll know by then." (all three cuts and `c6_close_tuft`). `[kept]` "I'll tell you. I don't know if it'll be *me* that tells you."
+  - Lamp: glove "it's *my* lamp now", slept "Without the lamp. I didn't mean to."; shadow "They don't [mind it]."; dark "I could sleep in the dark now… I won't."; kept "I'll sleep with *two*." Andii cloak `[dark]`: "It never warmed up, not once, since the roof. I think I know why, now."
+  - Hound `[c5_tuftMarked]` (`c6_hound_tuft`, `c6_houndKnew`, tuft +1, ohl −1): it "smells, very carefully, the grey lock", then lies down. "It *knew* me." `[shadow]` the lock is "wider… A finger's width."
+  - Other beats: Rallick "He's got it *on* him… Dust." Mammot `[Wits 16]` "*He's* the door". The duel: "the dust on him just *ate* it". Quick Ben's seven warrens: "Nobody has seven." The alley: "there's *nothing*". Derudan to Tuft: "Windows open both ways."
+  - Loyalty: +1 `c6_hound_tuft`, `c6_alley_aside` ("Near her I'm nothing"); +2 each cut; −1 `c6_card_no`; `kept` −3 handed / −2 refused / −1 cold.
+- **Ch7: the promise and the leash.**
+  - **The promise is kept** (`c7_bundle`, `c7_tattersail`): "It's her. Tattersail… She'll be a woman again sooner than any child should, and she'll *remember*… She's not gone… I believe it." Opening: `[c3_askedTuft]` "I promised… You're the first." / `[c3_kruppe]` "I'm telling you first." / else "I've never told anybody this." `[light]` "I was wearing his eye for her." The child's hand closes on her finger; Paran turns on the hill "like a man who has heard his name called in a crowd". `[kept, not cut]` she stays twenty paces off: "Not with him looking." `[c2_outFought]` a rider blocks her, then lets her look. **If Tuft is dead, Crone tells it**: "the pretty cadre witch… will grow up much too fast and remember *everything*." Kruppe points her east (`c7_kruppe`): "a promise to keep… East, on the road. Today."
+  - **The leash** (`C7H.leashed()` = `c6_tuft==='kept' && !c7_tuftCut`). The grey cloak greets her by name. Quick Ben: "Your mage has a window in her… I'd close it before noon." "The glove. Tuft, now." is offered on `c7_claw`, `c7_claw_offer`, `c7_claw_took`, `c7_claw_refused`, `c7_claw_empty*`, `c7_claw_close` and `c7_bundle`. `c7_tuft_glove`: `c7_tuftCut`, `c7_tuftCutHill` on the hill, tuft +2. "It's quiet… I can't feel *him*." "She comes and stands on the same side." Uncut on `empire`: "Tuft goes home too. His, not yours." On `outlaw`, kept: Quick Ben cuts it in the second month ("Your collar." / "I know."). On `disband` or any road she won't follow, kept: she goes **west, to him**, "to keep his eye off the Rhivi road" (`C7H.tuftWest`).
+  - Apsalar (`c7_apsalar`): "The hand in the glove… taken itself off." `[shadow]` "It hasn't let go of me."
+  - **The last draw** (`c7_lake_arrive` → `c7_card`): pool `['crown','crown','obelisk','oponn','chains','knight']`. "Two cards refuse her. The third does not." Crown: "Sovereignty… It means nobody owns us." / "Or everybody wants to." Refusing: `c7_noCard` (tuft −1, brisk +1); `[≥3 refusals]` "That's the last time you'll say that." If Tuft is dead the Deck rides unopened in someone's pack.
+  - **Who she follows**: `outlaw` loy ≥ −1; `empire` loy ≥ 1 (never if leashed); `city` loy ≥ 0. Otherwise east with the Rhivi (`C7H.tuftEast`).
+  - **Fate page** ("The long road east" / "West, to him" / "Nobody's" / "Polite" / "The window" / "A letter that says nothing" / "The Deck"). East: "By the first snow it can say her name." `[c6_selfDrawn]` "it was the unpainted card: nobody's yet." Lamp by state: glove "sleeps in the dark now, some nights"; shadow "lamp out"; dark "turns it down"; kept "two lamps". Loyalty ≥2: "The cards say nothing about you, Sergeant… That was the compliment. I'm explaining it now, because I promised to explain things." Without `c7_tattersail`: "She never did tell you what Kruppe meant… The Rhivi went east with it."
+- **Deck-refusal tally.** `noCard` (prologue), `c1_noCard` … `c7_noCard`. By Ch4–5 "She's past saying it."
+- **Status at the end.** High Mage thread, the self-drawn card, `c4_tuftDark`, `c5_tuftMarked`, the otataral fear, "polite", the lamp, Sorry's "hand in a glove": **paid**. Her promise: **paid if the bundle is visited** (optional). "Somebody sent them": **open**. The Herald in her sleeve: **open**. Varrow's truth (`knowTruth`): **open**.
 
 ### Ohl (`ohl`): the list of the dead
-- **TPL.** An Ehrlitan temple healer who served the Second under Dujek. "The list. Oilcloth. Two hundred and eleven names." Quest: "He has not added a name from the Fourth yet, and intends to die before he does." That is **still true**: no one from the Fourth is on the list.
-- **Ch1.** "Two hundred and eleven. I counted again by the fire. It doesn't get shorter when you count it, but I keep hoping." Paran's tea (`c1_paranTea`): "Is that medicine?" / "Technically," says Ohl.
-- **Ch2.**
-  - At the horse (`c2_horseHow='tea'`): "Tea," says Ohl. "Technically."
-  - `[light]` **He writes Tattersail** (`c2_ashesOhl`): "*Tattersail. Cadre. Two hundred and twelve.*" And: "I have decided the list is not a list of my failures. It is a list of the ones I would have tried for."
-  - `[road]` "Somebody is dying… and we are counting rations."
-  - `[c2_outFought]` "They are *children*, Sergeant".
-- **Ch3.** The Phoenix Inn (`c3_innOhl`): "Number sixty-four… Corporal Jeth Arrow… Put it on my list, will you. The room. Not a name. I don't know how to write a room." After the alley knives: "Not on *a* list. That's worse."
-- **Ch4.**
-  - `[shield]` He writes "*A boy. Daru. No name.*" when Vell comes over the parapet, then crosses it out: "I don't get to do that very often."
-  - `[aside]` ohl −2: "Two hundred and twelve… That's a name I didn't put there, Sergeant… I just wanted you to know whose hand it's in." He means to make "a mark… I don't know what shape it should be." **See the count inconsistency in §8.**
-- **Ch5.**
-  - "Nobody's dead until I know where they went. That's a rule. I've just made it."
-  - He leaves a space for Toc. `[through, Ellis]` He leaves one for her too: "Some lists close from the other side."
-  - On Tool's advice: "That was *kind*."
-  - He marched beside T'lan Imass at Aren.
-- **Open.** The spaces for Toc and Ellis. Vell's mark. The TPL promise (no Fourth name, ever). His hand on Tuft's head. **Current count = 211 + (`c2_key==='light'`) + (`c4_key==='aside'`).**
+- **TPL.** An Ehrlitan temple healer who served the Second under Dujek. "The list. Oilcloth. Two hundred and eleven names." Quest: "He has not added a name from the Fourth yet, and intends to die before he does." God: **Soliel** ("asking for twenty-two years"). Abilities: Denul Wash and Stanch (Stanch "says something to Hood in Ehrlii").
+- **The count.** Use `listCount()` (`15_state.js`) = 211 + (`c2_key==='light'`) + (`c4_key==='aside'`) + `Object.keys(S.dead).length` + `S.f.listAdds`. Through Ch5 it is 211 + light + aside. Ch6 `c6_ohlLorn` +1; Ch7 `c7_ohl_cross` −1 (and `c7_listAdj −1`). `c5_dig_let` "five men with lanterns" is written but never counted (§8). The finale's `listNo(id)` numbers the dead (§3).
+- **Ch1.** "Two hundred and eleven. I counted again by the fire. It doesn't get shorter when you count it, but I keep hoping." Paran's tea (`c1_paranTea`): "Is that medicine?" / "Technically," says Ohl. Edge on Hairlock: "That isn't resin. That's what we put on them after." (`c1_hairlock`).
+- **Ch2.** At the horse (`c2_horseHow='tea'`): "Tea," says Ohl. "Technically." Song: "I learn the words for the dead in every tongue… I made it at dusk." `[light]` **He writes Tattersail** (`c2_ashesOhl`): "*Tattersail. Cadre. Two hundred and twelve.*" / "I have decided the list is not a list of my failures. It is a list of the ones I would have tried for." `[road]` "Somebody is dying… and we are counting rations." `[c2_outFought]` "They are *children*, Sergeant".
+- **Ch3.** The Phoenix (`c3_innOhl`): "Number sixty-four… Corporal Jeth Arrow… Put it on my list, will you. The room. Not a name. I don't know how to write a room." After the alley knives: "Not on *a* list. That's worse." The cousins: "Not on the list."
+- **Ch4.** `[shield]` He writes "*A boy. Daru. No name.*" when Vell comes over the parapet, then crosses it out: "I don't get to do that very often." `[aside]` ohl −2 (`c4_aside_squad`): "Two hundred and thirteen" on `light`, else twelve; "two hundred and twelve/eleven names that Hood took"; he means to make "a mark… I don't know what shape it should be."
+- **Ch5.** "Nobody's dead until I know where they went." He puts it away. "That's a rule. I've just made it." He leaves a space for Toc; `[through, Ellis]` one for her too: "Some lists close from the other side." On Tool: "That was *kind*." He marched beside T'lan Imass at Aren. Coll `[c5_collTended + Ohl]`: "He's planning to collect." (`c5_coll_ok`); close: "He's not going on it either."
+- **Ch6.**
+  - Writes Lorn on the alley path (`c6_ohlLorn`, `listAdds+1`): "*Lorn. The Empress's hand.*" / "The list is the ones I would have tried for. I'd have tried for her." Not written: Mammot ("He went into *that*. I don't know where that goes"); the eight grey cloaks under the crossing ("I'm allowed one of those a year"); the Guild knife on the leads.
+  - **The TPL promise can break.** `c6_alley_fallen`: "*N. Name. The Fourth*… I said I'd die before I put one of ours on here… I was slow." If Ohl dies: "He's been spared the writing. He'd have hated that."
+  - Toc's space (`c6_paran_toc`): "You watch him decide that *riding* is a place." Close: "Paran says he's still riding. I'm going to believe Paran." `[c5_ellisThrough]` both spaces stay open "till the cloth rots".
+  - Hand on Tuft's head: glove "Nothing's got her. Nothing at all."; kept "Something looked back at me… I've never been afraid of one of ours before."
+  - Other: Mammot cold "The way the barrow was cold." Simtal: "She's afraid." At Simtal's door: "No. It's hers… I hate it." The dark cut: "I'm not going to write this down… There are things I don't write." The rime ring: "That's new."
+  - Loyalty: +1 `c6_paran_toc`, `c6_coll_ring`, `c6_tuft_glove`; −1 `c6_hound_tuft`, `c6_tuft_shadow`, `c6_tuft_dark`, `c6_tuft_kept`, `c6_alley_aside`.
+- **Ch7.**
+  - Dujek (`c7_sending_ohl`, `c7_askedOhl`): "Ehrlitan. Tea like boiled boots. Still arguing with Hood?" / "Still losing, sir. Slowly." / "Keep losing slowly." "How long's your list now?" `[no dead]` "None of the Fourth." / "Keep it that way. That's an order." `[dead]` "Then you know what I know." `[Ohl dead]` "Top of the rolls… He'd call that a technicality."
+  - Ellis's space crossed out (`c7_ellis_take`, `c7_ohlEllis`): "I've never been able to do that… Cross out a space… Some lists close from the other side."
+  - **Tattersail crossed off** (`c7_ohl_cross`, `[c2_key==='light']`, `c7_ohlTat`, `listAdds −1`, ohl +1): "I know where she went. East." `[c4_key==='shield']` "That's twice… I'm getting a taste for it." Else "Twenty-two years… never crossed off a name." If Ohl is dead, the sergeant does it.
+  - Toc's space: `[c7_tocNeither]` he copies the Moranth mark for *neither*: "Now it's written that I don't [know]." `[c7_toc_asked]` "Then I'll keep waiting."
+  - **Ellis's hand, at last** (`c7_ledger_after`, `[c7_ellisBurnt && Ohl]`, `c7_ohlHand`): "She says no… He looks anyway… 'It'll do.'" `[c2_ellisJoined]` "*let him look anyway*. You let him look."
+  - Mallet (`c7_mallet`): "Your healer. How's the list?" `[Ohl dead]` "I've got one too… I'll put him on it… He'd say mine's a draft."
+  - **Who he follows**: `outlaw` loy ≥ −1; `empire` loy ≥ 1; `city` loy ≥ 0; `disband` → east with Tuft if she goes east, else north to the wounded.
+  - **Fate page** ("The list"): Dujek's hospital tent / Genabaris with needles for Seven Cities / Jeth Arrow's room at the Phoenix ("it writes itself") / east with Tuft. "The list is N names." Crossed lines for Tattersail and Ellis; the Toc space; `[shield]` the crossed-out boy, "He knows the name now. He hasn't written it in."; `[aside]` "a mark beside Vell, small, that he has never explained"; `[c6_ohlLorn]` the Adjunct. `[dead]` "He meant to die before he wrote a name from the Fourth… [numbers]" / else "No name from the Fourth is on it." Loyalty ≥2: "Drink the tea… It's technically medicine."
+- **Status at the end.** Spaces for Toc and Ellis **paid**. No Fourth name: **paid or broken** (alley deaths). Vell's mark: **deliberately unexplained** (fate `[aside]`).
 
 ### Ellis (`ellis`, recruit): the Claw ledger
-- **TPL.** From Genabaris. Six years as a Claw scout; Toc's scout. She "Burned her hand at Pale pulling a courier out of a tent… Does not talk about the courier." Quest: "Somewhere in Darujhistan there is a house with her name in a ledger, and she means to find out which way it is written." She wears a Claw whistle with the cord cut.
-- **Ch2** (every playthrough decides her). At the dying mare, `S.f.c2_horseHow` records how it ended: `knife` / `botched` / `tea` / `refused`. Every variant has her line "Fire at the Pale… Before the Hounds."
-  - Toc: "The Claw's done with you. Be done with them."
-  - `c2_ellisAsked`, tuft +1. `[clawFavour]` "He wrote my transfer. He writes very neatly… I'll be watching you." `[cadreTrust]` "The Claw don't hold for the cadre."
+- **TPL.** From Genabaris. Six years as a Claw scout; Toc's scout. She "Burned her hand at Pale pulling a courier out of a tent… Does not talk about the courier." Quest: "Somewhere in Darujhistan there is a house with her name in a ledger, and she means to find out which way it is written." She wears a Claw whistle with the cord cut. God: **Cotillion** ("since a dock in Genabaris"; a cord that is not there).
+- **Ch2** (every playthrough decides her). Her name is introduced by her ("Ellis… His scout.") and Toc's by him (`c2_toc_offer` / `c2_toc_hound`). At the dying mare, `S.f.c2_horseHow` = `knife` / `botched` / `tea` / `refused`; every variant has "Fire at the Pale… Before the Hounds." `[botched]` "It was twice… I've put it down as once" (`c2_hills_ellis`). The sergeant's `clawknife`: "I know that knife." `c2_printsTrod`: "Don't let them do it twice." Song roller: "You change one word."
+  - Toc: "The Claw's done with you. Be done with them." `c2_ellisAsked`, tuft +1. `[clawFavour]` "He wrote my transfer. He writes very neatly… I'll be watching you." `[cadreTrust]` "The Claw don't hold for the cadre."
   - **`c2_ellisJoined`** (`recruit('ellis')`) or **`c2_ellisRefused`** (ohl −1; she rides off with Toc).
-  - Toc's asks: "Her hand. Ohl'll want to look at it and she'll say no. Let him look anyway." / "her eye's fine… I'm the one with the eye. Don't let her tell you different; she's started to". **Both are unpaid.**
-- **The Claw house** (`c2_hills_ellis`): "Lakefront, near the Gadrobi quarter, a wine-merchant's with a green door… the man who took it looked at my hand, before it was burned, and said *pretty*." **Fete hook:** "My mother was Gadrobi; she sold horses at the Fete." **The green door has never been visited.**
-- **Ch3.**
-  - She points out the dye-shop street (`c3_ellisGate`).
-  - The message comes through her (`c3_ellisMsg`), from the well-boy from the Genabaris yards: "This is how they do it… they watch which way you carry it… I carried it to you."
-  - Madryn: "You were pretty, the report said. Before the hand."
-  - `[report]` ellis −2: "Now they know the door opens… they never stop knocking on a door that's opened once."
-  - `[refuse]` ellis +2: "That's the first time anyone's shut that door with me on the right side of it."
-  - Kalam: "The Claw doesn't cut loose. It ties a longer string. Watch who pulls it."
-- **Ch4.**
-  - She knows the planks (`c4_planks`, +1). The pine plank is bait. Corporal Hesk was "sent… across it anyway. To see if I was right."
-  - `[shield]` +1: "I've never worked for anyone who did that… Don't stop."
-  - `[aside]` −1: "That's how the Claw would have done it… One step… I'd hoped you weren't."
-- **Ch5.** Toc counts her fingers: "Five," says Toc. "Five," says Ellis. Then: "He's my captain. Sergeant. He's my captain."
-  - **`c5_ellisThrough`**: she goes into the grey after Toc and `unrecruit('ellis')` runs. CHEND: "Nobody has said the word 'dead'. Nobody will." **The brief allows her to return in Ch7.** Her ledger of loyalty survives in `S.loy.ellis`.
-  - **`c5_ellisHeld`** (ellis −3). This covers `c5_briskHeld`, `c5_hold_ok` and `c5_hold_fail` ("You grabbed… You were too slow. But you *grabbed*… I'll remember which."). At dawn: "He'd have told me not to go, and I wouldn't have listened to him either — so don't expect thanks, Sergeant, but don't think I don't know." CHEND: "She counts the squad every morning and arrives at the wrong number."
-- **Refused path.** In Ch5 Toc says: "Ellis isn't with you… she wasn't at the Rhivi fires either… when you're not wanted, don't be anywhere." **Her whereabouts are unknown**, so she is also available to return.
+  - Toc's asks: "Her hand. Ohl'll want to look at it and she'll say no. Let him look anyway." / "her eye's fine… I'm the one with the eye. Don't let her tell you different; she's started to".
+- **The Claw house** (`c2_hills_ellis`): "Lakefront, near the Gadrobi quarter, a wine-merchant's with a green door… the man who took it looked at my hand, before it was burned, and said *pretty*." "My mother was Gadrobi; she sold horses at the Fete."
+- **Ch3.** The dye-shop street (`c3_ellisGate`). The letter comes through her from noon (`c3_ellisMsg`, from the well-boy from the Genabaris yards, "He was thirteen when I knew him"): "This is how they do it… they watch which way you carry it… I carried it to you." Both `c3_work_done` and the alley foot offer "Ellis. Now. At the hole." (`c3_msg_ellis`); QUESTS: "Ellis has a letter. Ask her at the dig." Madryn: "You were pretty, the report said. Before the hand." `[report]` ellis −2: "Now they know the door opens… they never stop knocking on a door that's opened once." `[refuse]` ellis +2: "That's the first time anyone's shut that door with me on the right side of it." Kalam: "The Claw doesn't cut loose. It ties a longer string. Watch who pulls it."
+- **Ch4.** The planks (`c4_planks`, +1): the pine plank is bait; Corporal Hesk was "sent… across it anyway. To see if I was right." Claw cant: +2 edge ("six years a Claw scout"); success "That's the *hands*. The ones who go in."; failure `c4_cantFar`. The Rope's Way +2 ("a month on these roofs, for the Claw"). `[shield]` +1: "I've never worked for anyone who did that… Don't stop." `[aside]` −1: "That's how the Claw would have done it… One step… I'd hoped you weren't."
+- **Ch5.** Toc counts her fingers: "Five," says Toc. "Five," says Ellis. "He's my captain." She says it over her shoulder… "Sergeant. He's my captain."
+  - **`c5_ellisThrough`**: she goes into the grey after Toc; `unrecruit('ellis')`. CHEND: "Nobody has said the word 'dead'. Nobody will." "She had my trip-cord. Ellis. Two lengths." (Kettle, close).
+  - **`c5_ellisHeld`** (ellis −3): `c5_briskHeld`, `c5_hold_ok`, `c5_hold_fail` ("You grabbed… You were too slow. But you *grabbed*… I'll remember which."). `c5_cloakGone` ("yes, but"): the grey takes her cloak and she wears **Toc's** from dawn. `c5_holdMissed`: "takes her cloak back from Brisk… Not from you." Dawn: "He'd have told me not to go, and I wouldn't have listened to him either — so don't expect thanks, Sergeant, but don't think I don't know." CHEND: "She counts the squad every morning and arrives at the wrong number."
+  - **Refused path.** Toc (`c5_toc`): "I left her at a garrison on the Adjunct's road… She walked out of it inside a week, and nobody saw her go… That's what they taught her: when you're not wanted, don't be anywhere."
+- **Ch6** (present only if `c5_ellisHeld`).
+  - Her mother (`c6_horses`, npc only with Ellis): an old Gadrobi horse-seller "says I've got her hands… One of them." Said "in front of you", not to you. Close: "He'll be at the horse fair in the spring, outside the Worry Gate… I might go."
+  - Not forgiven, by design: she "hasn't said a word to you since the hillside"; every close beat is "to the lake". `[steppedIn]` "You stepped in… I saw." It "isn't forgiveness… It isn't nothing, either."
+  - Green door, from Claw training: `c6_cellars_vault` "I know that cut. They teach it at the green door." `c6_mines_order` "That's the house hand. Every order out of the green door is written like that."
+  - Baruk: "The Claw's page on him is one line long… It says *don't*." Alley aside: "The Claw would have written that up as good work." Paran (`c6_paran`): "You're Toc's scout." / "He counted my fingers, sir."
+  - Loyalty: +1 `c6_alley_step`; −1 `c6_alley_aside`.
+- **Ch7: every case resolves.**
+  - **`[c5_ellisThrough]` she comes back** out of an alley mouth on the Lakefront (`c7_ellis_back`; mandatory: `c7_to_hill` refuses to leave, "There's somebody in the dark"). Grey streak "back from the left temple", two lengths of trip-cord on her wrist. "How long was I gone?" / "Four days." / "It was longer." `c7_ellis_back2`: "I didn't find him… I found his tracks once… Going away… That's what for. A line back… He's out there. He kept riding." Take her back (`c7_ellis_take`: `recruit('ellis')`, `c7_ellisBack`, ellis +1, `c7_ohlEllis` if Ohl present) or let her go (`c7_ellis_let`, `c7_ellisLeft`): "I'd like it in the ledger that you asked." She keeps Kettle's cord: "I might need a line back."
+  - **`[c2_ellisRefused]` she is at the green door** (`c7_ellis_door`, on a cask): "Toc left me at a garrison on the Adjunct's road… I left it." She heard of Toc "In a Gadrobi tavern, from a Bridgeburner". "I'd rather not go in alone. I'd like that in the ledger." Then (`c7_ellis_walk`) she joins (`c7_ellisJoined`, ellis +1) or walks east (`c7_ellisWalked`). `[C7H.soldOut()]` she always refuses: "I'm saying no. It isn't personal. It's training."
+  - **The green door and the ledger** (`c7_green_door` / `c7_ellis_door` → `c7_ledger`). A nineteen-year-old clerk is burning the Claw's ledgers; `[c3_ellisMsg]` he is the well-boy. Wits 13 stacks (near: `c7_ledgerOther`), Might 13 wrist (near: `c7_clerkHurt`, ellis −1), Guile 13 eyes (not Ellis; edges clawpen, pardon). Any fail → `c7_ledger_fail` (`c7_ledgerBurnt`, `c7_ellisBurnt`): "Ellis puts her hand into the fire… It's easier the second time. That's a lie."
+  - **What the page says** (`c7_ledger_read`, `c7_ledger` = `C7H.ledgerCase()` = `c5_ellisThrough ? 'lost' : (c3_key==='report' && c2_ellisJoined) ? 'retained' : 'released'`). Always "*Ellis. Genabaris, the river quarter. Scout, six years. Hand burned, Pale, recovering a courier (deceased).*" / "*Released on the plain by T. the Younger.*" then "*Not retained.*" or "*Attached, Fourth Squad, marines.* *Retained. Useful through the Fourth.*"; `[lost]` "*Lost, Gadrobi Hills, after T. the Younger. Entry closed.*" Margin, older ink: "*pretty*". `released`: "They let go of me at the Pale. For the hand… *Recovering*… That's all she'll ever say about the courier." `retained`: "It says *useful*, Sergeant. They never once wrote *useful* about me when I was theirs." `lost`: "They wrote me dead. Four days ago. In ink… It was longer." Burnt: "*Tained*… Retained. Or not retained… That's *funny*, Sergeant." Then `c7_ledgerAct` = `struck` / `burned` / `kept` (in her glove cuff).
+  - **The held silence ends** (`[c5_ellisHeld]`, `c7_ellisSpoke`): at the ledger "…and I've been angry at the wrong one." or at the close "You held on to me on that hill because you'd decided I was yours… and I've decided you were right."
+  - **Toc's horse** (`c7_paran_horse`, needs Ellis in the squad; `c7_tocHorse`, ellis +1), "in the stable at the Worry Gate". `[c5_toc && joined/back]` "Five," she says. Otherwise Paran: "He said you'd tell me your eye was bad, and it isn't."
+  - **Who she follows**: `outlaw` loy ≥ −1; `empire` loy ≥ 2 and not sold out and `c7_ledger!=='retained'`; `city` loy ≥ −1; `disband` → "Ellis rides."
+  - **Fate page** ("Which way it is written"): rides after Toc ("*He kept riding. Somebody should see where.*"), scouts for the Host, walks past the Genabaris dock, or becomes a citizen of the horse-market; then her ledger line. Loyalty ≥2: "I'm still not used to it. Don't stop." **Gone pages** (`C7H.gone`): `c7_ellisLeft` → "He kept riding"; refused → "Which way it is written"; fallback "Gone her own way" (unreachable in practice).
+- **Status at the end.** Return, green door, ledger, held resentment, the courier (lightly), Toc's "her eye" (needs her in the squad): **paid**. Ohl looking at her hand: **partly** (only on a failed ledger check with Ohl alive). The Claw whistle with the cut cord: **open**.
 
 ---
 
@@ -174,145 +264,228 @@ For the writers of Chapter 6 (The Fete) and Chapter 7 (Outlaws). The sources are
 
 | Character | Met | Flags | Standing / last said to the Fourth |
 |---|---|---|---|
-| **Whiskeyjack** | Ch1, Ch3, Ch4, Ch5 (briefing) | `wjRegard`: Ch1 honest = 1, evasive = 0, boast = −1; Ch3 −1 if `c2_late`; +1 if `c3_wjTold`. Range −2..+2. Also `c1_reported`, `c3_reported`, `c3_guildHeard`/`c3_whatWord`, `c4_answered` | Last seen in the Ch5 vault: "If she sees you, you're dead, and so is the mission, so be dead somewhere else." Optional lines: "Throw it at anything else you like." / on T'lan Imass: "you'll spend the rest of your life trying to work out what it saw." Ch4 dawn: "I know." `[shield]` "I'd have done it." `[aside]` "The boy's mine. Not yours. I sent you up." **He does not know about `c3_told`.** Madryn: "He'll hear of it one day… but not from me, and not this year." |
-| **Quick Ben** | Ch1, Ch3, Ch4 | `c1_qb`/`c1_qbTuft`, `c3_qb` | Ch3: "I'd try to be less interesting." Ch4 (`c4_qbAfter`): `[shield]` "Don't make me do it again. It has a price, and I'm not the one who pays it." / "I didn't expect it to stop." `[aside]` "Somebody on that mountain has your face now." He carried the **sack** (Hairlock, "Insurance"). |
-| **Kalam** | Ch1, Ch3, Ch4 | `c1_kal`/`c1_kalamTalk`, `c3_kal`, **`c4_kalamLook`** (set if `c3_key==='report'`) | Ch3 roof: "Go to sleep, Sergeant. You didn't see that. Nobody sees that." Ch4 dawn, last word: "Rake's people." `[c4_kalamLook]` He knows someone in the Fourth talked to the Claw, not who: "He says nothing about it. He never will." `[c3_wjTold]` He laughs at Madryn's name going to the Guild. |
-| **Fiddler** | Ch3, Ch4 | `c3_fid` | "Don't talk to her [Sorry]… Squad advice. Free. First and only." Ch4: "*slate's a liar*." To Kettle: "I'm telling you so you'll remember I told you." |
-| **Hedge** | Ch3 | none (the cusser gift is always given) | "What are you, *priests?*" / "Don't." He hid the gifted cusser from Whiskeyjack and Fiddler. |
-| **Mallet** | Ch3 | none | Recognises Ohl as Denul; "He knows. About the list." (Ohl) |
-| **Trotts** | Ch3 | none | Bares his teeth. Brisk: "*Him* I like." |
-| **Sorry** | Ch3, Ch4 | `c3_sorry`, `c4_sawSorry` (skylight, Wits 12) | Ch3, eleven words: "You brought the wagon. Good. Now stand somewhere I am not." Ch4: she watches sleeping Kruppe's doorway and looks up through the glass at the sergeant. Ellis: "She's *watching his friends*." Whiskeyjack files it. |
-| **Paran** | Ch1, Ch5 | `c1_paran`, `c1_paranStare`, `c1_paranTea`, `c5_paran`, `c5_paranHill`, `c5_paranDied` | Ch1: knifed, then fought the Hound Gear and lived. Ch5 `[c1_key==='line']` he remembers the line of shields ("*somebody's doing their job*"); otherwise he can't place them. "No… I've been dead." Last: "Tell Whiskeyjack I'm coming… Tell him about Toc." `[c5_toolSaw]` "It hasn't spoken to me once, in a month." **He still has Toc's horse on a lead rein.** |
-| **Toc the Younger** | Ch2, Ch5 | `c2_toc`, `c2_tocHound`, `c2_tocCaptain`, `c2_tocGone`, `c5_toc` | Ch2: "tell him Toc kept riding. He'll know what it means." **That message was never delivered to Paran.** Ch5: pulled through the rent. His mouth opens to say something "still in his mouth when the grey closes over his head." |
-| **Tattersail** | Prologue, Ch1 (dies Ch2) | ending-dependent; `cadreTrust` | Ch1 `[line]` "Go and find Whiskeyjack." `[claw]` "You held the crate, Sergeant. For him." Dies on the plain with Bellurdan. **Reborn in the Rhivi bundle.** |
-| **Hairlock** | Ch1 (puppet), Ch4 (sack), Ch5 | `c1_sawHairlock`, `c1_namedHairlock` | "Luggage. Don't talk to it. It talks back." In Ch5 he opens the rent ("I'm going to open you up, Captain") and is torn apart by the Hounds. His strings lie on the next hill. |
-| **Kruppe** | Ch3, Ch4 (asleep) | `c3_kruppeMet`, `c3_innKruppe`, `c3_kruppe` | The two things the city doesn't look at "have lately become two". Tells Tuft about the bundle. `[c3_msg]` "Kruppe would go in threes, himself. Or sixes." On Coll's ring: "Somebody *will*" (recognise it). |
-| **Crokus** | Ch3, Ch4 | `c3_innCrokus`, `c4_crokus`, `c4_crokusNo` | "And you *lived*." "Uncle Mammot says the Empire's a thing that happens to other cities." In Ch4 he runs past on the roofs with a bag and an Andii behind him, and never sees the Fourth. |
-| **Murillio** | Ch3 | `c3_innMur` | `[light]` "Keep it on." (the badge) |
-| **Coll** | Ch3 | `c3_innColl`, `c3_collTalk` (Guile 12), **`c3_coll`** (took ring) | "The Empire never conquers a city. It *waits*." Ring taken: "Don't wear it in the Daru District… Somebody might recognise the shape." Ring returned: "Hood take you… I'd almost got rid of it." (No flag; derive it from `c3_collTalk && !c3_coll`.) |
-| **Rallick Nom** | Ch4 | `c4_rallick` (the Guile outcome is not flagged) | "Go home, Malazan. This isn't your war." He watches one lit window on the brass-lamp hill: "I've had my own business for five years." Guile success: "Somebody's bricking up the Guild so she can't." |
-| **Ocelot** | never on-screen | `c4_guildKnows` / `c4_reprisalFought` | `[aside]` his veteran says "Ocelot sends his regards… The Guild's not buying… from anyone who stands where you stood." |
-| **Lorn** | Ch5 (never spoken to) | `c5_lorn`, `c5_spotted` | `[after wards]` "She looked at you the way you'd look at a smudge on a map." Ellis once carried her a letter. |
-| **Tool (Onos T'oolan)** | Ch5 | `c5_toolSaw` (requires `c5_spotted`) | To Raest: "Forgive me." To the sergeant `[c5_toolSaw]`: "You are very small… Stay that way." |
-| **Tiste Andii** | Ch2 (`road` only), Ch4 | `c2_andii`, `c2_andiiFear`, `c4_seen` | Ch2: "The light. Did you go to it?" / "No… Nor did we." Ch4 never speaks. `[aside]` it nods ("*I see you. I will know you.*") and lays its cloak over Vell. `[shield]` the second one hesitates at Quick Ben's illusion. |
-| **Crone** | Ch2 (always), Ch5 (optional) | `c2_crone`, `c2_croneSaw`, `c5_crone`, `c5_croneRake` | Ch2 `[light]` "Keep her [Tuft]… For what she'll be worth to someone." `[road]` "Keep counting." Ch5: "My lord is *interested* in that hill… I will tell him you were here. He will not care." Flies west to the city. |
-| **Sethand** (original, Rhivi guide, the Mhybe's clan) | Ch2, Ch5 | `c2_sethTrust` (count), `c2_outSeth`, `c2_outFought`, `c5_seth`, `c5_sethSat`, `c5_sethBundle` | Ch2 `[trust≥2]` "come by the Mhybe's fires. Say my name." `[c2_outSeth]` "you owe me a thing you will not be able to pay." Ch5 `[light]` "The Mhybe says you may live." `[outFought]` cold. At dawn he **raises his open hand**, which he has never done. |
-| **Madryn** (original, Claw handler, blue-dyed hands) | Ch3 | `c3_madryn`, `c3_tea`, `c3_key`, `c3_told`, `c3_toldAll`/`Some`, `c3_lied`, `c3_lieHeld` | `[report]` "My people will leave the Fourth alone… Whiskeyjack won't hear of this… not from me, and not this year." `[refuse]` "I'll sit here and think about you." `[lie held]` "I'll pay when it's proven." `[lie failed]` "It's a kind thing, to lie to someone." The dye-shop is dark by dawn. `[c3_wjTold]` Whiskeyjack gave her name to the Guild. |
-| **The grey cloak** (original, recurring Claw, clean boots, "neat hand") | Prologue, Ch1, Ch3 alley | `clawMet`, `clawFooled`, `marked`, `c1_claw`, `c1_clawTent`, `clawFavour` | Ch1: "Three rounds, Sergeant. You held them. That's been noted." In the Ch3 alley a man in a grey cloak with clean boots is wounded and goes over the wall. He is **never named or confirmed as Claw**; that is a rule from the Ch1 brief. |
-| **Vell** (original, Guild journeyman) | Ch4 | `c4_vell` (alive) | `[shield]` "Vell… Journeyman. Ocelot's clan. I owe you." He gives the token and learns the sergeant's name (or the false one). `[aside]` Killed; Ohl's #212. |
-| **The man on the corner** | Ch4 `[shield]` | none (the nod is unflagged) | A fake Watchman with grey eyes. Ellis: "the hole in the middle" of the Claw's page. He nods back if the sergeant nods. |
-| Others | | | Pallick (gate clerk, `c3_gate`); Garrow (`knowDeserters`); Quartermaster Pell; the Gadrobi urchin (only without Ellis); the well-boy (only with Ellis); the Rhivi outrider boy (his cousin was killed by Lorn); Jeth Arrow; Corporal Hesk; Chub; the Hound "Gear". **Never on-screen:** Tayschrenn, Dujek, Rake, Ocelot, Mammot, Simtal. |
+| **Whiskeyjack** | Ch1, Ch3, Ch4, Ch5 (briefing), Ch6 (vault, garden, dawn), Ch7 (bench, hill) | `wjRegard`: Ch1 honest = 1, evasive = 0, boast = −1; Ch3 −1 if `c2_late`; +1 if `c3_wjTold`; +1 at `c6_masks_after` (4+ masks, **unclamped**, so up to +3). Also `c1_reported`, `c3_reported`, `c3_guildHeard`/`c3_whatWord`, `c4_answered`, `c6_reported`, `c6_wjGarden`, `c6_wjLeg`, `c7_wjKnows`, `c7_wjReport`, `c7_wjHill` | Ch1 `c1_wj_last` reacts to `c1_houndDown` ("Don't make a habit of it… they'll remember who"), `c1_accTatNamed`, `c1_kalamWary`, `c1_raid*` ("Pell doesn't tell me things. Take it as a commendation") and `c1_paranWon`. Ch4 dawn: "I know." `[shield]` "I'd have done it." `[aside]` "The boy's mine. Not yours. I sent you up." `[c4_skyCreak]` he files "a girl in a grey shawl". Ch5 vault: "If she sees you, you're dead, and so is the mission, so be dead somewhere else." / "Throw it at anything else you like." Ch6 garden: "Anything comes over a wall that isn't a drunk, it's yours until it's ours." Leg broken on every Ch6 path (seen only on `bridgeburners`). Ch6 dawn "Report.", then `[bb]` "I'd rather have had the leg. I'll take the squad… Good." `[cellars]` "Keep whatever you found… Good." `[steppedIn]` "Hood's breath, Sergeant… Good." Ch7 bench: "You're not Bridgeburners… The Host is a word with some give in it." `[regard≥1 / told / c3_wjTold]` "I'd like you on them. I'm saying that once." Learns of the dye-shop via `c7_wjKnows` (§3). **Last word** (hill, by road): `[outlaw, trust]` "Good… Fourth Squad, attached." / `[outlaw, no trust]` "You're Dujek's… You're not mine." / `[empire]` "You'll get where you're going. You always have." / `[city]` "Keep the gate, Sergeant. Whichever gate." / `[disband]` "Then say the words." |
+| **Dujek Onearm** | Ch7 (voice through Quick Ben's bone, `c7_sending*`) | `c7_dujek`, `c7_askedTav`, `c7_askedOhl` | "You sound like shit." / "Paran gets your Bridgeburners." / "He's green." / "So were you." Names the Pannion Seer. To the sergeant: "I noticed." **Last:** in the `outlaw` sergeant page he rides past: "{sgt}." |
+| **Quick Ben** | Ch1, Ch3, Ch4, Ch6 (vault ladder, garden), Ch7 (bench, hill) | `c1_qb`/`c1_qbTuft`, `c1_qbCaught`, `c3_qb`, `c6_qbCollar`, `c6_qbG`, `c7_qb`, `c7_qbHill` | `c1_qbCaught`: "You're staring", to the roller by name; "Still staring?" Ch3: "I'd try to be less interesting." Ch4 `c4_qbAfter`: `[shield]` "Don't make me do it again. It has a price, and I'm not the one who pays it." / "I didn't expect it to stop." `[aside]` "Somebody on that mountain has your face now." Kettle's sharper: "Some of the furious is yours"; Andii takedowns: "They live a very long time". He carried the **sack** (Hairlock, "Insurance"). Ch6 explains the badge ("Somebody's looking out of your collar, girl"); "I'd close a few windows."; `[c6_mammotKnown]` "don't look at the sky… Look at *him*."; `[bb]` opens seven warrens; "Somebody sit on those crates." Ch7: "Everything's all it seems. That's the trouble with things." **Last:** `[shield]` "The second one stopped… I still don't know why. I've decided not to." `[aside]` "It's gone west now, with your faces in it." (`c7_qb_hill`) |
+| **Kalam** | Ch1, Ch3, Ch4, Ch6 (vault), Ch7 (quay) | `c1_kal`/`c1_kalamTalk` (read again in Ch7), `c1_kalamWary`, `c3_kal`, `c4_kalamLook` (= `c3_key==='report'`), `c4_cant*`, `c6_kalamAsked`, `c7_kalam`, `c7_kalamWarned` | `c1_kalamWary` = the roller: he follows the Fourth for an hour; the grey cloak: "You've brought a friend". Ch3 roof: "Go to sleep, Sergeant. You didn't see that. Nobody sees that." Ch4 **Claw Hand-Cant** (`c4_meet` → `c4_cant_ok`/`c4_cant_fail`): *watch / here / this one, now*; "I didn't show you that"; dawn, a flat palm across the slate: *Nothing. I showed you nothing.* Ch4 dawn: "Rake's people." `[c4_kalamLook]` "He says nothing about it. He never will." (broken in Ch7, §8). Ch6: "I'm going to put a great deal of gold on it, where they'll find it" / "watch which door she uses… it won't be ours." Ch7 `[pending]` "Somebody in your squad sat at a table with the Claw… I found out anyway. I'm Kalam… Get up that hill before Mallet does." `[told]` "I was wrong… I'm glad." **Last:** "Keep your head down, Sergeant… Not as good as you think." / a nod. Sails for Itko Kan. |
+| **Fiddler** | Ch1 (the bones, `c1_bones`), Ch3, Ch4, Ch6, Ch7 (quay) | `c1_bones`/`c1_bonesLast`, `c3_fid`, `c3_fidSorry`, `c6_vFid`, `c6_fidG`, `c7_fiddler` | Ch1: "I count. It looks like cheating to people who can't." He plays and lends five. "Hands. Good hands. Wasted on a marine." (`c1_bones_after`). Ch3 Sorry warning, order-aware: "Free. Late." Blue Fire: "It's a lamp that's angry with you." Ch4: "*slate's a liar*." Ch6: "No munitions in the garden tonight."; `[bb]` "*I told you.* Back of the neck."; five-for-five on masks: "Hedge owes me a silver." Ch7 to Kettle: "Count." / "Boats and munitions: never." / "Your lot were good hands." `[Kettle dead]` "I'd like to have told her something else." **Last:** "I'm telling you so you'll remember I told you."; `[shipGone]` a mime from the stern rail. |
+| **Hedge** | Ch1 (bones), Ch3, Ch6, Ch7 (hill) | `c3_hedgeGate`, `c3_charges`, `c3_blueTried`/`c3_blueFlash`, `c3_bonesLast`, `c6_hedgeG`, `c6_hedgeCusser`, `c7_hedge` | Ch1 the onion; "Fid cheats"; "In a *tunnel*." Ch3: "What are you, *priests?*" / "Don't."; teaches **Blue Fire**; "You're wasted on the marines" (`c3_charges`); the pin-up: "Never met 'em… Feel like I'm going to." Hid the gifted cusser. Ch6: gives `bbstrap`; "Cats and lovers"; `[bb]` slaps a cusser on the Tyrant's chest and dives; **alive at dawn**. **Last** (Ch7 hill): "Did you throw it?" / "What are you lot, then?… *priests*?"; signed debt: takes off his cap, "Onion."; `[Kettle dead]` "I hope she named it something awful." |
+| **Mallet** | Ch3, Ch6 (garden, dawn), Ch7 (bench, quay, hill) | `c7_leg`, `c7_mallet` | Recognises Ohl as Denul ("He knows. About the list."). Ch6 splints the leg: "It's not going to be right." **Last:** "It'll never be right." / "It'll do." "I'm the best there is at this in the Host. That's the leg I got." Carries Kalam's word up the hill (`c7_hill_word`). |
+| **Trotts** | Ch3, Ch6 (the crossing), Ch7 (hill) | `c6_bonfireFought`/`c6_bonfireTalked` | Bares his teeth; Brisk: "*Him* I like." Ch6 wears a Gadrobi lad's paper garland: "Trotts allows it." **Last:** teeth at Brisk; `[Brisk dead]` gives the sergeant a bone from his hair. |
+| **Sorry / Apsalar** | Ch3, Ch4, Ch7 (quay, as Apsalar) | `c3_sorry`, `c3_fidSorry`, `c4_sawSorry` (Wits 12), `c4_skyCreak`/`c4_skyWho`/`c4_skyCord`, `c7_apsalar` | "The woman in the grey shawl" until Fiddler names her. Ch3, eleven words: "You brought the wagon. Good. Now stand somewhere I am not." Ch4: watches sleeping Kruppe's doorway; `c4_skyCreak` she stands in the tallow-yard when the squad comes down (`c4_descend`); `c4_skyCord` she winds a dark cord round two fingers (Cotillion). Ellis: "She's *watching his friends*." **Last** (Ch7, Apsalar): "I don't remember coming here… It's like somebody left their coat in my room." `[c3_sorry]` the eleven words recalled. Sails for Itko Kan. |
+| **Paran** | Ch1, Ch5, Ch6 (vault, garden, alley, dawn), Ch7 (pier, hill) | `c1_paran`, `c1_paranStare`, `c1_paranTea`, `c1_paranWon`, `c2_paranTurned`, `c5_paran`, `c5_paranHill`, `c5_paranDied`, `c6_paranToc`, `c6_paranG`, `c6_lornEnd`, `c7_paran`, `c7_paranToc`, `c7_tocHorse`, `c7_paranHill`, `c7_paranNeither` | Ch1: knifed, then fought the Hound Gear and lived. Ch2 (prints, Toc): "a boot… He turned *into* it". Ch5 `[c1_key==='line']` "*somebody's doing their job*"; "No… I've been dead."; Coll cut down: "Remember where he fell". Ch6 vault `[c1 line]`: "You keep being where I needed somebody to have been."; `[bb]` Chance drinks the lance and he is "gone somewhere" for three breaths; `[alley]` Lorn dies in his arms; he takes her sword. Ch7: "I buried her. North shore… She'd have hated the view." Toc's message `[!c6_paranToc]`: "It's a Claw joke… Somebody has to decide what it means, and I'm the captain." Hands Toc's horse to Ellis. **Last:** "If Whiskeyjack won't have you, I will… I've been written about. It isn't catching." Has the Bridgeburners. |
+| **Toc the Younger** | Ch2, Ch5 | `c2_toc`, `c2_tocHound`, `c2_tocCaptain`, `c2_tocGone`, `c2_printsTrod`/`c2_printsWho`, `c5_toc` | Ch2: "tell him Toc kept riding. He'll know what it means." (delivered Ch6 or Ch7). `c2_printsTrod`: "There's a place over there where the ground's wrong. {X} was standing in it." Ch5 `c5_after_dig`: "Captain says, is that the lot." Pulled through the rent; his mouth opens to say something "still in his mouth when the grey closes over his head." Afterwards: Ellis found "his tracks once… Going away" (`c7_ellis_back2`); Ch'kess: "We carry both rolls. We do not carry him." |
+| **Tattersail** | Prologue, Ch1 (dies Ch2), Ch7 (the bundle) | ending-dependent; `cadreTrust`; `p_tatKnots`, `p_tatDates`, `p_fold*`, `p_pageTorn`, `p_scorched`; `c7_tattersail`, `c7_ohlTat` | Prologue: **teaches the Fold** (`p_fold_ok`): "It's the only trick the cadre teach, and we don't teach it." `p_tatKnots`: "three turns and a tuck. I'll know if it's been opened" (paid in `final`, "You opened it", and `c1_tent`, "the most trustworthy liar in this camp"). `p_tatDates`: "Look at the dates." Ch1 `[line]` "Go and find Whiskeyjack." `[claw]` "You held the crate, Sergeant. For him." Dies on the plain with Bellurdan. **Reborn in the Rhivi bundle**; in Ch7 a baby's hand closes on Tuft's finger and the party goes east. |
+| **Hairlock** | Ch1 (puppet), Ch4 (sack), Ch5 | `c1_sawHairlock`, `c1_namedHairlock`, `c1_hairlockLooked` | "Luggage. Don't talk to it. It talks back." `c1_hairlockLooked`: after the Hounds it is off its crate, facing the roller. Ch5 opens the rent ("I'm going to open you up, Captain"); torn apart by the Hounds. His strings lie on the next hill. Closed. |
+| **Kruppe** | Ch3, Ch4 (asleep), Ch6 (street, terrace, dawn), Ch7 (quay) | `c3_kruppeMet`, `c3_innKruppe`, `c3_kruppe`, `c3_cups*`, `c3_kruppeRumour`, `c6_kruppe`, `c6_kruppeT`, `c6_cake`, `c7_kruppe`, `c7_kruppeOffer` | The two things the city doesn't look at "have lately become two". Tells Tuft about the bundle. `[c3_msg]` "Kruppe would go in threes, himself. Or sixes." On Coll's ring: "Somebody *will*". Kruppe's cups; caught cheating gives `c3_kruppeRumour` (the roof watchers' count of eight). Ch6 warns not to "*guard*" the tall guest; `[ring]` "Kruppe did say somebody *will*."; to Tuft: "Some things are better for the keeping."; dawn: raises his cake. Ch7: "Houses of that kind are very hospitable. It is the leaving they are strict about." **Last:** the city offer, "Darujhistan does not ask a soldier which army he has left." (`phoenixkey`); to Tuft: "East, on the road. Today." |
+| **Crokus** (and **Challice**) | Ch3, Ch4, Ch6 (street, gallery, garden, alley), Ch7 (quay) | `c3_innCrokus`, `c3_pull*`, `c3_coinMissed`, `c4_crokus`, `c4_crokusNo`, `c6_crokus`, `c6_crokusRan`, `c6_crokusLet`, `c7_crokus`, `c7_coin`, `c7_coinShip` | "And you *lived*." "Uncle Mammot says the Empire's a thing that happens to other cities." **Spins Oponn's coin** and teaches the Lady's Pull ("Nobody catches that."). Ch4 crouched in the lee of the chimney, then runs past with a bag and an Andii behind him. Ch6 `[c4_crokusNo]` "Somebody said *no*. On the roof… Thanks. I think."; "They're the *nice* kind."; Challice: "They're very ugly guards." Ch7: "Uncle Mammot's dead." **Last:** throws the coin, "There."; `[c6_steppedIn]` "Thank you. I didn't say it. I'm saying it." Sails for Itko Kan. |
+| **Murillio** | Ch3, Ch6 (street, terrace, dawn) | `c3_innMur`, `c6_mur` | `[light]` "Keep it on." (the badge). Ch6 gives `fetemask`: "There's always an *after*, at a Fete." Sets the dagger in front of Simtal. **Last seen:** dawn, on the steps, not going in. Ch7 "not well" (off-screen). |
+| **Coll** | Ch3, Ch5, Ch6 (street, dawn), Ch7 (quay) | `c3_innColl`, `c3_collTalk` (Guile 12), `c3_coll` (took ring), `c3_collNamed`, `c3_collSore`, `c5_collDown`, `c5_collTended`/`c5_collRefused`, `c5_collBy`, `c5_collSalve`, `c6_coll`, `c6_collRing`, `c7_coll`, `c7_collRing`, `c7_collKept` | "The Empire never conquers a city. It *waits*." Ring taken: "Don't wear it in the Daru District… Somebody might recognise the shape." Returned: "Hood take you… I'd almost got rid of it." (no flag). `c3_collNamed`: "**Simtal**… She kept the house… a fete in the garden every spring." Ch5 cut down by the Adjunct (`c5_lorn_ride`); `c5_coll_ok` he says "*Simtal*" "like a man planning to collect", or `c5_coll_cold` he fights off the Malazan helm. Ch6: "That's my house… Was."; ring returned: "Somebody *will*, Kruppe said… Let them."; dawn: walks in. **Last** (Ch7): "Hood take you… A soldier'd have lost it honest." / "Keep it… To have it lost by somebody who didn't sell it." |
+| **Rallick Nom** | Ch4, Ch6 (street doorway, terrace) | `c4_rallick`, `c4_rallickOk`, `c4_rallick_miss` → `c4_rallickTail`, `c4_rallickWindow`, `c6_rallick` | "Go home, Malazan," he says, without looking round. "This isn't your war." Watches one lit window: "I've had my own business for five years." Guile success: "Somebody's bricking up the Guild so she can't." `c4_rallickTail` (failure via `c4_rallick_miss`, or "yes, but"): "I was sent up tonight to find out whose it is… Now I'm curious."; he watches the Fourth instead. `c4_rallickWindow`: a woman's shape crossing the light. Ch6 `[!c4_rallick]` "Go home, Malazan."; duel: "You're a thief, and I'm told you're a coward."; to Murillio and Simtal: "Orr's dead… Coll gets his house back." Then nowhere; Ch7 Kruppe: he "went in last night carrying someone". |
+| **Turban Orr** | Ch6 (terrace) | `c6_orr` | `[c6_signetSeen, !captainMum, no fight]` "The Gadrobi with the ring… We'll talk later." Goes for the thin young guard (`c6_duel`). Dies in the duel. |
+| **Lady Simtal** | Ch6 (terrace) | `c6_simtal` | Never speaks to the Fourth. `[signet]` "The Gadrobi with the *ring*." Takes the dagger through the gilt door. |
+| **Mammot / the Tyrant (Raest)** | Ch5 (*thud*), Ch6 (terrace, garden) | `c6_mammotSeen`, `c6_mammotTried`, `c6_mammotKnown`, `c6_mammotEye`, `c6_tyrantKnelt`, `c6_tyrantUp` | "Soldiers… The world has become very small." The mask comes off "and the face underneath it is the mask." The Azath takes him. Close: "For the first time since the hills, nothing comes." |
+| **Rake** (never named: "the tall guest") | Ch6 (terrace, balustrade, sky); Ch7 via Crone | `c6_rakeMet`, `c6_sawRake`, `c6_rakeLooked`, `c6_rakeTuft`, `c6_rakeStep`, `c6_badgeCold`, `c6_rakeNod`, `c6_darkMissed` | `[c4_seen]` reads the squad's faces. `[c5_croneRake]` "A raven told me of a squad on a hill… She was nearly right." To Kruppe: "Nor can I." / "Thank you. No." Seconds Rallick: "I will second him." `[terrace sharper]` "a lid" of Kurald Galain on the noise. `[dark ok]` nods back. His glass left on the rail; the black dragon unfolds "Above the house". **Last** (Ch7, by Crone): "*The small ones may go.*" |
+| **Baruk** (unnamed except by Ellis) | Ch6 (terrace, dawn) | `c6_baruk` | "When the evening becomes interesting… stand somewhere else." `[c6_darkMissed]` at dawn shows the right bow. Ch7: "grieves" (off-screen). |
+| **Derudan** (unnamed, "a woman in a mask of feathers") | Ch6 (terrace) | `c6_derudan` | To Tuft: "Windows open both ways." / "not one of us came for the cake." |
+| **Lorn** | Ch2 (from afar), Ch5, Ch6 (garden, alley) | `c5_lorn`, `c5_spotted`, `c5_horseSaw`, `c5_cutSeen`, `c5_collDown`, `c6_lornEnd`, `c6_lornKnelt`, `c6_steppedIn`, `c6_ohlLorn` | Ch5 `[after wards]` "She looked at you the way you'd look at a smudge on a map." (`wardsPre()`: "line item" for Kettle). `c5_horseSaw`: her horse looks up at the ridge. Ellis once carried her a letter. Her only words to the Fourth (Ch6): "Hold him." `[alley]` dies by the rain-barrel. Paran has her sword. |
+| **Tool (Onos T'oolan)** | Ch2 (beside the Adjunct), Ch5, Ch7 (far off) | `c5_toolSaw` (requires `c5_spotted`); NPC `tool_dig` | To Raest: "Forgive me." To the sergeant `[c5_toolSaw]`: "You are very small… Stay that way." Edge on "Be nothing": "the Imass told you: stay small". **Last:** walks north-east "Alone. Not hurrying." (`c7_close_end [c5_toolSaw]`). |
+| **Tiste Andii** | Ch2 (`road`), Ch4, Ch6 (via Rake) | `c2_andii`, `c2_andiiFear`, `c2_andiiFearBy`, `c2_andiiStared`/`Who`, `c4_seen`, `heldDowns('andii_roof')` | Ch2: "The light. Did you go to it?" / "No… Nor did we."; `c2_andiiStared` "the look you give a page you mean to find again." CHEND 2 names who saw the fear. Ch4: the hunter attacks twice and wears darkness; `[aside]` it nods ("*I see you. I will know you.*") and lays its cloak over Vell; `[shield]` the second one hesitates at Quick Ben's illusion. Hold-downs: "They remember roofs". |
+| **Crone** | Ch2 (always), Ch5 (optional), Ch7 (barrow-stone) | `c2_crone`, `c2_croneSaw`, `c5_crone`, `c5_croneRake`, `c7_crone` | Ch2 `[light]` "Keep her [Tuft]… For what she'll be worth to someone." `[road]` "Keep counting." `[c2_printsTrod]` "It's on your boots… The Hounds won't mind." `[c2_andiiStared && road]` "one of you *stared* at my lord's children." Ch5: "My lord is *interested* in that hill… I will tell him you were here. He will not care." (`[!c2_croneSaw]` "Crone, little soldiers, in case you had forgotten"). **Last** (Ch7): "Little soldiers! On a hill! *Deciding* things!"; Rake's five words; `[dark]` "He did her a courtesy… Keep it."; tells of Tattersail if Tuft is dead. Flies west. |
+| **Sethand** (original, Rhivi guide, the Mhybe's clan) | Ch2, Ch5, Ch7 (Rhivi road) | `c2_sethTrust` (count; never read after Ch5), `c2_outSeth`, `c2_outFought`, `c2_outSang`, `c2_songWrong`, `c5_seth`, `c5_sethSat`, `c5_sethBundle`, `c7_seth`, `c7_sethDebt` | Sings over the dead horses (`c2_bury`); gives the song words if `sethTrust≥2`. `[trust≥2]` "come by the Mhybe's fires. Say my name." `[c2_outSeth]` "you owe me a thing you will not be able to pay." `c2_barrow_heard` −1 trust, "Sethand's Malazans". Ch5 `[light]` "The Mhybe says you may live."; "Grave-fire."; at dawn he **raises his open hand**. **Last:** "Malazan… You are on a hill. We are on a road."; `[c2_outSeth]` the debt is named: "You will not say what you have seen on this road… It cannot be paid, because it is never finished."; looks at the charm: "He said it once." |
+| **The Rhivi outrider** | Ch5, Ch7 | reads `c5_outrider` | Ch7: "Go well." `[c5_outrider]` "She is dead. The woman with the sword… Good." `[c2_outFought]` "Fourth." |
+| **Madryn** (original, Claw handler, blue-dyed hands) | Ch3; named in Ch6–7 | `c3_madryn`, `c3_tea`, `c3_key`, `c3_told`, `c3_toldAll`/`Some`, `c3_lied`, `c3_lieHeld`, `c3_lieThin`/`c3_lieDeep` | `[report]` "My people will leave the Fourth alone… Whiskeyjack won't hear of this… not from me, and not this year." `[refuse]` "I'll sit here and think about you." `[lie held]` "I'll pay when it's proven." (never paid). `[lie failed]` "It's a kind thing, to lie to someone." `c3_lieDeep`: she underlines *north*; one fewer knife. She knows *goat*, *not the gas*, the blue-fire flash and the Watch boy. Dye-shop dark by dawn. `[c3_wjTold]` Whiskeyjack gave her name to the Guild; Ch7 grey cloak: "She's alive… She thinks about you." `C7H.madryn()`: `[c3_toldAll]` "Madryn told you he'd not hear of it this year. It's a new year somewhere." |
+| **The grey cloak** (original, recurring Claw, clean boots, "neat hand") | Prologue, Ch1, Ch3 alley, Ch6 (garden), Ch7 (green-door step) | `clawMet`, `clawFooled`, `marked`, `markedPale`, `p_claw*`, `c1_claw`, `c1_clawTent`, `c1_clawTentAsked`, `c1_clawGone`, `clawFavour`, `c6_clawMet`, `c6_clawNoted`, `c6_keptHow`, `c7_claw*` | Ch1: "Three rounds, Sergeant. You held them. That's been noted." `c1_clawTentAsked`: "Something was *looked at*." Ch1 picket second ground: **"The neat hand"** (foe `neathand`): "An entry stays open until it's closed." Ch3 alley: wounded, over the wall. Ch6: "The High Mage would like to see the Fete." Cut: "Ah." / glove "Now it's a pin… I shall enjoy telling him" / shadow "Out of one hand… into another" / dark "I can hardly complain to *him*." Kept: "It'll be over by morning. It always is." Ch7 (§3): offer or close. **Last:** fought, he steps backward off the pier "as if there were one more plank" and does not come up; bought, "It's in my hand."; talked down, "Another time… No. There isn't one, is there."; avoided, "The entry stays open, then. It'll keep. Entries do." **Never named; never says "Claw".** |
+| **Vell** (original, Guild journeyman) | Ch4, Ch7 (quay) | `c4_vell` (alive), `c4_vellRoof`, `c7_vell`, `c7_vellWarned` | `[shield]` "Vell… Journeyman. Ocelot's clan. I owe you." Gives the token; learns the sergeant's name (or the false one). Map NPC `c4_vell_roof`; names the temple-dome clan; his rope-line in `c4_descend`. Ch6 `[shield]` the token pass: "He's walking… He's a rope man again." `[aside]` killed; Ohl's #212/#213. **Last** (Ch7): names the roof crossbowman, "His name was Hollin… Out of Unta." / "That's the debt. I'm told it's paid… I don't feel it's paid." |
+| **The Guild veteran** (Ocelot's man) | Ch4 reprisal `[aside]`, Ch6 terrace, Ch7 quay | `c4_reprisalFought`, `c7_veteran`, `c7_grudge` (`settled`/`lapsed`/`open`) | Ch4: "Ocelot sends his regards… The Guild's not buying… from anyone who stands where you stood."; `[c4_rallickTail]` "One of ours had his eyes on you". Ch6: "Ocelot said… bring a friend"; "Asked twice." **Last:** `settled` (`c6_steppedIn`) "That's an answer… It'll do." / `lapsed` (`c6_terraceFought`) "The Guild's not buying… Go before it finds them." / `open` "It isn't settled. It's put down." |
+| **Ch'kess** (original, Black Moranth quartermaster) | Ch7 (hill) | `c7_qmMet`, `c7_debt`, `c7_chub`, `c7_rolls`, `c7_moranthMark` | "two clicks and a hiss". "Square." / "Spent is square." / "Owed is a thing that is." / "We carry both rolls. We do not carry him." (Toc). Pronoun inconsistent (§8). |
+| **Pallick** (original, gate clerk) | Ch3, Ch7 (Worry Gate) | `c3_gate`, `c3_pallickDoubt`/`Tip`, `c7_worry*` | `c3_pallickDoubt`: *goat* in his margin. `c3_pallickTip`: "keep to the right-hand side of the arch". `preUsed('cutpurses')`: *not the gas*. **Last:** writes the Fourth out: "I keep a column." |
+| **Garrow / Moreau** (original, Pale deserters) | Prologue, Ch1, Ch2 | `knowDeserters`, `garrowWord`, `p_garrowCrossed`, `p_desert*`, `p_moreauPaid`, `c2_des*` | `p_garrowCrossed` → Garrow is gone from the pits (`garrow_again`). Moreau (prologue foe; Ch2 `c2_dusk` if `garrowWord && !p_garrowCrossed`): "That's twice," he calls down. "Tell Garrow. Or don't. He'll know." Never resolved. |
+| **The man on the corner** | Ch4 `[shield]` | `c4_nodded` (`c4_corner_nod`) | A fake Watchman with grey eyes. Ellis: "the hole in the middle" of the Claw's page. Nods back if nodded to. Never seen again. |
+| **Quartermaster Pell** | Ch1 | `c1_raid*`, `c1_cusserSold` | "Adequate." / "Off the books. The books never liked you." |
+| Others (original) | | | Ch1–5: the Gadrobi urchin (only without Ellis); the well-boy (only with Ellis; in Ch7 the ledger clerk, `[c3_ellisMsg]`); the Rhivi outrider boy (cousin killed by Lorn); Jeth Arrow; Corporal Hesk; Chub; the Hound "Gear"; the big Gadrobi (`c3_cousins`); the young Watchman (`c3_watchYoung`); the old woman in the attic; the temple-dome clan (`c4_clan`); the Worrytown barrow-robbers (`c5_mattock`); the Barrow-keeper (Ch2) and Barrow-chief (Ch5, drops `barrowflint`); the man in front (`c2_front`); the deserter sergeant (Ch2); Rumjugs and Sweetlard (painted, never met). Ch6: the captain of the house (`c6_signetSeen`, `c6_captainMum`); the steward; the Gadrobi foreman and lads (`c6_bonfire`); the man with the phial (cellars); the young lord in the stag mask (`c6_guestHurt`); the fox-mask couple; the old horse-seller; the goat reveller; Blues (unnamed, "faded crimson cloak", one thrust); Meese and Irilta (unnamed, "a cudgel and a kitchen knife"; Kettle: "I'm never not tipping there again."); the Twins ("Two figures… back to back"); the thin young guard Orr goes for (`c6_duel`). Ch7: Hollin (named only); the nineteen-year-old clerk; the Worry Gate toughs (`c7_bigone`). **Never on-screen:** Tayschrenn (only "the High Mage"), Ocelot, Vorcan, Circle Breaker by name, Korlat. |
 
 **Bridgeburner regard beyond `wjRegard`.**
-- Kettle's crate discipline, which Whiskeyjack noticed: "Eleven days, and you didn't open it." (twelve on the late path, via tripDays())
-- Hedge's cusser.
-- Fiddler, `[workDone]`: "Good hands, your lot."
-- Quick Ben's interest in Tuft.
-- Kalam's suspicion `[c4_kalamLook]`.
+- Kettle's crate discipline: "`tripDays(1)` days, and you didn't open it." (eleven; twelve on the late path).
+- Hedge's cusser; Hedge's "You're wasted on the marines" (`c3_charges`).
+- Fiddler, `[workDone]`: "Good hands, your lot."; Ch1 "Hands. Good hands. Wasted on a marine."; Ch7 "Your lot were good hands."
+- Quick Ben's interest in Tuft. Kalam's suspicion `[c4_kalamLook]` and his cant (`c4_cantWho`). The Pell commendation (`c1_raid*`).
+- The masks minigame (`c6_masks_after`, +1 `wjRegard` at 4+).
+- Ch7 resolves it all into `C7H.wjTrust()` (§3).
 
 ---
 
 ## 3. Chapter keys and what they mean
 
 ### Prologue: `S.chapters[0]` (= `S.ending`)
-- **given**: "It's yours. We never saw it." This is possible **even if the squad read the journal**, so check `knowTruth` separately.
+- **given**: "It's yours. We never saw it." Possible **even if the squad read the journal**, so check `knowTruth` separately.
   - CHEND: "Tattersail owes your squad, and she is the kind who pays."
-  - Ch1 effects: `gain('cadretoken')`. Quick Ben: "Somebody delivered something and didn't stay to read it." `[c1 claw]` The grey cloak steals "a loose leaf" of Varrow's from the cadre tent.
-- **told** (requires `knowTruth`): Tattersail says "Forget the underlined part… I'll remember it for all of us."
-  - Ch1: cadre token. Tattersail: "You know what I know. That makes two of us, and Tayschrenn, and Varrow."
-- **burned**: Tattersail burns it: "It just isn't the one Varrow died for."
-  - Ch1: "I've been thinking about your candle." `[c1 claw]` The grey cloak takes the crate lid, "Luggage".
-- **claw** (`gaveClaw`): the Herald card. "Then the High Mage will have it by morning."
-  - Ch1: the grey cloak says "The High Mage sends his regards… He doesn't, in fact."
+  - Ch1 effects: `gain('cadretoken')`. Quick Ben: "Somebody delivered something and didn't stay to read it." `[c1 claw]` The grey cloak steals "A loose leaf," of Varrow's from the cadre tent (the torn page, `p_pageTorn`).
+- **told** (requires `knowTruth`): Tattersail: "Forget the underlined part… I'll remember it for all of us." Ch1: cadre token; "You know what I know. That makes two of us, and Tayschrenn, and Varrow."
+- **burned**: Tattersail burns it: "It just isn't the one Varrow died for." Ch1: "I've been thinking about your candle." `[c1 claw]` The grey cloak takes the crate lid, "Luggage".
+- **claw** (`gaveClaw`): the Herald card. "Then the High Mage will have it by morning." CHEND: "Tayschrenn will know by morning who carried it up out of the dark." Ch1: "The High Mage sends his regards… He doesn't, in fact." `gaveClaw` is read once more, in Ch6 `c6_claw`, and never in Ch7.
 - **Other prologue flags.**
-  - `marked` (the Might 14 or 15 stand-off against the grey cloak failed): "entered into a ledger, in a very neat hand".
-  - `decoy`: Kettle handed over her munitions ledger.
-  - `clawFooled`: the Guile 13 "Grave detail" lie worked, so the grey cloak never waits at the tunnel mouth and the squad cannot be marked in the prologue.
+  - `marked` (the Might 14/15 stand-off against the grey cloak failed; `claw_marked` also sets `markedPale`, which Ch6 reads to tell a Pale marking from Madryn's): "entered into a ledger, in a very neat hand".
+  - `decoy` (`claw_decoy`): Kettle handed over her munitions ledger.
+  - `clawFooled`: the Guile 13 "Grave detail" lie worked; the grey cloak never waits at the tunnel mouth.
   - `knowStakes`, `knowDeserters`, `noisy` (the sharper woke the Stonebound).
+  - New since v3.7.4, all `p_`: `p_tatKnots`, `p_tatDates`, `p_foldTried`, `p_foldFail`; `p_clawFaces`, `p_clawDoubt`, `p_clawLiar`, `p_clawNamed`, `p_kettleLooked`, `p_decoyCaught`; `p_desertHalf`, `p_deserterWords`, `p_garrowCrossed`, `p_moreauPaid`; `p_pageTorn`, `p_scorched`, `p_reader`. New nodes: `p_fold_ok`, `p_fold_fail`, `p_desert_named` (Garrow's word said wrong; one deserter runs up with Garrow's name).
+  - The `deserters` fight has a second ground, "The officers' gallery", with Moreau. The `stone` fight is "The drowned stretch" (shades), with the Stonebound junction as its second ground. `garrowWord` is Guile 14 with "Garrow's word +4" (was Guile 10).
 
 ### Ch1: `c1_key` `line` | `claw` (CHEND "The line held" / "The crate held")
-- **line**: hold the cadre row for Tattersail. `cadreTrust=1`, tuft +2. The squad survives 4 rounds against two Hounds and gains `houndtooth`.
-  - `[marked]` The Claw's **accounting** follows at the picket line (`c1_accounting`), with three outcomes: `c1_accAvoided` (Guile 14, "Ask her whose ledger you're in"), `c1_accBluffed` (the cusser; needs `S.inv.cusser>0`) or `c1_accFought`.
+- **line**: hold the cadre row for Tattersail. `cadreTrust=1`, tuft +2. Survive 4 rounds against two Hounds; gain `houndtooth`. `c1_houndDown` = how many Hounds were put on the ground.
+  - `[marked]` The Claw's **accounting** at the picket line (`c1_accounting`): `c1_accAvoided` (Guile 14, "Ask her whose ledger you're in"), `c1_accBluffed` (the cusser; needs `S.inv.cusser>0`), or `c1_acc_named` (failure; sets `c1_accTatNamed`) then the fight (`c1_accFought`), whose second ground is "The Second's burial field" with the neat hand.
   - Whiskeyjack: "The Host doesn't love the cadre, Sergeant, and the Claw don't love anybody who does."
-- **claw**: seal the tent on the grey cloak's word. `clawFavour=1`, tuft −2, brisk −1. The squad survives 3 rounds with two Claw allies.
-  - Afterwards: take the knife (`clawknife`) or refuse it (`c1_refusedKnife`, brisk +1).
-  - Whiskeyjack: "people who help the Claw once get asked twice, and the second time it isn't a request."
-- **Echoes.**
-  - Toc's greeting (Ch2).
-  - Ellis's terms (Ch2).
-  - The mood at the start of Ch2: "Nobody has said the words *cadre row*" / "*grey cloak*".
-  - Crokus hears the story (Ch3).
-  - Paran remembers the line (Ch5).
+- **claw**: seal the tent on the grey cloak's word. `clawFavour=1`, tuft −2, brisk −1. Survive 3 rounds with two Claw allies. Take the knife (`clawknife`) or refuse it (`c1_refusedKnife`, brisk +1). Whiskeyjack: "people who help the Claw once get asked twice, and the second time it isn't a request."
+- **The key is decided before the new beats.** Both paths then pass through **Pell's wagon** (`c1_raid`: fight `c1_wagon` + "The tent lines", or Guile 15 "Shout for the provosts" → `c1_raid_scare` / `c1_raid_called`, or `c1_raid_let`), then `c1_sleep` (rest), then `c1_night`. The Line trick is offered on `c1_line_go` / `c1_claw_go`.
+- New flags: `c1_qbCaught`, `c1_kalamWary`, `c1_paranWon`, `c1_hairlockLooked`, `c1_clawNoticed`, `c1_clawTentAsked`, `c1_clawGone`, `c1_lineTried`/`c1_lineGap`, `c1_raid*`, `c1_bones`/`c1_bonesLast`.
+- **Echoes.** Toc's greeting and Ellis's terms (Ch2); the Ch2 mood ("Nobody has said the words *cadre row*" / "*grey cloak*"); Crokus hears the story (Ch3); Paran remembers the line (Ch5, Ch6, Ch7); Tuft's "the other one" (Ch6 `c6_claw`).
 - `clawFavour` can also come from Ch3 `report`, so test `c1_key` when you need the Ch1 meaning.
 
 ### Ch2: `c2_key` `light` | `road` (CHEND "You rode to the light" / "You kept the road")
 - **light**: ride to Tattersail's death. `c2_late=1` (a day late), tuft +2, brisk −2, ellis +1.
-  - Rhivi outriders: `c2_outTalked` (Guile 13), `c2_outSeth` (needs `sethTrust≥2`; spends Sethand's word for a year) or `c2_outFought` (the Rhivi remember).
-  - **The ashes**: black glass, Bellurdan and Tattersail. The Mhybe carries away the bundle. Ellis: "It moved."
-  - Tuft wears the badge from then on.
-  - Ch3: Whiskeyjack says "Twelve days… I said eleven." (`wjRegard −1`).
-  - Ch5: Sethand says "The Mhybe says you may live."
-- **road**: keep the timetable. brisk +1, tuft −2, ohl −1, ellis −1.
-  - Three **Tiste Andii** walk in before dawn: "Did you go to it?" A Wits 12 check (`c2_andiiFear`) shows they are afraid.
-  - Tuft stays in the tall grass.
-  - Ch5: Sethand says "You kept your road… The clans say that is what Malazans are for."
-- **Both keys**: Crone lands, laughs and names herself (`c2_crone`); `c2_croneSaw` is optional.
+  - Rhivi outriders: `c2_outTalked` (Guile 13; a "yes, but" costs a sharper/burner, `c2_outToll`), `c2_outSeth` (needs `sethTrust≥2`; spends Sethand's word for a year), the ✦ song (`c2_song` → `c2_outSang`, sethTrust +1; `c2_song_wrong` → `c2_songWrong`, "horse-singer", and the choices are offered again), or `c2_outFought` (the Rhivi remember; second ground "The lit grass", with the man in front).
+  - **The ashes**: black glass, Bellurdan and Tattersail. The Mhybe carries away the bundle. Ellis: "It moved." Tuft wears the badge from then on.
+  - Ch3: "Twelve days… I said eleven." (`wjRegard −1`). Ch5: "The Mhybe says you may live." Ch7: Ohl crosses Tattersail off.
+- **road**: keep the timetable. brisk +1, tuft −2, ohl −1, ellis −1. Three **Tiste Andii** walk in before dawn ("Did you go to it?"; Wits 12 `c2_andiiFear`; `c2_andii_caught` / "yes, but" → `c2_andiiStared`). Tuft stays in the tall grass. Ch5: "You kept your road… The clans say that is what Malazans are for."
+- **Both keys**: the new main-road fight before the ridge, `c2_dusk` (Pale deserters; Moreau's section if `garrowWord && !p_garrowCrossed`): fight `c2_deserters` (+ "The crest"), an Ellis-only surprise, Guile 15 → `c2_des_talk` / `c2_des_fail`, or 10 silver → `c2_des_paid` (`c2_desFought` / `Talked` / `Paid` / `Took`). Crone lands, laughs and names herself (`c2_crone`); `c2_croneSaw` optional. The barrow (`c2_barrowCold`, `c2_barrowFour`, `c2_barrowMissWho`, `c2_kettleOut` via `c2_barrow_out`, `c2_barrow_heard`; second ground "The burial chamber", the Barrow-keeper). Prints: `c2_printsTrod`/`c2_printsWho`, `c2_paranTurned`.
 - **Ellis** is decided on both keys, independently of the key.
 
 ### Ch3: `c3_key` `report` | `refuse` (CHEND "You told the Claw" / "You walked out")
-- **report** (`c3_told=1`, plus `c3_toldAll` including Quick Ben and Kalam's nights, or `c3_toldSome` without them).
-  - `clawFavour=1`, +40 silver. brisk −2, ellis −2, tuft +1, ohl −1.
-  - No fight; Whiskeyjack doesn't know. CHEND: "a loaded gun with the Fourth's name on the grip."
-  - Ch4 sets `c4_kalamLook`.
-- **refuse** (`marked=1`). It includes lying: `c3_lied`, with `c3_lieHeld` if Guile 14 passes (in which case Madryn keeps her purse until it is proven). brisk +1, ellis +2.
-  - Alley fight with hired knives and a Claw (`c3_knivesFought`, `lampchip`).
-  - Option to tell Whiskeyjack everything: `c3_wjTold`, `wjRegard +1`, and he says "Good." In Ch4 he gives Madryn's name to the Guild.
+- **report** (`c3_told=1`, plus `c3_toldAll` including Quick Ben and Kalam's nights, or `c3_toldSome`). `clawFavour=1`, +40 silver. brisk −2, ellis −2, tuft +1, ohl −1. No fight; Whiskeyjack doesn't know. CHEND: "…Whiskeyjack does not know. Brisk does. So does the sergeant, every time the crew goes down the hole." The extra (`c3_told`): "a drop of acid on a wax plug, with the Fourth's name on it." Ch4 sets `c4_kalamLook`. **Ch7 makes this the whole Claw branch** (`C7H.friend()`, below).
+- **refuse** (`marked=1`). Includes lying: `c3_lied`, with `c3_lieHeld` on Guile 14 (Madryn keeps her purse "when it's proven"; never paid). `c3_lieThin` ("yes, but"): the knives come sooner; `c3_lieDeep` (clean): one fewer knife. brisk +1, ellis +2. Alley fight with hired knives and a Claw (`c3_knivesFought`, `lampchip`), running on through the Blue Hand's vat-house. Option to tell Whiskeyjack (`c3_wjTold`, `wjRegard +1`, "Good."); in Ch4 he gives Madryn's name to the Guild.
+- **Both keys**: the new second-night fight at the dogleg (`c3_cousins`, after `c3_workDone`): fight `c3_toughs`, 10 silver → `c3_cousins_paid` (kettle −1), or Might 15 → `c3_cousins_faced` / `c3_cousins_fail`. New flags: `c3_pallickDoubt`/`Tip`, `c3_watchGone`/`c3_watchYoung`, `c3_collNamed`/`c3_collSore`, `c3_charges`, `c3_blueFlash`, `c3_coinMissed`, `c3_fidSorry`, `c3_hedgeGate`, `c3_pinup`, `c3_kruppeRumour`, `c3_cups*`, `c3_bones*`.
 
 ### Ch4: `c4_key` `shield` | `aside` (CHEND "You held the roof" / "You stepped aside")
-- **shield**: `c4_vell`, `c4_guildKnows`. The squad survives 3 rounds against an Andii hunter.
-  - Quick Ben's sack-laugh illusion makes the second Andii hesitate. Vell hooks the Andii cloak.
-  - `guildtoken`; the man on the corner.
-  - brisk +1, ohl +1, tuft −1, ellis +1.
-  - Whiskeyjack: "That's the one thing you saw tonight that you didn't see."
-- **aside**: `c4_seen`, `c4_tuftDark`. The Andii kills Vell, nods, and lays its cloak over him.
-  - `ropehook`; Ocelot's reprisal in the alley (`c4_reprisalFought`, always on this path).
-  - tuft +2, brisk −2, ohl −2, ellis −1.
-  - Whiskeyjack: "Something on that mountain looked at the Fourth tonight… and decided it was worth a nod."
+- **shield**: `c4_vell`, `c4_guildKnows`. Survive 3 rounds against an Andii hunter (who attacks twice and wears darkness). Quick Ben's sack-laugh illusion makes the second Andii hesitate. Vell hooks the Andii cloak. `guildtoken`; the man on the corner (`c4_corner`, `c4_nodded`). brisk +1, ohl +1, tuft −1, ellis +1. Whiskeyjack: "That's the one thing you saw tonight that you didn't see." Ch6: "Hold up Vell's token." (needs `guildtoken` in the kit) lets the Guild knives pass (`c6_knives_pass`, `c6_guildPassed`); Ch7: Vell names Hollin.
+- **aside**: `c4_seen`, `c4_tuftDark`. The Andii kills Vell, nods, lays its cloak over him. `ropehook`; Ocelot's reprisal (`c4_reprisalFought`, always; 4 + a wave, then the cooperage yard; CHEND "fewer walked home than went out"). tuft +2, brisk −2, ohl −2, ellis −1. Whiskeyjack: "Something on that mountain looked at the Fourth tonight… and decided it was worth a nod." Ch6: `terrace_knives_2`; Ch7: the veteran.
+- **Both keys**: the shout check is Might 13 (`c4_shouter`, `c4_shoutLoud`, `c4_shoutFailed`). The Guild roof fight is four knives + a wave (second ground the tannery ridge). `c4_clan` (temple-dome clan at the plank home, from `c4_back_west`; Might 16 → `c4_plank_down` / `c4_plank_stuck`; `c4_clanFought`). New flags: `c4_skyCreak`/`c4_skyWho`/`c4_skyCord`, `c4_rallickOk`/`c4_rallickTail`/`c4_rallickWindow`, `c4_cant*`, `c4_rope*` (`c4_ropeDown`: the rope-line hangs in the lane and the reprisal carries it), `c4_run` (`seen`/`unseen`/`walked`), `c4_cusserHeld`, `c4_vellRoof`. CHEND 4 names "Rallick Nom" only with Ellis + (`c4_rallickOk` or `c4_rallickTail`).
 
 ### Ch5: `c5_key` `through` | `hold` (CHEND "Into the grey" / "You held the line")
 - **The node branches on Ellis** (`c5_rent`):
-  - **With Ellis, through**: `c5_ellisThrough`, `unrecruit('ellis')`, brisk −1, tuft +1, ohl +1, kettle −1.
-  - **With Ellis, hold**: `c5_ellisHeld`, ellis −3. It is Brisk's tackle `c5_briskHeld` if `loy.brisk≥2`; otherwise a Might 13 check.
-  - **Without Ellis, through**: `c5_tuftMarked`.
+  - **With Ellis, through**: `c5_ellisThrough`, `unrecruit('ellis')`, brisk −1, tuft +1, ohl +1, kettle −1. Ch7: she returns (mandatory).
+  - **With Ellis, hold**: `c5_ellisHeld`, ellis −3. Brisk's tackle `c5_briskHeld` if `loy.brisk≥2`; otherwise a Might 13 grab (`c5_cloakGone` on "yes, but"; `c5_holdMissed` on failure). Ch6–7: the silence, then `c7_ellisSpoke`.
+  - **Without Ellis, through**: `c5_tuftMarked`. Ch6: `c6_houndKnew` / `shadow`.
   - **Without Ellis, hold**: `c5_tuftHeld`.
-- Kettle's cusser (`c5_cusserUsed`) is independent of the key, as are:
-  - `c5_spotted` (a failed Wits 13 at the edge, so Tool turned his head);
-  - `c5_toolSaw`;
-  - `c5_sethSat` (the Rhivi charm; unavailable if `c2_outFought`).
-- The otataral glove and Toc's scout cloak come on both keys.
+- Independent of the key: Kettle's cusser (`c5_cusserUsed`); the edge (`c5_to_vale`: look/still/crest, all 13; `c5_edgeHow`; failure → `c5_spotted`; `c5_stoneBy`, `c5_horseSaw`, `c5_cutSeen`); `c5_toolSaw`; `c5_sethSat` (unavailable if `c2_outFought`); the rise (`c5_tool_hill`, Might 15: `c5_rise` ∈ `ok`/`near`/`fail`, `c5_riseBy`, `c5_packLost`; surprise on `barrow_wards`, whose second ground is "The head of the row" with the Barrow-chief); Coll (`c5_lorn_ride`, Wits 16: `c5_collTended`/`c5_collRefused`, `c5_collBy`, `c5_collSalve`); the dig (`c5_vale_east`: fight `c5_dig`, Guile 16 → `c5_dig_told`/`c5_dig_laugh`, or `c5_dig_let`; `c5_digDone`, `c5_digBy`, `c5_digPaid`); the otataral trick (`c5_cutstone`); after the rent (`c5_hairlock_end`, Guile 16, not on the Tuft-through path: `c5_hound_pass` → `c5_houndPassed`/`c5_houndBy`, or `c5_hound_held` → `c5_houndLooked`).
+- The otataral glove (from `c5_lorn_ride`) and Toc's scout cloak come on both keys.
 
-### Four endings in Ch7: the loyalty axes the player has built
+### Ch6: `c6_key` `bridgeburners` | `cellars` | `alley` (CHEND "The garden held" / "Under the crossing" / "The alley")
+The choice is made at `c6_choice`, the moment the Tyrant shows his face. Its preconditions are always met.
 
-| Axis | For | Against |
+**Fixed spine, every path.** 1. The vault report and orders. 2. `c6_bonfire`, or the Guile 16 talk-down. 3. An hour's `rest()`. 4. Quick Ben and the collar. 5. The street, then the gate (squad draw; signet; house guards). 6. The terrace: the knives resolved and the duel watched before the garden steps open. 7. The garden: Lorn seen leaving; the Hound (fight or Tuft); the grey cloak and `c6_tuft`; the Tyrant (`c6_tyrant`, optional Might 17 rime); the choice.
+
+- **bridgeburners**: `c6_bb` → `tyrant_garden`. Then the canon beats in pieces: seven warrens; Chance drinking the lance; Hedge's cusser (`c6_hedgeCusser` if Kettle has a spare); the Azath roots (`c6_azath`); Whiskeyjack's leg (`c6_wjLeg`, brisk +1); the sky (`c6_bb_sky`).
+- **cellars**: `c6_cellars_run` → `the_mines` against five, then four, Claw → Kettle's timers (kettle +2). `c6_mines_order` sets `c6_orders`: "*In the event that the Bridgeburners do not complete the mining of the city by the Fete of Gedderone, or decline to fire it, the charges under the Gadrobi crossing are to be fired by our own people… Standing order. Destroy this.*" Unsigned, in the neat hand. The sky from the crossing (`c6_mines_sky`).
+- **alley**: `c6_alley` → `c6_alley_streets` → `c6_alley_line`. Lorn: "Hold him." **Step in** (`c6_steppedIn`; brisk/kettle/ellis +1) → `lorn_alley` (mortal, nomagic) → `c6_after_alley` → `[deaths]` `c6_alley_fallen`. **Stand aside** (brisk −2, kettle −1, tuft +1, ohl −1, ellis −1) → `c6_alley_aside`. Both → `c6_alley_sky` → `c6_alley_women` → `c6_alley_paran` (`c6_lornEnd`; `c6_ohlLorn`, `listAdds+1`).
+- **All keys** → `c6_dawn` → `c6_dawn_wj` → `c6_close` (rows for the living) → `c6_close_end` (`c6_done`) → `chapterEnd(6, c6_key || 'bridgeburners')`.
+
+**Tuft's resolution: `S.f.c6_tuft`** (set in the garden, before the Tyrant)
+
+| Value | Route | Requires | Loyalty |
+|---|---|---|---|
+| `glove` | `c6_tuft_card` → `c6_tuft_glove` | self-draw and `!c6_badgeCold` | tuft +2, ohl +1, kettle +1, brisk +1 if she holds the glove |
+| `shadow` | `c6_tuft_card` → `c6_tuft_shadow` | `c5_tuftMarked`, `!c6_badgeCold` (the Hound itself if `c6_houndKnew`, else the shadow in the angle of the wall) | tuft +2, ohl −1, brisk −1 |
+| `dark` | `c6_tuft_dark` | `c4_tuftDark` and either `c6_badgeCold` (Rake already looked, `c6_rake_cold`) or "Look up at the terrace" | tuft +2, ohl −1; sets `c6_rakeLooked` |
+| `kept` | `c6_tuft_kept`, `c6_keptHow` = `handed` ("Do what he says, Tuft." / "Go with him, Tuft."), `refused` ("Not now…"), or `cold` (`loy.tuft <= -2` → `c6_tuft_cold`; the Might 12 sergeant-only check fails, or "Let her go") | n/a | tuft −3 / −2 / −1; brisk −1 and kettle −1 unless `cold`; ohl −1 |
+
+Once `c6_badgeCold` is set, `dark` is the only cut offered (but see §8 on the kept routes). Kept-Tuft goes wherever the Fourth goes ("He'll want to see this") and is excluded from the rime trick (`notWhy`). `c6_tyrant`'s fallback `if (!S.f.c6_tuft) S.f.c6_tuft='kept'` cannot fire.
+
+**The Ch6 → Ch7 contract** (flags Ch7 reads): `c6_key`, `c6_tuft`, `c6_orders`, `c6_steppedIn`, `c6_lornEnd`, `c6_wjLeg`, `c6_paranToc`, `c6_collRing`, `c6_signetSeen`, `c6_guildPassed` / `c6_terraceFought` (exactly one), `c6_hedgeCusser`, `c6_ohlLorn`, `c6_noCard`, `c6_selfDrawn`, `sgtScar`, `S.dead`. **Written but never read by Ch7:** `c6_houndKnew` / `c6_houndFought`, `c6_sawRake`, `c6_rakeLooked`, `c6_azath`, `lastFallen`.
+
+**Other Ch6 flags.** Vault: `c6_started`, `c6_reported`, `c6_vParan`, `c6_vFid`, `c6_vKalam`, `c6_kalamAsked`, `c6_up`, `c6_qbCollar`. Crossing: `c6_bonfireFought` / `c6_bonfireTalked`. Street: `c6_kruppe`, `c6_mur`, `c6_coll`, `c6_crokus`, `c6_rallick`, `c6_rev`, `c6_horses`. Gate: `c6_drawn` / `c6_noCard`, `c6_gateDone`, `c6_signetTried`, `c6_signetFee` (−3 silver near-miss), `c6_captainMum` (clean), `c6_guardsFought`. Terrace: `c6_masks` (= right+1), `c6_baruk`, `c6_rakeMet`, `c6_rakeTuft`, `c6_badgeCold`, `c6_rakeStep`, `c6_darkTried`, `c6_rakeNod` (id), `c6_darkMissed` (id), `c6_kruppeT`, `c6_cake`, `c6_simtal`, `c6_orr`, `c6_mammotSeen`, `c6_mammotTried`, `c6_mammotKnown` (id), `c6_mammotEye` (id), `c6_derudan`, `c6_knivesDone`, `c6_duelDone`. Garden: `c6_gardenSeen`, `c6_wjGarden`, `c6_fidG`, `c6_hedgeG`, `c6_qbG`, `c6_paranG`, `c6_crokusRan`, `c6_crokusLet`, `c6_lawnTried`, `c6_lawnClear`, `c6_guestHurt`, `c6_houndDone`, `c6_houndDowned`, `c6_clawMet`, `c6_defied`, `c6_keptHow`, `c6_coldTried`, `c6_clawNoted`, `c6_selfDrawn`. Tyrant: `c6_tyrantUp`, `c6_rimeTried`, `c6_rimeHeld` (id), `c6_rimeBit` (id, plus `S.rattled`), `c6_tyrantKnelt`. Alley: `c6_alleyPre`, `c6_alleySh`, `c6_lornKnelt`, `c6_fallenSeen`. Close: `c6_closeBrisk` … `c6_closeEllis`. Non-`c6_` writes: `S.f.wjRegard += 1` (unclamped), `S.f.listAdds += 1`; `S.card`, `S.silver −3`, `S.rattled[id]`, `S.inv.sharper`, `S.inv.cusser −1`, `S.kit` (signet removed), `S.tricks` (`dark`, `rime`).
+
+### Ch7: `c7_key` `outlaw` | `empire` | `city` | `disband` (the four endings)
+
+| key | CHEND title (`CH7.end`) | finale page 1 (`C7H.ending`) | scene |
+|---|---|---|---|
+| `outlaw` | "You flew north" | "Outlaws" | `road_east` |
+| `empire` | "You went home" | "Loyalists" | `ship` |
+| `city` | "You stayed" | "Citizens" | `lakefront_dawn` |
+| `disband` | "You stood the Fourth down" | "Stood Down" | `quorl_hill` |
+
+**Selection logic.** The key is a **free player choice**. All four roads are always offered in `c7_choice` (reached from `c7_wj` → "Tell him."); nothing gates them. Each sets `c7_key` and `c7_follow = C7H.followMap(key)`, then goes to `c7_road_<key>`. The chapter closes with `chapterEnd(7, S.f.c7_key || 'outlaw')`; `finKey()` falls back the same way. **The v1 "loyalty axes" never pick the ending.** What the flags decide is how each road plays out:
+
+- **Whiskeyjack's trust** (`C7H.wjTrust()`; on `outlaw`, attached as his vs. "Dujek's… not mine", with Paran taking them):
+  1. `c7_wjReport` `ok` or `near` → true;
+  2. `c7_wjKnows==='claw'` → false;
+  3. `c7_wjKnows==='told'` or `c3_wjTold` or `c6_key==='bridgeburners'` → true;
+  4. `c7_wjKnows==='kalam'` → `wjRegard >= 1`;
+  5. otherwise `wjRegard >= 0`.
+- **Who follows** (`C7H.wouldFollow(id, key)`; `disband` → nobody follows):
+
+  | id | `outlaw` | `empire` | `city` |
+  |---|---|---|---|
+  | brisk | loy ≥ −1 | loy ≥ 2 | loy ≥ 2 |
+  | kettle | loy ≥ −1 | `square()` and loy ≥ 0 | `square()` and loy ≥ −1 |
+  | tuft | loy ≥ −1 | loy ≥ 1, never if leashed | loy ≥ 0 |
+  | ohl | loy ≥ −1 | loy ≥ 1 | loy ≥ 0 |
+  | ellis | loy ≥ −1 | not `soldOut()`, `c7_ledger!=='retained'`, loy ≥ 2 | loy ≥ −1 |
+
+  `square()` = `c7_debt ∈ {paid, spent, closed}`. `soldOut()` = `c7_clawDeal==='took' && !c7_pardonEmpty`. `leashed()` = `c6_tuft==='kept' && !c7_tuftCut`. The choice node lists each squadmate's line from `C7H.reason(id, key)`.
+- **The roads.**
+  - `outlaw`: trust → "The Fourth flies with them. Attached". No trust → "with the baggage: the Host's marines, not his. Paran asked for you anyway". `[took]` a pardon "in the bottom of your pack… You never unfold it." Ends "the first thing the Empire has ever called the Fourth that it meant."
+  - `empire`: `[took+empty]` "a page of rations / munitions / the dead / horses / cards that say nothing / pay owed"; `[took]` "you carry that across the sea like ballast"; `[no pardon]` "You watch him rule one." The Claw's page stays open (took), is closed or drowned (fought/bought/talked), or is "still open". "Home is a word with some give in it."
+  - `city`: deserters. "Darujhistan does not read the Empire's ledger." Kruppe arranged it. `[preUsed('c7_worrygate')]` a new crack in the Worry Gate arch; they use another gate.
+  - `disband`: "There's no form for it." Each leaves by their own road; "The squad ends. The people don't." With nobody left: "The squad ended last night, in an alley. This is only the paperwork."
+
+**The Claw's last accounting** (the grey cloak on the green-door step, `c7_claw`). `C7H.friend()` = `c3_key==='report' || (clawFavour && !marked)`, which **reduces to `c3_key==='report'`** (§8).
+- **Friendly → the offer** (`c7_claw_offer`): "A pardon. For the Fourth Squad, Seventh Company, by name… The price is small. A report. The Bridgeburners… And your own people, Sergeant. Each of them." `[leashed]` "And the mage comes home with you."
+  - **Take it, pay the price** (`c7_claw_took`): `c7_clawDeal='took'`; brisk −2, ellis −3, ohl −1, kettle −1, tuft −2. He writes each squadmate's name "and a line after it". Ellis: "He wrote a line after my name, and you'll never know what it said, and neither will I." `[!told]` "Whiskeyjack need never hear of the dye-shop. That's in the price too."
+  - **Take it, empty report** (Guile 17, `near:false`, `c7_emptyTried`). Pass → `c7_claw_empty`: `took` + `c7_pardonEmpty` + `c7_emptyBy`. "I've never once been allowed to say that about something I *liked*." Fail → `c7_claw_empty_fail`: `refused` + `c7_emptyFail`, "It's withdrawn."
+  - **"No."** (`c7_claw_refused`): `refused`; brisk +1, ellis +2, tuft +1. "Then you're outlaws too, Sergeant, by your own hand." Ellis `[c3 refuse]` "That's the second time you've shut that door…" / "Late, Sergeant, but it's shut".
+  - **Walk past** (`c7_claw_avoid`, `c7_clawAvoided`): "I'll take that as a no. I'll write it so."
+  - On refused / empty-fail / avoid, if `pendingTell()`: `c7_wjKnows='claw'`. "Whiskeyjack has a copy of your evening at the dye-shop. In my hand…" + `C7H.madryn()`.
+- **Hostile → close the entry** (`c7_claw_close`). He reads the Fourth's page: `[decoy]` the ledger and spoon; `[c1_acc*]` the picket line; the dye-shop and alley; `[c3_wjTold]` "A dye-seller's name given to the Guild. She's alive… She thinks about you."; `[c6_orders]` "a piece of paper that's gone missing". Knives by the crates, a mage in the door, a crossbow on the chandlery roof unless `c7_vellWarned`.
+  - **Talk him down** (Guile 14; Ellis +2; leashed Tuft −3; empty roof +1; `c3_knivesFought` −1; `c3_lied` −1) → `c7_claw_talk_ok` (`c7_clawTalked`): "You're closing the book. There's nobody to hand it to." Near → `c7_clawPage` = roller (their page torn out and kept); clean → `gain('clawpen')`; fail → `c7_claw_talk_fail` (`c7_clawNoted`), then orders or a fight.
+  - **Show him the order** (`[c6_orders]`, `c7_claw_orders`; `c7_clawBought`, kettle +1): "Ah," he says. "It's the first thing you have ever heard him say that he didn't mean to." One line corner to corner. "Closed."
+  - **Fight** ("Shields.", or Kettle's sharper with `pre:true`; `drop:[3]` if `c7_vellWarned`): `last_accounting` → `c7_after_accounting` (`c7_clawFought`, `gain('clawpen')`; with pre, `c7_shipGone`, and `c7_coin`/`c7_coinShip` if the coin wasn't thrown). He steps backward off the pier: "He's kept the rule for himself too." `c7_claw_ledger`: "*Entry closed by*", "And nothing after *by*"; margin "*all five*"; lake or kept (`c7_clawLedger`).
+  - **Walk past** (`c7_clawAvoided`): "The entry stays open, then. It'll keep. Entries do."
+- Every branch: `[leashed]` "The glove. Tuft, now." `c7_to_hill` will not leave until `c7_clawDone || c7_clawAvoided`.
+
+**How Whiskeyjack learns of the dye-shop (`c7_wjKnows`)**
+
+| Value | Where | Effect on `wjTrust` |
 |---|---|---|
-| **Claw** | `clawFavour`, `c1_key==='claw'`, `c3_told`, `gaveClaw`, `clawknife` | `marked`, `c1_accFought`, `c3_key==='refuse'`, `c3_knivesFought`, `c3_wjTold`, `c1_refusedKnife` |
-| **Bridgeburners** | `wjRegard` > 0, `c3_wjTold` | `c4_kalamLook` (Kalam suspects someone talked), a hidden `c3_told`, `c2_late` |
-| **Cadre / Tattersail** | `cadreTrust`, `c2_key==='light'`, `told`/`given` | |
-| **Guild** | `c4_vell`, `c4_guildKnows`, `guildtoken` | `c4_seen`, `c4_reprisalFought` |
-| **Rhivi** | `c2_sethTrust`, `c2_outSeth` (a debt), `c5_sethSat`, `rhivicharm` | `c2_outFought` |
-| **Rake / Andii** | `c2_andii*` | `c4_seen` |
-| **Shadow** | `c5_tuftMarked` | |
+| `told` | `c7_confess` (bench) or `c7_hill_tell` (+`c7_toldHill`) | true |
+| `kalam` | `c7_hill_word` (Kalam → Mallet; `c7_kalam`/`c7_mallet`, `c7_kalamWarned`) | `wjRegard >= 1` |
+| `claw` | `c7_claw_refused`, `c7_claw_empty_fail`, `c7_claw_avoid` (friendly only) | false, unless the hill report passes |
+| (unset) | `c3_wjTold`, or the Fourth never reported | — |
+
+**The finale** (`37_chapters.js`). The end screen uses `CH7.endCap()` ("Noon, and the quorls going up off a brown hill, north." etc., plus "[dead] is/are not on the hill.") and `CH7.extras()` (accounting line; `c7_wjKnows`; Ellis; `c7_clawPage`; `c7_ledgerOther`; `c7_ohlHand`; the Worry Gate; Tav and the letter; the debt; `c7_chub`; `c7_tocNeither`; `c7_moranthMark`; `c7_wjReport`; `c7_tattersail`; `c7_tuftCut`/leashed; `c7_ohlTat`; Whiskeyjack's would/would-not; `c7_paranToc`; `c7_shipGone`; `c7_coin`). "Epilogue" opens `showFinale(0)`; `finPages()`:
+1. `{k:'road'}` from `CH7.finale.endings[key]`;
+2. a fate page per id in `S.squad` other than `sgt` (`C7H.fate` = `fateBase` + `fateX`: the empty-report giver, the torn page, the Moranth mark, who found Toc), with the loyalty label;
+3. a `gone` page for each of `['brisk','kettle','tuft','ohl','ellis']` not in the squad, where `gone()` is non-null. The dead get a †, "where · Chapter N", the title `C7H.Num(listNo(id))` and the entry "*Name. Origin. Role. Number.*", voiced by Ohl if alive, else Brisk, else the sergeant. `listNo(id)` = 211 + light + aside + max(0, `listAdds` − `c7_listAdj` − `c6_ohlLorn`) + the index of the id among the dead + 1;
+4. the sergeant's fate;
+5. the end page: the two coda paragraphs (`C7H.coda`: the blue lamps, the Azath, "a coin lies in the mud on neither face", Rake "interested once, and is no longer"; "The gods don't say what they made of any of it… Nobody ever asks the gods anything, in the end, but marines, and marines don't wait for the answer."; the prologue rhyme; a key line; "Somebody noticed. It was enough.") and the campaign summary ("The Fourth's road" by CHEND title; "The dead" or "None of the Fourth. Every one of them came up out of the dark."; "Ohl's list" `listCount()`; level, xp, difficulty, `statsHTML(S)`; "The End of *Gardens of the Moon*" and the Erikson/Esslemont credit).
+
+**All Ch7 flags** (`S.f.c7_*`). Key/road: `c7_key`, `c7_follow`, `c7_done`. Accounting: `c7_clawMet`, `c7_clawDeal`, `c7_pardonEmpty`, `c7_emptyBy`, `c7_emptyTried`, `c7_emptyFail`, `c7_clawDone`, `c7_clawGone`, `c7_clawTalked`, `c7_clawPage`, `c7_clawNoted`, `c7_clawBought`, `c7_clawFought`, `c7_clawAvoided`, `c7_clawLedger`, `c7_vellWarned`, `c7_vell`, `c7_veteran`, `c7_grudge`. Whiskeyjack: `c7_started`, `c7_leg`, `c7_dujek`, `c7_askedTav`, `c7_askedOhl`, `c7_orders`, `c7_qb`, `c7_wjKnows`, `c7_toldHill`, `c7_kalamWarned`, `c7_wjHill`, `c7_wjReport`. Quay: `c7_lakeSeen`, `c7_drawn`, `c7_noCard`, `c7_kalam`, `c7_fiddler`, `c7_crokus`, `c7_coin`, `c7_coinShip`, `c7_apsalar`, `c7_mallet`, `c7_paran`, `c7_paranToc`, `c7_tocHorse`, `c7_kruppe`, `c7_kruppeOffer`, `c7_coll`, `c7_collRing`, `c7_collKept`, `c7_shipGone`, `c7_rested`. Ellis: `c7_ellisSeen`, `c7_ellisBack`, `c7_ellisLeft`, `c7_ohlEllis`, `c7_ellisDoor`, `c7_ledgerIn`, `c7_ledgerHow`, `c7_ledgerOther`, `c7_clerkHurt`, `c7_clerkPaid`, `c7_ledgerBurnt`, `c7_ellisBurnt`, `c7_ledger`, `c7_ledgerRead`, `c7_ellisSpoke`, `c7_ledgerAct`, `c7_ledgerDone`, `c7_ohlHand`, `c7_ellisJoined`, `c7_ellisWalked`. Worry Gate: `c7_worryDone`, `c7_worryFaced`, `c7_worryPaid`, `c7_worryFought`. Hill: `c7_hill`, `c7_qbHill`, `c7_paranHill`, `c7_paranNeither`, `c7_quorl`, `c7_moranth`, `c7_qmMet`, `c7_debt`, `c7_chub`, `c7_chubTried`, `c7_rolls`, `c7_tav`, `c7_rolled`, `c7_tocTried`, `c7_tocNeither`, `c7_tocBy`, `c7_moranthMark`, `c7_letter`, `c7_letterAct`, `c7_seth`, `c7_sethDebt`, `c7_tattersail`, `c7_ohlTat`, `c7_listAdj`, `c7_tuftCut`, `c7_tuftCutHill`, `c7_crone`, `c7_hedge`. Close: `c7_closeBrisk` … `c7_closeEllis`. Outside the namespace: `S.f.listAdds −1`. **Set but never read:** `c7_clawMet`, `c7_done`, `c7_ellisSeen`, `c7_grudge`, `c7_hill`, `c7_lakeSeen`, `c7_orders`, `c7_rolled`, `c7_sethDebt`, `c7_started`, `c7_wjHill`.
+
+### Loyalty axes the player builds (what Ch7 actually reads)
+
+The v1 brief imagined these axes choosing the ending. In v3.13.7 they colour the accounting, the trust test and the fates; the ending is chosen freely.
+
+| Axis | For | Against | Read in Ch6–7 by |
+|---|---|---|---|
+| **Claw** | `clawFavour`, `c1_key==='claw'`, `c3_told`, `gaveClaw`, `clawknife` | `marked`, `c1_accFought`, `c1_accTatNamed`, `p_clawNamed`, `c1_clawNoticed`, `c3_key==='refuse'`, `c3_knivesFought`, `c3_wjTold`, `c1_refusedKnife`, `c4_cantWho` | only `c3_key` picks the branch (`C7H.friend`); `c1_key==='claw'` adds a line; `decoy`, `c1_acc*`, `c3_lied`, `c3_knivesFought`, `c3_wjTold`, `c6_orders` are read in text or edges; `gaveClaw` in `c6_claw` only |
+| **Bridgeburners** | `wjRegard` > 0, `c3_wjTold`, `c6_key==='bridgeburners'`, `c7_wjKnows==='told'`, `c7_wjReport` | `c4_kalamLook`, a hidden `c3_told`, `c2_late`, `c7_wjKnows==='claw'` | `C7H.wjTrust()` |
+| **Cadre / Tattersail** | `cadreTrust`, `c2_key==='light'`, `told`/`given` | | `c7_bundle`, `c7_ohl_cross`, the coda |
+| **Guild** | `c4_vell`, `c4_guildKnows`, `guildtoken`, `c4_vellRoof`, `c6_guildPassed`, `c6_steppedIn` | `c4_seen`, `c4_reprisalFought`, `c4_rallickTail`, `c4_plankDown`, `c4_ropeDown`, `c4_clanFought`, `c6_terraceFought` | `c6_knives*`, `c7_vell` / `c7_veteran` (`c7_grudge`, never read); the Ch4 Guild-loss flags are never read |
+| **Rhivi** | `c2_sethTrust`, `c2_outSeth` (a debt), `c2_outSang`, `c5_sethSat`, `rhivicharm` | `c2_outFought`, `c2_barrow_heard`, `c2_songWrong` (mixed) | `c7_seth`, `c7_bundle [c2_outFought]`, the outrider |
+| **Rake / Andii** | `c2_andii*`, `c6_rakeNod` | `c4_seen`, `c2_andiiStared`, `heldDowns('andii_roof')` | `c6_rake`, `c7_qb_hill`, `c7_crone [dark]` |
+| **Shadow** | `c5_tuftMarked`, `c5_houndPassed`, `c5_houndLooked`, `c1_houndDown` | | `c6_hound*`, `c6_tuft_shadow`, `c7_apsalar [shadow]`; the hold-down and Hound-pass flags are never read |
+| **Simtal / Coll** | `c3_collNamed`, `c5_collTended`, `collsignet` | `c5_collRefused` | `c6_coll` reads only `c5_collDown`; `c6_collRing`, `c7_coll` |
 
 ---
 
 ## 4. Objects with story weight
 
-**Gear ids by chapter.** Slot, who can wear it, and stat in brackets. Unless marked always, each needs the flag or choice shown.
+**Gear ids by chapter.** Slot, who can wear it, and stat in brackets. Unless marked always, each needs the flag or choice shown. Gear is placed on "whoever it suits best" (`placeGear`), not the first free slot. A squadmate killed in Ch6 loses their gear (`kill()` clears `S.gear[id]`).
 - **Ch1**
   - `heater` (armour, brisk/sgt, ac1): taken from the pits.
   - `houndtooth` (trinket, any, atk1): `line` only. "It is warm. It stays warm."
   - `cadretoken` (trinket, tuft/ohl, hp2): ending `told`/`given`. "Give it to whichever of them you think needs to be remembered."
-  - `clawknife` (weapon, sgt/kettle, atk1): `claw`, if accepted.
+  - `clawknife` (weapon, sgt/kettle, atk1): `claw`, if accepted. Ellis in Ch2: "I know that knife."
 - **Ch2**
   - `barrowtorc` (trinket, hp2): after the barrow fight. "Tuft would not touch it."
   - `secondbadge` (trinket, brisk/sgt, ac1): `c2_badge`.
@@ -320,221 +493,444 @@ For the writers of Chapter 6 (The Fete) and Chapter 7 (Outlaws). The sources are
   - `toccloak` (armour, ellis/tuft/sgt, ac1): **always**. Toc's spare. "He says it's for when he's cold, and he's never cold. That's a Claw joke."
 - **Ch3**
   - `daruknife` (weapon, sgt/ellis, atk1): after the cutpurse fight, always.
-  - `roadleather` (armour, ac1): **always**; it is the Paviors' Guild crew jerkin.
+  - `roadleather` (armour, ac1): **always**; the Paviors' Guild crew jerkin.
   - `lampchip` (trinket, +1 might/wits/guile): `refuse` alley.
-  - `collsignet` (trinket, guile+1): `c3_coll`. **Coll's ground-off crest; the Fete is at Lady Simtal's.**
+  - `collsignet` (trinket, guile+1): `c3_coll`. Recognised at Simtal's gate (Ch6 `c6_signet`); returned in Ch6 (`c6_collRing`) or Ch7 (`c7_collRing`), or kept (`c7_collKept`).
 - **Ch4**
-  - `guildblade` (weapon, sgt/ellis/kettle, atk1): always (the roof fight is mandatory).
-  - `guildtoken` (trinket, guile+1): `shield`. It "opens a door… then they decide what to do with you."
+  - `guildblade` (weapon, sgt/ellis/kettle, atk1): always.
+  - `guildtoken` (trinket, guile+1): `shield`. It "opens a door… then they decide what to do with you." Opens the Ch6 terrace (`c6_knives_pass`).
   - `ropehook` (trinket, ellis/sgt/kettle, mv1): `aside`. Dead Vell's.
-  - `andiicloak` (armour, **tuft only**, ac1): **both paths**. "Cloth warms up. This doesn't."
+  - `andiicloak` (armour, **tuft only**, ac1): **both paths**. "Cloth warms up. This doesn't." `[dark]` "It never warmed up, not once, since the roof."
 - **Ch5**
-  - `rhivicharm` (trinket, wits+1): `c5_sethSat`. "The grass knows whose that is now."
-  - `barrowflint` (weapon, sgt/brisk/kettle/ellis, atk1): always.
-  - `otatglove` (trinket, sgt/brisk, ac1): always. Lorn's forgotten glove, dusted with otataral. "Tuft will not stand on the same side of the fire as it."
+  - `rhivicharm` (trinket, wits+1): `c5_sethSat`. "The grass knows whose that is now." Ch7: Sethand "said it once."
+  - `barrowflint` (weapon, sgt/brisk/kettle/ellis, atk1): always (the Barrow-chief drops it).
+  - `otatglove` (trinket, sgt/brisk, ac1): always, from `c5_lorn_ride` (was `c5_nightfall`). Lorn's forgotten glove, dusted with otataral. "Tuft will not stand on the same side of the fire as it." Ch6: "the other half of a pair"; on `glove` it holds the dead badge ("Mine now," Brisk; or "Keep it… I don't want to *not know where it is*"). Ch7: the leashed badge is dropped in it (`c7_tuft_glove`); "She comes and stands on the same side."
   - `scoutcloak` (armour, ellis/kettle/sgt, ac1): always. Toc's, handed over by Paran.
+- **Ch6** (`CH6.gear`)
+  - `simtalhalberd` (weapon, brisk/sgt, atk1): **always**, from the gate.
+  - `bbstrap` (trinket, any, hp2): optional, `c6_fid`.
+  - `fetemask` (trinket, any, guile+1): optional, `c6_murillio`.
+  - `blackedblade` (weapon, sgt/ellis/kettle, atk1 guile+1): `c6_terraceFought` only.
+- **Ch7** (`CH7.gear`)
+  - `moranthchit` (trinket, kettle, hp2): `c7_debt_paid` / `c7_debt_spent`. "The Black Moranth give them to those they have finished counting with… touches it when she is frightened".
+  - `phoenixkey` (trinket, any, guile+1): `c7_kruppe_city`. "the back door of the Phoenix Inn, the one that is not there".
+  - `clawpen` (trinket, any, wits+1): the `last_accounting` win, or a clean Guile 14 talk. "It has written the Fourth's name more times than anyone alive. Nobody in the squad will write with it. Nobody will throw it away." An edge in the ledger room.
+- **Ch1–5 gear never referenced in Ch7:** `houndtooth`, `cadretoken`, `clawknife`, `barrowtorc`, `rhivibow`, `toccloak`, `scoutcloak`, `guildtoken`, `ropehook`, `lampchip`, `barrowflint`. The `andiicloak` appears only in prose (`[dark]`).
 
-**Story objects that aren't gear.**
-- **Tav's letter**: sealed, kept in Brisk's gorget with the badge.
-- **Brisk's ration ledger**, the **sergeant's pay ledger**, and **Kettle's munitions ledger** (see `decoy`).
-- **Ohl's oilcloth list and his charcoal stub.**
-- **Tuft's Deck.** "the paint worn from the House of Shadow". It "refuses her"; it was warm in Ch2–3; the Herald may be in her other sleeve.
-- **Tuft's cadre badge** (worn if `c2_key==='light'`), grey ribbon, lamp, and the **grey lock** (`c5_tuftMarked`).
-- **Ellis's glove.** Two fingers are fused at two knuckles. Also Kettle's fuse-cord (two lengths) and the Claw whistle with the cut cord.
-- **Kettle's cussers and spoon.** Cussers are `S.inv.cusser`.
-- **Toc's horse**: it came back riderless, and **Paran leads it**.
-- **Hairlock's strings** on the next hill.
-- **The Rhivi bundle** (see §6).
-- **The Bridgeburners' munitions** in the Gadrobi-crossing gas mains: "four Moranth cussers and forty more of the Bridgeburners' own".
-- The squad's cover is the **Paviors' Guild, Gadrobi crossing**. Brisk's "Charter exemption… section four".
-- **Currencies:** `S.silver`, and `S.inv` {sharper, burner, cusser, salve}.
+**The ten tricks** (`TRICKS` in `16b_tricks.js`; carrier = `S.tricks[k].who`)
+
+| Key | Name | Ch · node | Check | Who can carry it | Use |
+|---|---|---|---|---|---|
+| fold | Tattersail's Fold | P · `tat_wits*` choices (`tatRest`) → `p_fold_ok` | Wits 15 (Tuft +1) | anyone | 1/chapter: redraw the chapter card |
+| line | The Line | 1 · `c1_line_go` / `c1_claw_go` → `c1_line_ok` | Might 16 (heater +1) | anyone | fight: +3 AC, no flanking for the line |
+| song | Rhivi Spirit-Song | 2 · `c2_outriders` → `c2_song` (`light` only) | Wits 16 (Sethand +2/+1, Ohl +1, Ellis +1, Kettle −1) | anyone | fight: heal 1d6+2 in 4 |
+| pull | The Lady's Pull | 3 · `c3_inn` (needs `c3_innCrokus`) → `c3_pull_ok` | Wits 16 | anyone | 2/chapter: reroll; the Lord's push −2 |
+| bluefire | Blue Fire | 3 · `c3_work_hedge` → `c3_blue_ok` | Wits 15 (Kettle +2) | anyone | 2/chapter: a gas bladder, 3×3 dazzle |
+| cant | Claw Hand-Cant | 4 · `c4_meet` → `c4_cant_ok` | Guile 16 (Ellis +2; `c4_kalamLook` −2) | anyone | fight: a marked target is crit |
+| rope | The Rope's Way | 4 · `c4_to_daru` → `c4_rope_ok` (before `c4_meet`) | Might 16 (Kettle/Ellis +2, Brisk −1) | anyone | fight: swap places |
+| otataral | Otataral Dust | 5 · `c5_cutstone` → `c5_ot_ok` (night) | Wits 16 | **not Tuft or Ohl** | 2/chapter: an enemy's sorcery fails |
+| dark | A Courtesy of Darkness | 6 · terrace → `c6_dark_ok` (`c6_rakeNod`) | Guile 17 (edges `c4_seen`, `c4_tuftDark`, `c2_andii`, `c6_rakeStep`) | anyone | once a fight: a 3×3 of Andii dark within 5 for 2 rounds; enemies in it −2 to hit; dead in otataral |
+| rime | Omtose Rime | 6 · garden → `c6_rime_ok` (`c6_rimeHeld`) | Might 17 | anyone **but kept-Tuft** (`notWhy`) | once a fight: an enemy within 4 loses its next turn (boss shakes it on 12+), +2 per hit through the next round; dead in otataral |
+
+Every trick is one attempt per playthrough, and none is on a mandatory road except that `song` needs `c2_key==='light'`. A failure always leaves a flag: `p_foldFail`, `c1_lineGap`, `c2_songWrong`, `c3_coinMissed`, `c3_blueFlash`, `c4_cantFar`, `c4_ropeDown`, `c5_otDusted`, `c6_darkMissed`, `c6_rimeBit`. CHEND appends "✦ X learned a trick at {where}" for each trick earned in that chapter. Physical marks: `c6_rimeHeld` frost on knuckles or on Brisk's shield rim that doesn't melt; `c6_rakeNod` breath that "smokes, once, in the warm".
+
+**Story objects that aren't gear** (status at the end of the game in bold)
+- **Tav's letter**: sealed in Brisk's gorget with the badge, prologue to Ch6. **Resolved Ch7**: opened by Brisk (`c7_letter='brisk'`), or by the sergeant if she is dead (`c7_letterAct` `opened` / `sent` / `carried`). Text in `C7H.letter()`.
+- **Brisk's Ninth Regiment badge** (`secondbadge` / `c2_badge`). **Open**: mentioned only if Brisk is dead ("the badge off her wrist").
+- **Brisk's ration ledger**: may hold the Ch6 dead (`[Ohl dead]`). **Resolved**: handed to the sergeant, closed, on `disband` ("The count's on the last page," she says. "It's right.").
+- **The sergeant's pay ledger**: may hold the dead (`[Ohl and Brisk dead]`). **Resolved**: closed with "*paid*"; Pell left "with the Paviors' Guild at the Gadrobi crossing in lieu of wages".
+- **Kettle's munitions ledger** (`decoy`). **Open**: back only via `c1_claw`; otherwise read aloud in `c7_claw_close` and never returned.
+- **Ohl's oilcloth list and his charcoal stub.** May hold Lorn and the Fourth's dead. `[Ohl dead]` it goes to the sergeant's pack "beside the pay ledger". **Resolved Ch7**: Tattersail and Ellis's space crossed; the Moranth *neither* mark beside Toc; a small unexplained mark beside Vell `[aside]`.
+- **Tuft's Deck.** "the paint worn from the House of Shadow". It "refuses her"; warm in Ch2–3. **Resolved**: the self-draw is the blank card (Ch6); the last squad draw is the Crown (Ch7); if Tuft is dead it rides unopened in Brisk's, Ohl's or the sergeant's pack.
+- **The unpainted card** (`CARDS.blank`, self-draw only; does not set `S.card`): Tuft's, "inside her tunic". `[Tuft dies]` "It's still blank."
+- **Chains** (`CARDS.chains`, the Ch6 squad draw): pays off when Dragnipur is drawn (`c6_bb_sky`, `c6_mines_sky`, `c6_alley_sky`, all `[S.card==='chains']`).
+- **The Herald** in Tuft's other sleeve (Ch4). **Open**: never mentioned again.
+- **Tuft's cadre badge** (silver and enamel, "a hand on a flame"; worn if `c2_key==='light'`). **Resolved Ch6**: `glove` leaves "a pin" in the glove; `shadow` has the thread bitten through; `dark` leaves it "cold"; `kept` re-pins it, the working live. Ch7 `c7_tuft_glove`: "It goes out like a candle under a cup."
+- **Tuft's lamp, grey ribbon, and grey lock** (`c5_tuftMarked`; `[shadow]` "A finger's width" wider). Lamp **resolved** per `c6_tuft` (§1).
+- **Ellis's glove** (two fingers fused at two knuckles). Burnt again on a failed ledger check (`c7_ellisBurnt`); Ohl looks (`c7_ohlHand`). Her **ledger page**: struck, burned, or kept in her glove cuff (`c7_ledgerAct`).
+- **Kettle's trip-cord** (two lengths, given to Ellis). **Resolved Ch7**: Ellis's "line back" from the grey; back to Kettle on `c7_ellis_take`; Ellis keeps it on `c7_ellis_let`.
+- **Ellis's Claw whistle with the cut cord.** **Open**: never mentioned after TPL.
+- **Kettle's cussers** (`S.inv.cusser`; Maud, Gerrun, Hedge's). Hedge's returned and thrown `[bb, c6_hedgeCusser]`. **Maud is Chub's**, handed back to Ch'kess (`c7_debt_paid`, `!c5_cusserUsed`).
+- **Kettle's spoon.** **Resolved Ch7 (if Ch'kess is visited)**: the Moranth powder measure, "black horn, small, with a notch in the bowl".
+- **Toc's horse**: came back riderless; Paran leads it (Ch5); tethered in the Gadrobi crossing (Ch6 `c6_start`); **resolved Ch7**: Paran → Ellis (`c7_tocHorse`), in the Worry Gate stable.
+- **Toc's cloak on Ellis** (`c5_cloakGone`).
+- **Hairlock's strings** on the next hill. Closed.
+- **The Rhivi bundle**: Tattersail reborn. **Resolved Ch7**: `c7_bundle`, east with Sethand.
+- **The Bridgeburners' munitions** in the Gadrobi-crossing vault: Hedge's forty and the Moranth crate's twelve cussers ("forty… and twelve cussers"; see §8 on "four"). Not fired on `cellars`; untouched on other paths; the frost "stops… a hand's breadth from the stakes" (cellars only).
+- **The Claw standing order** (`c6_orders`, new in Ch6): a slip in the neat hand in the sergeant's coat. Brisk: "That's leverage. Or it's a knife with no handle." **Resolved Ch7**: shown to the grey cloak (`c7_claw_orders`, "Closed.").
+- **The grey cloak's ledger** (Ch7): lake or pack (`c7_clawLedger`); a torn-out page (`c7_clawPage`).
+- **The pardon** (Ch7, `took`): "lighter than paper should be"; rides in the coat or pack on every road.
+- **The Second Army whistle**: blown for muster (`outlaw`), hung on a nail (`city`), in the bottom of the kit (`empire`). **The knife nobody has seen drawn**: "still undrawn".
+- **Lorn's otataral sword**: Paran's, "through his belt beside his own" (Ch6), across his back (Ch7). See §8/§9 on Chance.
+- **The young Azath**: a house with a yard of mounds; Raest inside; Rallick goes in (Ch7, Kruppe). `[garden_hound pre]` a root runs from its yard to Kettle's scorch.
+- **Oponn's coin**: spun by Crokus (Ch3; the Lady's Pull; `S.push`); **in the lake** (Ch7 `c7_crokus`); coda: "a coin lies in the mud on neither face".
+- **Pell the mule**: last seen Ch3 at the crossing; **located** Ch6 (tethered beside the Bridgeburners' mule and Paran's brushed horse, `c6_start`, `[c2_wagon]`); **resolved** in the pay ledger (Ch7).
+- **Prologue objects**: Varrow's oilcloth knots (`p_tatKnots`) and the torn top page (`p_pageTorn`, later in the grey cloak's hands).
+- **Ch1–5 loose objects**: Pell's off-the-books sharper (`c1_raid*`); **a Moranth crate gone into the Host** (`c1_raidLet` / `c1_raidCrate`; **open**); Kettle's sharper/burner "on loan" to the Rhivi (`c2_outToll`); the Rumjugs and Sweetlard crate lid (`c3_pinup`, `19b_pinup.js`); Hedge's gas bladders; the Guild rope-line with a knot of black rag (`c4_ropeDown`); a thrown Guild plank (`c4_plankDown`); otataral dust in a sharper casing, oilcloth or Brisk's gorget (`c5_ot_ok`) or in someone's seams (`c5_otDusted`); the Worrytown handcart; the `c5_packLost` pack.
+- **Trotts's bone** (Ch7, only if Brisk is dead).
+- The squad's cover: the **Paviors' Guild, Gadrobi crossing**. Brisk's "Charter exemption… section four" (Pallick writes it out in Ch7).
+- **Currencies:** `S.silver`, and `S.inv` {sharper, burner, cusser, salve}. Salves are scarce: the squad starts with 1; Pell charges 5 silver; one is looted per chapter from Ch2.
 
 ---
 
 ## 5. Motifs and voice
 
 **Running motifs.**
-- **Counting.**
-  - Everyone counts the Fourth: "arrives at five, and checks it".
-  - Brisk counts rations: "Eighteen days hardtack, five. Fourteen if the mule eats. Eleven if Kettle does."
-  - Kettle counts munitions: "Two sharpers, one burner, one cusser. Same as this morning."
-  - Ohl counts his list.
-  - Ellis counts horses first.
-- **Ledgers.** The Claw's neat hand, Pallick's ledger, Brisk's ledger and Ohl's list are the same idea. "Ledgers are where names go to be found, Sergeant." (Brisk) / "Nobody reads the ledger." "put it in the ledger" is a squad refrain (Kettle, Ellis).
-- **Pell the mule.** It "does the same face" as the quartermaster, bites Gadrobi, and is in the ledger. It is last seen in Ch3, at the crossing beside the Bridgeburners' mule: the squad goes on foot in Ch4–5, so where Pell is now is open.
-- **Ohl's tea.** "technically medicine"; "Hood's breath… Is that medicine?" / "Technically." Other forms: the other flask; tea poured out into a gutter.
-- **"We don't leave people"** is Brisk's, and **new in Ch5**. It is the hinge for both Ch5 choices.
-- **Clean boots** mean the Claw. A **pause you could fit a knife into** means Kalam.
-- **Stock images.**
-  - "the way water goes round a stone" (the dawn round the Spawn).
-  - The city "starts… to shout about fish" (Ch3 and Ch4 closes).
-  - "Sleep. Or pretend." (Tattersail's advice, reused on the Ch3 and Ch4 close buttons).
-  - **Ellis "says one sentence, and it's the right one."**
-  - "*Thud*… A long time later: *thud*." (Raest).
-- **Deck readings** follow a formula: "Two cards refuse her. The third does not." She "never draws for herself". Somebody (Quick Ben, Sethand, Kruppe) watches her face, not the card.
+- **Counting.** Everyone counts the Fourth: "arrives at five, and checks it". Brisk counts rations: "Eighteen days hardtack, five. Fourteen if the mule eats. Eleven if Kettle does." Kettle counts munitions: "Two sharpers, one burner, one cusser. Same as this morning." (Ch6: "Not the same as this morning. Nothing's the same as this morning."; the `disband` fate echoes it.) Ohl counts his list. Ellis counts horses first. The young Watchman counts the Fourth on his fingers; the big Gadrobi counts the ten silver "the way everyone in this country counts the Fourth". Fiddler: "I count." The game ends "You count twice."
+- **Ledgers.** The Claw's neat hand, Pallick's ledger, Brisk's ledger, the pay ledger, Ohl's list, the green-door ledgers and the grey cloak's book are the same idea. "Ledgers are where names go to be found, Sergeant." (Brisk) / "Nobody reads the ledger." "put it in the ledger" is a squad refrain (Kettle, Ellis). "the ledger … under *never again*" (Kettle, Ch5). "*Returned to owner.*" (Kettle, Ch6). "I keep a column." (Pallick, Ch7). "Entries do." (the grey cloak).
+- **Pell the mule.** It "does the same face" as the quartermaster, bites Gadrobi, and is in the ledger. Located in Ch6; left with the Paviors' Guild in lieu of wages (Ch7). Brisk: "I miss the mule."
+- **Ohl's tea.** "technically medicine"; "Hood's breath… Is that medicine?" / "Technically." Dujek: "Tea like boiled boots." Ohl's "I have a rule" recurs.
+- **"We don't leave people"** (Brisk; new in Ch5; the hinge for both Ch5 choices; carried out to Whiskeyjack in Ch6; answered by Ellis in Ch7: "That's the half nobody says.").
+- **Clean boots** mean the Claw. A **pause you could fit a knife into** means Kalam. The grey cloak's last act is to look at his wet boots.
+- **"It's the gas. It's usually the gas."** (Hedge, Ch3; Tuft at the dogleg; the Ch3/4 extras): the city's cover story for every sapper noise.
+- **"Off the books. The books never liked you."** (Pell). **"Tunnels carry."** / **"A lane's a barrel."** (the sappers' physics).
+- **Hounds remember** (the hold-down lines, Ch1 and Ch5; Ch6 "It *knew* me").
+- **"Polite"** (Tuft): CHEND and the Shadowthrone answer first, then her own mouth in Ch6, then her fate.
+- **Stock images.** "the way water goes round a stone" (the dawn round the Spawn). The city "starts… to shout about fish" (Ch3 and Ch4 closes). "Sleep. Or pretend." (Tattersail; reused by Whiskeyjack at the Ch6 dawn). **Ellis "says one sentence, and it's the right one."** "*Thud*… A long time later: *thud*." (Raest; Ch6 close: "For the first time since the hills, nothing comes.").
+- **Deck readings** follow a formula: "Two cards refuse her. The third does not." She "never draws for herself" until Ch6. Somebody (Quick Ben, Sethand, Kruppe) watches her face, not the card.
 
-**How the gods are handled.** Gods never appear on stage. They are felt through their instruments:
-- the Deck;
-- the Hounds (Shadow is a place they "went *home*");
-- ravens;
-- Oponn's coin ("a coin came down on the wrong side", Paran);
-- Hood as the person Ohl *argues with* in Ehrlii (Brisk "Prays to no one, salutes Hood anyway").
+**How the gods are handled.** Gods never appear on stage, and are felt through their instruments, **with one exception: their answers.** When the whole squad goes down, the most loyal squadmate's god answers (`PATRONS`, `31c_stakes.js`) on a full-screen sheet, and the fight restarts:
+- **Brisk → Hood** (the grey hand on the gate; she salutes).
+- **Kettle → Oponn** (a coin that spins too long; the Lady pulls and the Lord counts the cost).
+- **Tuft → Shadowthrone** (a Hound lies across her legs; "says it was polite").
+- **Ohl → Soliel** (temple oil; "asking for twenty-two years").
+- **Ellis → Cotillion** (a cord that is not there).
+- **The sergeant → Fener** ("the god soldiers swear by when they are too tired to swear by anything else").
 
-Oaths: "Hood's breath / teeth". Warrens are physical sensations: Kurald Galain is cold that light pushes through "like water", then a "*house*" with somebody in it. Meanas is a pond next to the Andii's sea. Otataral is "a hole in the world… like waking up deaf". Chaos smells of a struck match, a slaughterhouse and a sea. Rake is never seen; his presence is Crone, the Andii and the Spawn.
+Each answers once a chapter, only when the squadmate's loyalty is > 0. Fener is the last answer; when none is left, the chapter restarts. Instruments: the Deck; the Hounds (Shadow is a place they "went *home*"); ravens; **Oponn's coin is a mechanic** (Crokus's spin, the Lady's Pull, `S.push`; thrown into the lake in Ch7); Cotillion's **Rope** (the lines and the black-rag knot, Ch4; Sorry's cord, `c4_skyCord`); Dragnipur (the Chains card, Ch6); Hood as the person Ohl *argues with* in Ehrlii (Brisk "Prays to no one, salutes Hood anyway"). The coda: "The gods don't say what they made of any of it."
+
+Oaths: "Hood's breath / teeth". Warrens are physical sensations: Kurald Galain is cold that light pushes through "like water", then a "*house*" with somebody in it. Meanas is a pond next to the Andii's sea. Otataral is "a hole in the world… like waking up deaf". Chaos smells of a struck match, a slaughterhouse and a sea. Omtose Phellack is "the old cold" (the rime). Rake is never named; in Ch1–5 his presence is Crone, the Andii and the Spawn; in Ch6 he is "the tall guest" and a black dragon; in Ch7 five words through Crone.
 
 **Canon voices.**
-- Whiskeyjack: terse and grey-eyed; "Sergeant."; sword across his knees on a bucket; says "I know" / "Good." as full sentences.
-- Quick Ben: mild, "smiling at something just past you", practising being uninteresting.
-- Kalam: low and unhurried, watches rooftops.
+- Whiskeyjack: terse and grey-eyed; "Sergeant."; sword across his knees on a bucket (Ch7: leg splinted out straight, sword across his knees); says "I know" / "Good." as full sentences.
+- Dujek: blunt, through a bone: "You sound like shit."
+- Quick Ben: mild, "smiling at something just past you", practising being uninteresting; the smile "stops, the way a clock stops."
+- Kalam: low and unhurried, watches rooftops; signs he never showed you.
+- Fiddler: "I count", dry; "Free. Late."; back-of-the-neck feelings.
+- Hedge: an onion, "Fid", delighted by explosions, "Pleasure doing business".
+- Mallet: practical ("It'll do.").
 - Kruppe: third person, ornate, "Kruppe merely observes", secretly exact.
 - Crone: "Ha!", "Malazans!", "little soldiers", "my lord".
 - Sethand: "Malazan." in the voice the Untan docks use for *tide*; "I am telling you so you will know"; never says a thing twice; "by his count".
 - Toc: "a young voice and an old way of using it", Claw jokes.
-- Paran: stiff, then flat about death ("It isn't catching.").
+- Paran: stiff, then flat about death ("It isn't catching."); in Ch7, "I've been written about."
 - Tool: dry, "every word… like a stone in a wall".
 - Hairlock: a warm grown man's voice that forgets it has no knees.
-- The Andii and Lorn never speak.
+- Pell: "Adequate." Ch'kess: clicks, hisses, short declaratives ("Square.").
+- The Andii, Lorn (but for "Hold him."), Simtal and Blues never speak to the Fourth.
 - The grey cloak and Madryn never say the word "Claw".
 
 **Squadmate voice notes and representative quotes.**
-- **Brisk.** Few words, the regiment voice when needed. The single word "Sergeant." is a whole conversation. Quotes: "A week's a thing officers say instead of a number." / "Everybody wants to be somebody's sergeant… Nobody wants to be read a list." / "I'll stand where you put me, Sergeant. Same as always… But you should know where I'd put me."
-- **Kettle.** Chatty, bad liar, names things; afraid in the form of talking. Quotes: "You keep pointing me at things and I'll keep making them stop being things. That's love, in the sapper trade." / "Can I *want* to shoot it?" / "That's the first thing in six years I couldn't make stop being a thing."
-- **Tuft.** Quiet and exact, with italics on the key word. "Yes, Sergeant." is her compliance voice. Quotes: "The cards say nothing about you, Sergeant. I checked." / "It's a *house*, Sergeant. Somebody lives in it." / "I think I'd rather be nothing than be *noticed*."
-- **Ohl.** Patient, says "child", Ehrlii to Hood, makes rules. Quotes: "Drink the tea, Sergeant. It's not poison. It's just unpleasant, which is how you know." / "I don't know how to write a room." / "Nobody's dead until I know where they went."
-- **Ellis.** Exact, dry, "I'd like that in the ledger"; tells you so you won't have to ask. Quotes: "I'd like it noted that I didn't." / "Also, the fish is good. Lakefront. Say I sent you. Then run." / "I'm still not used to it. Don't stop."
+- **Brisk.** Few words, the regiment voice when needed. The single word "Sergeant." is a whole conversation. "A week's a thing officers say instead of a number." / "Everybody wants to be somebody's sergeant… Nobody wants to be read a list." / "I'll stand where you put me, Sergeant. Same as always… But you should know where I'd put me." / "Four coppers… The *bastard*."
+- **Kettle.** Chatty, bad liar, names things; afraid in the form of talking. "You keep pointing me at things and I'll keep making them stop being things. That's love, in the sapper trade." / "Can I *want* to shoot it?" / "That's the first thing in six years I couldn't make stop being a thing." / "That's the hard half."
+- **Tuft.** Quiet and exact, with italics on the key word. "Yes, Sergeant." is her compliance voice. "The cards say nothing about you, Sergeant. I checked." / "It's a *house*, Sergeant. Somebody lives in it." / "I think I'd rather be nothing than be *noticed*." / "It isn't anybody's *yet*."
+- **Ohl.** Patient, says "child", Ehrlii to Hood, makes rules. "Drink the tea, Sergeant. It's not poison. It's just unpleasant, which is how you know." / "I don't know how to write a room." / "Nobody's dead until I know where they went." / "There are things I don't write."
+- **Ellis.** Exact, dry, "I'd like that in the ledger"; tells you so you won't have to ask. "I'd like it noted that I didn't." / "Also, the fish is good. Lakefront. Say I sent you. Then run." / "I'm still not used to it. Don't stop." / "It's training."
 
 ---
 
-## 6. Open threads for Chapters 6 and 7 (checklist)
+## 6. Threads: planted, paid, and still open
 
-**Expected by the outline and briefs**
-- [ ] **Tuft's arc resolves at the Fete** (the outline: "Sets Tuft's road (which runs to the Fete)"). Pay off:
-  - the High Mage and "what he thinks he still has of hers";
-  - the card she has never drawn for herself ("be standing next to her");
-  - `c4_tuftDark` and `c5_tuftMarked` (these are exclusive with an Ellis playthrough);
-  - her promise to explain;
-  - the Andii cloak;
-  - her fear of the otataral glove.
+Status: **paid** (a chapter pays it on every road that reaches it, possibly through an optional node), **partly** (paid on some roads, or acknowledged without being explained), **open** (no node pays it). "Never" in the Paid column means no node in `src/` reads the plant after the chapter that set it (checked by grep against `45_chapter6.js` and `46_chapter7.js`).
 
-  Tuft's Shadow thread also touches Sorry ("a hand in a glove") and her "Somebody sent them [the Hounds]".
-- [ ] **The Claw's last accounting (Ch7).** Inputs:
-  - `marked`, `clawFavour`, `c1_acc*`, `c1_key`;
-  - `c3_told`/`toldAll`/`toldSome`, `c3_lied`/`lieHeld`, `c3_knivesFought`;
-  - `c3_wjTold` (Madryn's name went to the Guild);
-  - `decoy` (and whether `c1_claw` returned the ledger), `gaveClaw`;
-  - the grey cloak; Madryn's "not this year".
-  
-  If the Fourth reported and Whiskeyjack never learned of it, Ch7 is where he does. Kalam already suspects (`c4_kalamLook`).
-- [ ] **Ellis may return in Ch7** `[c5_ellisThrough]`, probably with Toc's trail and Kettle's fuse-cord. `[c2_ellisRefused]` She is also loose somewhere. `[c5_ellisHeld]` Her resentment (−3 swing) needs a turn.
+### Still open in v3.13.7
 
-  The Claw house with the green door and "her name in a ledger" has never been visited. Nor has the courier at Pale, Ohl looking at her hand, or her mother at the Fete (the horses).
-- [ ] **The Rhivi bundle (Tattersail reborn, the Mhybe's).** It is on the Gadrobi ridge with Sethand's party, looking west, "going home, by a long road. It wanted to come this way."
-  - Kruppe knows. Tuft asked "don't let me go near that". `[loy≥2]` "She's not gone."
-  - `[c2_outSeth]` The squad owes Sethand "a thing you will not be able to pay".
-- [ ] **Paran.** Report to Whiskeyjack ahead of him, and tell him about Toc. **Deliver Toc's Ch2 message "Toc kept riding"**, which is now unbearably loaded. He remembers the line `[c1_key==='line']`. He has Toc's horse.
-- [ ] **Bridgeburner regard.** `wjRegard` runs from −2 to +2 (plus `c3_wjTold`). Ch7 "Outlaws" is the defection to Dujek, so the Fourth's place in it should follow this. The sergeant's TPL quest also points here: "Somewhere in Onearm's Host, somebody has noticed."
+| Thread | Planted | Paid | Status |
+|---|---|---|---|
+| Tuft: "Somebody sent them" (who pointed the Hounds at Hairlock) | `c5_close_tuft` | never | open |
+| Varrow's journal truth: the cadre "moved before the Spawn attacked"; the name *Tayschrenn* (`knowTruth` / `partial`) | `journal_read` (prologue) | never (no Ch6–7 node reads `knowTruth`; Tayschrenn is never named after CHEND 0 / Ch1) | open |
+| The Herald in Tuft's other sleeve | `c4_card` | never (no flag) | open |
+| Brisk's Ninth Regiment badge | `c2_barrow` (`c2_badge`), `c3_wagon` | never (only "the badge off her wrist" if Brisk is dead, `c7_letter_sgt`) | open |
+| Kettle's munitions ledger in the Claw's hands (`decoy && !c1_claw`) | `claw_decoy` | never (read aloud in `c7_claw_close`, not returned) | open |
+| Madryn's unpaid purse (`c3_lieHeld`, "I'll pay when it's proven") | `c3_lie_ok` | never | open |
+| Madryn's fourth knife on the lakefront (`c3_lieDeep`) | `c3_madryn_offer` | never | open |
+| Ellis's Claw whistle with the cut cord | TPL (`14_data.js`) | never | open |
+| The man on the corner (`c4_nodded`) | `c4_corner` / `c4_corner_nod` | never | open |
+| Rallick's lit window on the brass-lamp hill (`c4_rallickWindow`) | `c4_rallick` | never (Ch7 Kruppe: "went in last night carrying someone" covers Rallick, not the window) | open |
+| Rallick tailing the Fourth (`c4_rallickTail`): "whatever he saw, his clan-master has it now" | `c4_rallick_miss` | never | open |
+| Sorry's cord (`c4_skyCord`) and her tallow-yard appearance (`c4_skyCreak`) | `c4_sky*`, `c4_descend` | never (Apsalar in `c7_apsalar` reads `c3_sorry`, not these) | open |
+| The Guild's counted losses: the plank (`c4_plankDown`), the rope-line (`c4_ropeDown`), the temple-dome clan (`c4_clanFought`) | `c4_clan`, `c4_rope_fail` | never | open |
+| The Andii who stared (`c2_andiiStaredWho`) and the Andii put on the leads (`heldDowns('andii_roof')`) | `c2_andii_caught`, `c4_after_*` | never | open |
+| Hounds remember: `c1_houndDown`, `c5_houndLooked` (a Hound "will know again"), `c5_houndPassed`, `heldDowns('the_rent')` | `c1_after_line*`, `c5_hound_held` / `c5_hound_pass` | never (Ch6's Hound reads only `c5_tuftMarked`) | open |
+| The otataral carrier against Tuft at the Fete (`trickBy('otataral')`, `c5_otDusted`) | `c5_ot_ok` / `c5_ot_fail`, `C5H.red()` | never | open |
+| Kalam's cant (`c4_cantWho`): "I showed you nothing." | `c4_cant_ok` | never | open |
+| Tattersail's Fold carried into the Fete (`p_fold_ok`) | `p_fold_ok`, `c1_tent` | never (no Ch6–7 read) | open |
+| Moreau and Garrow: "That's twice," he calls down. "Tell Garrow. Or don't. He'll know." (`p_garrowCrossed`, `c2_des*`) | `p_desert_named`, `garrow_again`, `c2_dusk` | never | open |
+| A Moranth crate loose in the Host (`c1_raidLet` / `c1_raidCrate`) | `c1_raid_let` | never (Ch7 has the Moranth but not the crate) | open |
+| The horse-singer (`c2_songWrong`), "Sethand's Malazans" (`c2_barrow_heard`), the `c2_sethTrust` count | `c2_song_wrong`, `c2_barrow`, `c2_hills_dust` | never after Ch5 | open |
+| The Worrytown robbers: Ohl's "Five men with lanterns" (`c5_dig_let`), `c5_dig_told` | `c5_vale_east` | never (and not counted, §8) | open |
+| Coll's Ch5 outcome: `c5_collTended` ("planning to collect") / `c5_collRefused` (the Malazan helm) | `c5_coll_ok` / `c5_coll_cold` | never (`c6_coll` reads only `c5_collDown`) | open |
+| Pallick's margin (*goat*, `c3_pallickDoubt`) | `c3_gate` | never (Ch7 `c7_worry*` reads the name flags only) | open |
+| Rumjugs and Sweetlard ("Feel like I'm going to") | `c3_pinup` | never, **by design** (canon: future Bonehunters; nobody in GotM meets them) | open |
+| Ohl's mark beside Vell `[aside]` | `c4_aside_squad` | acknowledged in the Ohl fate, "that he has never explained" | open (deliberate) |
+| Rake: the second Andii's hesitation `[shield]` | `c4_roof` hold (Quick Ben's illusion) | acknowledged in `c7_qb_hill`: "I still don't know why. I've decided not to." | open (deliberate) |
+| Sethand's unpayable debt `[c2_outSeth]` | `c2_outriders` → `c2_outSeth` | named in `c7_seth` ("It cannot be paid, because it is never finished"); `c7_sethDebt` never read | open (deliberate) |
+| Toc's fate | `c5_rent` | Ellis found "his tracks once… Going away" (`c7_ellis_back2`); the Moranth *neither* mark (`c7_toc_neither`); "We do not carry him." | open (deliberate; canon 15.2 leaves it unknown) |
 
-**Also planted and unresolved**
-- [ ] Brisk: Tav and the sealed letter (the Host in Ch7); the badge; her "I don't *know*" `[through]`.
-- [ ] Kettle: the **Moranth debt**, never touched; the spoon; her remaining cussers; "the one that matters".
-- [ ] Ohl: the spaces left for Toc and Ellis; Vell's mark; no Fourth name on the list yet.
-- [ ] Coll's signet `[c3_coll]` at Lady Simtal's Fete: "Somebody *will*" recognise it. Rallick's "own business" and the lit window.
-- [ ] The Guild: Vell's debt and token `[shield]`, or Ocelot's grudge `[aside]`; the man on the corner.
-- [ ] Rake: Crone's "My lord is *interested*"; the Andii who know the Fourth's faces `[c4_seen]`; the second Andii's hesitation `[shield]`.
-- [ ] Raest waking: "It knows we were here." / "You are very small. Stay that way."
-- [ ] Sorry, watching Kruppe's friends `[c4_sawSorry]`. Crokus and the Andii chasing him.
-- [ ] Quick Ben's sack has been used up. Hairlock is dead.
+### Paid or partly paid
+
+| Thread | Planted | Paid | Status |
+|---|---|---|---|
+| Sergeant: "Somewhere in Onearm's Host, somebody has noticed." | TPL | `c7_sending_dujek` (`c7_dujek`); `C7H.fateSgt` `[outlaw]` | paid |
+| Sergeant: Whiskeyjack's report formula | `c3_wj_good` | `c6_report`, `c6_dawn_wj`, `c7_wj` → `c7_wj_report` / `c7_wj_report_fail` | paid |
+| Whiskeyjack learns of the dye-shop (`c3_told` hidden) | `c3_report` | `c7_confess` / `c7_hill_tell` / `c7_hill_word` / `c7_claw_*` (`c7_wjKnows`) | paid |
+| Kalam's suspicion `[c4_kalamLook]` | `c4_dawn` | `c6_kalam` (one long look); `c7_kalam` (`pendingTell()`) | paid |
+| Madryn's "not this year" | `c3_madryn` | `C7H.madryn()` | paid |
+| `c3_toldSome` / `c3_toldAll` | `c3_madryn` | `c7_confess`, `C7H.madryn()` | paid |
+| The Claw's last accounting (`marked`, `clawFavour`, `c1_acc*`, `c1_key`, `c3_lied`, `c3_knivesFought`, `c3_wjTold`) | prologue to Ch3 | `c7_claw` → `c7_claw_offer` / `c7_claw_close` (only `c3_key` picks the branch) | paid |
+| "An entry stays open until it's closed" (the neat hand) | `c1_accounting` second ground | `c7_claw_ledger` ("*Entry closed by*"), `c7_claw_orders` ("Closed."), `c7_claw_avoid` ("Entries do.") | paid |
+| `gaveClaw` (prologue `claw`) | `claw_took` | `c6_claw` only; never in Ch7 | partly |
+| The grey cloak "the other one" who knew Tuft's name `[c1 claw]` | `c1_close` | `c6_claw`: "We all know all their names… It's the job." | paid |
+| The Claw standing order (`c6_orders`) | `c6_mines_order` | `c7_claw_orders` (`c7_clawBought`); also read in `c7_claw_close` | paid |
+| Tuft: the High Mage and "what he thinks he still has of hers" | `c1_tuft_plant` | `c6_qb_glove`, `c6_claw`; leash closed by `c7_tuft_glove` / `C7H.tuftWest` | paid |
+| Tuft: the card she never drew for herself ("be standing next to her") | TPL, `c1_plantMarine` | `c6_tuft_ask` / `c6_tuft_round` → `c6_tuft_card` (blank); fate `[c6_selfDrawn]` | paid |
+| Tuft: `c4_tuftDark` (Kurald Galain looked back) | `c4_vell_tuft` `[aside]` | `c6_rake`, `c6_rake_cold`, `c6_tuft_dark`; `c7_crone [dark]` | paid |
+| Tuft: `c5_tuftMarked` (Shadow's thumb) | `c5_rent` | `c6_hound`, `c6_hound_tuft`, `c6_tuft_shadow`; `c7_apsalar [shadow]` | paid |
+| Tuft: her promise to explain (Kruppe's sentence) | `c3_kruppe`, `c3_askedTuft` | re-promised in Ch6 ("Tomorrow…"); kept at `c7_bundle` (`c7_tattersail`), pointed by `c7_kruppe`. If skipped, fate: "She never did tell you…" | paid (optional) |
+| Tuft: the Andii cloak | `c4_*` (both paths) | `c6_vault_sleep`, `c6_tuft_dark`; `c7_qb [dark]`, fate | paid (light) |
+| Tuft: fear of the otataral glove | `c5_nightfall` / `c5_lorn_ride` | `c6_qb_glove`, `c6_tuft_glove`; `c7_tuft_glove` ("She comes and stands on the same side.") | paid |
+| Tuft: "polite" | CHEND 4/5 extras, the Shadowthrone answer | `c6_tuft_glove` / `_shadow` / `_dark`; fate | paid |
+| Tuft: the lamp | TPL | `c6_vault_sleep`, `c6_close_tuft`; fate lamp line | paid |
+| Tuft: Sorry, "a hand in a glove" | `c3_*` `[no Ellis]` | `c7_apsalar`: "The hand in the glove… taken itself off." | paid |
+| Sorry watching Kruppe's friends `[c4_sawSorry]` | `c4_sky` | `c7_apsalar` | paid |
+| Ellis returns `[c5_ellisThrough]` | `c5_rent` | `c7_ellis_back` / `c7_ellis_back2` / `c7_ellis_take` / `c7_ellis_let` (mandatory) | paid |
+| Ellis loose `[c2_ellisRefused]` (where she went) | `c2_ellisRefused`, `c5_toc` | `c7_ellis_door` ("a garrison on the Adjunct's road") | paid (optional) |
+| Ellis `[c5_ellisHeld]` resentment | `c5_hold_*` | `c6_close_ellis` ("isn't forgiveness… isn't nothing"); `c7_ledger_read` / `c7_close_ellis` (`c7_ellisSpoke`) | paid |
+| Ellis: the green door, "her name in a ledger" | TPL, `c2_hills_ellis` | referenced `c6_cellars_vault`, `c6_mines_order`; visited `c7_green_door` → `c7_ledger*` | paid |
+| Ellis: the courier at Pale | TPL | `c7_ledger_read [released]` ("*Recovering*… That's all she'll ever say"); `c7_ledger_fail` | paid (lightly) |
+| Ellis: Ohl looks at her hand (Toc's ask) | `c2_toc*` | `c7_ledger_after` (`c7_ohlHand`; only on a failed ledger check with Ohl alive) | partly |
+| Ellis: Toc's "her eye's fine" ask | `c2_toc*` | `c7_paran_horse` (needs Ellis in the squad) | partly |
+| Ellis: her mother at the Fete | `c2_hills_ellis` | `c6_horses`; echoed `c7_close_ellis [city]`, fate `[city]` | paid |
+| Kettle's trip-cord with Ellis | `c5_close` (Kettle) | `c7_ellis_back`, `c7_ellis_take` / `c7_ellis_let` | paid |
+| The Rhivi bundle (Tattersail reborn) | `c2_ashes` `[light]`, `c3_kruppe`, `c5_sethBundle` | `c7_bundle`, `c7_ohl_cross`; Crone if Tuft is dead | paid |
+| Paran: report to Whiskeyjack ahead of him; tell him about Toc | `c5_dawn` | `c6_report`, `c6_paran` | paid |
+| Paran: deliver "Toc kept riding" | `c2_toc*` | `c6_paran_toc` (`c6_paranToc`) or `c7_paran_toc` `[!c6_paranToc]` | paid (optional) |
+| Paran: remembers the line `[c1_key==='line']` | `c1_line_*` | `c5_paran`, `c6_paran`, `c7_paran` | paid |
+| Paran: Toc's horse | `c5_*` | `c6_start`; `c7_paran_horse` (`c7_tocHorse`, needs Ellis); `c7_ellis_let` tells her of it | partly |
+| Bridgeburner regard and the defection | `c1_wj_*`, `wjRegard` | `C7H.wjTrust()`, `c7_orders`, `c7_wj`, `c7_road_outlaw` | paid |
+| Brisk: Tav | TPL, `c1_pits` | `c7_sending_tav`, `c7_rolls` (`c7_tav='alive'`); every fate page | paid |
+| Brisk: the sealed letter | TPL | `c7_letter` / `c7_letter_sgt` | paid |
+| Brisk: "I don't *know*" `[through]` | `c5_*` `[c5_ellisThrough]` | `c7_ellis_take` ("I came back." / "That's the half nobody says.") only if Ellis is taken back | partly |
+| Kettle: the Moranth debt | TPL | `c7_qm` → `c7_debt_*` (optional NPC; else "unexplained" in her fate) | partly (optional) |
+| Kettle: the spoon | TPL, `c1_claw` `[decoy]` | `c7_qm` (same condition) | partly (optional) |
+| Kettle: Chub; which cusser was Chub's | `c5_wards` | `c7_debt_paid` (Maud), `c7_chub` / `c7_chub_no` | paid |
+| Kettle: remaining cussers; "the one that matters" | `c5_wards` | `c6_fid`, `c6_hedge_garden`, `c6_bb_hedge`, `c7_fiddler`, `c7_debt_*`, `c7_hedge` | paid |
+| Kettle: the quorls | TPL | `c7_*` hill ("They're *warm*… Chub said they were warm.") | paid |
+| Ohl: the spaces for Toc and Ellis | `c5_*` | Ellis: `c7_ellis_take` (`c7_ohlEllis`). Toc: `c6_paran_toc`, `c7_toc_neither` / `c7_toc_asked` | paid |
+| Ohl: no name from the Fourth on the list | TPL | kept, or broken in `c6_alley_fallen`; faced in `c7_sending_ohl`, fate, `gone` pages | paid |
+| Ohl: Tattersail on the list | `c2_ashes_ohl` | crossed off `c7_ohl_cross` (`c7_ohlTat`) | paid |
+| Coll's signet at Lady Simtal's | `c3_coll` | `c6_signet*`, `c6_coll_ring`, `c6_simtal`, `c6_orr`; `c7_coll`, `c7_coll_ring` / `c7_coll_keep` | paid |
+| Rallick's "own business" | `c4_rallick` | the duel (`c6_rallick`, `c6_duel`, `c6_duel_after`); `c7_kruppe` | paid |
+| Guild: Vell's debt and token `[shield]` | `c4_vell` | `c6_knives_pass`; `c7_vell` ("Hollin") | paid |
+| Guild: Ocelot's grudge `[aside]` | `c4_reprisal*` | `c6_knives` / `terrace_knives_2` / `c6_after_knives`; `c7_veteran` (`c7_grudge`) | paid |
+| Rake: Crone's "My lord is *interested*" | `c5_crone` | `c6_rake [c5_croneRake]`; `c7_crone` ("*The small ones may go.*"); coda | paid |
+| Rake: the Andii who know the faces `[c4_seen]` | `c4_aside` | `c6_rake`; `c7_qb_hill [aside]` | paid |
+| Raest waking | `c5_*` (*thud*) | `c6_mammot*`, `c6_tyrant`, `c6_bb_hedge`, `c6_close_end` | paid |
+| Tool's "You are very small. Stay that way." | `c5_tool*` `[c5_toolSaw]` | `c6_report`; `c7_close_end` | paid |
+| Crokus and the Andii chasing him | `c4_crokus` | `c6_crokus [c4_crokusNo]`, `c6_crokus_garden`, `c6_alley_line` | paid |
+| Oponn's coin | `c3_pull_*` | `c7_crokus` (`c7_coin`), coda | paid |
+| Quick Ben's sack / Hairlock | `c4_*` | `c5_*` (Hairlock dies) | paid |
+| Pell the mule | `c2_wagon` | `c6_start`; `C7H.fateSgt`; `c7_after_worry` ("I miss the mule.") | paid |
+| Kruppe's "Somebody *will*" (recognise the ring) | `c3_collTalk` | `c6_signet`, `c6_kruppe`, `c6_coll_ring` | paid |
+| The Rhivi charm | `c5_sethSat` | `c7_seth` ("He said it once.") | paid |
 
 ---
 
 ## 7. Engine facts
 
 **Chapter module.**
-- Shape: `const CHn = {title, number, intro:{loc, sub, cap, paras:[…], go, node}, area | areas:[…], battles, foes, gear, card, dlg}`.
-- `registerChapter(n, CH)` merges areas into `AREAS`, battles into `BATTLES`, foes into `FOES`, gear into `ITEMS`, the card into `CARDS` and dlg into `DLG`. Everything is global, so ids from any chapter are reusable and **must be unique**.
-- **Boot registers CH1–CH5 only** (`90_resume_boot.js start()`), so CH6/CH7 must be added there.
-- End screens: `CHEND[n]` {key: [title, text]}, `CHTEASE[n]`, and a per-`n` `extra` block in `showChapterEnd`.
-- Per-area quest lines: `QUESTS[areaId]`, or an area's `quest()`.
-- The journal (`35_pack_journal_save.js`) only covers the prologue and Ch1.
+- Shape: `const CHn = {title, number, intro:{loc, sub, cap, paras:[…], go, node}, area | areas:[…], battles, foes, gear, card, dlg, extras:()=>[…], scenes, quests, tease, end, endCap}` (Ch7 adds `finale`).
+- `registerChapter(n, CH)` merges areas into `AREAS`, battles into `BATTLES`, foes into `FOES`, gear into `ITEMS`, the card into `CARDS`, dlg into `DLG`, and copies `quests` → `QUESTS`, `end` → `CHEND[n]`, `tease` → `CHTEASE[n]`. Everything is global, so ids must be **unique**.
+- **Boot registers CH1–CH7** (`90_resume_boot.js` 39–45). (v1 said CH1–CH5 only; that was already wrong at v3.7.4.)
+- End screens: `CHEND[n]` {key: [title, text]}, `CHTEASE[n]`, and either a per-`n` `extra` block in `showChapterEnd` (Ch1–5) or the module's `endCap()` / `extras()` (Ch6–7). `37_chapters.js` hard-codes the talk-scene default and end scene per chapter (`fete_street` / `fete_garden` for Ch6; `lakefront_dawn` / `quorl_hill` for Ch7).
+- Per-area quest lines: `QUESTS[areaId]`, or an area's `quest()`. `squadQuest()` (`14_data.js`) rewrites each sheet's "Unfinished business" from `c7_dujek`, `c7_tav`/`c7_letter`, `c7_debt`, `c7_tuftCut`, `c7_ledger*`.
+- The journal (`35_pack_journal_save.js`) has a route map and a Deeds tab; it reads `c3_kruppeRumour` and `c7_tav`; its notes are still mostly prologue/Ch1. The Deeds route (`38_deeds.js`) and the save summary (`15_state.js`) treat `S.chapters[7] != null` as "done".
+- **Finale:** `showFinale` / `finPages()` (`37_chapters.js`), §3.
 
 **Areas.**
 - Fields: `{id, title, sub, hint, decor, map (16×12 strings), walk:'.,…', triggers:{char:nodeId}, start:{x,y}, npcs:[{id, name, kind, x, y, node:()=>id, show:()=>bool, fresh:()=>bool, still:true}]}`.
-- Decors: `pale`, `camp_night`, `plain`, `plain_dusk`, `plain_night`, `hills`, `hills_dusk`, `hills_night`, `city_dusk`, `city_night`, `roof_night`, `cellar`.
-- Sprite kinds: sgt, brisk, kettle, tuft, ohl, ellis, tat, pell, garrow, claw, paran, wj, qb, kalam, rhivi, toc, crone, andii, fiddler, hedge, mallet, trotts, sorry, kruppe, crokus, murillio, coll, urchin, guard, rallick, vell, assassin, lorn, tool, hairlock, hound, shade, wight, ward, warrenspawn, stone, deserter, xbow, cutpurse, bruiser, knife, clawknife, guildknife, guildveteran, andiihunter, thug.
+- Decors: `pale`, `camp_night`, `plain`, `plain_dusk`, `plain_night`, `hills`, `hills_dusk`, `hills_night`, `city_dusk`, `city_night`, `roof_night`, `cellar`, plus Ch6 `estate_terrace`, `estate_night` and Ch7 `lakefront`.
+- **Ch6 areas** (all 16×12, `walk:'.,'`):
+  - `fete_street` (`city_dusk`): trigger `g` → `c6_gate`; start (1,5). Npcs kruppe (5,3); murillio (8,2); coll (11,3, still); crokus (6,7, hidden after `c6_crokus`); rallick (12,9, still); reveller (3,8); horses (13,7, Ellis only).
+  - `simtal_terrace` (`estate_terrace`): `D` → `c6_hall`, `v` → `c6_steps`; start (1,6). Npcs baruk (9,3); rakemask (10,2); kruppe_t (4,7); simtal (5,2) and orr (9,5) until `c6_duelDone`; mammot (13,8, until `c6_tuft`); rallick_t (11,9 → `c6_duel`); derudan (2,4); knives (14,1 → `c6_knives`, until `c6_knivesDone`). The garden steps open only when `c6_duelDone && c6_knivesDone`.
+  - `simtal_garden` (`estate_night`): `^` → `c6_steps`, `g` → `c6_garden_gate`; start (7,2). Npcs wj (9,5); fiddler (6,1); hedge (13,2); qb (6,5); paran (4,8); crokus and challice (10,7 / 11,7); hound / houndlying (14,3, exclusive on `c6_houndKnew`); claw (8,7, after `c6_houndDone`, until `c6_tuft`); mammot (11,9 → `c6_tyrant`, after `c6_tuft`, until `c6_key`).
+  - `estate_storm` (in the brief) is not used.
+- **Ch7 areas:**
+  - `lakefront` (decor `lakefront`; `walk:'.,p>'`): `D` (9,9) → `c7_green_door`; `>` (15,6) → `c7_to_hill`; start (1,7). Npcs kalam (6,4), fiddler (7,4), crokus (8,4), apsalar (9,4, sprite `sorry`), all hidden once `c7_shipGone`; mallet (10,4); paran (13,2); kruppe (4,5); coll (3,5); claw (10,8, until `c7_clawGone`); ellisback (3,10, `[c5_ellisThrough && !back && !left]`); ellisdoor (7,8, `[c2_ellisRefused && !joined && !walked]`); vell (12,9) `[c4_vell]` or the veteran (12,9) `[aside && !c4_vell]`. The intro's `node:'c7_start'` runs over the lakefront map with `scene:'fete_garden'` for the bench nodes; `c7_orders` / `c7_qb` re-enter with `startExplore('lakefront'); talk('c7_lake_arrive')`.
+  - `quorl_hill` (decor `hills`; `walk:'.,<'`): `<` (0,9) → `c7_hill_west` ("Not yet."; no way back); start (2,9). Npcs wj (7,4, still); qb (8,5); paran (5,3); 4× quorl (still); moranth (10,4); chkess (13,4); hedge (4,5); trotts (5,5); crone (13,1); sethand (12,9); bundle (14,9, sprite `rhivi`); rhivi2 (13,10).
+  - Road between: `c7_to_hill` (rest on the steps, `rest()`, `c7_rested`) or `c7_claw_avoid` → `c7_worry` (the Worry Gate) → `startExplore('quorl_hill'); talk('c7_hill_arrive')`.
+- Sprite kinds: sgt, brisk, kettle, tuft, ohl, ellis, tat, pell, garrow, claw, paran, wj, qb, kalam, rhivi, toc, crone, andii, fiddler, hedge, mallet, trotts, sorry, kruppe, crokus, murillio, coll, urchin, guard, rallick, vell, assassin, lorn, tool, hairlock, hound, shade, wight, ward, warrenspawn, stone, deserter, xbow, cutpurse, bruiser, knife, clawknife, guildknife, guildveteran, andiihunter, thug; Ch6 adds challice (and the module's own npc kinds); Ch7 uses `moranth`, `quorl`. `dujek`, `baruk` as map sprites are not placed in Ch7.
 
-**`SCENES` for a node's `scene:`.** `explore` means return to the map. The rest: tunnel, dark, camp_night, tent, fire, plain, plain_dusk, plain_night, hills, hills_dusk, hills_night, city_street, inn, cellar, room, roof_night, roof. A new place needs a new `SCENES` entry.
+**`SCENES` for a node's `scene:`.** `explore` means return to the map. The rest: tunnel, dark, camp_night, tent, fire, plain, plain_dusk, plain_night, hills, hills_dusk, hills_night, city_street, inn, cellar, room, roof_night, roof; Ch2 `rhivi_barrow`; Ch6 `fete_street`, `fete_hall`, `fete_garden` (a getter: the dawn caption once `c6_azath` is set and the node is `c6_dawn`/`c6_close*` or chapter ≥7), `garden_storm`, `dragon_sky`, `alley_night`; Ch7 `lakefront_dawn`, `quorl_hill`, `road_east`, `ship` (bench nodes use `fete_garden`; the Worry Gate uses `city_street`). A new place needs a new `SCENES` entry.
 
 **Dialogue node.**
-- `NAME:()=>({sp, scene, fx, txt, html, oncard, after, ch:[…]})`. Nodes are functions, so text is built each visit.
-- Each `ch` item is `{t, req:()=>bool, fx:()=>{}, go, check:[stat, dc, who?], fail, tag}`.
+- `NAME:()=>({sp, scene, fx, txt, html, oncard, onshow, after, ch:[…]})`. Nodes are functions, so text is built each visit. `onshow:()=>{}` runs after render (the pin-up canvas, bones settlement).
+- Choice fields: `{t, req, fx, go, fail, check:[stat, dc, who?], edges:id=>[[label, n]…], near:{t, fx}|false, clean:{t, fx}, crit, fumble:{t, fx}, not:[ids], notWhy:{id:text}, trick:'key', tag}`.
   - `go` can be a node id (`talk`), a function (the sheet closes first, then it runs) or omitted (close and return to the map).
-  - `check` rolls d20 plus the best squadmate's `statOf`, or the named `who`. The stats are might, wits and guile; Oponn gives +1 and the Nerve pick +1. The roll routes to `go` or `fail`. `tag` is a label shown on the button.
-- **A node's `fx` runs once per node id, ever** (`S.fxd[id]`). It runs **after** the node's text has been built, so text cannot see a flag set by its own `fx`.
+  - `check` rolls d20 plus the roller's `statOf`. **The player picks the roller**; "the best squadmate" is only the default highlight. The stats are might, wits and guile; Oponn gives +1 and the Nerve pick +1. The Crown card rolls twice and keeps the higher (`rollAgain`). Difficulty shifts DC (`DIFFS`: story / soldier / bridgeburner; ±2/+1).
+- **A node's `fx` runs once per node id, ever** (`S.fxd[id]`), **after** the node's text is built, so text cannot see a flag set by its own `fx`.
 - **A choice's `fx` runs on every click**, before navigation.
-- `fmt` handles `{sgt}` (replaced by `S.name`), `*emphasis*` (becomes `<em>`) and blank-line paragraph breaks. It applies to **`txt` and `after` only**. `sp` and choice `t` are HTML-escaped, so **no `{sgt}` or `*…*` in choice labels**; Ch5 has two that render literal asterisks.
+- `fmt` handles `{sgt}`, `{who}`, `*emphasis*` and blank-line paragraph breaks, in **`txt` and `after` only**. `sp` and choice `t` are HTML-escaped, so no `{sgt}` or `*…*` in choice labels.
+- Text helpers: `by({id:…, _:…})`, `ROLL()`, `nearMiss()`, `cleanRoll()`. Use them only in nodes reached straight off the check; otherwise store `ROLL().who` in a flag.
 
 **Helpers.**
-- `SQUAD()`: the list of ids.
-- `loy(id, n)`: clamps to ±3 and adds an approve/disapprove note. **Only call it for a present squadmate**; the convention is `if (SQUAD().includes('x')) loy('x', n)`.
-- `note(text, 'good'|'bad')`.
-- `gainXP(n)`: returns true on level-up. Note the level-up in the same node, as the prologue does.
-- `gain(itemId)`: once only; auto-equips.
-- `recruit(id)` / `unrecruit(id)` (sets `S.f[id+'Gone']`).
-- `startBattle(id, {surprise:'p'|'e', pre:true, drop:[i]})`. `pre` is Kettle's opening sharper: 1d10 to every foe.
-- `startExplore(areaId?)`, `talk(id)`, `cardSequence(done)`, `chapterEnd(n, key)`, `elog()`.
-- State: `S.inv`, `S.silver`, `S.card` (reset to null at every `startChapter`), `S.loy`, `S.lvl` / `S.xp` (LEVELS to 8; picks at 3, 5 and 7 open before the next `talk`), `S.kit`, `S.gear`, `S.f`, `S.chapters`, `S.ending`.
+- `SQUAD()`; `loy(id, n)` (clamps to ±3, adds a note; only for a present squadmate: `if (SQUAD().includes('x')) loy('x', n)`); `note(text, 'good'|'bad')`; `gainXP(n)` (returns true on level-up); `gain(itemId)` (once only; `placeGear`); `recruit(id)` / `unrecruit(id)` (sets `S.f[id+'Gone']`); `kill(id)` (Ch6 mortal fights).
+- `startBattle(id, {surprise:'p'|'e', pre:true|'custom opening line', drop:[i]})`. `pre` is Kettle's opening sharper: 1d10 to every foe (or the battle's `preFx`).
+- `startExplore(areaId?)`, `talk(id)`, `cardSequence(done)`, `dealCard`, `chapterEnd(n, key)`, `elog()`, `rest(text)`.
+- `listCount()`, `trickBy(k)`, `preUsed(id)`, `heldDowns(id)`, `maudKept()`.
+- State: `S.inv`, `S.silver`, `S.card` (reset at every `startChapter`), `S.loy`, `S.lvl` / `S.xp` (LEVELS to 8; picks at 3, 5 and 7), `S.kit`, `S.gear`, `S.f`, `S.chapters`, `S.ending`, `S.tricks`, `S.gods`, `S.dead`, `S.deeds`, `S.rattled`, `S.push`, `S.lastRoll`, `S.chsnap[n]`, `S.sid`.
+
+**Rest, wounds, replay, saves.** One rest per chapter: `c1_sleep`, `c2_ridge_arrive`, `c3_work_done`, `c4_meet_wait`, `c5_hairlock`, Ch6 the hour after the crossing, Ch7 `c7_to_hill`. `startChapter` snapshots `S.chsnap[n]`, resets `cardPool`, refills tricks, clears wounds and gods. "Play this chapter again" makes a new save. Saves are per sergeant (`S.sid`, a roster).
 
 **Battles.**
-- Fields: `{title, warrenText, warren:{meanas, denul}, dark, music:'battle'|'dark', open, style:'city'|'roof'|'cellar', map (8×10), party:[[x,y]×6], foes:[[foeId,x,y]], xp, after, objective:{type:'survive', rounds, text}, waves:[{round, foes, text}], allies:[[foeId,x,y]]}`.
-- **`win()` already awards `def.xp` and notes it, then calls `talk(after)`.** Do not call `gainXP` again in the `after` node; Ch1 does and double-awards.
+- Fields: `{title, warrenText, warren:{meanas, denul}, dark, music:'battle'|'dark', open, style:'city'|'roof'|'cellar'|'garden'|'terrace'|'storm'|'dock', map (8×10), party:[[x,y]×6], foes:[[foeId,x,y]], xp, after, objective:{type:'survive', rounds, text}, waves:[{round, foes, text}], allies:[[foeId,x,y]], stage2:{title, text, map, party, foes, waves, xp, surprise, keepAllies}, preText, preFx(B), nothrow, nomagic, mortal}`. Pre helpers: `preWave`, `preTile`, `preFire`, `preSmoke`, `preFoe`. Foe extras: `sk:[…]` (`FOE_SK`), `attacks`, `verb2`, `immortal`, `ai`.
+- **`win()` already awards `def.xp` and notes it, then calls `talk(after)`.** Do not call `gainXP` in the `after` node. `stage2` xp defaults to half. A loss goes through `lose()` (the patron-god retry). **Deaths happen only on a win of a `mortal` fight**: `win()` → `kill()` for each fallen non-sergeant.
 - Foe schema: `{name, sig, hp, ac, atk, dmg:[n,s,+], rng, mv, init, boss, verb}`.
-- Existing foes you can reuse: deserter, xbow, stone, shade, hound, assassin, wight, rhivi, cutpurse, bruiser, knife, clawknife, guildknife, guildveteran, andiihunter, vell, ward, warrenspawn.
+- Scaling: `FSCALE` / `BTUNE` scale foes per chapter (not on Story).
+- **Reusable foes.** Ch0–5: deserter, xbow, stone, shade, hound, assassin, wight, rhivi, cutpurse, bruiser, knife, clawknife, guildknife, guildveteran, andiihunter, vell, ward, warrenspawn; `moreau`, `neathand`, `bigdeserter`; `c2_keeper`, `c2_front`, `c2_deserter`, `c2_xbow`, `c2_desertsgt`; `c3_loftbow`, `c3_roofwatch`, `c3_dyer`, `c3_grudge`, `c3_slinger`; `guildbow`; `c5_barrowchief`, `c5_mattock`, `c5_digger`, `c5_robberbow`, `c5_robberknife`. Ch6: `houseguard`, `housecaptain`, `houndhurt`, `raest`, `rime`, `bbfiddler`, `bbhedge`, `clawmage`, `lorn`, `c6_housebow`, `c6_farrier`, `c6_guildbow`, `c6_clawhand`, `c6_slaughterman`, `c6_bull`, `c6_foreman`. Ch7: `greycloak`, `clawcrossbow`, `c7_bigone`, `c7_gatebow`, `c7_watch`.
+
+**Ch6 battles** (8×10)
+
+| id | Style / flags | Foes | Win / lose | xp | after |
+|---|---|---|---|---|---|
+| `c6_bonfire` (main road unless Guile 16) | city, `nothrow`; stage2 "The chandler's cellar" | 2× `c6_slaughterman`, 3× `c6_bull`; stage2 `c6_foreman`, `c6_slaughterman`, 2× `c6_bull` | win | 200 | `c6_after_bonfire` |
+| `house_guards` (failed or skipped signet) | city; stage2 "The kitchen court" | 3× `houseguard`, `housecaptain`; stage2 `c6_housebow`, `c6_farrier`, 2× `houseguard`; `pre`: guards stunned (horses), 2 more guards in a round-2 wave | win | 200 | `c6_after_guards` |
+| `terrace_knives` (unless `aside`, or the token pass) | terrace, dark, music dark; stage2 "The leads above the hall" | 3× `guildknife`, `guildveteran`; stage2 `c6_guildbow`, `guildveteran`, 2× `guildknife` | win | 240 | `c6_after_knives` |
+| `terrace_knives_2` (`c4_key==='aside'`) | as above | as above +1 `guildveteran` | win | 240 | `c6_after_knives` |
+| `garden_hound` (unless `[c5_tuftMarked]` Tuft goes to it) | garden, dark | `houndhurt` (hp 52, `attacks:2`); `pre`: root walls and a round-3 `shade` | survive 3 | 240 | `c6_after_hound` (`c6_houndDowned`) |
+| `tyrant_garden` (`bridgeburners`) | storm, dark, music dark | `raest` (immortal, `ai:'raest'`) + 3× `rime`; wave r2 3× `rime`; allies `bbfiddler`, `bbhedge`; `[c6_mammotKnown]` `drop:[3]` | survive 4 | 300 | `c6_after_tyrant` |
+| `the_mines` (`cellars`) | cellar, dark, `nothrow`; stage2 "The east gallery" | `clawknife`, 2× `assassin`, `clawmage`; stage2 `c6_clawhand` (boss), `clawmage`, 2× `assassin` | win | 300 | `c6_after_mines` |
+| `lorn_alley` (`alley`, stepped in) | city, dark, **`nomagic`, `mortal`**; warren ×0.2 | `lorn` (immortal, `attacks:2`); `pre`: Lorn stunned, own line within 2 slowed | survive 3 | 320 | `c6_after_alley` |
+
+**Ch7 battles** (8×10; both have a `stage2`; neither is `mortal`)
+
+| id | Style | Foes | Stage 2 | `pre` | xp | after |
+|---|---|---|---|---|---|---|
+| `last_accounting` (hostile accounting, optional) | `dock`, Meanas 0.9 | `greycloak` (boss), 2× `assassin`, `clawcrossbow`, `clawmage`; `drop:[3]` if `c7_vellWarned` | "The long pier": `clawknife`, `clawmage`, 2× `assassin`, `clawcrossbow`; round-2 wave `assassin` | `clawmage` stunned, `greycloak.parryLeft=0`, fires at (4,1),(5,1); cost: the ship leaves (`c7_shipGone`) | 320 | `c7_after_accounting` |
+| `c7_worrygate` (avoidable by Might 15 or 20 silver) | `city` | `c7_gatebow`, 2× `cutpurse`, 2× `bruiser`, `knife`; round-2 wave `cutpurse`, `knife` | "The tanners' yard": `c7_bigone` (boss), `c7_gatebow`, 2× `knife`, 2× `cutpurse`; round-3 wave `bruiser` | bruisers stunned; two `c7_watch` spawn as foes behind the party | 260 | `c7_after_worry` |
+
+**Ch7 checks.** Hard: empty report (Guile 17, `near:false`); hill report (Wits 16, sergeant only); Toc on the rolls (Wits 16, `C7H.tocCh`, from `c7_rolls` and `c7_qm`); Chub's signature (Guile 16, Kettle only). Other: talk down (Guile 14); ledger (Wits / Might / Guile 13); Worry Gate (Might 15). No `gainXP` in the module.
 
 **Gear.** `{name, slot:'weapon'|'armour'|'trinket', who:[ids]|null, ac, atk, hp, mv, rng, dmg, stat:{might,wits,guile}, line}`.
 
 **Cards.**
-- `CARDS` ids and their implemented effects:
 
-  | Card | Effect |
-  |---|---|
-  | oponn | +1 d20 |
-  | obelisk | +4 hp |
-  | knight | foes −1 to hit |
-  | assassin | crit on 19–20 |
-  | hounds | +1 move |
-  | raven | +2 initiative |
-  | magi | Tuft strain −1 |
-  | herald | stay at 1 hp once a fight |
-  | crown / sceptre / orb | art only |
+| Card | Effect |
+|---|---|
+| oponn | +1 d20 |
+| obelisk | +4 hp |
+| knight | foes −1 to hit |
+| assassin | crit on 19–20 |
+| hounds | +1 move |
+| raven | +2 initiative |
+| magi | Tuft strain −1 |
+| herald | stay at 1 hp once a fight |
+| chains (Ch6) | declared in both `14_data.js` and `CH6.card`; CH6's `txt` wins at registration |
+| blank (`14_data.js`) | Tuft's self-draw only; does not set `S.card` |
+| crown (Ch7) | rolls twice, keeps the higher (`rollAgain`) |
+| sceptre / orb | art only |
 
-- Draw pattern: a choice `fx:()=>{S.f.cN_drawn=1; S.card=[weighted list][R(n)]}` with `go:()=>cardSequence(()=>talk('cN_card'))`. The card node shows `html:'<div class="cardinline"><canvas id="icard" …></canvas>…'` and `oncard:[S.card,false]`. Refusing sets `S.f.cN_noCard` (tuft −1, usually brisk +1).
-- Ch4 declared no new card.
+- Draw pattern: a choice `fx:()=>{S.f.cN_drawn=1; S.card=…}` (or `dealCard`) with `go:()=>cardSequence(()=>talk('cN_card'))`. The card node shows `html:'<div class="cardinline"><canvas id="icard" …></canvas>…'` and `oncard:[S.card,false]`. Refusing sets `S.f.cN_noCard` (tuft −1, usually brisk +1). Ch4 declared no new card.
+
+**Abilities.** Ohl: `wash`, `stanch`. Tuft: Mockra Whisper turns an enemy on its own side (strain 3); Phantom blinds (strain 2, v3.13.7). Kettle's level-3 talent "Quorl Signal".
+
+**Minigames** (`36_minigames.js`): `playBones` (Ch1 Fiddler / Ch2 Kettle for the watch / Ch3 Hedge; `cN_bonesNet` cap 15 via `S.f[place+'_bonesNet']`; `bonesSpot`/`bonesSettle` loans; v3.13.6 Hedge and Fiddler spot a broke sergeant), `playKruppeCups`, `playCharges` (Ch3 vault), `playRoofRun` (Ch4), `playMasks` (Ch6, from `c6_hall`; `c6_masks_after` awards `n*8` XP and +1 `wjRegard` at 4+; Deeds "Masks at the Fete" reads `c6_masks`). `S.deeds` counts the results.
 
 **Conventions.**
-- Node ids `cN_*`; flags `S.f.cN_*`; `S.f.cN_done=1` at the close.
-- Close with `chapterEnd(N, S.f.cN_key || 'default')`.
-- Conditional text uses template literals with ternaries. Examples: `${SQUAD().includes('ellis') ? `…` : ``}`, `${S.f.x ? … : S.f.y ? … : …}`.
+- Node ids `cN_*`; flags `S.f.cN_*`; `S.f.cN_done=1` at the close. Close with `chapterEnd(N, S.f.cN_key || 'default')`.
+- Conditional text uses template literals with ternaries (`${SQUAD().includes('ellis') ? `…` : ``}`).
 - Threshold beats use `S.loy.x >= 2`.
 - Munitions counts are pluralised inline: `${S.inv.sharper} sharper${S.inv.sharper === 1 ? '' : 's'}`.
-- Every squadmate line is guarded by `SQUAD().includes(...)`, even for the four who cannot leave.
-- End-of-chapter "talk to anyone" rows use `req` plus a `cN_closeX` flag.
+- Every squadmate line is guarded by `SQUAD().includes(...)`; from Ch6 on, even the four veterans can be dead (`C6H.here(id)` / `C7H.has(id)`), and roller-id flags must be guarded the same way.
+- End-of-chapter "talk to anyone" rows use `req` plus a `cN_closeX` flag; Ch6–7 skip the dead.
+- Node counts: Ch6 114 (brief 80–100), Ch7 108 (brief 60–80). Every `go` / `fail` / `talk()` target in Ch7 exists; all maps are 16×12 and all battle maps 8×10.
 
 ---
 
-## 8. Inconsistencies to watch (so Ch6–7 don't compound them)
+## 8. Inconsistencies
 
-1. **Ohl's count.** Tattersail is #212 on the `light` path (`c2_ashes_ohl`), but on the `aside` path Vell is also "Two hundred and twelve" and Ohl says "I've carried two hundred and eleven names that Hood took". Compute the count as `211 + light + aside`.
-2. **Crone in Ch5** branches on `c2_croneSaw` ("We have not met"). But Crone named herself to the squad in `c2_crone` on every path (`c2_crone` is always set). Branch on "talked with her" instead.
-3. **CHEND 3 `c3_paid`** says "The Fourth's real name is in a gate-clerk's ledger". Paying was the no-name option; the real-name option is `c3_trueName`.
-4. **CHEND 1 `c1_accBluffed`** says "a cusser named after a Claw". The dialogue only says Maud or Gerrun.
-5. **CHEND 4 `c4_guildKnows`** says "Rallick told him". In the dialogue Vell promises to tell; Rallick isn't involved.
-6. **Ch1 after-battle nodes call `gainXP` again** (`c1_after_line` 180, `c1_after_claw` 150, `c1_after_accounting` 120), so XP is double-counted.
-7. **`c1_plant` is always set**, because the tent scene is mandatory. The "She sewed a badge on my collar once… I'm going to start" branch in `c2_ashes_tuft` and the "Kettle snores" branch in `c2_start_tuft` are unreachable.
-8. **Numbers and days.** Settled in v3.7.3: the road from Pale to the Worry Gate is eleven days (twelve with the light detour, `c2_late`; `tripDays()` in 37_chapters.js), Ch2 opens on day four, "a week behind us" is the lag behind the Bridgeburners, who are eight (Whiskeyjack, Quick Ben, Kalam, Fiddler, Hedge, Mallet, Trotts, Sorry). The Moranth crate the Fourth hauls is a full one: thirteen slots, twelve cussers and a dud; the vault holds forty of Hedge's and those twelve.
-9. **Refused-path Ellis.** She rode off with Toc in Ch2, yet in Ch5 Toc "wondered" where she was.
-10. **Tuft's through path in Ch5.** CHEND says "the Fourth let someone follow", but nobody followed. CHEND also has Tuft call things "polite" (Ch4 and Ch5 extras); she never does in dialogue.
-11. **Chub's cusser** is "the size of a big man's fist" in Ch5; the cussers in Ch3 are "the size of a man's head".
-12. **Choice labels in `c5_wards` / `c5_rent`** contain `*…*`, which renders as literal asterisks.
-13. **Missing flags.** Returning Coll's ring, Rallick's Guile outcome, nodding to the man on the corner, and Tuft keeping the Herald all set no flag. Derive them or add flags going forward.
-14. **Whiskeyjack's Ch5 "You reported it"** assumes the dust-line talks (`c2_sethDust` / `c2_hillsDust`), which are optional.
-15. **Ellis's timeline.** She was recruited at 18 (six years ago), but she knew the well-boy in the Genabaris yards eight years ago.
+One list for the whole game. Items 1–15 are v1's (re-checked at v3.13.7); fixed ones are one line each. Canon slips (against *Gardens of the Moon*) are tagged **[canon]** and cross-referenced in §9.
+
+1. **[continuity] FIXED** (v3.7.0, 2f1ce80). Ohl's count, Vell #212 vs Tattersail: `c4_aside_squad` now says "Two hundred and thirteen" on `light`. Use `listCount()`; see 21 and 38.
+2. **[continuity] FIXED** (v3.7.0). Crone Ch5 "We have not met": `c5_crone` now says "Crone, little soldiers, in case you had forgotten".
+3. **[continuity] FIXED** (v3.7.0). CHEND 3 `c3_paid` real name: the extra keys on `c3_trueName` / `c3_falseName`.
+4. **[continuity] FIXED** (v3.7.0). CHEND 1 "a cusser named after a Claw": now "introduced her cusser to three of the Claw's people, by name."
+5. **[continuity] FIXED** (v3.7.0). CHEND 4 "Rallick told him": now "Vell told him."
+6. **[cosmetic] FIXED** (v3.7.0). Ch1 double `gainXP` in after-battle nodes: none in `c1_after_*` (`c1_raid_scare`'s `gainXP(60)` is legitimate, no battle).
+7. **[cosmetic] Still present.** `c1_plant` is always set (`c1_tent` always routes to `c1_tuft_plant`), so the `!c1_plant` fallbacks in `c2_ashes_tuft` (the `''` arm) and `c2_start_tuft` are dead. The "I'm going to start" line always shows. Harmless.
+8. **[continuity] Holds, with one new breach.** The settled numbers (v3.7.3): Pale to the Worry Gate is eleven days (twelve with the light detour, `c2_late`; `tripDays()`); Ch2 opens on day four; "a week behind us" is the lag behind the Bridgeburners, who are eight (Whiskeyjack, Quick Ben, Kalam, Fiddler, Hedge, Mallet, Trotts, Sorry); the Moranth crate is a full one, thirteen slots, twelve cussers and a dud; the vault holds Hedge's forty and those twelve. `c1_wj_last` still says "Eleven days". **Breach in Ch6:** `the_mines.stage2.text` has Kettle say "Eleven of Hedge's down there… And four cussers. I *counted* them in." Everywhere else Ch6 says forty plus twelve (`c6_start`, `c6_crossing`, `c6_choice`, `c6_after_mines` "eleven more cussers", `c6_mines_kettle` "Twelve", CHEND cellars), and `c6_start` calls all forty "Moranth munitions" where elsewhere they are Hedge's. (v1 §4's "four Moranth cussers and forty more" was the same error; corrected in this bible.)
+9. **[continuity] FIXED** (v3.7.0). Refused-path Ellis: Toc now left her at a garrison and she walked out (`c5_toc`); Ch7 `c7_ellis_door` agrees.
+10. **[story-breaking] Half fixed.** "Polite" is now Tuft's in dialogue (Ch6 cuts, the Shadowthrone answer). But **CHEND 5 `through` still says** "when someone in the Fourth moved to follow him, the sergeant said go". On the Tuft path nobody follows Toc: she walks to the threshold twice (`c5_after_rent`, `C5H.tuftOut()`).
+11. **[continuity] FIXED** (v3.7.0). Chub's cusser is "the size of a man's head".
+12. **[cosmetic] FIXED** (v3.7.0). No `*…*` in any Ch5 choice label.
+13. **[cosmetic] Mostly fixed.** Rallick's Guile outcome is flagged (`c4_rallickOk` / `c4_rallickTail` / `c4_rallickWindow`); the nod was always `c4_nodded`. **Still unflagged:** Coll's ring returned in Ch3 (`c3_coll_return` has no fx; derive `c3_collTalk && !c3_coll`) and the Herald kept (only `S.card`, reset each chapter).
+14. **[continuity] FIXED** (v3.7.0). Whiskeyjack's Ch5 "You reported it" is guarded by `c2_sethDust || c2_sethDustNight || c2_hillsDust`.
+15. **[continuity] FIXED** (v3.7.0). Ellis's timeline: the well-boy "was thirteen when I knew him, in the training yards at Genabaris"; "eight years ago" belongs only to Jeth Arrow.
+16. **[story-breaking] Kept Tuft after Rake's courtesy.** `c6_rake_cold` sets `c6_badgeCold` (Rake has already cut the thread; "It's gone *cold*"), but the kept routes stay open: `c6_claw` "Do what he says, Tuft." (no `req`), `c6_tuft_ask` "Not now…", and `c6_tuft_cold`. All lead to `c6_tuft_kept`, where "somebody standing behind the glass" looks out of a badge that is dead, and Ch7 then treats her as leashed. Gate the kept routes on `!c6_badgeCold` (as `c6_tuft_card` already gates "Go with him"), or write a dead-badge variant.
+17. **[story-breaking] Hedge's cusser: text and fx disagree.** `c6_bb_hedge` shows Kettle handing it over whenever `S.inv.cusser > 0`; the fx only spends it and sets `c6_hedgeCusser` when `S.inv.cusser > (maudKept() ? 1 : 0)`. With exactly one cusser and Maud kept (no `c5_cusserUsed`), the player sees the hand-over and then `c6_close_kettle` says "I didn't have one to give him". The module also calls the remaining cusser "Hedge's", though Ch7 makes Maud the one kept back.
+18. **[continuity] Brisk's regiment.** At `c3_cousins_faced` she says "Ninth Regiment… Heavy." The Ninth is the badge she found (Ch2); by TPL she joined the **Third**. Suggest "Third Army. Heavy."
+19. **[continuity] Coll's Ch5 outcome is dropped.** `c6_coll` reads `c5_collDown` (always 1 after `c5_lorn_ride`) but not `c5_collTended` / `c5_collRefused`; Ch7 reads neither. The Wits 16 choice has no echo.
+20. **[continuity] Hedge and Fiddler met twice.** Since v3.9.0 the squad can meet both at the Ch1 bones. `c3_bones` acknowledges it (`c1_bones`), but `c3_hedge` and `c3_fiddler`'s first-meeting lines ("You're the baggage.") don't check `c1_bones`.
+21. **[continuity] "Five men with lanterns."** `c5_dig_let` has Ohl write it on the list, but `listCount()` never counts it, and no later chapter mentions it. Decide whether it is a name.
+22. **[continuity] Ohl's count across Ch7.** `c7_ohl_cross` decrements `listAdds`, so `listCount()` (and the summary's "Ohl's list N names") drops Tattersail; the summary can be **lower** than the number Ohl gave Dujek earlier the same morning. (Checked: the `c7_ohl_cross` quote "*Tattersail. Cadre. Two hundred and twelve.*" is correct on every path, because Vell is 213 when Tattersail is on the list. The Ch7 notes' claim of a 212 clash is wrong.)
+23. **[continuity] Brisk on the roof, aside path.** `c6_alley_step` has her shield go up "the way they did at Nathilog, the way they did on the roof" unconditionally; on `c4_key==='aside'` the squad did not stand on the roof. The node's first paragraph does branch on it.
+24. **[continuity] `wjRegard` can reach +3.** `c6_masks_after` adds 1 with no clamp (v1's range was −2..+2). Ch7 reads it as `>= 0` / `>= 1`, which is safe; never test `=== 2`.
+25. **[continuity] The accounting branch reads only Ch3.** `C7H.friend()` = `c3_key==='report' || (clawFavour && !marked)`, and every Ch3 refusal sets `marked`, so it is exactly `c3_key==='report'`. The brief also counted `c1_key==='claw'` and prologue `claw` (`gaveClaw`) as friendly and `c1_accFought` / `c3_knivesFought` as hostile; none can change the branch (Ch1 claw only adds a line). `gaveClaw` is never read in Ch7. A prologue-marked squad that reported in Ch3 gets the friendly offer (the code comment admits it).
+26. **[continuity] The Claw's promise vs Kalam's word.** In `c7_claw_took` with the dye-shop untold, the grey cloak says "Whiskeyjack need never hear of the dye-shop. That's in the price too… He won't hear it from me." `took` sets no `c7_wjKnows`, so `pendingTell()` stays true and Kalam's word still goes up the hill (`c7_hill_tell` / `c7_hill_word`). Defensible (the promise was worthless), but nothing in the text says so.
+27. **[continuity] Kalam breaks Ch4's "never".** Ch4 `[c4_kalamLook]`: "He says nothing about it. He never will." Ch7 `c7_kalam`: "Somebody in your squad sat at a table with the Claw… I found out anyway." (Ch7 uses `pendingTell()`, equivalent in practice.) Either soften the Ch4 line or have Kalam acknowledge the change.
+28. **[continuity] Ellis's space, two versions.** The `c7_ellisLeft` gone page says "Ohl crossed out her space anyway. 'She's not dead,' he said. 'She's only not ours.'" But `c7_ellis_let` has no such beat and sets no `c7_ohlEllis`, so Ohl's own fate page doesn't list it.
+29. **[continuity] The otataral glove is never checked in Ch7.** `c7_tuft_glove` assumes the squad still has `otatglove`, and says "Brisk has the glove out of her belt already" whenever Brisk is present, while Ch6 hands it to Brisk only if she has it equipped (`gw`).
+30. **[continuity] Optional payoffs behind optional NPCs.** If Ch'kess is never visited, the Moranth debt, the spoon and Tav-on-the-rolls stay unresolved, though Brisk's fate still has her find Tav. If the bundle is never visited, Tuft's promise lapses ("She never did tell you"). Acceptable, but these were the brief's must-pay threads.
+31. **[continuity] Brisk's ≤−2 fate on a road she didn't take.** "She salutes when she passes you" prints even when she went north without the sergeant (`!fol`).
+32. **[continuity] Tuft's timeline.** Ch1 Tattersail: badge sewn "eighteen months ago", off "four months later" = 14 months; TPL and Ch6 say "Fourteen months" (consistent; the Ch6 brief's "sixteen" is wrong, keep 14). `c6_tuft_ask` "Nineteen years… I've never once turned one for me" implies she has had the Deck all her life (TPL age 19).
+33. **[continuity] Paran's arrival.** Ch6 intro: Paran's horse passes the squad "the first morning" of a three-day walk; Whiskeyjack: "The captain came in yesterday"; `c6_start` "a day ahead of you". Loose, not contradictory.
+34. **[cosmetic] Kettle's debt: dead branches.** `c7_debt_spent` is offered on `c5_cusserUsed || S.inv.cusser<=0`; without `c5_cusserUsed`, `maudKept()` always protects one cusser and Ch6's Hedge gift needs a second, so `S.inv.cusser<=0` without `c5_cusserUsed` can't happen. The `[c6_hedgeCusser]` branch ("I gave it to Hedge… It just wasn't mine to throw") and the generic branch are unreachable, and the Hedge branch contradicts `c7_debt_paid`, which shows Maud still in the satchel in that state.
+35. **[cosmetic] Ch'kess's pronoun.** Narration and Ch'kess's own lines use "it"; Kettle and the fates use "he" ("He clicked at me", `c7_close_kettle [empire]`; "he said" (owed); "he gave her a chit"). Pick one.
+36. **[cosmetic] Ellis's non-held branch in Ch6 is unreachable.** Ellis in the squad at Ch6 implies `c5_ellisHeld`, so `c6_vault_sleep`'s "sleeps the way scouts sleep" arm is dead text.
+37. **[cosmetic] Duplicate `chains` card.** `14_data.js` and `CH6.card` both define it with different `txt`; CH6 wins at registration.
+38. **[cosmetic] Flag shapes.** `c6_tuft` holds a string where Ch4–5 used booleans; `c6_rakeNod`, `c6_darkMissed`, `c6_mammotKnown`, `c6_mammotEye`, `c6_rimeHeld`, `c6_rimeBit`, `c7_emptyBy`, `c7_clawPage`, `c7_clawNoted`, `c7_tocBy`, `c7_moranthMark` hold a squad id, and the bearer may be dead: guard with `C6H.here(id)` / `C7H.has(id)`.
+39. **[cosmetic] Unread flags.** Ch6 contract flags Ch7 never reads: `c6_houndKnew` / `c6_houndFought`, `c6_sawRake`, `c6_rakeLooked` (Crone keys off `C7H.tuft()==='dark'`), `c6_azath` (safe: every Ch6 path sets it), `lastFallen`. Ch7 flags never read: `c7_clawMet`, `c7_done`, `c7_ellisSeen`, `c7_grudge`, `c7_hill`, `c7_lakeSeen`, `c7_orders`, `c7_rolled`, `c7_sethDebt`, `c7_started`, `c7_wjHill`. The Guild outcome (Vell's warning / Ocelot's grudge) is in no `extras` line or fate.
+40. **[cosmetic] `c4_rallick_fail`** is now reached only by "We're a road crew."; a failed Guile check goes to `c4_rallick_miss`. Writers citing `c4_rallick_fail` as "the failure" are out of date.
+41. **[cosmetic] Lint baseline.** `c1_bonesNet` / `c3_bonesNet` show as "read but never written" because the writes are dynamic (`S.f[place+'_bonesNet']`). Not bugs; don't "fix" them.
+42. **[cosmetic] Length.** Ch6 has 114 nodes (brief 80–100); Ch7 has 108 (brief 60–80) plus a second battle (the Worry Gate) and a `stage2` in each fight.
+43. **[canon] Paran still carries Chance after the Fete.** In canon Paran hands Chance to Cotillion in Shadow (23.1) before he finds Lorn (23.10), and after the Fete carries only Lorn's sword (E.2). The game keeps "his own": `c6_alley_paran` (Lorn's sword "through his belt beside his own"), the man in the alley "with a sword at his hip" (`c6_alley_women`), `c6_dawn` ("beside his own. It isn't his."), `c6_start` ("The ordinary sword is at his hip"), `c7_paran` ("He has two swords. His own, at his hip"), `c7_paran_hill` ("His own is at his hip"), the `c7_hill_arrive` panorama ("A captain with two swords"). Also `c6_after_tyrant` returns him "all at once" after three breaths, where canon sends him through the warren (22.9) and Shadow (23.1) and back only to go after Lorn.
+44. **[canon] Rake leaves before the Tyrant; where the dragons fight.** Canon: Rake leaves the Fete for K'rul's belfry before Raest shows himself (22.7), takes dragon form on the belfry roof (23.6), and kills the demon after it crashes through **Baruk's wall** (24.1). The game leaves his glass on Simtal's balustrade with the black dragon unfolding "Above the house" (`c6_bb_sky` and siblings), and the kill on "a roof over the Daru District" (all three sky nodes). Whether Baruk's estate is in the Daru District is not given in the chronology [?]; the belfry departure is a clear slip.
+45. **[canon] The duel.** Canon: Rallick is masked (a tiger), Baruk presides, and Estraysian D'Arle seconds Orr (21.8, 21.12). Ch6 has him "with no mask" (`c6_rallick`, `c6_duel`). Minor; the brief did not specify.
+46. **[canon] Where Raest struck.** Canon: Raest shows himself on the **terrace** and Derudan spends her power holding him (22.8). Ch6 moves it to the lawn and leaves Derudan out of the fight. A brief choice, not a writer slip.
+47. **[canon] The five dragons.** `c6_tyrant` drops five winged shapes from Moon's Spawn ("the first of them is red") as Mammot unmasks. In canon the five leave Moon's Spawn the night before (19.6) and Silanah and four Soletaken attack Raest at the barrow on Fete day (20.8), before he takes Mammot (22.1). If kept, read it as a second sortie.
+48. **[canon] Rallick's otataral.** Tuft senses "Dust. In his clothes, in his hair, on his hands" (`c6_rallick`). In canon the dust had vanished into him after his wound closed (19.2). The brief chose this; leave it.
+49. **[canon] Hedge lives.** Canon GotM has Hedge apparently killed by his own cusser (22.10 [?]) and mourned by Fiddler in the boat (E.3); later books reverse it. The game has him alive at the Ch6 dawn (`c6_mines_kettle`: "He'll cry, and he'll pretend it's the onion") and on the Ch7 hill (`c7_hedge`), and Fiddler sails without grieving. Defensible with hindsight; note it.
+50. **[canon] The departure by water.** Kalam, Fiddler, Crokus and Apsalar leave "the morning after" on "a coastal trader" from the Lakefront on "the morning tide" (`c7_orders`, `c7_lake_arrive`, `c7_after_accounting`), and the `ship` scene (`CH7.scenes`) says "The lake, and after it the sea". Canon E.3 has them leave by boat days later, from the Genabackan coast, and Crokus throws the coin from the boat. Lake Azur has no tide: consider "lake barge" and "the morning wind".
+51. **[canon] Black vs Green Moranth.** `c1_brief` ("The Black Moranth fly us to the north shore of Lake Azur") and the Ch2 intro have the Black Moranth fly the Bridgeburners; canon uses Green Moranth Quorls (3.2, 8.1), and the game's own Ch3 crates are "the ones the Green Moranth brought in for Whiskeyjack". The Black Moranth's canon entrance is siding with Dujek (24.3), which Ch7's Ch'kess matches.
+52. **[canon] Two Hounds at the Pale.** Ch1 has two Hounds in the camp (`c1_houndDown`, "Two Hounds of Shadow"), the first of them Gear. Canon 4.7 has Gear alone, at Tattersail's quarters. Soft.
+53. **[canon] Lorn and Tool leave the barrow early.** Ch5 dawn (`c5_dawn`): "The Adjunct's gone to the city… With the Imass." In canon they open the barrow (16.1), stay to take the Finnest (18.8, 19.5; Tool offers to stay ten days), and Lorn enters by the Worry Gate on Fete day (20.3). A compression; harmless if nobody dates it.
+54. **[canon] Crokus on the Ch4 roofs.** `c4_crokus` (a bag "that clinks", an Andii behind him) restages 5.2–5.3 (the D'Arle burglary and the Andii chase, before the squad reaches the city) on the night of the rooftop war (13.x), when canon Crokus is returning the jewels (13.7). Readable as the 13.7 errand; the pursuit belongs to 5.3. Soft.
+55. **[canon] Checked, not a slip: Dujek names the Pannion Seer.** The Ch7 notes flagged `c7_sending_dujek` ("a prophet in a tower in the south who calls himself the Pannion Seer") as premature. The chronology has Dujek raise the Pannion Seer through the bone device in 18.7 and agree the alliance against him in 24.3, and Whiskeyjack and Dujek tell Paran he is the real target in 19.4. The line is canon-accurate; only its detail ("His priests are eating cities") goes past GotM.
+56. **[cosmetic] FIXED in this bible.** Trip-cord, not fuse-cord (Ch5, Ch7 and TPL all say trip-cord).
+57. **[canon] Ocelot after his death.** Canon: Rallick kills Ocelot in K'rul's belfry (18.3), days before the Fete. The Ch6 terrace veteran says "Ocelot said you'd be here… Ocelot said, if the ones who stand aside are on the terrace tonight, bring a friend." (`c6_knives`). Past tense saves it, but Ocelot could only have known of the Fete posting that Whiskeyjack arranged on Fete day (20.4) if he were alive. Soft; keep "Ocelot's clan" and drop the foreknowledge, or leave it.
+58. **[canon] Where the outlawing is heard.** Canon 24.3: Whiskeyjack, Paran, Kalam, Fiddler, Quick Ben, Mallet and Coll hear Dujek on the bone device at the Malazan position (the Phoenix per one source, a camp per another). Ch7 stages the sending on a bench in Simtal's garden (`c7_start` … `c7_orders`, scene `fete_garden`) at dawn after the Fete. Soft.
+
+---
+
+## 9. Canon anchors
+
+Beat IDs are from `bible/canon-chronology.md` (book order of *Gardens of the Moon*). "During" beats happen in the same days as the game chapter; "adjacent" beats come just before or after and are referred to in it. **Witness** means the Fourth sees it on screen (or its restaging); **hear of** means it reaches them as report, rumour or aftermath. Departures point to §8.
+
+| Game chapter | Novel | Beats during / adjacent | Canon characters the Fourth meets | Witnessed | Only heard of | Departures |
+|---|---|---|---|---|---|---|
+| **Prologue** (under the Pale, north sapper tunnels, just after the fall; Varrow's journal; Tattersail's tent "three days after the Pale fell", `C7H.coda`) | Book One *Pale*, ch. 2. **Not** the novel's Prologue (P.1–P.5, Mock's Hold, 1154 BS, years earlier) | during 2.1 (tunnel collapse; ~1,400 Bridgeburners buried); adjacent 2.2–2.3 (the cadre sent against Moon's Spawn; A'Karonys, Calot, Nightchill fall; Tattersail suspects Tayschrenn), 2.4 (Hairlock into the puppet) | Tattersail (the grey cloak is original) | the tunnels after the collapse (the Stonebound, shades, deserters) | the cadre's sacrifice and Tayschrenn's part (Varrow's journal: "*Moved before the Spawn attacked*", `knowTruth`/`partial`) | none |
+| **Ch1 Pale** ("two nights later") | Book One *Pale*, ch. 3–4 | adjacent 3.6–3.8 (Toc meets Paran; Paran meets the squad; Sorry stabs Paran); during 4.1 (Hairlock going mad), 4.2–4.3 (Paran at Hood's Gate, brought back), 4.5 (Dujek's warning to Whiskeyjack, off-screen), 4.6 (the squad leaves by quorl), 4.7 (Gear attacks; Paran wounds it with Chance; the coin spins) | Tattersail, Whiskeyjack, Quick Ben, Kalam, Fiddler and Hedge (the bones), Paran, Hairlock (puppet), the Hound Gear | the Hound attack on the cadre row (4.7, restaged with two Hounds); Paran standing against it; Hairlock's puppet | Paran's knifing (3.8: "knifed"); the Bridgeburners' flight south (4.6, `c1_brief`) | §8.51 (Black vs Green Moranth), §8.52 (two Hounds) |
+| **Ch2 Rhivi Plain** ("three days south-east of Pale", day four to the hills' edge) | Book Three *The Mission*, ch. 9–10 (+11.1) | during 9.1–9.2 (Toc on the plain three days out; Tool rises for Lorn), 9.8 (Crone over the plain), 10.2–10.3 (Tattersail and Bellurdan die in the fire), 10.4 (Tool senses a birth), 10.6 (Toc and Paran find the bodies), 10.7 (Hairlock nearly kills Crone); adjacent 11.1 (the rebirth through a Rhivi woman) | Toc the Younger, Crone; Lorn and Tool at a distance (`c2_hills_dust`) | `[light]` the pillar's ashes, black glass, and the Mhybe carrying the bundle away (10.3–10.4, 11.1); Tool turning his head (`c2_hills_dust`) | `[road]` Tattersail's death (the light seen, not visited); Paran's tracks (`c2_paranTurned`; 10.6) | none (the Tiste Andii walk-in and Sethand are original) |
+| **Ch3 Blue Fire** (Darujhistan, the Worry Gate and Gadrobi District at dusk, eleven or twelve days from Pale) | Book Four *Assassins*, ch. 11–12, against the background of Book Two *Darujhistan*, ch. 5–7 | during 11.2 (the "road workers" laying mines), 11.3 (Whiskeyjack sends Sorry to Kruppe), 11.7 (Crokus as Coinbearer at the Phoenix), 11.8 (Kalam fails to reach the Guild), 12.3 (Quick Ben in Shadowkeep, off-screen); adjacent 6.8 / 7.3 (the Phoenix card table; Simtal, Orr and Coll), 13.14 (Tattersail "growing fast") | Whiskeyjack, Quick Ben, Kalam, Fiddler, Hedge, Mallet, Trotts, Sorry, Kruppe, Crokus, Murillio, Coll | the mining under the Gadrobi crossing (the squad lays charges, 11.2); the Phoenix and Kruppe's table; Crokus's coin | Coll's story and Simtal's name (`c3_collNamed`; 7.3); Tattersail reborn (Kruppe's sentence; 11.1, 13.14) | none (the Fourth enters by road through the Worry Gate; the Bridgeburners came by boat, 8.1, which the game keeps). The chapter title borrows Book Six's name |
+| **Ch4 Assassins** (the rooftops, "two nights on") | Book Four *Assassins*, ch. 13 | during 13.1–13.5 (Kalam and Quick Ben follow Rallick; the Tiste Andii slaughter the Guild; Kalam and Quick Ben fight them; Rallick escapes), 13.6–13.7 (Sorry kills a D'Arle guard; Crokus returns the jewels; Sorry watches), 13.11 (Whiskeyjack hears Rake is killing off the Guild) | Kalam, Quick Ben, Fiddler, Rallick, Tiste Andii hunters, Crokus (in passing), Sorry (through the skylight), Kruppe (asleep) | the Andii hunting the Guild across the roofs (13.3); the roof fights (13.4, restaged with the Fourth); Sorry watching (13.7, at Kruppe's door); Crokus running with a bag | "Rake's people" (Kalam, Ch4 dawn; 13.10–13.11); Ocelot's orders (via the veteran) | §8.54 (Crokus's chase belongs to 5.3) |
+| **Ch5 Gadrobi Hills** ("the third day", east of Darujhistan) | Book Five *The Gadrobi Hills*, ch. 14–16 | during 14.1/14.4 (Lorn and Tool at the barrow), 14.5 (dead ravens), 15.2 (Hairlock throws Toc into a warren), 15.4 (Lorn attacks the Kruppe camp; Coll wounded), 15.6–15.8 (Hairlock torn apart by the Hounds), 15.9 (Rake kills Doan and Ganrod; Shadowthrone's deal), 16.1 (the barrow opened), 16.4 (the Rhivi, the priestess and the child), 16.5 (Paran meets the wounded Coll); adjacent 15.3 (Quick Ben tells Cotillion where Hairlock is), 15.11 / 16.2 (Sorry freed, named Apsalar) | Paran, Toc, Lorn (never spoken to), Tool, Hairlock, Hounds of Shadow, Coll, Crone, Sethand and the Rhivi with the bundle | Toc pulled through the rent (15.2); Hairlock torn apart (15.8); the Adjunct cutting Coll down on the ride (15.4, `c5_lorn_ride`); the barrow wards and the dig (16.1); the bundle on the ridge (16.4); Paran riding for the city (16.5) | Rake's kill of the Hounds (15.9; Crone: "My lord is *interested* in that hill"); who sent the Hounds (15.3; Tuft's "Somebody sent them", never answered); Sorry's release (15.11) | §8.53 (Lorn and Tool leave the barrow early) |
+| **Ch6 The Fete** ("three days out of the hills"; Fete night to dawn) | Book Six *The City of Blue Fire*, ch. 18 (adjacent) and Book Seven *The Fête*, ch. 20–24 | adjacent 18.2 (Paran brings Coll to the Worry Gate: "The captain came in yesterday"), 18.3 (Ocelot killed), 18.7 (Mallet heals Coll; Dujek on the bone), 19.6 (five winged shapes leave the Spawn), 20.4 (Whiskeyjack posts the squad as Fete guards), 20.7–20.8 (Raest wakes; the dragons attack him); during 21.1 (Lorn plants the Finnest), 21.4–21.13 (the Fete; Rake seconds Rallick; Rallick kills Orr; Murillio's dagger), 21.14 (Crokus and Challice), 22.1 (Raest takes Mammot), 22.8 (Raest unmasked; Whiskeyjack's leg; Chance takes the blast), 22.10 (seven warrens; Hedge's cusser), 22.12 (the Azath takes Raest), 23.4 (Lorn releases the demon), 23.6 / 23.11 / 24.1 (Rake as dragon; the demon killed with Dragnipur), 23.8–23.10 (Blues stops Lorn; Meese and Irilta kill her; Paran carries her away) | Whiskeyjack, Quick Ben, Kalam, Fiddler, Hedge, Mallet, Trotts, Paran, Lorn, Rake (the tall guest), Kruppe, Baruk, Derudan, Murillio, Coll, Crokus, Challice, Rallick, Turban Orr, Lady Simtal, Mammot/Raest; unnamed Blues, Meese and Irilta, the Twins, and the thin young guard Orr goes for (Circle Breaker's role, 21.8) | Lorn leaving the garden (21.1); the duel (21.12); Murillio's dagger and Simtal's door (21.13); Raest unmasked (22.8, moved to the lawn); `[bb]` the seven warrens, Hedge's cusser, the Azath roots, the leg (22.8–22.12); the dragon in the sky (23.6–24.1, every path); `[alley]` Lorn's death and the Twins (23.8–23.10) | Lorn's death off the alley path (Paran at dawn: "The Adjunct's dead."); Rallick and Vorcan, the Cabal, the Crimson Guard by name, Paran in Shadow (23.1): never | §8.43 (Chance), §8.44 (Rake's departure; dragon fight location), §8.45 (the duel), §8.46 (terrace vs lawn), §8.47 (five dragons), §8.48 (Rallick's dust), §8.49 (Hedge lives), §8.57 (Ocelot) |
+| **Ch7 Outlaws** (the Lakefront "the morning after"; noon on the Gadrobi road) | Book Seven *The Fête*, ch. 24 and the Epilogue | during 24.3 (Dujek outlawed; Black Moranth side with him; alliance against the Pannion Seer; Whiskeyjack becomes Dujek's second; Paran gets the Bridgeburners; Kalam and Fiddler take Apsalar home), 24.4 (Rallick carries Vorcan into the Azath), 24.6 (Moon's Spawn drifts west); compressed from E.1 (Whiskeyjack's leg healed badly), E.2 (Paran and Tattersail's bond), E.3 (Kalam, Fiddler, Crokus and Apsalar leave by boat; the coin thrown into the water) | Whiskeyjack, Dujek (voice), Quick Ben, Mallet, Kalam, Fiddler, Crokus, Apsalar, Paran, Kruppe, Coll, Hedge, Trotts, Crone, Sethand, Tattersail (the child), Tool (far off) | the sending (24.3, restaged on a garden bench); the ship's departure and the coin thrown from the quay (E.3, moved); Moon's Spawn gone west (24.6); Paran turning toward the bundle (E.2's bond) | Rallick in the Azath (24.4, Kruppe: "went in last night carrying someone"); Rake's last word (Crone's "*The small ones may go.*", original; cf. 24.1 the refused safe passage); Lorn's burial (original) | §8.43 (Chance again), §8.49 (Hedge), §8.50 (the departure by water), §8.58 (where the outlawing is heard). **Dujek naming the Pannion Seer is not a slip** (18.7, 19.4, 24.3; §8.55) |
+
+**Simultaneity notes for writers.**
+- Ch2 runs in the same days as the novel's Pale scenes 9.3–9.6 (Paran and Tattersail recovering, Lorn's dinner); the Fourth has already left Pale, so none of it is seen.
+- Ch3–4 sit inside Book Four's two nights (11–13). The Fourth's eleven-day walk means they arrive after the Bridgeburners' boat (8.1) and before the rooftop war (13).
+- Ch5's two days are the novel's 14–16 convergence: the Kruppe group (14.2, 15.4) and Sorry (14.3) are in the same hills but only Coll crosses the Fourth's path.
+- Ch6 compresses the whole Fete night (21–24.1) into one garden; the three keys pick which canon beat the Fourth stands in (the Tyrant, the vault under the crossing, Lorn's alley).
+- Ch7 compresses 24.3–24.6 and the Epilogue (days later in canon) into one morning.
+

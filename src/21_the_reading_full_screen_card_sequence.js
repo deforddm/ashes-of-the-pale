@@ -10,9 +10,11 @@ function cardSequence(done, opt = {}){
   /* Tattersail's Fold: once a chapter, the turned card goes back and another comes up from the same pool; keep either */
   const second = opt.second, foldPool = (S.cardPool || []).filter(k => k !== cid && CARDS[k]), canFold = !self && !opt.card && !second && foldPool.length && typeof trickLeft === 'function' && trickLeft('fold') > 0;
   const pc = second ? CARDS[second.prev] : null;
+  /* Through the Deck: a card with a vision this chapter can be looked into (not Tuft's own draw, a shown card, or the Fold's second card) */
+  const vis = !self && !opt.card && !second && typeof visionFor === 'function' ? visionFor(S.chapter, cid) : null;
   el.innerHTML = `<canvas id="ccv"></canvas><div class="cf" id="cfText"><div class="cn">${esc(c.name)}</div><div class="cfx">${esc(c.fx || '')}</div><div class="ct">${smartq(esc(c.txt || '').replace(/&quot;/g,'"'))}</div>
     ${pc ? `<div class="cfold"><span class="fold">✦ Tattersail's Fold: or keep the first card,</span> <b>${esc(pc.name)}</b> <span>${esc(pc.fx || '')}</span></div>` : ''}
-    <div class="row cfrow"><button class="btn primary" id="cfGo">${second ? `Keep ${esc(c.name)}` : self ? 'Put the card away' : S.chapter ? "Put the cards away" : "Descend"}</button>${second ? `<button class="btn" id="cfKeep">Keep ${esc(pc.name)}</button>` : ''}${canFold ? `<button class="btn trk" id="cfFold">✦ Draw again · Tattersail's Fold</button>` : ''}</div></div>`;
+    <div class="row cfrow"><button class="btn primary" id="cfGo">${second ? `Keep ${esc(c.name)}` : self ? 'Put the card away' : S.chapter ? "Put the cards away" : "Descend"}</button>${vis ? `<button class="btn vis" id="cfVis">✦ Look into the card</button>` : ''}${second ? `<button class="btn" id="cfKeep">Keep ${esc(pc.name)}</button>` : ''}${canFold ? `<button class="btn trk" id="cfFold">✦ Draw again · Tattersail's Fold</button>` : ''}</div></div>`;
   const cv = $('#ccv'), ctx = cv.getContext('2d'); const dpr = Math.min(2, window.devicePixelRatio || 1);
   const fit = () => { cv.width = el.clientWidth * dpr; cv.height = el.clientHeight * dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }; fit();
   const t0 = performance.now(); let finished = false, cues = {};
@@ -20,10 +22,11 @@ function cardSequence(done, opt = {}){
   AUDIO.play('shuffle');
   const end = () => { if (finished) return; finished = true; cardAnim = null; window.removeEventListener('resize', fit); el.hidden = true; el.innerHTML = ''; done(); };
   $('#cfGo').onclick = end;
+  if (vis) $('#cfVis').onclick = () => { if (finished) return; finished = true; cardAnim = null; window.removeEventListener('resize', fit); el.hidden = true; el.innerHTML = ''; playVision(vis, done); };
   if (second) $('#cfKeep').onclick = () => { S.card = second.prev; const fk = 'c' + S.chapter + '_drawnCard'; if (S.f[fk]) S.f[fk] = S.card; save(); end(); };
   if (canFold) $('#cfFold').onclick = () => { if (finished) return; finished = true; cardAnim = null; window.removeEventListener('resize', fit); spendTrick('fold'); AUDIO.play('shuffle');
     const nk = foldPool[R(foldPool.length)]; S.card = nk; const fk = 'c' + S.chapter + '_drawnCard'; if (S.f[fk]) S.f[fk] = nk; save(); cardSequence(done, {second:{prev:cid}}); };
-  let skipTo = null; el.onclick = e => { if (e.target.id === 'cfGo') return; if (performance.now() - t0 < 6200) skipTo = 6200; };
+  let skipTo = null; el.onclick = e => { if (e.target.id === 'cfGo' || e.target.id === 'cfVis') return; if (performance.now() - t0 < 6200) skipTo = 6200; };
   const TL = REDUCE() ? .35 : 1; // time scale
   cardAnim = () => {
     let t = (performance.now() - t0) / TL; if (skipTo) { t = Math.max(t, skipTo); }
