@@ -493,7 +493,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.14.1';
+const VERSION = '3.14.2';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -4839,6 +4839,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.14.2', ['On a phone held upright, the story text now starts under the picture instead of sliding up over it, so you see the whole painting while you read. Scroll the text inside its own panel.']],
   ['3.14.1', ['✦ Through the Deck. When Tuft reads the Deck for you and a card turns, a new button appears beside "Put the cards away": Look into the card. It shows a short vision through the eyes of someone from the book, happening somewhere else that same night: Paran at Hood\'s Gate, Crone over the pillar of fire, Quick Ben in Shadowkeep, Paran inside the sword, Rake on the belfry, Lorn\'s last walk. In Chapter Four the card Tuft turns decides whose eyes you see through, out of four.',
              'Already past Tuft\'s reading this chapter? Open the journal: a new Visions list holds every vision for the chapters you have reached, seen or not, ready to watch.',
              'After the Fete, Paran no longer carries his own sword. He gave it back, he says. He carries the Adjunct\'s.']],
@@ -18242,8 +18243,12 @@ function dockSheet(){
   const sh = $('#sheet'); if (!sh || sh.hidden) return;
   let k = '';
   if (WIDE() && ($('#app > .cvwrap') || $('#app > .scene'))) { const hud = $('#app > .hud'); if (hud) { const r = hud.getBoundingClientRect(); k = `${Math.round(r.left)}|${Math.round(r.width)}|${Math.max(16, Math.round(r.bottom + 14))}`; } }
+  /* a phone held upright: the talk sheet starts under the picture instead of over it, so the whole painting stays in view.
+     If that would leave the sheet less than 40% of the screen, it falls back to rising over the picture as before. */
+  if (!k && !WIDE()) { const sc = $('#app > .scene'); if (sc) { const b = Math.round(sc.getBoundingClientRect().bottom + 6), vh = window.innerHeight; if (b > 0 && vh - b >= vh * .4) k = 'under|' + b; } }
   if (k === dockAt) return; dockAt = k;
-  if (!k) { sh.style.left = sh.style.width = sh.style.top = sh.style.right = ''; return; }
+  if (!k) { sh.style.left = sh.style.width = sh.style.top = sh.style.right = sh.style.maxHeight = ''; return; }
+  if (k.startsWith('under|')) { sh.style.left = sh.style.width = sh.style.right = ''; sh.style.top = k.slice(6) + 'px'; sh.style.maxHeight = 'none'; return; }
   const [l, w, top] = k.split('|'); sh.style.left = l + 'px'; sh.style.width = w + 'px'; sh.style.top = top + 'px'; sh.style.right = 'auto';
 }
 function loop(t){

@@ -17,8 +17,12 @@ function dockSheet(){
   const sh = $('#sheet'); if (!sh || sh.hidden) return;
   let k = '';
   if (WIDE() && ($('#app > .cvwrap') || $('#app > .scene'))) { const hud = $('#app > .hud'); if (hud) { const r = hud.getBoundingClientRect(); k = `${Math.round(r.left)}|${Math.round(r.width)}|${Math.max(16, Math.round(r.bottom + 14))}`; } }
+  /* a phone held upright: the talk sheet starts under the picture instead of over it, so the whole painting stays in view.
+     If that would leave the sheet less than 40% of the screen, it falls back to rising over the picture as before. */
+  if (!k && !WIDE()) { const sc = $('#app > .scene'); if (sc) { const b = Math.round(sc.getBoundingClientRect().bottom + 6), vh = window.innerHeight; if (b > 0 && vh - b >= vh * .4) k = 'under|' + b; } }
   if (k === dockAt) return; dockAt = k;
-  if (!k) { sh.style.left = sh.style.width = sh.style.top = sh.style.right = ''; return; }
+  if (!k) { sh.style.left = sh.style.width = sh.style.top = sh.style.right = sh.style.maxHeight = ''; return; }
+  if (k.startsWith('under|')) { sh.style.left = sh.style.width = sh.style.right = ''; sh.style.top = k.slice(6) + 'px'; sh.style.maxHeight = 'none'; return; }
   const [l, w, top] = k.split('|'); sh.style.left = l + 'px'; sh.style.width = w + 'px'; sh.style.top = top + 'px'; sh.style.right = 'auto';
 }
 function loop(t){
