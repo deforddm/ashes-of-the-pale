@@ -477,6 +477,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 #cardfx .btn.vis{box-shadow:0 0 14px rgba(154,134,224,.25)}
 .vlist{list-style:none;padding-left:0}.vlist li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.vlist .btn.sm{margin-left:0;white-space:nowrap}
 .vlist .vnm em{color:var(--warren2)}
+.vlist .vnew{font-weight:normal;font-size:.8em;color:var(--warren2);border:1px solid currentColor;border-radius:3px;padding:0 4px;margin-left:4px;text-transform:uppercase;letter-spacing:.05em}
 </style>
 <style>[hidden]{display:none!important}body{margin:0}</style>
 </head><body>
@@ -492,7 +493,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.14.0';
+const VERSION = '3.14.1';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -4838,6 +4839,9 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.14.1', ['✦ Through the Deck. When Tuft reads the Deck for you and a card turns, a new button appears beside "Put the cards away": Look into the card. It shows a short vision through the eyes of someone from the book, happening somewhere else that same night: Paran at Hood\'s Gate, Crone over the pillar of fire, Quick Ben in Shadowkeep, Paran inside the sword, Rake on the belfry, Lorn\'s last walk. In Chapter Four the card Tuft turns decides whose eyes you see through, out of four.',
+             'Already past Tuft\'s reading this chapter? Open the journal: a new Visions list holds every vision for the chapters you have reached, seen or not, ready to watch.',
+             'After the Fete, Paran no longer carries his own sword. He gave it back, he says. He carries the Adjunct\'s.']],
   ['3.13.7', ['Tuft\'s Phantom is a blinding shadow now: an enemy within 5 has Meanas over its eyes for its next two turns, and half the blows that would have landed go into the dark. Strain 2.', 'Mockra Whisper (an enemy turns on its own side) costs strain 3, so the bigger trick costs more.']],
   ['3.13.6', ['Broke at the bones? Hedge (Chapter One) or Fiddler (Chapter Three) will spot you five silver to sit in. Win, and they take their five back off the top; lose, and it goes on the Bridgeburners\' slate.']],
   ['3.13.5', ['Tuft\'s Mockra Whisper is no longer a second Phantom. Phantom (Meanas, an illusion) still costs an enemy its turn; Mockra Whisper (the mind) turns an enemy on its own side for a turn, and it goes for the nearest of them instead of you. Bosses may still shake it off.']],
@@ -5954,10 +5958,12 @@ function drawVision(cv, v, t){
 }
 /* the journal's Visions list: the ones this sergeant has seen, to watch again */
 function visionsHTML(){
-  const seen = (S && S.seenVisions || []).filter(k => VISIONS[k]); if (!seen.length) return '';
+  /* every vision of every chapter the squad has reached; unseen ones are marked and can be watched for the first time */
+  const ch = S ? S.chapter || 0 : 0, seen = (S && S.seenVisions) || [];
+  const ids = VISION_IDS.filter(k => VISIONS[k].ch <= ch); if (!ids.length) return '';
   const can = (view === 'explore' || view === 'scene') && !VIS && !document.body.classList.contains('vision');
-  return `<h4 class="jh">Visions</h4><p class="fine">What the Deck showed Tuft, when she looked into the card.${can ? '' : ' (Watch again from the map, or a conversation.)'}</p><ul class="jl vlist">${VISION_IDS.filter(k => seen.includes(k)).map(k => { const V = VISIONS[k];
-    return `<li><span class="vnm"><em>Chapter ${V.ch}</em> · ${esc(V.who)} · ${esc(V.where)}</span>${can ? ` <button class="btn sm vis" data-vision="${k}">✦ Watch again</button>` : ''}</li>`; }).join('')}</ul>`;
+  return `<h4 class="jh">Visions</h4><p class="fine">What the Deck can show Tuft when she looks into the card: a glimpse through someone else's eyes. Look into the card when she reads for you, or watch them here.${can ? '' : ' (Watch from the map, or a conversation.)'}</p><ul class="jl vlist">${ids.map(k => { const V = VISIONS[k], s = seen.includes(k);
+    return `<li><span class="vnm"><em>Chapter ${V.ch}</em> · ${esc(V.who)} · ${esc(V.where)}${s ? '' : ' <b class="vnew">unseen</b>'}</span>${can ? ` <button class="btn sm vis" data-vision="${k}">✦ ${s ? 'Watch again' : 'Watch'}</button>` : ''}</li>`; }).join('')}</ul>`;
 }
 function bindVisions(m){ m.querySelectorAll('[data-vision]').forEach(b => b.onclick = () => { AUDIO.play('click'); m.hidden = true; playVision(b.dataset.vision, null); }); }
 

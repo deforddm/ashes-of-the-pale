@@ -557,9 +557,11 @@ function drawVision(cv, v, t){
 }
 /* the journal's Visions list: the ones this sergeant has seen, to watch again */
 function visionsHTML(){
-  const seen = (S && S.seenVisions || []).filter(k => VISIONS[k]); if (!seen.length) return '';
+  /* every vision of every chapter the squad has reached; unseen ones are marked and can be watched for the first time */
+  const ch = S ? S.chapter || 0 : 0, seen = (S && S.seenVisions) || [];
+  const ids = VISION_IDS.filter(k => VISIONS[k].ch <= ch); if (!ids.length) return '';
   const can = (view === 'explore' || view === 'scene') && !VIS && !document.body.classList.contains('vision');
-  return `<h4 class="jh">Visions</h4><p class="fine">What the Deck showed Tuft, when she looked into the card.${can ? '' : ' (Watch again from the map, or a conversation.)'}</p><ul class="jl vlist">${VISION_IDS.filter(k => seen.includes(k)).map(k => { const V = VISIONS[k];
-    return `<li><span class="vnm"><em>Chapter ${V.ch}</em> · ${esc(V.who)} · ${esc(V.where)}</span>${can ? ` <button class="btn sm vis" data-vision="${k}">✦ Watch again</button>` : ''}</li>`; }).join('')}</ul>`;
+  return `<h4 class="jh">Visions</h4><p class="fine">What the Deck can show Tuft when she looks into the card: a glimpse through someone else's eyes. Look into the card when she reads for you, or watch them here.${can ? '' : ' (Watch from the map, or a conversation.)'}</p><ul class="jl vlist">${ids.map(k => { const V = VISIONS[k], s = seen.includes(k);
+    return `<li><span class="vnm"><em>Chapter ${V.ch}</em> · ${esc(V.who)} · ${esc(V.where)}${s ? '' : ' <b class="vnew">unseen</b>'}</span>${can ? ` <button class="btn sm vis" data-vision="${k}">✦ ${s ? 'Watch again' : 'Watch'}</button>` : ''}</li>`; }).join('')}</ul>`;
 }
 function bindVisions(m){ m.querySelectorAll('[data-vision]').forEach(b => b.onclick = () => { AUDIO.play('click'); m.hidden = true; playVision(b.dataset.vision, null); }); }

@@ -109,6 +109,9 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.14.1', ['✦ Through the Deck. When Tuft reads the Deck for you and a card turns, a new button appears beside "Put the cards away": Look into the card. It shows a short vision through the eyes of someone from the book, happening somewhere else that same night: Paran at Hood\'s Gate, Crone over the pillar of fire, Quick Ben in Shadowkeep, Paran inside the sword, Rake on the belfry, Lorn\'s last walk. In Chapter Four the card Tuft turns decides whose eyes you see through, out of four.',
+             'Already past Tuft\'s reading this chapter? Open the journal: a new Visions list holds every vision for the chapters you have reached, seen or not, ready to watch.',
+             'After the Fete, Paran no longer carries his own sword. He gave it back, he says. He carries the Adjunct\'s.']],
   ['3.13.7', ['Tuft\'s Phantom is a blinding shadow now: an enemy within 5 has Meanas over its eyes for its next two turns, and half the blows that would have landed go into the dark. Strain 2.', 'Mockra Whisper (an enemy turns on its own side) costs strain 3, so the bigger trick costs more.']],
   ['3.13.6', ['Broke at the bones? Hedge (Chapter One) or Fiddler (Chapter Three) will spot you five silver to sit in. Win, and they take their five back off the top; lose, and it goes on the Bridgeburners\' slate.']],
   ['3.13.5', ['Tuft\'s Mockra Whisper is no longer a second Phantom. Phantom (Meanas, an illusion) still costs an enemy its turn; Mockra Whisper (the mind) turns an enemy on its own side for a turn, and it goes for the nearest of them instead of you. Bosses may still shake it off.']],

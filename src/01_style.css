@@ -460,3 +460,4 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 #cardfx .btn.vis{box-shadow:0 0 14px rgba(154,134,224,.25)}
 .vlist{list-style:none;padding-left:0}.vlist li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.vlist .btn.sm{margin-left:0;white-space:nowrap}
 .vlist .vnm em{color:var(--warren2)}
+.vlist .vnew{font-weight:normal;font-size:.8em;color:var(--warren2);border:1px solid currentColor;border-radius:3px;padding:0 4px;margin-left:4px;text-transform:uppercase;letter-spacing:.05em}
