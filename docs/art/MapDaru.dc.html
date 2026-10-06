@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Map — Darujhistan</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,500;1,600&amp;family=Cormorant+SC:wght@500;600;700&amp;family=Homemade+Apple&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#8fd0ff}a:hover{color:#cfeaff}
+@keyframes gas{0%,100%{opacity:.55}50%{opacity:1}}
+.gas{animation:gas 3.2s ease-in-out infinite}
+.gas2{animation:gas 4.1s ease-in-out infinite;animation-delay:-1.7s}
+@media (prefers-reduced-motion: reduce){.gas,.gas2{animation:none}}
+</style>
+</helmet>
+<div style="width: 1600px; height: 1200px; background: #0b0f16; font-family: 'Cormorant Garamond', Georgia, serif">
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" role="img" aria-label="Map of Darujhistan drawn in pale ink on dark blue paper, with the game's places marked" style="display: block">
+<defs>
+<filter id="dpaper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="n"></feTurbulence><feColorMatrix in="n" type="matrix" values="0 0 0 0 0.6  0 0 0 0 0.7  0 0 0 0 0.85  0 0 0 0.08 0"></feColorMatrix></filter>
+<filter id="dstain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" seed="3" result="n"></feTurbulence><feColorMatrix in="n" type="matrix" values="0 0 0 0 0.1  0 0 0 0 0.16  0 0 0 0 0.26  0 0 0 0.9 -0.3"></feColorMatrix></filter>
+<filter id="dink"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="5" result="t"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="t" scale="3"></feDisplacementMap></filter>
+<radialGradient id="g"><stop offset="0" stop-color="#9fd8ff" stop-opacity="0.9"></stop><stop offset="0.3" stop-color="#4f9fef" stop-opacity="0.45"></stop><stop offset="1" stop-color="#2a6fd6" stop-opacity="0"></stop></radialGradient>
+<radialGradient id="dvig" cx="0.5" cy="0.5" r="0.75"><stop offset="0.5" stop-color="#000" stop-opacity="0"></stop><stop offset="1" stop-color="#000" stop-opacity="0.65"></stop></radialGradient>
+<g id="pin"><circle r="15" fill="#0b0f16" stroke="#d6dfe8" stroke-width="1.6"></circle><circle r="11" fill="none" stroke="#5fb0ff" stroke-width="1"></circle></g>
+<g id="dhill"><path d="M-14 0 Q0 -12 14 0" fill="none" stroke="#7a8aa0" stroke-width="1.3"></path></g>
+</defs>
+
+<rect x="30" y="30" width="1540" height="1140" fill="#16202e"></rect>
+<rect x="30" y="30" width="1540" height="1140" filter="url(#dstain)"></rect>
+<rect x="30" y="30" width="1540" height="1140" filter="url(#dpaper)"></rect>
+
+<g filter="url(#dink)">
+<path d="M30 30 L1570 30 L1570 300 Q1500 320 1440 380 Q1400 420 1340 440 Q1280 452 1220 470 Q1150 490 1080 500 Q1000 512 930 520 Q860 540 800 560 Q740 590 690 620 Q650 640 600 640 Q560 630 520 600 Q470 560 420 520 Q370 490 320 480 Q260 470 200 476 Q120 486 30 470 Z" fill="#0f1a28" stroke="#d6dfe8" stroke-width="2"></path>
+<g fill="none" stroke="#3a5a7a" stroke-width="1"><path d="M60 440 Q200 446 320 456 Q420 470 500 540 Q560 600 600 610 Q660 610 720 570 Q820 516 940 494 Q1080 470 1200 444 Q1320 420 1400 360 Q1460 310 1560 280"></path><path d="M80 400 Q220 410 340 424 Q450 440 520 500 Q570 556 610 570 Q660 570 720 536 Q820 480 960 458 Q1100 436 1220 410 Q1340 386 1410 330"></path></g>
+<path d="M200 476 Q240 520 220 600 Q200 700 230 800 Q250 860 300 900 Q420 960 560 970 Q720 980 880 968 Q1040 956 1200 930 Q1320 900 1400 830 Q1440 760 1430 660 Q1420 560 1380 470" fill="#121b28" stroke="#d6dfe8" stroke-width="5" stroke-linejoin="round"></path>
+<path d="M1000 512 Q990 600 1010 700 Q1030 800 1080 880 Q1100 910 1120 938" fill="none" stroke="#d6dfe8" stroke-width="3.5"></path>
+<path d="M1000 512 Q990 600 1010 700 Q1030 800 1080 880" fill="none" stroke="#5fb0ff" stroke-width="1" stroke-opacity="0.5" transform="translate(6 0)"></path>
+</g>
+
+<g fill="none" stroke="#8fa0b8" stroke-width="2.2" stroke-linecap="round" opacity="0.9">
+<path d="M210 680 Q400 720 560 740 Q700 756 840 740 Q960 724 1010 700 Q1150 680 1300 700 Q1380 710 1440 700"></path>
+<path d="M300 560 Q360 640 420 700 Q480 780 520 900"></path>
+<path d="M600 640 Q620 700 640 750 Q660 840 640 960"></path>
+<path d="M760 580 Q780 660 800 740 Q820 820 860 960"></path>
+<path d="M880 540 Q900 620 920 700"></path>
+<path d="M240 820 Q420 840 600 850 Q760 856 900 840 Q980 830 1040 820"></path>
+<path d="M1060 560 Q1160 580 1260 600 Q1340 620 1400 640"></path>
+<path d="M1040 780 Q1160 790 1280 780 Q1360 770 1420 760"></path>
+<path d="M1150 520 Q1170 640 1180 760 Q1190 840 1200 920"></path>
+<path d="M1280 480 Q1290 600 1300 700 Q1310 800 1320 880"></path>
+</g>
+<g fill="none" stroke="#5a6a80" stroke-width="1" opacity="0.7">
+<path d="M330 620 L380 600 M360 660 L420 650 M480 640 L500 700 M540 800 L600 790 M700 800 L760 800 M700 680 L740 660 M880 780 L940 770 M920 620 L980 600 M1100 620 L1120 700 M1220 640 L1240 720 M1340 680 L1360 600 M1240 840 L1300 860 M460 900 L520 880 M740 900 L800 890 M960 880 L1000 920"></path>
+</g>
+
+<g>
+<use href="#dhill" x="1150" y="610"></use><use href="#dhill" x="1180" y="596"></use><use href="#dhill" x="1210" y="612"></use>
+<use href="#dhill" x="500" y="1040"></use><use href="#dhill" x="540" y="1050"></use><use href="#dhill" x="580" y="1036"></use><use href="#dhill" x="620" y="1052"></use><use href="#dhill" x="660" y="1040"></use><use href="#dhill" x="700" y="1054"></use><use href="#dhill" x="740" y="1042"></use><use href="#dhill" x="780" y="1056"></use>
+<use href="#dhill" x="1480" y="900"></use><use href="#dhill" x="1510" y="920"></use><use href="#dhill" x="1450" y="940"></use>
+</g>
+
+<g class="gas"><circle cx="560" cy="740" r="26" fill="url(#g)"></circle><circle cx="840" cy="740" r="28" fill="url(#g)"></circle><circle cx="1010" cy="700" r="24" fill="url(#g)"></circle><circle cx="1300" cy="700" r="24" fill="url(#g)"></circle><circle cx="420" cy="700" r="20" fill="url(#g)"></circle><circle cx="1180" cy="760" r="22" fill="url(#g)"></circle></g>
+<g class="gas2"><circle cx="640" cy="850" r="22" fill="url(#g)"></circle><circle cx="900" cy="840" r="22" fill="url(#g)"></circle><circle cx="760" cy="600" r="20" fill="url(#g)"></circle><circle cx="300" cy="620" r="18" fill="url(#g)"></circle><circle cx="1260" cy="600" r="22" fill="url(#g)"></circle><circle cx="1320" cy="860" r="20" fill="url(#g)"></circle><circle cx="480" cy="880" r="18" fill="url(#g)"></circle></g>
+<g fill="#cfeaff"><circle cx="560" cy="740" r="2"></circle><circle cx="840" cy="740" r="2"></circle><circle cx="1010" cy="700" r="2"></circle><circle cx="1300" cy="700" r="2"></circle><circle cx="420" cy="700" r="1.6"></circle><circle cx="1180" cy="760" r="1.8"></circle><circle cx="640" cy="850" r="1.8"></circle><circle cx="900" cy="840" r="1.8"></circle><circle cx="760" cy="600" r="1.6"></circle><circle cx="300" cy="620" r="1.6"></circle><circle cx="1260" cy="600" r="1.8"></circle><circle cx="1320" cy="860" r="1.6"></circle><circle cx="480" cy="880" r="1.6"></circle></g>
+
+<g fill="#d6dfe8" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" opacity="0.92">
+<text x="760" y="200" text-anchor="middle" font-size="60" letter-spacing="18" fill="#7a9ab8">Lake Azur</text>
+<text x="560" y="520" text-anchor="middle" font-size="26" letter-spacing="6" fill="#7a9ab8">Daru Bay</text>
+<text x="360" y="770" text-anchor="middle" font-size="24" letter-spacing="5">Gadrobi District</text>
+<text x="720" y="630" text-anchor="middle" font-size="22" letter-spacing="4">Lakefront</text>
+<text x="500" y="940" text-anchor="middle" font-size="20" letter-spacing="4">Marsh District</text>
+<text x="830" y="910" text-anchor="middle" font-size="24" letter-spacing="5">Daru District</text>
+<text x="1250" y="820" text-anchor="middle" font-size="26" letter-spacing="6">Estate District</text>
+<text x="1060" y="560" text-anchor="middle" font-size="15" letter-spacing="2" transform="rotate(84 1060 560)">the second tier wall</text>
+<text x="640" y="1100" text-anchor="middle" font-size="22" letter-spacing="6" fill="#7a8aa0">Raven Hills</text>
+<text x="1490" y="960" text-anchor="middle" font-size="18" fill="#7a8aa0">Worrytown</text>
+<text x="1490" y="1000" text-anchor="middle" font-size="16" fill="#7a8aa0">the Gadrobi road,</text>
+<text x="1490" y="1018" text-anchor="middle" font-size="16" fill="#7a8aa0">east to the hills</text></g>
+<path d="M1440 700 Q1490 740 1500 820 Q1510 900 1500 940" fill="none" stroke="#8fa0b8" stroke-width="2.2" stroke-dasharray="6 5"></path>
+
+<g font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="15" fill="#d6dfe8" text-anchor="middle">
+<rect x="1428" y="676" width="24" height="48" fill="#0b0f16" stroke="#d6dfe8" stroke-width="2"></rect>
+<rect x="196" y="664" width="24" height="40" fill="#0b0f16" stroke="#d6dfe8" stroke-width="2"></rect>
+<text x="1440" y="660">Worry Gate</text>
+<text x="208" y="650">Two-Ox Gate</text>
+</g>
+
+<g font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="16" fill="#d6dfe8" text-anchor="middle">
+<use href="#pin" x="1440" y="740"></use><text x="1440" y="746">1</text>
+<use href="#pin" x="690" y="800"></use><text x="690" y="806">2</text>
+<use href="#pin" x="430" y="720"></use><text x="430" y="726">3</text>
+<use href="#pin" x="540" y="886"></use><text x="540" y="892">4</text>
+<use href="#pin" x="560" y="628"></use><text x="560" y="634">5</text>
+<use href="#pin" x="360" y="810"></use><text x="360" y="816">6</text>
+<use href="#pin" x="900" y="806"></use><text x="900" y="812">7</text>
+<use href="#pin" x="1250" y="680"></use><text x="1250" y="686">8</text>
+<use href="#pin" x="1010" y="440"></use><text x="1010" y="446">9</text>
+<use href="#pin" x="1500" y="880"></use><text x="1500" y="886">10</text>
+</g>
+<path d="M980 520 L1004 456" stroke="#d6dfe8" stroke-width="5"></path><path d="M980 520 L1004 456" stroke="#16202e" stroke-width="1.5" stroke-dasharray="3 3"></path>
+<path d="M372 800 Q480 760 600 790 Q720 830 888 812" fill="none" stroke="#e0a050" stroke-width="2.4" stroke-dasharray="8 6"></path>
+<text x="620" y="846" text-anchor="middle" font-family="Homemade Apple, cursive" font-size="14" fill="#e0a050">over the roofs · the tannery ridge · the plank home</text>
+<g font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="16" fill="#7a8aa0" text-anchor="middle">
+<text x="1190" y="590">Majesty Hill</text>
+<text x="1350" y="500">Despot's Barbican</text>
+</g>
+
+<g transform="translate(70 70)">
+<rect width="440" height="150" fill="#0b0f16" fill-opacity="0.85" stroke="#d6dfe8" stroke-width="1.6"></rect>
+<rect x="8" y="8" width="424" height="134" fill="none" stroke="#5fb0ff" stroke-opacity="0.5"></rect>
+<text x="220" y="62" text-anchor="middle" font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="46" letter-spacing="5" fill="#e6eef6">Darujhistan</text>
+<text x="220" y="96" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="22" fill="#9fc8ef">as the Fourth learned it, street by street</text>
+<text x="220" y="124" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="15" fill="#7a8aa0">It's the gas. It's usually the gas.</text>
+</g>
+
+<g transform="translate(1070 70)">
+<rect width="460" height="368" fill="#0b0f16" fill-opacity="0.88" stroke="#d6dfe8" stroke-width="1.4"></rect>
+<g font-family="Cormorant Garamond, Georgia, serif" font-size="17" fill="#d6dfe8">
+<text x="22" y="40" font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="20" letter-spacing="3">Where it happened</text>
+<text x="22" y="74"><tspan font-weight="700">1</tspan>  The Worry Gate · Pallick's column, the carters' yard</text>
+<text x="22" y="104"><tspan font-weight="700">2</tspan>  The Phoenix · the door with the painted bird</text>
+<text x="22" y="134"><tspan font-weight="700">3</tspan>  The Gadrobi crossroads · the hole, the vault</text>
+<text x="22" y="164"><tspan font-weight="700">4</tspan>  The Blue Hand · the dye-shop and vat-house</text>
+<text x="22" y="194"><tspan font-weight="700">5</tspan>  The green door · a wine-merchant's</text>
+<text x="22" y="224"><tspan font-weight="700">6</tspan>  The Gadrobi roofs · the way on is east</text>
+<text x="22" y="254"><tspan font-weight="700">7</tspan>  The Daru roofs · Kalam's is the far one</text>
+<text x="22" y="284"><tspan font-weight="700">8</tspan>  Lady Simtal's estate · the Fete</text>
+<text x="22" y="314"><tspan font-weight="700">9</tspan>  The long pier · the last accounting</text>
+<text x="22" y="344"><tspan font-weight="700">10</tspan>  Worrytown · the tanners' yard</text>
+</g>
+</g>
+
+<g transform="translate(150 1060)">
+<circle r="56" fill="none" stroke="#d6dfe8" stroke-width="1"></circle>
+<path d="M0 -72 L8 -8 L0 0 L-8 -8 Z" fill="#5fb0ff"></path><path d="M0 72 L8 8 L0 0 L-8 8 Z" fill="#d6dfe8"></path><path d="M72 0 L8 8 L0 0 L8 -8 Z" fill="#d6dfe8"></path><path d="M-72 0 L-8 8 L0 0 L-8 -8 Z" fill="#d6dfe8"></path>
+<text y="-80" text-anchor="middle" font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="20" fill="#d6dfe8">N</text>
+</g>
+
+<text x="1530" y="1150" text-anchor="end" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="13" fill="#7a8aa0">Drawn for Ashes of the Pale, after the Darujhistan of Steven Erikson and Ian C. Esslemont</text>
+<rect x="30" y="30" width="1540" height="1140" fill="url(#dvig)"></rect>
+<rect x="30" y="30" width="1540" height="1140" fill="none" stroke="#d6dfe8" stroke-width="2.5"></rect>
+<rect x="42" y="42" width="1516" height="1116" fill="none" stroke="#5fb0ff" stroke-opacity="0.5" stroke-width="1"></rect>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1200}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

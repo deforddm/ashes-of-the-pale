@@ -164,7 +164,7 @@ function lose(){
   if (P) { S.gods.used.push(who); tally('godsAnswered'); }
   save();
   const story = DIFF() === DIFFS.story, left = story ? null : (() => { const ch = S.gods; const n = [...SQUAD().filter(id => id !== 'sgt' && PATRONS[id] && (S.loy[id] || 0) > 0), 'sgt'].filter(id => !ch.used.includes(id)).length; return n; })();
-  if (P) sh.innerHTML = `<div class="sp godsp">${esc(P.title)}</div><div class="txt god">${fmt(P.txt(who))}</div>
+  if (P) sh.innerHTML = `${art('patrons/' + who, 'godsig')}<div class="sp godsp">${esc(P.title)}</div><div class="txt god">${fmt(P.txt(who))}</div>
     <div class="note trick">The Fourth's road would have ended here. ${who === 'sgt' ? 'The soldiers\' god' : `${esc(NAME(who))}'s god`} would not let it.${story ? '' : ` ${esc(P.god)} will not answer again this chapter. ${left ? `${left} more ${left === 1 ? 'god is' : 'gods are'} still listening.` : 'No one else is listening.'}`}</div>
     <div class="choices"><button class="choice" id="bRetry">Rise, and fight it again</button></div>`;
   else sh.innerHTML = `<div class="sp godsp">No one answers</div><div class="txt god">${fmt(`Every god who had a reason to listen has already spent it this chapter. Hood's gate opens the rest of the way, and it is very quiet on the other side.\n\nAnd then it is morning, and the Fourth is where this chapter began, with all of it still to do, and nobody quite able to say why they are so tired.`)}</div>

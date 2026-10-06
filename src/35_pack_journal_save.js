@@ -1,9 +1,9 @@
 /* ============ pack / journal / save ============ */
 function openModal(tab){
   const m = $('#modal'); m.hidden = false; m.scrollTop = 0;
-  const tabs = S ? ['pack','journal','save','deeds'] : ['save','deeds']; routeAnim = null;
+  const tabs = S ? ['pack','journal','art','save','deeds'] : ['save','deeds','art']; routeAnim = null;
   const body = {
-    pack:()=>`<div class="kv"><span>Silver</span><span>${S.silver}</span><span>Sharpers</span><span>${S.inv.sharper}</span><span>Burners</span><span>${S.inv.burner}</span><span>Cussers</span><span>${S.inv.cusser}</span>${S.inv.smoker > 0 || S.f.gotSmokers ? `<span>Smokers</span><span>${S.inv.smoker}</span>` : ''}<span>Healing salves</span><span>${S.inv.salve}</span>
+    pack:()=>`<div class="kv"><span>Silver</span><span>${S.silver}</span><span>${art('munitions/sharper', 'ico')}Sharpers</span><span>${S.inv.sharper}</span><span>${art('munitions/burner', 'ico')}Burners</span><span>${S.inv.burner}</span><span>${art('munitions/cusser', 'ico')}Cussers</span><span>${S.inv.cusser}</span>${S.inv.smoker > 0 || S.f.gotSmokers ? `<span>${art('munitions/smoker', 'ico')}Smokers</span><span>${S.inv.smoker}</span>` : ''}<span>${art('munitions/salve', 'ico')}Healing salves</span><span>${S.inv.salve}</span>
       <span>Squad level</span><span>${S.lvl} (${S.xp}/${LEVELS[S.lvl] ?? '—'} xp)</span>${S.card ? `<span>Deck reading</span><span>${CARDS[S.card].name}</span>` : ''}</div>
       ${S.card ? `<div class="cardinline" style="margin-top:12px"><canvas id="icard" width="240" height="360"></canvas></div><p class="fine" style="text-align:center">${CARDS[S.card].fx}</p>` : ''}
       ${S.wounds ? `<h4 class="jh">Wounds carried (Bridgeburner)</h4><div class="kv wounds">${SQUAD().map(id => woundOf(id) == null ? '' : `<span>${esc(NAME(id))}</span><span>${woundOf(id)} / ${S.wounds[id + '_max'] || '?'} health ${S.inv.salve > 0 && woundOf(id) < (S.wounds[id + '_max'] || 0) ? `<button class="btn sm" data-salve="${id}">Salve +8</button>` : ''}</span>`).join('')}</div><p class="fine">Wounds close when the squad rests: at the start of a chapter, or where the story lets them sleep.</p>` : ''}
@@ -25,7 +25,8 @@ function openModal(tab){
       S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak is paying attention to your squad.`) : '',
       S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
       S.f.c3_kruppeRumour ? `Kruppe, caught palming a coin at the Phoenix: the Guild's roof watchers sweep on a count of eight, and never look straight down.` : '',
-      S.f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : `Brisk's brother, Second Army: not yet found.`, S.f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>${typeof visionsHTML === 'function' ? visionsHTML() : ''}${glossHTML()}`,
+      S.f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : `Brisk's brother, Second Army: not yet found.`, S.f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>${artJournalHTML()}${typeof visionsHTML === 'function' ? visionsHTML() : ''}${glossHTML()}`,
+    art:()=>artTabHTML(),
     save:()=>`${S ? `<p class="fine">Playing as <b class="who">Sergeant ${esc(S.name)}</b>. The game saves itself on this device as you play, under your sergeant's name. Anyone else can start their own sergeant from the title, and each keeps a save of their own.</p>
       <div class="row" style="margin:8px 0 16px"><button class="btn" id="bSwitch">Switch sergeant</button></div>
       <label class="fine" for="exp">Sergeant ${esc(S.name)}'s save code. Copy it somewhere safe to move them to another device, or to keep them from a cleared browser.</label>
@@ -34,7 +35,7 @@ function openModal(tab){
       <label class="fine" for="imp">Paste a save code to load it</label><textarea id="imp" placeholder="Paste code here"></textarea>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="bLoad">Load code</button></div><p class="fine" id="impMsg"></p>`,
   };
-  m.innerHTML = smartq(`<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : tab === 'deeds' ? 'Deeds' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
+  m.innerHTML = smartq(`<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : tab === 'deeds' ? 'Deeds' : tab === 'art' ? 'Artwork' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
     <div class="tabs">${S ? `<button class="tab" data-t="squad">Squad</button>` : ''}${tabs.map(k => `<button class="tab ${k === tab ? 'on' : ''}" data-t="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
     <div>${body[tab]()}</div></div>`);
   m.querySelectorAll('.tab').forEach(b => b.onclick = () => { AUDIO.play('click'); if (b.dataset.t === 'squad') { m.hidden = true; openChars(0); } else openModal(b.dataset.t); });
@@ -42,6 +43,8 @@ function openModal(tab){
   m.querySelectorAll('[data-salve]').forEach(b => b.onclick = () => { salveOut(b.dataset.salve); openModal('pack'); }); // Bridgeburner: a salve between fights
   if (tab === 'pack' && S.card) inlineCard($('#icard'), S.card, false);
   if (tab === 'deeds') bindDeeds();
+  if (tab === 'journal') bindArtJournal(m);
+  if (tab === 'art') bindArtTab(m);
   if (tab === 'journal' && typeof bindVisions === 'function') bindVisions(m);
   if (tab === 'journal') { const cv = $('#jRoute'); routeAnim = t => { if (!cv.isConnected || $('#modal').hidden) { routeAnim = null; return; } drawRoute(cv, S, t); }; }
   if (tab === 'save') {
@@ -109,6 +112,11 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.15.0', ['The painted set. The artwork canvas is in the game: key art behind the title, painted faces on Tuft\'s Deck, a sigil for each god who answers, a plate at every chapter opening, vistas at the ends of Chapters Two, Three and Five, and the four roads and the Proclamation in the epilogue.',
+             'Every piece of gear and every munition has its picture on the squad sheets and in the pack, and each squadmate\'s keepsake sits beside what they carry.',
+             'The journal has Maps (tap one to see it full screen), the Papers the Fourth has seen, and Faces on the road: everyone met so far, canon and not.',
+             'A new Art tab, and an Artwork button on the title, open every board from the canvas. Boards that give away what is still ahead wait until you get there.',
+             'Prefer the old drawings? Settings › Artwork › Classic brings them back.']],
   ['3.14.2', ['On a phone held upright, the story text now starts under the picture instead of sliding up over it, so you see the whole painting while you read. Scroll the text inside its own panel.']],
   ['3.14.1', ['✦ Through the Deck. When Tuft reads the Deck for you and a card turns, a new button appears beside "Put the cards away": Look into the card. It shows a short vision through the eyes of someone from the book, happening somewhere else that same night: Paran at Hood\'s Gate, Crone over the pillar of fire, Quick Ben in Shadowkeep, Paran inside the sword, Rake on the belfry, Lorn\'s last walk. In Chapter Four the card Tuft turns decides whose eyes you see through, out of four.',
              'Already past Tuft\'s reading this chapter? Open the journal: a new Visions list holds every vision for the chapters you have reached, seen or not, ready to watch.',

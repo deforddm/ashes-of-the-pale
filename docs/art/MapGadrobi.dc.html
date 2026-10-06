@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Map — the Gadrobi Hills</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,500;1,600&amp;family=Cormorant+SC:wght@500;600;700&amp;family=Homemade+Apple&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#7a1a1a}a:hover{color:#a83a2a}
+@keyframes tear{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes pad{0%{opacity:0}20%{opacity:.9}100%{opacity:0}}
+.tear{animation:tear 2.6s ease-in-out infinite}
+.pad{animation:pad 6s linear infinite}
+@media (prefers-reduced-motion: reduce){.tear,.pad{animation:none}}
+</style>
+</helmet>
+<div style="width: 1600px; height: 1000px; background: #141612; font-family: 'Cormorant Garamond', Georgia, serif">
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Field map of the Gadrobi Hills: the long ridge, the barrow, Hairlock's rent, the Adjunct's camp, and the road west to Darujhistan" style="display: block">
+<defs>
+<filter id="gpaper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="15" result="n"></feTurbulence><feColorMatrix in="n" type="matrix" values="0 0 0 0 0.25  0 0 0 0 0.28  0 0 0 0 0.2  0 0 0 0.2 0"></feColorMatrix></filter>
+<filter id="gstain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="31" result="n"></feTurbulence><feColorMatrix in="n" type="matrix" values="0 0 0 0 0.3  0 0 0 0 0.32  0 0 0 0 0.24  0 0 0 0.9 -0.32"></feColorMatrix></filter>
+<filter id="gink"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="8" result="t"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="t" scale="4"></feDisplacementMap></filter>
+<radialGradient id="gvig" cx="0.5" cy="0.5" r="0.75"><stop offset="0.5" stop-color="#1a1c16" stop-opacity="0"></stop><stop offset="1" stop-color="#1a1c16" stop-opacity="0.75"></stop></radialGradient>
+<radialGradient id="rent"><stop offset="0" stop-color="#e8e8f0" stop-opacity="0.9"></stop><stop offset="0.4" stop-color="#8a8aa0" stop-opacity="0.5"></stop><stop offset="1" stop-color="#4a4a60" stop-opacity="0"></stop></radialGradient>
+<g id="paw"><ellipse cx="0" cy="0" rx="4" ry="5" fill="#2a2620"></ellipse><circle cx="-4" cy="-6" r="1.8" fill="#2a2620"></circle><circle cx="0" cy="-8" r="1.8" fill="#2a2620"></circle><circle cx="4" cy="-6" r="1.8" fill="#2a2620"></circle></g>
+<g id="gt"><path d="M-8 0 L0 -12 L8 0 Z" fill="#d0c8a8" stroke="#2a2620" stroke-width="1.2"></path></g>
+</defs>
+
+<rect x="30" y="30" width="1540" height="940" fill="#b8b494"></rect>
+<rect x="30" y="30" width="1540" height="940" filter="url(#gstain)"></rect>
+<rect x="30" y="30" width="1540" height="940" filter="url(#gpaper)"></rect>
+
+<g filter="url(#gink)" fill="none" stroke="#3a3a2a">
+<path d="M300 760 Q520 600 760 520 Q1000 440 1240 320 Q1340 270 1460 220" stroke-width="2.4"></path>
+<path d="M320 800 Q540 640 780 560 Q1020 480 1260 360 Q1360 310 1480 260" stroke-width="1.6"></path>
+<path d="M280 720 Q500 560 740 480 Q980 400 1220 280 Q1320 230 1440 180" stroke-width="1.6"></path>
+<path d="M340 840 Q560 680 800 600 Q1040 520 1280 400 Q1380 350 1500 300" stroke-width="1.1" opacity="0.8"></path>
+<path d="M260 680 Q480 520 720 440 Q960 360 1200 240 Q1300 190 1420 140" stroke-width="1.1" opacity="0.8"></path>
+<path d="M360 880 Q580 720 820 640 Q1060 560 1300 440" stroke-width="0.8" opacity="0.6"></path>
+<path d="M240 640 Q460 480 700 400 Q940 320 1180 200" stroke-width="0.8" opacity="0.6"></path>
+<ellipse cx="900" cy="740" rx="120" ry="60" stroke-width="1.2"></ellipse><ellipse cx="900" cy="740" rx="80" ry="38" stroke-width="1"></ellipse><ellipse cx="900" cy="740" rx="40" ry="18" stroke-width="0.8"></ellipse>
+<ellipse cx="420" cy="300" rx="140" ry="70" stroke-width="1.2"></ellipse><ellipse cx="420" cy="300" rx="90" ry="44" stroke-width="1"></ellipse><ellipse cx="420" cy="300" rx="44" ry="20" stroke-width="0.8"></ellipse>
+<path d="M60 600 Q200 580 300 640 Q400 700 480 820 Q520 880 560 960" stroke="#4a6a78" stroke-width="2.2"></path>
+</g>
+<text x="980" y="420" text-anchor="middle" font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="32" letter-spacing="10" fill="#2a2a1e" transform="rotate(-24 980 420)">The long ridge</text>
+
+<g transform="translate(1060 470)">
+<ellipse rx="70" ry="38" fill="#8a8466" stroke="#2a2620" stroke-width="2.5"></ellipse>
+<ellipse rx="50" ry="26" fill="none" stroke="#2a2620" stroke-width="1"></ellipse>
+<rect x="-10" y="-6" width="20" height="18" fill="#141410"></rect>
+<g stroke="#2a2620" stroke-width="3"><path d="M-60 -36 L-62 -56"></path><path d="M-20 -42 L-20 -62"></path><path d="M24 -42 L26 -62"></path><path d="M62 -34 L66 -54"></path></g>
+<g fill="none" stroke="#2a4a8a" stroke-width="1.5" stroke-dasharray="3 3"><circle r="96"></circle><circle r="112"></circle></g>
+<path d="M0 12 L0 60 L30 90" stroke="#7a1a1a" stroke-width="3" stroke-dasharray="6 5" fill="none"></path>
+</g>
+<text x="1180" y="440" font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="22" fill="#2a2620">The barrow</text>
+<text x="1180" y="462" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="16" fill="#2a2620">a Jaghut's door · the wards in blue</text>
+<text x="1100" y="590" font-family="Homemade Apple, cursive" font-size="14" fill="#7a1a1a">the dig · it knocked back</text>
+
+<g transform="translate(700 610)">
+<circle class="tear" r="80" fill="url(#rent)"></circle>
+<path d="M-30 -40 L-10 -10 L-26 0 L0 20 L-14 34 L14 50 L4 20 L24 6 L6 -10 L18 -36 Z" fill="#e8e8f0" stroke="#2a2620" stroke-width="2"></path>
+</g>
+<text x="700" y="720" text-anchor="middle" font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="22" fill="#2a2620">Hairlock's rent</text>
+<text x="700" y="742" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="16" fill="#2a2620">where Toc was taken</text>
+
+<g fill="#2a2620">
+<use href="#paw" x="560" y="560" class="pad"></use><use href="#paw" x="590" y="580" class="pad" style="animation-delay: -0.6s"></use><use href="#paw" x="620" y="574" class="pad" style="animation-delay: -1.2s"></use><use href="#paw" x="650" y="594" class="pad" style="animation-delay: -1.8s"></use>
+<use href="#paw" x="760" y="640" class="pad" style="animation-delay: -2.4s"></use><use href="#paw" x="790" y="660" class="pad" style="animation-delay: -3s"></use><use href="#paw" x="820" y="654" class="pad" style="animation-delay: -3.6s"></use><use href="#paw" x="850" y="676" class="pad" style="animation-delay: -4.2s"></use>
+</g>
+<text x="560" y="530" font-family="Homemade Apple, cursive" font-size="14" fill="#2a2620">two Hounds · they remember</text>
+
+<g>
+<use href="#gt" x="420" y="300"></use><use href="#gt" x="444" y="306"></use><use href="#gt" x="396" y="306"></use><use href="#gt" x="420" y="320"></use>
+<path d="M440 280 L440 254 L456 260 L440 266" fill="#7a1a1a" stroke="#2a2620" stroke-width="1.2"></path>
+</g>
+<text x="420" y="370" text-anchor="middle" font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="22" fill="#2a2620">The Adjunct's camp</text>
+<text x="420" y="392" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="16" fill="#2a2620">a smudge on a map, she called you</text>
+
+<g transform="translate(860 520)"><path d="M-6 -20 L6 -20 L4 0 L-4 0 Z" fill="#2a2620"></path><circle cy="-26" r="5" fill="#2a2620"></circle><path d="M6 -16 L22 -30" stroke="#2a2620" stroke-width="2.5"></path></g>
+<text x="880" y="540" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="15" fill="#2a2620">the Imass · stay small</text>
+
+<g transform="translate(980 560)"><path d="M-8 -8 L8 8 M8 -8 L-8 8" stroke="#7a1a1a" stroke-width="2.5"></path></g>
+<text x="996" y="566" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="15" fill="#7a1a1a">Coll cut down</text>
+
+<path d="M60 900 Q300 860 520 820 Q700 790 820 800 Q960 810 1080 760" fill="none" stroke="#3a3428" stroke-width="5" stroke-linecap="round"></path>
+<path d="M60 900 Q300 860 520 820 Q700 790 820 800 Q960 810 1080 760" fill="none" stroke="#b8b494" stroke-width="2" stroke-dasharray="4 8"></path>
+<text x="200" y="930" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="17" fill="#2a2620">the Gadrobi road · west, three days, to Darujhistan</text>
+
+<g transform="translate(250 860)">
+<ellipse rx="54" ry="22" fill="#8a7a54" fill-opacity="0.5" stroke="#2a2620" stroke-width="1.5"></ellipse>
+<path d="M-30 -40 Q-10 -60 10 -50 M10 -50 L4 -56 M10 -50 L4 -44" fill="none" stroke="#2a4a7a" stroke-width="1.5"></path>
+<path d="M30 -60 Q50 -70 70 -64" fill="none" stroke="#2a4a7a" stroke-width="1.5"></path>
+</g>
+<text x="250" y="820" text-anchor="middle" font-family="Cormorant SC, Georgia, serif" font-weight="600" font-size="18" fill="#2a2620">a brown hill · VII</text>
+
+<g transform="translate(1360 760)"><path d="M-14 0 L-10 -10 L-2 -6 L4 -14 L12 -4 L14 0 Z" fill="#6a5a3a" stroke="#2a2620"></path><path d="M-30 10 L-20 4 M24 8 L32 2" stroke="#2a2620"></path></g>
+<text x="1360" y="800" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="15" fill="#2a2620">Worrytown robbers' diggings</text>
+
+<path d="M1200 130 Q1260 200 1300 260" fill="none" stroke="#3a3428" stroke-width="1.5" stroke-dasharray="2 5"></path>
+<text x="1210" y="120" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-size="15" fill="#2a2620">Rhivi outriders, north</text>
+
+<g transform="translate(70 70)">
+<rect width="420" height="150" fill="#cac6a4" stroke="#2a2620" stroke-width="2"></rect>
+<rect x="8" y="8" width="404" height="134" fill="none" stroke="#2a2620"></rect>
+<text x="210" y="56" text-anchor="middle" font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="36" letter-spacing="4" fill="#1e1e16">The Gadrobi Hills</text>
+<text x="210" y="90" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-style="italic" font-weight="600" font-size="22" fill="#2a2620">the night of the rent</text>
+<text x="210" y="120" text-anchor="middle" font-family="Homemade Apple, cursive" font-size="14" fill="#7a1a1a">put it in the ledger, under never again</text>
+</g>
+
+<g transform="translate(1460 880)">
+<circle r="46" fill="none" stroke="#2a2620"></circle>
+<path d="M0 -60 L7 -7 L0 0 L-7 -7 Z" fill="#7a1a1a"></path><path d="M0 60 L7 7 L0 0 L-7 7 Z" fill="#2a2620"></path><path d="M60 0 L7 7 L0 0 L7 -7 Z" fill="#2a2620"></path><path d="M-60 0 L-7 7 L0 0 L-7 -7 Z" fill="#2a2620"></path>
+<text y="-68" text-anchor="middle" font-family="Cormorant SC, Georgia, serif" font-weight="700" font-size="18" fill="#2a2620">N</text>
+</g>
+
+<rect x="30" y="30" width="1540" height="940" fill="url(#gvig)"></rect>
+<rect x="30" y="30" width="1540" height="940" fill="none" stroke="#2a2620" stroke-width="3"></rect>
+<rect x="42" y="42" width="1516" height="916" fill="none" stroke="#2a2620" stroke-width="1"></rect>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

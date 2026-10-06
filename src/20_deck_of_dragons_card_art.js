@@ -25,7 +25,9 @@ function drawCard(ctx, id, W, H, face, t = 0){
   const cx = px + pw/2, gy = py + ph*.82;
   glow(ctx, cx, py + ph*.45, pw*.6, hue, .22);
   ctx.fillStyle = '#0a0807'; ctx.fillRect(px, gy, pw, ph); // ground
-  switch (id) {
+  const AI = artImg('deck/' + id); // the painted face from the artwork canvas, where it has one
+  if (AI) { artCover(ctx, AI, px, py, pw, ph); glow(ctx, cx, py + ph*.45, pw*.45, hue, .06 + Math.sin(t/900)*.04); }
+  else switch (id) {
     case 'oponn': { // twin masks back to back, a coin above
       const my = py + ph*.5, mr = pw*.2;
       const mask = (dir, col) => { ctx.save(); ctx.translate(cx + dir*mr*.55, my); ctx.scale(dir, 1); poly(ctx, [[0,-mr],[mr*.55,-mr*.8],[mr*.9,-mr*.2],[mr*.8,mr*.5],[mr*.4,mr*1.05],[0,mr*.9]], col); ell(ctx, mr*.5, -mr*.35, mr*.16, mr*.1, '#0a0807'); ctx.strokeStyle = '#0a0807'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(mr*.3, mr*.45); ctx.quadraticCurveTo(mr*.55, dir > 0 ? mr*.65 : mr*.3, mr*.75, mr*.4); ctx.stroke(); ctx.restore(); };

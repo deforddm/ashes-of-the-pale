@@ -34,8 +34,8 @@ function showTitle(fresh){
   const list = roster().list, form = fresh || !list.length;
   const rows = list.map((e, i) => `<div class="sgtrow"><button class="btn load ${i ? '' : 'primary'}" data-id="${e.id}" ${i ? '' : 'id="bCont"'}><b>${i ? '' : 'Continue as '}Sergeant ${esc(e.name)}</b><small>${[chLabel(e), e.done ? '' : e.where, `level ${e.lvl}`, agoText(e.upd)].filter(Boolean).map(esc).join(' · ')}</small></button><button class="btn icon del" data-id="${e.id}" aria-label="Erase Sergeant ${esc(e.name)}">×</button></div>`).join('');
   const taken = n => list.find(e => sameName(e.name, n));
-  toTop(); $('#app').innerHTML = `<canvas id="titlecv" aria-hidden="true"></canvas>${fullBtn('bFullT').replace('class="btn icon"', 'class="btn icon tfull"')}<div id="title" class="title">
-    <h1>Ashes<span>of the Pale</span></h1>
+  toTop(); $('#app').innerHTML = `${ARTON() ? `<div class="titleart" aria-hidden="true">${art('title/key')}</div>` : ''}<canvas id="titlecv" aria-hidden="true" ${ARTON() ? 'hidden' : ''}></canvas>${fullBtn('bFullT').replace('class="btn icon"', 'class="btn icon tfull"')}<div id="title" class="title">
+    ${art('insignia/patch', 'tpatch')}<h1>Ashes<span>of the Pale</span></h1>
     <p class="tag">Onearm's Host holds the ruins. Five marines are sent below them, and then south.</p>
     ${form ? `<div class="field"><label for="nm">${list.length ? 'Your new sergeant’s name' : 'Your sergeant’s name'}</label><input type="text" id="nm" maxlength="18" value="${taken('Hask') ? '' : 'Hask'}" placeholder="Name your sergeant" autocomplete="off" autocapitalize="words" spellcheck="false"></div>
     <div class="field"><label>Difficulty</label><div class="seg dseg">${Object.entries(DIFFS).map(([k, d]) => `<button class="btn ${k === 'soldier' ? 'on' : ''}" data-diff="${k}">${d.name}</button>`).join('')}</div><small class="fine" id="dBlurb">${DIFFS.soldier.blurb} You can change it later in Settings.</small></div>
@@ -44,10 +44,10 @@ function showTitle(fresh){
       <div class="row2">${list.length ? '<button class="btn" id="bBack">Back to your sergeants</button>' : '<button class="btn" id="bImp">Load a save code</button>'}</div></div>`
     : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
     <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
-      <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button></div></div>`}
+      <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button><button class="btn" id="bArt">Artwork</button></div></div>`}
     <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
-  startTitleBackdrop($('#titlecv'));
+  if (!ARTON()) startTitleBackdrop($('#titlecv')); else titleAnim = null;
   $('#bSet').onclick = () => { AUDIO.play('click'); openSettings(); };
   $('#bVer').onclick = () => { AUDIO.play('click'); openNotes(null); };
   if ($('#bFullT')) $('#bFullT').onclick = () => { AUDIO.play('click'); toggleFull(); };
@@ -69,6 +69,7 @@ function showTitle(fresh){
   } else {
     $('#bNewSgt').onclick = () => { AUDIO.play('click'); showTitle(true); };
     $('#bDeeds').onclick = () => { AUDIO.play('click'); openModal('deeds'); };
+    $('#bArt').onclick = () => { AUDIO.play('click'); openModal('art'); };
     document.querySelectorAll('.sgtrow .load').forEach(el => el.onclick = () => { AUDIO.play('click'); const s = loadSlot(el.dataset.id);
       if (!s) { dropSlot(el.dataset.id); return showTitle(); } S = s; resume(); });
     // erasing a sergeant asks twice: the first tap says who goes
@@ -82,7 +83,7 @@ function showTitle(fresh){
 function showIntro(){
   view = 'intro'; S.scene = 'intro'; save(); titleAnim = null; AUDIO.setScene('explore');
   toTop(); $('#app').innerHTML = `<header class="hud"><div><div class="loc">The Pale</div><div class="sub">Genabackis · 1163 Burn's Sleep · three days after</div></div><div class="hudr">${hudButtons()}</div></header>
-  <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">The Second Army lies in pits on the hillside. Nobody talks about whose sorcery fell on whom.</div></div>
+  ${art('chapters/0', 'chplate')}<div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">The Second Army lies in pits on the hillside. Nobody talks about whose sorcery fell on whom.</div></div>
   <div class="narr">
     <p>Three days ago the Moon's Spawn drifted away from the Pale, leaving behind a city that had surrendered and an army that hadn't survived the surrender. What's left of the Second Army lies in pits on the hillside. The cadre of mages is down to a handful. Onearm's Host holds the ruins, counts its dead, and doesn't talk about whose sorcery fell on whom.</p>
     <p>You are Sergeant ${esc(S.name)}, Fourth Squad, Seventh Company marines. Your squad came through the siege with all five of you still breathing, which in this army makes you either lucky or suspicious.</p>

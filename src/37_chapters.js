@@ -98,7 +98,7 @@ function showChapterEnd(){
   const title = n === 0 ? 'End of the prologue' : `End of Chapter ${CH ? CH.number : n}`;
   const cap = n === 0 ? 'The Fourth comes up out of the dark. All five.' : CH && CH.endCap ? safe(() => CH.endCap(), 'Morning finds the Fourth still standing, which is the whole of the job.') : 'Morning finds the Fourth still standing, which is the whole of the job.';
   toTop(); $('#app').innerHTML = smartq(`<div class="end">
-    <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>
+    ${ART_ENDVISTA[n] && ARTON() ? artScene(ART_ENDVISTA[n], cap) : `<div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>`}
     <div class="sub" style="margin-top:12px">${title}</div>
     <h2>${E[0]}</h2>
     <p class="narr" style="margin:0">${E[1]}</p>
@@ -128,7 +128,7 @@ function showChapterIntro(){
   const CH = CHAPTERS[S.chapter]; if (!CH) return showTitle();
   view = 'intro'; $('#sheet').hidden = true; B = null; titleAnim = null; AUDIO.setScene('explore');
   const I = CH.intro;
-  toTop(); $('#app').innerHTML = `<div class="chcard"><div class="num">Chapter ${CH.number}</div><h1>${CH.title}</h1><div class="rule"></div></div>
+  toTop(); $('#app').innerHTML = `<div class="chcard">${art('chapters/' + S.chapter, 'chplate')}<div class="num">Chapter ${CH.number}</div><h1>${CH.title}</h1><div class="rule"></div></div>
   <header class="hud"><div><div class="loc">${I.loc}</div><div class="sub">${I.sub}</div></div><div class="hudr">${hudButtons()}</div></header>
   <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${I.cap}</div></div>
   <div class="narr">${I.paras.map(p => fmt(typeof p === 'function' ? p() : p)).join('')}</div>
@@ -161,7 +161,7 @@ function showFinale(i = 0){
   let body = '';
   if (pg.k === 'road') { const E = (F.endings && F.endings[key]) || {title:E7[0], scene:(CHAPTERS[7] && CHAPTERS[7].endScene) || 'quorl_hill', paras:[E7[1]].filter(Boolean)};
     G.sceneKind = E.scene || 'quorl_hill';
-    body = `<div class="scene"><canvas id="scv" width="560" height="240"></canvas></div><div class="fin-k">Epilogue</div><h1 class="fin-title">${E.title || E7[0]}</h1><div class="narr">${(E.paras || []).map(p => fmt(p)).join('')}</div>`; }
+    body = `${ARTON() && ART['roads/' + key] ? artScene('roads/' + key) : '<div class="scene"><canvas id="scv" width="560" height="240"></canvas></div>'}<div class="fin-k">Epilogue</div><h1 class="fin-title">${E.title || E7[0]}</h1><div class="narr">${(E.paras || []).map(p => fmt(p)).join('')}</div>`; }
   else if (pg.k === 'fate' || pg.k === 'gone') { const id = pg.id, sgt = id === 'sgt', dead = pg.k === 'gone' && S.dead && S.dead[id];
     const f = pg.k === 'gone' ? pg.g : (finCall(F.fate, id, key) || {title: sgt ? 'The sergeant' : TPL[id].role, txt: sgt ? TPL.sgt.quest : TPL[id].quest});
     const where = dead ? [S.dead[id].where, CHAPTERS[S.dead[id].ch] ? `Chapter ${CHAPTERS[S.dead[id].ch].number}` : ''].filter(Boolean).join(' · ') : '';
@@ -178,7 +178,7 @@ function showFinale(i = 0){
         <h3>The dead</h3>${dead.length ? `<ul class="fin-dead">${dead.map(id => `<li><b>${esc(NAME(id))}</b>${S.dead[id].where ? ` — ${esc(S.dead[id].where)}` : ''}</li>`).join('')}</ul>` : `<p class="fine">None of the Fourth. Every one of them came up out of the dark.</p>`}
         <div class="kv"><span>Ohl's list</span><span>${listCount()} names</span><span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.diff && S.diff !== 'soldier' ? `<span>Played as</span><span>${DIFF().name}</span>` : ''}</div>
         <h3>The count</h3>${statsHTML(S)}<p class="fine">Every chapter can be played again from the Deeds page (Squad, then Deeds).</p></div>
-      <div class="fin-endline">The End of <em>Gardens of the Moon</em></div>
+      ${ARTON() ? `<div class="jpapers fin-paper"><div class="paper p-proclamation">${ART['paper/proclamation']}</div></div>` : ''}<div class="fin-endline">The End of <em>Gardens of the Moon</em></div>
       <p class="fine fin-credit">The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. With thanks to Steven Erikson for the book, the Bridgeburners, and the long road, and to Ian C. Esslemont for the world they built together; the Fourth only walked beside it.</p>`; }
   const last = i === P.length - 1;
   toTop(); $('#app').innerHTML = `<div class="fin" id="fin">${body}
