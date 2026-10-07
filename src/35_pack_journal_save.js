@@ -111,6 +111,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.15.3', ['On a phone, the Proclamation at the end of the book now fits the screen and sits centred, and the page no longer slides sideways, so the count above it is centred too.']],
   ['3.15.2', ['Tap any picture of gear, a munition or a keepsake (on the squad sheets and in the pack) and it opens full screen, large, with everything known about it: what it does, who can use it, where it was found, and its story.', 'The Art tab and the Artwork button on the title are gone. The pictures stay where they belong: on the title, the Deck, the chapters, the gear, and the journal\'s Maps, Papers and Faces.']],
   ['3.15.1', ['The phone\'s Back button no longer drops you out of the game. In a menu it closes the menu, one layer at a time. With nothing open it asks first: "Press Back again to leave the game", and only a second Back right after leaves.']],
   ['3.15.0', ['The painted set. The artwork canvas is in the game: key art behind the title, painted faces on Tuft\'s Deck, a sigil for each god who answers, a plate at every chapter opening, vistas at the ends of Chapters Two, Three and Five, and the four roads and the Proclamation in the epilogue.',
