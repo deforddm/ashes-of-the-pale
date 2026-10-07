@@ -568,7 +568,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.15.3';
+const VERSION = '3.15.4';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -4414,7 +4414,8 @@ function battleStyle(){
 .ubar .tag.foe{color:#f7b9ad;border-color:#6a2e28;background:rgba(224,87,74,.12)}
 .ubar .tag.ally{color:#cfdcf5;border-color:#2a3a56}
 .abil .btn small{opacity:.7;margin-left:4px;font-size:.78em}
-.abil #bEnd{margin-left:auto}`;
+.abil #bEnd{margin-left:auto;transition:opacity .25s}
+.abil #bEnd.arming{opacity:.45;pointer-events:none}`;
   document.head.appendChild(st);
 }
 /* size the map to the screen: full width, but on a short phone shrink it (not below a thumb-sized tile) so the unit bar
@@ -4512,15 +4513,19 @@ function updBattleUI(){
     <div class="bhint">${tapWord(hint)}</div>
     <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? `<small>×${itemLeft(a.item)}</small>` : a.trick && TRICKS[a.trick].use === 'chapter' ? `<small>×${trickLeft(a.trick)}</small>` : ''; const dis = (B.acted && !a.free) || !abOk(u,k);
       return `<button class="btn ${B.mode === k ? 'on' : ''} ${a.trick ? 'trk' : ''}" id="ab_${k}" data-k="${k}" ${dis ? 'disabled' : ''}>${a.trick ? '✦ ' : ''}${a.name}${cnt}</button>`; }).join('')}
-      <button class="btn ${endHot ? 'primary' : ''}" id="bEnd">End turn</button></div>
+      <button class="btn ${endHot ? 'primary' : ''} ${endArming(u) ? 'arming' : ''}" id="bEnd">End turn</button></div>
     <p class="hint keys" aria-hidden="true">${u.ab.length > 1 ? `<kbd>1</kbd>–<kbd>${u.ab.length}</kbd>` : '<kbd>1</kbd>'} ${u.ab.length > 1 ? 'abilities' : 'ability'} · <kbd>Space</kbd> end turn · <kbd>Esc</kbd> cancel</p>`;
   ub.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
     if (!B || B.busy || B.cur !== u) return; const k = b.dataset.k; AUDIO.play('click');
     if (B.mode === k) { B.mode = 'act'; B.aim = null; return updBattleUI(); }
     if (AB[k].self) return useAb(k, u.x, u.y);
     B.mode = k; B.aim = null; updBattleUI(); });
-  $('#bEnd').onclick = () => { if (B && !B.busy && B.cur === u) { AUDIO.play('click'); endTurn(); } };
+  $('#bEnd').onclick = () => { if (B && !B.busy && B.cur === u && !endArming(u)) { AUDIO.play('click'); endTurn(); } };
+  if (endArming(u)) { const turn = B.turn; setTimeout(() => { if (B && B.turn === turn) { const b = $('#bEnd'); if (b) b.classList.remove('arming'); } }, END_GRACE - (performance.now() - B.turnAt) + 20); }
 }
+/* a fresh squad turn ignores End turn for a moment, so a quick double tap can't end two turns in a row */
+const END_GRACE = 700;
+function endArming(u){ return !!B && B.cur === u && performance.now() - (B.turnAt || 0) < END_GRACE; }
 /* a safety net: if a turn has sat busy for a long while on screen (not counting time the app was in the background), hand it on */
 function battleWatchdog(now){
   const dt = now - (B.wdLast || now); B.wdLast = now;
