@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Ashes of the Pale is a free Malazan Book of the Fallen fan RPG that plays in your browser: turn-based squad fights, dice-roll dialogue, a Deck of Dragons, seven chapters. What it is and how to put it on your phone or PC.">
+<meta name="theme-color" content="#0d0b0a">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="../icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ashes of the Pale">
+<meta property="og:title" content="Play Ashes of the Pale">
+<meta property="og:description" content="A free Malazan fan RPG that plays in your browser: turn-based squad fights, dice-roll dialogue, a Deck of Dragons, seven chapters. How to put it on your phone or PC.">
+<meta property="og:url" content="https://deforddm.github.io/ashes-of-the-pale/about/">
+<meta property="og:image" content="https://deforddm.github.io/ashes-of-the-pale/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="Moon's Spawn over the lamps of Pale">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Play Ashes of the Pale">
+<meta name="twitter:description" content="A free Malazan fan RPG that plays in your browser. What it is and how to install it.">
+<meta name="twitter:image" content="https://deforddm.github.io/ashes-of-the-pale/icon-512.png">
+<title>Play Ashes of the Pale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+Sans+SC:wght@500;700&display=swap">
+<style>
+/* Layout: one phone-width column (the game's own 560px column), title and pitch first, the Play button, one screenshot,
+   then the install steps per device with the reader's own device lifted to the top. Single dark look on purpose: it is the game's. */
+:root{
+  --ground:#0d0b0a; --panel:#1a1613; --panel2:#241e19; --panel3:#2f2620; --line:#3d332b; --line2:#5a4b3d;
+  --ink:#e6dac2; --mute:#9c8c78; --dim:#6e6154; --brass:#c9973f; --brass2:#e8c073; --warren:#9a86e0; --moss:#6f9f82;
+  --display:'IM Fell English SC','Times New Roman',serif;
+  --prose:'IM Fell English',Georgia,serif;
+  --body:'Alegreya Sans','Segoe UI',system-ui,sans-serif;
+  --label:'Alegreya Sans SC','Segoe UI',system-ui,sans-serif;
+  color-scheme:dark;
+}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+img{max-width:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:1.0625rem;line-height:1.5;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.12;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation:grain 1.1s steps(4) infinite}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:49;background:radial-gradient(ellipse at 50% 40%,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 100%)}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}100%{transform:translate(1%,3%)}}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}.moon{animation:none}}
+
+.page{max-width:560px;margin:0 auto;padding-inline:max(18px,env(safe-area-inset-left,0px)) max(18px,env(safe-area-inset-right,0px));padding-block:22px 40px;display:flex;flex-direction:column;gap:26px;position:relative;z-index:1;box-sizing:border-box}
+.page>*{min-width:0}
+
+/* the sky behind the masthead: Moon's Spawn over the lamps of Pale, as on the app icon */
+.mast{display:grid;grid-template-columns:76px minmax(0,1fr);column-gap:16px;align-items:center}
+.mast img{width:76px;height:76px;border-radius:14px;border:1px solid var(--line2);box-shadow:0 6px 18px rgba(0,0,0,.6);display:block}
+.kick{font-family:var(--label);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.72rem;color:var(--brass);margin:0 0 2px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(2rem,9vw,2.6rem);line-height:1;margin:0;color:#f1e6cc;text-wrap:balance;letter-spacing:.01em;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.tag{font-family:var(--prose);font-style:italic;color:var(--mute);margin:6px 0 0;font-size:1.05rem}
+
+.pitch{font-family:var(--prose);font-size:1.22rem;line-height:1.5;margin:0;color:var(--ink)}
+.pitch b{font-weight:400;color:var(--brass2)}
+.pitch::first-letter{font-family:var(--display);font-size:2.6em;line-height:.8;float:left;padding:6px 6px 0 0;color:var(--brass2)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 10px;margin:0;padding:0;list-style:none}
+.facts li{font-family:var(--label);font-weight:500;letter-spacing:.06em;font-size:.86rem;color:var(--ash,#bdb3a3);border:1px solid var(--line);background:var(--panel);padding:4px 10px;border-radius:2px}
+
+.play{display:flex;flex-direction:column;gap:10px}
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;background:linear-gradient(180deg,var(--panel3),var(--panel));border:1px solid var(--line2);color:var(--ink);padding:12px 16px;border-radius:2px;min-height:46px;cursor:pointer;font-family:var(--label);font-weight:500;letter-spacing:.08em;font-size:1.05rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 2px 6px rgba(0,0,0,.5);transition:border-color .15s,transform .08s;box-sizing:border-box}
+.btn:hover{border-color:var(--brass)}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.btn.primary{background:linear-gradient(180deg,#e0b262,#a97b2c);color:#1a1208;border-color:#f0cf86;font-weight:700;font-size:1.35rem;min-height:58px;text-shadow:0 1px 0 rgba(255,255,255,.25);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 6px 22px rgba(201,151,63,.28)}
+.btn.primary svg{width:22px;height:22px}
+.linkrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}
+.url{font-family:var(--body);font-size:.95rem;color:var(--mute);background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:10px 12px;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all;display:flex;align-items:center;min-width:0}
+.btn.small{min-height:auto;padding:8px 14px;font-size:.92rem}
+.fine{color:var(--mute);font-size:.95rem;margin:0;line-height:1.45}
+
+figure{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+figure img{width:min(100%,340px);max-width:100%;margin:0 auto;height:auto;display:block;border:1px solid var(--line2);border-radius:3px;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+figcaption{font-family:var(--prose);font-style:italic;color:var(--mute);font-size:.98rem;text-align:center}
+
+h2{font-family:var(--display);font-weight:400;font-size:1.55rem;margin:0;color:#f1e6cc;line-height:1.1;text-wrap:balance}
+h2 small{display:block;font-family:var(--prose);font-style:italic;font-size:1rem;color:var(--mute);margin-top:4px}
+.how{display:flex;flex-direction:column;gap:12px}
+.dev{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));border-radius:3px;padding:14px 16px 16px;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.dev.mine{border-color:var(--brass);box-shadow:0 0 0 1px rgba(201,151,63,.25),0 0 22px rgba(201,151,63,.12)}
+.dev h3{margin:0;font-family:var(--label);font-weight:700;letter-spacing:.08em;font-size:1.02rem;color:var(--brass2);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dev h3 svg{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.dev h3 .you{margin-left:auto;font-size:.72rem;letter-spacing:.14em;color:#1a1208;background:linear-gradient(180deg,#e0b262,#a97b2c);padding:2px 8px;border-radius:2px}
+.dev ol{margin:0;padding-left:1.3em;display:grid;gap:6px}
+.dev ol li::marker{font-family:var(--label);color:var(--brass);font-weight:700}
+.dev p{margin:0}
+kbd.ui{font-family:var(--label);font-weight:700;letter-spacing:.04em;color:var(--ink);background:var(--panel3);border:1px solid var(--line2);border-radius:2px;padding:0 6px;white-space:nowrap}
+.glyph{display:inline-block;vertical-align:-3px;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.know{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:0;padding:0;list-style:none}
+.know li{display:grid;grid-template-columns:10px minmax(0,1fr);gap:12px;align-items:start}
+.know li::before{content:"";width:6px;height:6px;margin-top:.6em;background:var(--brass);transform:rotate(45deg)}
+.know b{font-family:var(--label);font-weight:700;letter-spacing:.04em;color:var(--brass2)}
+
+footer{border-top:1px solid var(--line);padding-top:16px;display:grid;gap:8px}
+footer p{margin:0;font-size:.92rem;color:var(--mute);line-height:1.45}
+footer a{color:var(--brass);text-decoration:none;border-bottom:1px solid rgba(201,151,63,.4)}
+footer a:hover{color:var(--brass2)}
+
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(8px);background:var(--panel3);border:1px solid var(--brass);color:var(--ink);font-family:var(--label);letter-spacing:.06em;padding:8px 14px;border-radius:2px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:60}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+
+</head>
+<body>
+<main class="page">
+  <header class="mast">
+    <img src="../icon-192.png" width="76" height="76" alt="The game's icon: Moon's Spawn hanging over the lamps of Pale">
+    <div>
+      <p class="kick">A Malazan fan RPG · free to play</p>
+      <h1>Ashes of the Pale</h1>
+      <p class="tag">Gardens of the Moon, from the ranks.</p>
+    </div>
+  </header>
+
+  <p class="pitch">You lead the <b>Fourth Squad</b>, a crew of Malazan marines nobody wrote a book about, from the wreck of Pale across the Rhivi Plain to Darujhistan and the Fete, on the Bridgeburners' road. Turn-based squad fights with flanking, munitions and warren strain. Talk that rolls dice: you pick who speaks, you see the odds, and what the squad did earlier counts. A Deck of Dragons reading each chapter, and the card you draw changes the fights. The prologue and all seven chapters, with endings that follow your choices.</p>
+
+  <ul class="facts" aria-label="At a glance">
+    <li>Phone, tablet or PC</li>
+    <li>Plays offline</li>
+    <li>Seven chapters</li>
+    <li>Story · Soldier · Bridgeburner</li>
+    <li>Sound on</li>
+  </ul>
+
+  <div class="play">
+    <a class="btn primary" href="https://deforddm.github.io/ashes-of-the-pale/" id="play" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" fill="currentColor"/></svg>
+      Play now
+    </a>
+    <div class="linkrow">
+      <span class="url" id="url">deforddm.github.io/ashes-of-the-pale</span>
+      <button class="btn small" id="copy" type="button">Copy link</button>
+    </div>
+    <p class="fine">It opens in your browser and runs on your own device. Nothing to buy, no account, no download from a store. Your saves stay on the phone or PC you play on.</p>
+  </div>
+
+  <figure>
+    <img src="../screenshot-narrow.jpg" width="780" height="1688" alt="The game on a phone: the squad standing in a dark lane of Darujhistan's Daru District, the Watch on the corner" loading="lazy">
+    <figcaption>The Daru District at night. Tap the ground to move, tap a figure to talk.</figcaption>
+  </figure>
+
+  <section class="how" id="install">
+    <h2>Put it on your home screen <small>Two taps, and it opens full screen like any other app. Playing in the browser works too.</small></h2>
+
+    <article class="dev" id="dev-ios">
+      <h3><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10 18.5h4"/></svg>iPhone or iPad</h3>
+      <ol>
+        <li>Open the link in <kbd class="ui">Safari</kbd>.</li>
+        <li>Tap the Share button <svg class="glyph" viewBox="0 0 24 24" aria-label="share"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v9h14v-9"/></svg> at the bottom of the screen.</li>
+        <li>Scroll down the list and tap <kbd class="ui">Add to Home Screen</kbd>, then <kbd class="ui">Add</kbd>.</li>
+      </ol>
+      <p class="fine">Open it from the home screen from then on. On an iPhone the home-screen copy keeps its own saves, separate from Safari's, so start your sergeant there.</p>
+    </article>
+
+    <article class="dev" id="dev-android">
+      <h3><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><circle cx="12" cy="18.5" r=".8"/></svg>Android</h3>
+      <ol>
+        <li>Open the link in <kbd class="ui">Chrome</kbd>.</li>
+        <li>Tap the menu <svg class="glyph" viewBox="0 0 24 24" aria-label="three-dot menu"><circle cx="12" cy="5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="19" r="1.4" fill="currentColor"/></svg> in the top corner.</li>
+        <li>Tap <kbd class="ui">Add to Home screen</kbd> (on some phones <kbd class="ui">Install app</kbd>), then <kbd class="ui">Install</kbd>.</li>
+      </ol>
+      <p class="fine">Chrome may offer Install on its own at the bottom of the screen; that does the same thing. Samsung Internet: menu, then <kbd class="ui">Add page to</kbd> › <kbd class="ui">Home screen</kbd>.</p>
+    </article>
+
+    <article class="dev" id="dev-pc">
+      <h3><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Windows PC or Mac</h3>
+      <ol>
+        <li>Open the link in <kbd class="ui">Chrome</kbd> or <kbd class="ui">Edge</kbd>.</li>
+        <li>The title screen offers <kbd class="ui">Install</kbd>. Click it. (Or click the small install icon at the right end of the address bar.)</li>
+        <li>It opens in its own window, with a shortcut on the desktop and in the Start menu or Dock.</li>
+      </ol>
+      <p class="fine">Safari on a Mac: <kbd class="ui">File</kbd> › <kbd class="ui">Add to Dock</kbd>. Firefox can't install web apps, so just play it in the tab. On a PC, press <kbd class="ui">F</kbd> for full screen.</p>
+    </article>
+  </section>
+
+  <section>
+    <h2>Good to know</h2>
+    <ul class="know" style="margin-top:12px">
+      <li><span><b>Offline.</b> After the first load the whole game is on your device. Airplane mode is fine.</span></li>
+      <li><span><b>Updates.</b> It checks for a new version when it opens. When <kbd class="ui">Update ready</kbd> appears, tap it; it never reloads mid-fight.</span></li>
+      <li><span><b>Saves.</b> Each sergeant has their own save on the title screen, so a household can share one phone. To move a sergeant to another device, copy the save code from <kbd class="ui">Squad</kbd> › <kbd class="ui">Save</kbd> and load it there.</span></li>
+      <li><span><b>Difficulty.</b> Story if you're here for the tale, Soldier for a fair fight, Bridgeburner if you want the wounds to carry between fights.</span></li>
+      <li><span><b>Grown-up.</b> A war story in the book's tone; not one for the kids.</span></li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>A non-commercial fan work for personal play. The Malazan world was created by <b>Steven Erikson</b> and <b>Ian C. Esslemont</b>, and it and its canon characters belong to them. This game is not affiliated with the authors or their publishers.</p>
+    <p>Source and version notes: <a href="https://github.com/deforddm/ashes-of-the-pale" rel="noopener">github.com/deforddm/ashes-of-the-pale</a></p>
+  </footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite">Link copied</div>
+
+<script>
+(function(){
+  // lift the reader's own device to the top of the install list
+  var ua = navigator.userAgent || '';
+  var iOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var android = /Android/.test(ua);
+  var id = iOS ? 'dev-ios' : android ? 'dev-android' : 'dev-pc';
+  var el = document.getElementById(id), how = document.getElementById('install');
+  if (el && how) {
+    el.classList.add('mine');
+    var tag = document.createElement('span'); tag.className = 'you'; tag.textContent = 'This device';
+    el.querySelector('h3').appendChild(tag);
+    how.insertBefore(el, how.children[1]);
+  }
+  // copy the game's link
+  var full = 'https://deforddm.github.io/ashes-of-the-pale/';
+  var btn = document.getElementById('copy'), toast = document.getElementById('toast'), t;
+  function say(msg){ toast.textContent = msg; toast.classList.add('show'); clearTimeout(t); t = setTimeout(function(){ toast.classList.remove('show'); }, 1800); }
+  function selectUrl(){ try { var r = document.createRange(); r.selectNodeContents(document.getElementById('url')); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch(e) {} }
+  btn.addEventListener('click', function(){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(full).then(function(){ say('Link copied'); }, function(){ selectUrl(); say('Selected, press copy'); });
+    } else { selectUrl(); say('Selected, press copy'); }
+  });
+})();
+</script>
+
+</body>
+</html>
