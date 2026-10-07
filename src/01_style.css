@@ -514,3 +514,4 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 @media (min-width:1000px) and (min-height:560px){.artscene .vista svg{height:min(calc(100vh - 20px - 3.3rem - 24px), 71.4cqw)}}
 .kv > span:has(> .art.ico){display:flex;align-items:center}
 .avpic.zoom{width:1600px;max-width:none}.avbody.zoomed{justify-content:flex-start}.avbtns{display:flex;gap:6px}
+.leavet{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:70;background:rgba(14,11,9,.95);border:1px solid var(--brass);color:var(--ink);font-family:var(--label);letter-spacing:.04em;padding:10px 16px;border-radius:2px;box-shadow:0 10px 30px rgba(0,0,0,.8);pointer-events:none;white-space:nowrap;animation:rise .25s ease-out}

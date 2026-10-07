@@ -52,25 +52,43 @@ function start(data){
 }
 window.claude?.hot?.snapshot?.(() => (S ? {S: JSON.parse(JSON.stringify(S))} : {}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
-/* Android Back (and Escape): an open overlay (the squad sheets, pack/journal/save, settings) holds one history entry,
-   and Back closes it instead of leaving the app. The level-up picks can't be backed out of. */
+/* Android Back (and Escape). The game keeps one spare history entry (a "guard") above the page it loaded on, so the phone's
+   Back never lands outside the game by accident. Each Back comes back to the game as a popstate: it closes whatever is open
+   on top (the board viewer, the squad sheets, settings, pack/journal/save/art, a table game), and the guard goes straight
+   back up. With nothing open, Back asks first: "Press Back again to leave", and only a second Back within a few seconds
+   leaves. The level-up picks can't be backed out of. The guard is pushed from a tap or a key, since Chrome skips history
+   entries a page adds without the player touching it. */
 const OVERLAYS = ['#chars', '#settings', '#modal', '#mg'];
 const ovOpen = () => OVERLAYS.some(s => !$(s).hidden), picksOpen = () => !$('#modal').hidden && !!$('#modal .picks');
-let ovT = 0, ovBack = 0; // one check per burst of changes, and one Back at a time (a second would leave the page)
-function ovSync(){ clearTimeout(ovT); ovT = setTimeout(() => { if (Date.now() - ovBack < 1500) return; const open = ovOpen(), mine = !!(history.state && history.state.ov);
-  if (open && !mine) history.pushState({ov:1}, ''); else if (!open && mine) { ovBack = Date.now(); history.back(); } }, 0); }
-OVERLAYS.forEach(s => new MutationObserver(ms => { if (ms.some(m => (m.oldValue !== null) !== m.target.hidden)) ovSync(); }).observe($(s), {attributes:true, attributeOldValue:true, attributeFilter:['hidden']}));
+let leaveArmed = 0, leaveT = 0, selfBack = false;
+const gLevel = () => (history.state && history.state.g) || 0;
+/* two guards deep, so two Backs in a row (the board viewer, then the journal under it) both stay in the game */
+function guardUp(){ try { if (gLevel() < 1) history.pushState({g:1}, ''); if (gLevel() < 2) history.pushState({g:2}, ''); } catch(e) {} }
+['pointerdown', 'keydown', 'touchstart'].forEach(ev => window.addEventListener(ev, () => { if (leaveArmed) { leaveArmed = 0; clearTimeout(leaveT); leaveToast(false); } guardUp(); }, {capture:true, passive:true})); // touching the game again: stay
+/* close the top thing that is open; false when nothing was */
+function backTop(){
+  if (typeof artViewOpen === 'function' && artViewOpen()) { $('#avClose').click(); return true; }
+  if (picksOpen()) return true; // the level-up choice has to be made
+  if (!$('#chars').hidden) { AUDIO.play('click'); closeChars(); return true; }
+  if (!$('#settings').hidden) { AUDIO.play('click'); $('#settings').hidden = true; $('#settings').innerHTML = ''; return true; }
+  if (!$('#modal').hidden) { AUDIO.play('click'); $('#modal').hidden = true; return true; }
+  if (mgOpenNow()) { if (MG.leave) MG.leave(); return true; } // a table game: Back is its Leave (which may ask first)
+  return false;
+}
+function leaveToast(on){ let t = $('#leavet');
+  if (!on) { if (t) t.remove(); return; }
+  if (!t) { t = document.createElement('div'); t.id = 'leavet'; t.className = 'leavet'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = 'Press Back again to leave the game'; }
 window.addEventListener('popstate', () => {
-  const ours = ovBack; ovBack = 0; if (ours) { if (ovOpen()) ovSync(); return; } // our own Back, after a close: something may have opened since
-  if (!ovOpen()) return;
-  if (picksOpen()) { history.pushState({ov:1}, ''); return; }
-  const other = !$('#chars').hidden || !$('#settings').hidden || !$('#modal').hidden;
-  if (!$('#chars').hidden) closeChars();
-  if (!$('#settings').hidden) { $('#settings').hidden = true; $('#settings').innerHTML = ''; }
-  $('#modal').hidden = true;
-  if (!other && mgOpenNow()) { if (MG.leave) MG.leave(); if (mgOpenNow()) history.pushState({ov:1}, ''); } // a game: Back is its Leave (which may ask first)
+  if (selfBack) { selfBack = false; return; }
+  if (leaveArmed) return; // the second Back: let the phone take the player out
+  if (backTop()) return; // the guards are topped up at the next touch
+  // nothing open: drop to the page the game loaded on (so one more Back leaves) and say so; a touch, or a few seconds, puts the guards back
+  if (gLevel()) { selfBack = true; history.go(-gLevel()); }
+  leaveArmed = 1; leaveToast(true); clearTimeout(leaveT);
+  leaveT = setTimeout(() => { leaveArmed = 0; leaveToast(false); guardUp(); }, 3000);
 });
-window.addEventListener('keydown', e => { if (e.key === 'Escape' && ovOpen() && !picksOpen() && history.state && history.state.ov) history.back(); });
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && ovOpen() && !picksOpen()) { e.preventDefault(); backTop(); } });
 /* the keyboard, for a PC. Talking: 1-9 pick a choice, Space or Enter takes the only one (or hurries the die). The map: the arrow keys or WASD
    walk a tile, Space or E talks to whoever is beside you. A fight: 1-9 the abilities, Space or E ends the turn, Esc drops an aimed ability.
    Anywhere in the game: J journal, P pack, C squad, Esc settings; Space or Enter presses a page's main button (the next chapter, and so on). */
@@ -112,4 +130,4 @@ window.addEventListener('keydown', e => {
   if (k === 'Escape') { e.preventDefault(); AUDIO.play('click'); openSettings(); return; }
   if (go && !onBtn && view !== 'explore' && view !== 'battle') press($('#app .btn.primary:not([disabled])'));
 });
-if (history.state && history.state.ov) history.replaceState(null, ''); // a reload with an overlay's entry on top: nothing is open now
+if (history.state && history.state.ov) history.replaceState({g:1}, ''); // a save from before 3.15.1 reloaded on an overlay's entry: it serves as the guard now
