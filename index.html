@@ -508,7 +508,18 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 .jpapers{display:flex;flex-direction:column;gap:14px;margin:8px 0 6px}
 .paper > div{box-shadow:0 10px 26px rgba(0,0,0,.6)!important;padding:22px 20px 24px!important;font-size:.92rem}
 .paper > div > div:first-child{font-size:1.15rem!important}
-.fin-paper{max-width:420px;margin:18px auto 6px}
+.fin-paper{width:100%;max-width:440px;margin:22px auto 6px;box-sizing:border-box;align-self:center}
+/* the Proclamation: its inline sizes were drawn for a 440px board; on a phone everything scales with the screen and stays inside the column */
+.p-proclamation{width:100%;min-width:0}
+.p-proclamation > div{width:100%;max-width:100%;box-sizing:border-box;padding:clamp(16px,5vw,26px) clamp(12px,4.5vw,22px) clamp(18px,5.5vw,28px)!important;gap:clamp(8px,2.6vw,14px)!important;overflow:hidden;overflow-wrap:break-word}
+.p-proclamation > div > div:nth-child(1){font-size:clamp(.72rem,3.2vw,1.05rem)!important;letter-spacing:.28em!important}
+.p-proclamation > div > div:nth-child(2){font-size:clamp(1.8rem,9.4vw,3.3rem)!important;letter-spacing:.02em!important;line-height:1!important}
+.p-proclamation > div > div:nth-child(3) > div:not(:nth-child(2)){width:clamp(36px,14vw,70px)!important}
+.p-proclamation > div > div:nth-child(5){font-size:clamp(2.1rem,11vw,3.6rem)!important}
+.p-proclamation > div > p{font-size:clamp(.95rem,4.2vw,1.2rem)!important;line-height:1.45!important}
+.p-proclamation > div > svg{width:clamp(64px,20vw,96px);height:auto}
+.fin{overflow-x:hidden}
+.fin-sum{min-width:0;box-sizing:border-box;width:100%}
 .faces summary small{color:var(--brass);font-family:var(--label);margin-left:6px}
 .jfaces{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:8px}
 .face{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;border:1px solid var(--line);background:rgba(0,0,0,.22);padding:10px 8px}
@@ -557,7 +568,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.15.2';
+const VERSION = '3.15.3';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -5150,6 +5161,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.15.3', ['On a phone, the Proclamation at the end of the book now fits the screen and sits centred, and the page no longer slides sideways, so the count above it is centred too.']],
   ['3.15.2', ['Tap any picture of gear, a munition or a keepsake (on the squad sheets and in the pack) and it opens full screen, large, with everything known about it: what it does, who can use it, where it was found, and its story.', 'The Art tab and the Artwork button on the title are gone. The pictures stay where they belong: on the title, the Deck, the chapters, the gear, and the journal\'s Maps, Papers and Faces.']],
   ['3.15.1', ['The phone\'s Back button no longer drops you out of the game. In a menu it closes the menu, one layer at a time. With nothing open it asks first: "Press Back again to leave the game", and only a second Back right after leaves.']],
   ['3.15.0', ['The painted set. The artwork canvas is in the game: key art behind the title, painted faces on Tuft\'s Deck, a sigil for each god who answers, a plate at every chapter opening, vistas at the ends of Chapters Two, Three and Five, and the four roads and the Proclamation in the epilogue.',
