@@ -9,16 +9,17 @@ const back = async () => { await page.goBack({ timeout: 3000 }).catch(() => {});
 await page.evaluate(() => { S = newState('Hask'); save(); startExplore(CHAPTERS[1].area.id); });
 await page.mouse.click(200, 300); await page.waitForTimeout(200); // the player touches the game
 // two things open at once, two Backs with no touch between: both close, still in the game
-await page.evaluate("openModal('art'); artView(ART_BOARDS[0])"); await page.waitForTimeout(200); await page.mouse.click(5, 5).catch(() => {});
-await page.evaluate("if (!artViewOpen()) artView(ART_BOARDS[0])"); await page.waitForTimeout(200);
+await page.evaluate("openModal('journal'); artView('map/pale')"); await page.waitForTimeout(200); await page.mouse.click(5, 5).catch(() => {});
+await page.evaluate("if (!artViewOpen()) artView('map/pale')"); await page.waitForTimeout(200);
 await back(); ok(await onGame() && !(await page.evaluate('artViewOpen()')) && await page.evaluate("!$('#modal').hidden"), 'two open: the first Back closes the viewer');
-await back(); ok(await onGame() && await page.evaluate("$('#modal').hidden"), 'two open: the second Back closes the Art tab, still in the game');
+await back(); ok(await onGame() && await page.evaluate("$('#modal').hidden"), 'two open: the second Back closes the journal, still in the game');
 await page.mouse.click(200, 300); await page.waitForTimeout(200);
 for (const [what, open, isOpen] of [
   ['journal', "openModal('journal')", "!$('#modal').hidden"],
   ['squad sheets', "openChars(0)", "!$('#chars').hidden"],
   ['settings', "openSettings()", "!$('#settings').hidden"],
-  ['art board viewer', "openModal('art'); artView(ART_BOARDS[0])", "artViewOpen()"],
+  ['map viewer', "openModal('journal'); artView('map/pale')", "artViewOpen()"],
+  ['item viewer', "openChars(0); itemView('munitions/keep_sgt')", "artViewOpen()"],
   ['journal, closed and reopened at once', "openModal('journal'); $('#modal').hidden = true; openModal('pack')", "!$('#modal').hidden"],
 ]) {
   await page.evaluate(open); await page.mouse.click(5, 5).catch(() => {}); await page.evaluate(open); await page.waitForTimeout(250);
