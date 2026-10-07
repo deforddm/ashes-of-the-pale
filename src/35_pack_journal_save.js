@@ -1,9 +1,9 @@
 /* ============ pack / journal / save ============ */
 function openModal(tab){
   const m = $('#modal'); m.hidden = false; m.scrollTop = 0;
-  const tabs = S ? ['pack','journal','art','save','deeds'] : ['save','deeds','art']; routeAnim = null;
+  const tabs = S ? ['pack','journal','save','deeds'] : ['save','deeds']; routeAnim = null;
   const body = {
-    pack:()=>`<div class="kv"><span>Silver</span><span>${S.silver}</span><span>${art('munitions/sharper', 'ico')}Sharpers</span><span>${S.inv.sharper}</span><span>${art('munitions/burner', 'ico')}Burners</span><span>${S.inv.burner}</span><span>${art('munitions/cusser', 'ico')}Cussers</span><span>${S.inv.cusser}</span>${S.inv.smoker > 0 || S.f.gotSmokers ? `<span>${art('munitions/smoker', 'ico')}Smokers</span><span>${S.inv.smoker}</span>` : ''}<span>${art('munitions/salve', 'ico')}Healing salves</span><span>${S.inv.salve}</span>
+    pack:()=>`<div class="kv"><span>Silver</span><span>${S.silver}</span><span>${zoomArt('munitions/sharper', 'ico', 'Sharpers', true)}</span><span>${S.inv.sharper}</span><span>${zoomArt('munitions/burner', 'ico', 'Burners', true)}</span><span>${S.inv.burner}</span><span>${zoomArt('munitions/cusser', 'ico', 'Cussers', true)}</span><span>${S.inv.cusser}</span>${S.inv.smoker > 0 || S.f.gotSmokers ? `<span>${zoomArt('munitions/smoker', 'ico', 'Smokers', true)}</span><span>${S.inv.smoker}</span>` : ''}<span>${zoomArt('munitions/salve', 'ico', 'Healing salves', true)}</span><span>${S.inv.salve}</span>
       <span>Squad level</span><span>${S.lvl} (${S.xp}/${LEVELS[S.lvl] ?? '—'} xp)</span>${S.card ? `<span>Deck reading</span><span>${CARDS[S.card].name}</span>` : ''}</div>
       ${S.card ? `<div class="cardinline" style="margin-top:12px"><canvas id="icard" width="240" height="360"></canvas></div><p class="fine" style="text-align:center">${CARDS[S.card].fx}</p>` : ''}
       ${S.wounds ? `<h4 class="jh">Wounds carried (Bridgeburner)</h4><div class="kv wounds">${SQUAD().map(id => woundOf(id) == null ? '' : `<span>${esc(NAME(id))}</span><span>${woundOf(id)} / ${S.wounds[id + '_max'] || '?'} health ${S.inv.salve > 0 && woundOf(id) < (S.wounds[id + '_max'] || 0) ? `<button class="btn sm" data-salve="${id}">Salve +8</button>` : ''}</span>`).join('')}</div><p class="fine">Wounds close when the squad rests: at the start of a chapter, or where the story lets them sleep.</p>` : ''}
@@ -26,7 +26,6 @@ function openModal(tab){
       S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
       S.f.c3_kruppeRumour ? `Kruppe, caught palming a coin at the Phoenix: the Guild's roof watchers sweep on a count of eight, and never look straight down.` : '',
       S.f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : `Brisk's brother, Second Army: not yet found.`, S.f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>${artJournalHTML()}${typeof visionsHTML === 'function' ? visionsHTML() : ''}${glossHTML()}`,
-    art:()=>artTabHTML(),
     save:()=>`${S ? `<p class="fine">Playing as <b class="who">Sergeant ${esc(S.name)}</b>. The game saves itself on this device as you play, under your sergeant's name. Anyone else can start their own sergeant from the title, and each keeps a save of their own.</p>
       <div class="row" style="margin:8px 0 16px"><button class="btn" id="bSwitch">Switch sergeant</button></div>
       <label class="fine" for="exp">Sergeant ${esc(S.name)}'s save code. Copy it somewhere safe to move them to another device, or to keep them from a cleared browser.</label>
@@ -35,16 +34,16 @@ function openModal(tab){
       <label class="fine" for="imp">Paste a save code to load it</label><textarea id="imp" placeholder="Paste code here"></textarea>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="bLoad">Load code</button></div><p class="fine" id="impMsg"></p>`,
   };
-  m.innerHTML = smartq(`<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : tab === 'deeds' ? 'Deeds' : tab === 'art' ? 'Artwork' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
+  m.innerHTML = smartq(`<div class="mbox"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">${S ? 'Fourth Squad' : tab === 'deeds' ? 'Deeds' : 'Load a game'}</h2><button class="btn" id="bClose">Close</button></div>
     <div class="tabs">${S ? `<button class="tab" data-t="squad">Squad</button>` : ''}${tabs.map(k => `<button class="tab ${k === tab ? 'on' : ''}" data-t="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
     <div>${body[tab]()}</div></div>`);
   m.querySelectorAll('.tab').forEach(b => b.onclick = () => { AUDIO.play('click'); if (b.dataset.t === 'squad') { m.hidden = true; openChars(0); } else openModal(b.dataset.t); });
   $('#bClose').onclick = () => { AUDIO.play('click'); m.hidden = true; };
   m.querySelectorAll('[data-salve]').forEach(b => b.onclick = () => { salveOut(b.dataset.salve); openModal('pack'); }); // Bridgeburner: a salve between fights
   if (tab === 'pack' && S.card) inlineCard($('#icard'), S.card, false);
+  bindItemZoom(m);
   if (tab === 'deeds') bindDeeds();
   if (tab === 'journal') bindArtJournal(m);
-  if (tab === 'art') bindArtTab(m);
   if (tab === 'journal' && typeof bindVisions === 'function') bindVisions(m);
   if (tab === 'journal') { const cv = $('#jRoute'); routeAnim = t => { if (!cv.isConnected || $('#modal').hidden) { routeAnim = null; return; } drawRoute(cv, S, t); }; }
   if (tab === 'save') {
@@ -112,6 +111,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.15.2', ['Tap any picture of gear, a munition or a keepsake (on the squad sheets and in the pack) and it opens full screen, large, with everything known about it: what it does, who can use it, where it was found, and its story.', 'The Art tab and the Artwork button on the title are gone. The pictures stay where they belong: on the title, the Deck, the chapters, the gear, and the journal\'s Maps, Papers and Faces.']],
   ['3.15.1', ['The phone\'s Back button no longer drops you out of the game. In a menu it closes the menu, one layer at a time. With nothing open it asks first: "Press Back again to leave the game", and only a second Back right after leaves.']],
   ['3.15.0', ['The painted set. The artwork canvas is in the game: key art behind the title, painted faces on Tuft\'s Deck, a sigil for each god who answers, a plate at every chapter opening, vistas at the ends of Chapters Two, Three and Five, and the four roads and the Proclamation in the epilogue.',
              'Every piece of gear and every munition has its picture on the squad sheets and in the pack, and each squadmate\'s keepsake sits beside what they carry.',

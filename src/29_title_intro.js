@@ -44,7 +44,7 @@ function showTitle(fresh){
       <div class="row2">${list.length ? '<button class="btn" id="bBack">Back to your sergeants</button>' : '<button class="btn" id="bImp">Load a save code</button>'}</div></div>`
     : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
     <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
-      <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button><button class="btn" id="bArt">Artwork</button></div></div>`}
+      <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button></div></div>`}
     <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. Gardens of the Moon, from the ranks: the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
   if (!ARTON()) startTitleBackdrop($('#titlecv')); else titleAnim = null;
@@ -69,7 +69,6 @@ function showTitle(fresh){
   } else {
     $('#bNewSgt').onclick = () => { AUDIO.play('click'); showTitle(true); };
     $('#bDeeds').onclick = () => { AUDIO.play('click'); openModal('deeds'); };
-    $('#bArt').onclick = () => { AUDIO.play('click'); openModal('art'); };
     document.querySelectorAll('.sgtrow .load').forEach(el => el.onclick = () => { AUDIO.play('click'); const s = loadSlot(el.dataset.id);
       if (!s) { dropSlot(el.dataset.id); return showTitle(); } S = s; resume(); });
     // erasing a sergeant asks twice: the first tap says who goes

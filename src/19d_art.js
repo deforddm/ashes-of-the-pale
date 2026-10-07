@@ -21,23 +21,63 @@ function artReach(){ if (S) return S.chapters && S.chapters[7] != null ? 8 : (S.
 const ROMAN = ['Prologue', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 const chWord = n => n === 0 ? 'the prologue' : `Chapter ${ROMAN[n] || n}`;
 
-/* the full-screen viewer: one picture (a map) or a whole board from the canvas */
-function artView(what){
-  let v = $('#artview'); if (!v) { v = document.createElement('div'); v.id = 'artview'; document.body.appendChild(v); }
-  const B0 = typeof what === 'object' ? what : null;
-  v.innerHTML = `<div class="avbar"><span>${esc(B0 ? B0.title : what.startsWith('map/') ? 'Map' : '')}</span><span class="avbtns"><button class="btn" id="avZoom">Full size</button><button class="btn" id="avClose">Close</button></span></div><div class="avbody">${B0
-    ? `<div class="avboard" style="--bw:${B0.w};--bh:${B0.h}"><iframe title="${esc(B0.title)}" sandbox="allow-same-origin" loading="lazy"></iframe></div>`
-    : art(what, 'avpic', true)}</div>`;
-  v.hidden = false; artCssOnce();
-  if (B0) { const fr = v.querySelector('iframe'); fr.srcdoc = B0.html; const fit = () => { const box = v.querySelector('.avboard'); if (!box || $('#avZoom').dataset.z) return; const k = Math.min(1, (v.clientWidth - 24) / B0.w); box.style.setProperty('--k', k); }; fit(); v._fit = fit; window.addEventListener('resize', fit); }
-  const zb = $('#avZoom'); zb.onclick = () => { AUDIO.play('click'); const z = zb.dataset.z = zb.dataset.z ? '' : '1'; zb.textContent = z ? 'Fit to screen' : 'Full size';
-    const pic = v.querySelector('.avpic'); if (pic) pic.classList.toggle('zoom', !!z);
-    const box = v.querySelector('.avboard'); if (box) box.style.setProperty('--k', z ? 1 : Math.min(1, (v.clientWidth - 24) / B0.w));
-    v.querySelector('.avbody').classList.toggle('zoomed', !!z); };
-  const close = () => { AUDIO.play('click'); v.hidden = true; v.innerHTML = ''; if (v._fit) window.removeEventListener('resize', v._fit); v._fit = null; };
+/* the full-screen viewer: one picture (a map), large, with Full size for a closer look */
+function avShell(){ let v = $('#artview'); if (!v) { v = document.createElement('div'); v.id = 'artview'; document.body.appendChild(v); } return v; }
+function avBind(v){
+  const close = () => { AUDIO.play('click'); v.hidden = true; v.innerHTML = ''; };
   $('#avClose').onclick = close; v.onclick = e => { if (e.target === v || e.target.classList.contains('avbody')) close(); };
   $('#avClose').focus();
 }
+function artView(what){
+  const v = avShell(); v.classList.remove('iv');
+  v.innerHTML = `<div class="avbar"><span>${what.startsWith('map/') ? 'Map' : ''}</span><span class="avbtns"><button class="btn" id="avZoom">Full size</button><button class="btn" id="avClose">Close</button></span></div><div class="avbody">${art(what, 'avpic', true)}</div>`;
+  v.hidden = false; artCssOnce();
+  const zb = $('#avZoom'); zb.onclick = () => { AUDIO.play('click'); const z = zb.dataset.z = zb.dataset.z ? '' : '1'; zb.textContent = z ? 'Fit to screen' : 'Full size';
+    const pic = v.querySelector('.avpic'); if (pic) pic.classList.toggle('zoom', !!z); v.querySelector('.avbody').classList.toggle('zoomed', !!z); };
+  avBind(v);
+}
+
+/* an item, full screen: its picture large, and everything the game knows about it.
+   Gear (item/*), munitions (munitions/*) and each squadmate's keepsakes (munitions/keep_*), tapped wherever they are drawn. */
+const MUNI = {
+  sharper:['Sharper', 'Moranth munition · thrown', 'A clay egg the size of a fist that breaks into a hundred knives. Kettle counts them the way priests count prayers.'],
+  burner:['Burner', 'Moranth munition · thrown', 'Liquid fire in a waxed clay jar, and the ground goes on burning after. Strapped down whenever there is otataral about, and nobody stands downwind.'],
+  cusser:['Cusser', 'Moranth munition · the crossbow cradle', 'The big one. Fired from the cradle under Kettle\'s crossbow, never thrown by anyone who wants to keep the arm. Chub\'s is called Maud, and Kettle keeps her out of ordinary fights.'],
+  smoker:['Smoker', 'Moranth munition · from Hedge\'s cellar', 'A grey jar that blooms into a wall. Nothing shoots into the smoke, and nothing shoots out of it.'],
+  acid:['Phial of acid', 'Sapper\'s timer', 'Stoppered, carried upright, with a tin of tallow for the wax plugs. The acid eats the wax, the wax lets go, the charge goes. No fuse-cord to smell.'],
+  salve:['Healing salve', 'Field dressing · anyone can apply it', 'A tin of salve and a clean binding. One in the pack at the start, more from Quartermaster Pell, and one found each chapter from the Rhivi Plain on. Ellis rations her own, for the hand.'],
+};
+function itemInfo(key){
+  const [kind, id] = String(key).split('/');
+  if (kind === 'item' && ITEMS[id]) { const it = ITEMS[id];
+    const ch = Object.keys(CHAPTERS).find(n => CHAPTERS[n].gear && CHAPTERS[n].gear[id]);
+    const stats = [it.ac && `armour +${it.ac}`, it.atk && `hit +${it.atk}`, it.hp && `health +${it.hp}`, it.mv && `move +${it.mv}`, it.rng && `reach +${it.rng}`,
+      it.stat && Object.entries(it.stat).map(([k, v]) => `${k[0].toUpperCase() + k.slice(1)} +${v}`).join(' · ')].filter(Boolean).join(' · ');
+    const who = it.who ? it.who.map(w => w === 'sgt' ? 'the sergeant' : TPL[w].name) : null;
+    return {name: it.name, kicker: `${it.slot[0].toUpperCase() + it.slot.slice(1)}${ch != null ? ` · found in ${chWord(+ch)}` : ''}`, stat: stats, text: it.line,
+      who: who ? `Can be used by ${who.length > 1 ? who.slice(0, -1).join(', ') + ' and ' + who[who.length - 1] : who[0]}.` : 'Anyone in the squad can use it.'}; }
+  if (kind === 'munitions' && id.startsWith('keep_')) { const w = id.slice(5), c = TPL[w]; if (!c) return null;
+    const nm = w === 'sgt' ? (S && S.name ? `Sergeant ${S.name}` : 'The sergeant') : c.name;
+    return {name: `What ${nm} carries`, kicker: 'Keepsakes · never sold, never traded', stat: '', text: c.gear.join('. ') + '.', who: c.quest || ''}; }
+  if (kind === 'munitions' && MUNI[id]) { const [name, kicker, text] = MUNI[id]; const n = S && S.inv && S.inv[id] != null ? S.inv[id] : null;
+    let mech = ''; try { const a = AB[id]; if (a && a.desc) mech = a.desc(); } catch(e) {}
+    return {name, kicker, stat: n != null ? `In the pack: ${n}` : '', text, who: mech}; }
+  return null;
+}
+function itemView(key){
+  const I = itemInfo(key); if (!I || !ART[key]) return;
+  const v = avShell();
+  v.innerHTML = smartq(`<div class="avbar"><span>${esc(I.kicker)}</span><span class="avbtns"><button class="btn" id="avClose">Close</button></span></div>
+    <div class="avbody"><div class="ivbox">${art(key, 'ivpic', true)}<div class="ivtext"><h3>${esc(I.name)}</h3>${I.stat ? `<p class="ivstat">${esc(I.stat)}</p>` : ''}<p class="ivline">${esc(I.text)}</p>${I.who ? `<p class="ivwho">${esc(I.who)}</p>` : ''}</div></div></div>`);
+  v.classList.add('iv'); v.hidden = false; artCssOnce(); avBind(v);
+}
+/* a picture you can tap to see it whole: a plain picture when there is nothing more to show (or the Classic set is on) */
+function zoomArt(key, cls = '', label = '', withLabel = false){
+  const a = art(key, cls), I = a ? itemInfo(key) : null;
+  if (!I) return a + (withLabel ? label : '');
+  return `<button type="button" class="izb${withLabel ? ' izrow' : ''}" data-iz="${key}" aria-label="Look at ${esc(label || I.name)}">${a}${withLabel ? `<span>${label}</span>` : ''}</button>`;
+}
+function bindItemZoom(m){ m.querySelectorAll('[data-iz]').forEach(b => b.onclick = e => { e.stopPropagation(); AUDIO.play('flip'); itemView(b.dataset.iz); }); }
 const artViewOpen = () => { const v = $('#artview'); return !!(v && !v.hidden); };
 
 /* the journal's pictures: maps the Fourth has walked, the papers it has seen, and the faces it has met */
@@ -54,19 +94,6 @@ function artJournalHTML(){
       return `<div class="face">${art(k, 'med')}<b>${esc(L[0])}</b><small>${esc(L[1] || '')}</small><i>${esc(L[L.length - 1] || '')}</i></div>`; }).join('')}</div></details>` : ''}`;
 }
 function bindArtJournal(m){ m.querySelectorAll('[data-map]').forEach(b => b.onclick = () => { AUDIO.play('flip'); artView(b.dataset.map); }); }
-
-/* the Art tab: every board on the canvas, the ones past where you have read kept back */
-const ART_THUMB = {Main:'title/key', Squad:'squad/tuft', Deck:'deck/hounds', Patrons:'patrons/tuft', Chapters:'chapters/1', Arms:'item/barrowflint', Trinkets:'item/fetemask', Munitions:'munitions/cusser',
-  Papers:'papers/seal', Insignia:'insignia/patch', Vistas:'vistas/lake', MapGenabackis:'map/genabackis', MapDaru:'map/daru', MapPale:'map/pale', MapGadrobi:'map/gadrobi',
-  Cast:'cast/whiskeyjack', Originals:'originals/pell_the_mule', Motifs:'motifs/five_tally_marks_struck_through', Roads:'roads/disband'};
-function artTabHTML(){
-  const r = artReach(), open = ART_BOARDS.filter(b => b.spoil <= r).length;
-  return `<p class="fine">The painted set: every picture made for the Fourth, as boards. Tap one to see it whole. ${open < ART_BOARDS.length ? 'Boards that give away what is still ahead wait until you get there.' : ''}</p>
-    <div class="agal">${ART_BOARDS.map((b, i) => { const ok = b.spoil <= r;
-      return `<button class="aboard ${ok ? '' : 'locked'}" ${ok ? `data-board="${i}"` : 'disabled'}>${ok ? art(ART_THUMB[b.id], 'thumb', true) : '<span class="art thumb lock" aria-hidden="true"></span>'}<b>${esc(b.title)}</b><small>${ok ? `${b.w} × ${b.h}` : `After ${chWord(Math.min(b.spoil, 7))}`}</small></button>`; }).join('')}</div>
-    <p class="fine">Settings › Artwork switches the game between this painted set and its original drawings.</p>`;
-}
-function bindArtTab(m){ m.querySelectorAll('[data-board]').forEach(b => b.onclick = () => { AUDIO.play('flip'); artView(ART_BOARDS[+b.dataset.board]); }); }
 
 /* the chapter-end backdrop where the canvas has a vista for it */
 const ART_ENDVISTA = {2:'vistas/lake', 3:'vistas/canal', 5:'vistas/barrow'};
