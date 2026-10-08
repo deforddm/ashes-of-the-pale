@@ -1,7 +1,8 @@
 /* ============ Through the Deck: visions ============
    When Tuft's turned card has a vision for this chapter, the card screen offers "✦ Look into the card": a short scene, third person
    present, from a canon character's eyes, of what the card is showing her. Choices change words, never outcomes (S.f.v*_ keys; nothing
-   else reads them). Seen visions go in S.seenVisions and can be watched again from the journal. The hook is in cardSequence (21_);
+   else reads them). Seen visions go in S.seenVisions and can be watched again from the journal;
+   only those looked into at a reading also go in S.tuftVisions, which the chapters read (seenVis, 35_). The hook is in cardSequence (21_);
    the journal list is visionsHTML()/bindVisions() (35_). DLG is defined later in the build (39_), so the nodes register when played. */
 const VISIONS = {
   v1_paran:{ch:1, who:'Paran', where:"Hood's Gate", fig:'paran', bg:'gate', cap:'A grey plain under a white sky. No sun. A gate with no wall.', steps:[
@@ -509,6 +510,8 @@ function playVision(id, done){
   const V = VISIONS[id]; if (!V || typeof DLG === 'undefined') return done && done();
   visNodes(id);
   S.seenVisions = S.seenVisions || []; const again = S.seenVisions.includes(id); if (!again) S.seenVisions.push(id);
+  /* v3.16: only a vision Tuft looked into at a reading is hers (S.tuftVisions, which the chapters' seenVis() reads); a journal replay is listed, not counted as hers */
+  if (done) { S.tuftVisions = S.tuftVisions || []; if (!S.tuftVisions.includes(id)) S.tuftVisions.push(id); }
   const ret = {view, kind:G.sceneKind, bg:S.bg, node:S.node}, cardNode = 'c' + S.chapter + '_card';
   VIS = {id, ret, replay:!done, again, done:done || (() => { if (ret.node && DLG[ret.node]) talk(ret.node); }), resume:done ? (DLG[cardNode] ? cardNode : ret.node) : ret.node, bg:V.bg, fig:V.fig, t0:performance.now()};
   $('#sheet').hidden = true; $('#modal').hidden = true; routeAnim = null;

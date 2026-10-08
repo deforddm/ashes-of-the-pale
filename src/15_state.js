@@ -16,6 +16,7 @@ function newState(name){
 /* fill in fields added after v1 saves, so old saves keep working */
 function migrate(s){
   if (s.scene === 'end') s.scene = 'chend'; // the oldest saves called the chapter-end page 'end'
+  s.tuftVisions ??= [...(s.seenVisions || [])]; // v3.16: the visions Tuft saw at a reading; older saves did not tell them apart from journal replays
   s.chapter ??= 0; s.area ??= 'pale'; s.squad ??= [...PORDER]; s.kit ??= []; s.picksDue ??= []; s.chapters ??= {};
   s.gear ??= {}; s.picks ??= {}; Object.keys(TPL).forEach(id => { s.gear[id] ??= {}; s.picks[id] ??= []; }); s.squad.forEach(id => { s.loy[id] ??= 0; });
   if (s.ending && !(0 in s.chapters)) s.chapters[0] = s.ending;

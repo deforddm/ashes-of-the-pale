@@ -944,7 +944,7 @@ The man in front says one more thing, to Sethand, and Sethand translates without
 "He says: *look. Do not touch. And do not ask what we carry.*"`,
       ch:[{t:'Ride through.', go:'c2_ashes'}]}),
     c2_out_seth:()=>({sp:'Sethand', fx:()=>{S.f.c2_outSeth=1; loy('brisk',1);}, txt:
-`Sethand walks his horse forward. Alone, into the bowshot, with his hands open, and says four words, and then says his name, and then says a longer thing that has the word *Mhybe* in it twice.
+`Sethand walks his horse forward. Alone, into the bowshot, with his hands open, and says four words, and then says his name, and then says a longer thing that has the word for the clan-mother in it twice.
 
 The bows come down. All of them, at once, the way a field of grass goes down under one wind.
 
@@ -1094,7 +1094,7 @@ ${SQUAD().includes('ellis') ? `Ellis comes in from the stakes an hour before daw
 
 They stop at the edge of the firelight. They don't come into it. Their swords are on their backs and their hands are empty and it makes no difference at all.
 
-Brisk has her shield up. Kettle has her hand on the satchel and has not opened it. Tuft has not stood. Tuft is looking at them from the ground the way she looked at the light, and her lips are moving, and the word on them is a name you learned at the Pale from the sky, and it is *Rake*.
+Brisk has her shield up. Kettle has her hand on the satchel and has not opened it. Tuft has not stood. Tuft is looking at them from the ground the way she looked at the light, and her lips are moving, and the word on them is a name you learned at the Pale from the sky.
 
 The one in the middle looks at each of you in turn. Counts. Arrives at ${SQUAD().includes('ellis') ? 'six' : 'five'}.${S.f.c2_printsTrod ? ` His eyes go back once, to ${c2P(S.f.c2_printsWho).poss} boots, and stay there a moment longer than they should.` : ''}
 
@@ -1116,7 +1116,7 @@ Nothing else. Not why, not what it was, not who. They stand there for the space 
 
 Kettle, when they're gone: "They asked one thing and answered nothing. That's not a patrol. That's a *sermon*."
 
-"Tiste Andii," says Tuft, from the ground. "Rake's. Three of them. Nobody's ever seen three of them and not been in a war." She doesn't get up. "We're in one. We just haven't been told."`,
+"Tiste Andii," says Tuft, from the ground. "The Spawn's. Three of them. Nobody's ever seen three of them and not been in a war." She doesn't get up. "We're in one. We just haven't been told."`,
       ch:[{t:'Watch them go.', go:'c2_andii_go'}]}),
     c2_andii_fear:()=>({sp:'Tiste Andii', fx:()=>{S.f.c2_andiiFear=1; S.f.c2_andiiFearBy = ROLL().who || 'sgt'; loy('tuft',1);}, txt:
 `${by({
@@ -1157,7 +1157,7 @@ Nothing else. They turn, all three at once without a word between them, and walk
 
 Kettle, when they're gone: "They asked one thing and answered nothing. That's not a patrol. That's a *sermon*."
 
-"Tiste Andii," says Tuft, from the ground. "Rake's." She doesn't get up. "And he looked at ${p.you ? 'you' : ROLL().who === 'tuft' ? '*me*' : p.n}, Sergeant. They don't look at *us*. Nobody's ever told me what it means when they do."`,
+"Tiste Andii," says Tuft, from the ground. "The Spawn's." She doesn't get up. "And he looked at ${p.you ? 'you' : ROLL().who === 'tuft' ? '*me*' : p.n}, Sergeant. They don't look at *us*. Nobody's ever told me what it means when they do."`,
       ch:[{t:'Watch them go.', go:'c2_andii_go'}]}; },
     c2_andii_go:()=>({sp:'The fourth camp', txt:
 `Grey in the east. The fire's out; nobody fed it after the Andii, and nobody noticed till now.
@@ -1179,7 +1179,7 @@ Then it opens its beak and laughs.
 
 The voice is a crow's voice, cracked and dry, and the words are as clear as a lawyer's.
 
-"Crone, little soldiers. Eldest of the Great Ravens, and the one Anomander Rake sends when he wants a thing *seen*, because ravens see, and we remember, and we are so very hard to kill." It preens, once, an old woman settling a shawl. "I have been over the whole of this plain tonight and you are the most interesting thing on it, and that is not a compliment. Interesting things get *eaten*."${S.f.c2_printsTrod ? `
+"Crone, little soldiers. Eldest of the Great Ravens, and the one my lord sends when he wants a thing *seen*, because ravens see, and we remember, and we are so very hard to kill." It preens, once, an old woman settling a shawl. "I have been over the whole of this plain tonight and you are the most interesting thing on it, and that is not a compliment. Interesting things get *eaten*."${S.f.c2_printsTrod ? `
 
 The head turns to ${c2P(S.f.c2_printsWho).n}. "And *you*. You've been standing where a Hound went home. Ha! It's on your boots. Wipe them or don't. The Hounds won't mind."` : ''}${S.f.c2_andiiStared && S.f.c2_key === 'road' ? `
 

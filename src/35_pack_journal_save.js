@@ -95,7 +95,7 @@ function journalNotes(){
     f.c1_accounting ? `The Claw came to settle accounts at the picket line.` : '',
   ] : [];
   const extra = [7, 6, 5, 4, 3, 2].filter(n => n <= ch && CHAPTERS[n] && CHAPTERS[n].journal).map(n => { try { return CHAPTERS[n].journal() || []; } catch(e) { return []; } }); // optional: a chapter module may still add journal:()=>[lines]
-  const tuft = ['glove', 'shadow', 'dark'].includes(f.c6_tuft) ? `Tuft and the High Mage: cut, at the Fete.` : f.c7_tuftCut ? `Tuft and the High Mage: cut, at the last.` : f.c6_tuft === 'kept' ? `Tuft and the High Mage: the badge is still on her collar.` : f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : f.c1_plant ? `Tuft and the High Mage: unasked.` : '';
+  const tuft = (S.dead && S.dead.tuft) || !SQUAD().includes('tuft') ? '' : ['glove', 'shadow', 'dark'].includes(f.c6_tuft) ? `Tuft and the High Mage: cut, at the Fete.` : f.c7_tuftCut ? `Tuft and the High Mage: cut, at the last.` : f.c6_tuft === 'kept' ? `Tuft and the High Mage: the badge is still on her collar.` : f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : f.c1_plant ? `Tuft and the High Mage: unasked.` : '';
   const tav = f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : f.c1_pits || f.c2_badge ? `Brisk's brother, Second Army: not yet found.` : '';
   return [...extra, ...c7, ...c6, ...c5, ...c4, ...c3, ...c2, ...c1,
     f.quest ? `Recover Varrow's satchel from the north sapper tunnels and bring it to Tattersail. ${S.ending ? '(Done.)' : ''}` : `Answer the cadre's summons.`,
@@ -135,7 +135,7 @@ const GLOSS = [
   [1, 'The Hounds of Shadow', "The hunting beasts of High House Shadow, the size of horses, with eyes like lamps seen through smoke."],
   [1, 'Kurald Galain', 'The Warren of Darkness: an Elder warren, older than any the human mages draw on. Otataral does not quell it.'],
   [1, 'Mockra', 'The warren of the mind: what a person thinks they heard, and who they think said it.', () => S.lvl >= 3],
-  [1, 'Shadowthrone', 'King of High House Shadow, on a throne in Shadowkeep. Nobody agrees on what he wants. Everybody agrees he is laughing.', () => godMet('tuft') || seenVis('v3_qb')],
+  [1, 'Shadowthrone', 'King of High House Shadow, on a throne in Shadowkeep. Nobody agrees on what he wants. Everybody agrees he is laughing.', () => godMet('tuft') || watchedVis('v3_qb')],
   [1, 'Soliel, Mistress of Healing', 'A goddess of healing, with temples across the Empire. Healers pray to her. She does not often answer soldiers.', () => godMet('ohl')],
   [1, 'Fener', 'The Boar of Summer, the god of war: the soldiers\' god, for when Hood is standing too close.', () => godMet('sgt')],
   [1, () => godMet('ellis') ? 'Cotillion, the Rope' : 'The Rope', 'The Patron of Assassins, of High House Shadow. The Guild calls on him on the rooftops; anyone with a long drop under them might.', () => godMet('ellis') || (S.chapter || 0) >= 4],
@@ -149,16 +149,17 @@ const GLOSS = [
   [5, 'The Jaghut', 'An ancient race of solitary sorcerers, masters of ice. A few of them made themselves tyrants, and were buried for it.'],
   [5, 'Raest', 'The Jaghut Tyrant in the barrow on the Gadrobi Hills, buried by his own people a very long time ago.', () => S.f.c5_rise || (S.chapter || 0) >= 6],
   [5, "T'lan Imass", 'Undying warriors of bone and flint, bound to hunt the Jaghut for ever. They fought beside the old Emperor.'],
-  [5, 'Otataral', 'A red ore that kills sorcery near it. Nobody with a warren wants to stand close to it. The Elder warrens shrug it off.'],
+  [5, 'Otataral', 'A red ore that kills sorcery near it. Nobody with a warren wants to stand close to it. Some say the Elder warrens shrug it off.'],
   [5, 'The Adjunct', "The Empress's own hand, answerable to nobody below the throne."],
   [6, "Gedderone's Fete", "Darujhistan's spring festival: masks, paper lanterns, and winter chased out of the doorways at dawn."],
   [6, 'Omtose Phellack', 'The Jaghut warren: ice, and the cold that keeps.'],
   [6, 'The Azath', 'Houses that grow out of the ground where they are needed, and keep what is put in them.'],
   [6, 'The Finnest', 'Where a Jaghut keeps their power: set outside the body, in some object, and hidden. A Tyrant without it is less than he was.', () => S.chapters && S.chapters[6] != null],
-  [6, 'Dragnipur', 'A sword that keeps what it kills. They go on, in chains, dragging a wagon through the dark inside it.', () => seenVis('v6_rake')],
+  [6, 'Dragnipur', 'A sword that keeps what it kills. They go on, in chains, dragging a wagon through the dark inside it.', () => watchedVis('v6_rake')],
 ];
 const godMet = id => !!(S && ((S.godsMet || []).includes(id) || (S.gods && (S.gods.used || []).includes(id))));
-const seenVis = id => !!(S && (S.seenVisions || []).includes(id));
+const seenVis = id => !!(S && (S.tuftVisions || []).includes(id)); // Tuft's: seen at a reading, not replayed from the journal
+const watchedVis = id => !!(S && (S.seenVisions || []).includes(id)); // any, the journal's replays too
 /* a row shows from its chapter on, and only once its met() test (if it has one) is true: the player has heard the word */
 function glossHTML(){
   const ch = S ? S.chapter || 0 : 0, val = x => typeof x === 'function' ? x() : x;

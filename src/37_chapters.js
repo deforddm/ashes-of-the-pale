@@ -18,9 +18,9 @@ const CHEND = {
     shield:['You held the roof','A Guild boy came over the parapet with a Tiste Andii behind him and the Fourth stood in between, which is what a line is for, and held three rounds against something that does not lose. Something in Quick Ben\'s sack laughed, and the silver-haired shapes went elsewhere. The boy is alive. The Guild knows which squad did that.'],
     aside:['You stepped aside','A Guild boy came over the parapet with a Tiste Andii behind him and the Fourth let it through. It killed him in one motion, looked at the sergeant, and nodded. Tuft looked into Kurald Galain and it looked back. Ohl\'s list has a name on it he did not put there.'] },
   5:{
-    /* v3.16: Ellis went through after him (c5_ellisThrough); on the Tuft path nobody followed, and Tuft went only to the threshold */
+    /* v3.16: Ellis went through after him (c5_ellisThrough); on the Tuft path nobody followed, and Tuft went only to the threshold (if she died before Ch6, the sergeant held the edge) */
     through:{0:'Into the grey', length:2, get 1(){ const f = (typeof S !== 'undefined' && S && S.f) || {};
-      return 'A puppet opened the world on a hillside and Toc the Younger went through it, and ' + (f.c5_ellisThrough ? 'when Ellis moved to follow him, the sergeant said go' : 'Tuft went to the edge of it after him, as far as the sergeant said and no further') + '. The rent closed. The Hounds came for the puppet and not for you. Something under the hill turned over in its sleep, and Paran rode for the city at dawn with a face like a man who has read the end of the book.'; }},
+      return 'A puppet opened the world on a hillside and Toc the Younger went through it, and ' + (f.c5_ellisThrough ? 'when Ellis moved to follow him, the sergeant said go' : !(S && S.dead && S.dead.tuft && S.dead.tuft.ch <= 5) ? 'Tuft went to the edge of it after him, as far as the sergeant said and no further' : 'the sergeant held the line at the edge of it') + '. The rent closed. The Hounds came for the puppet and not for you. Something under the hill turned over in its sleep, and Paran rode for the city at dawn with a face like a man who has read the end of the book.'; }},
     hold:['You held the line','A puppet opened the world on a hillside and Toc the Younger went through it, and the Fourth held on to its own. The rent closed on nothing. The Hounds came for the puppet and not for you. Something under the hill turned over in its sleep. Somebody in the squad has not forgiven the sergeant, and says so with silence.'] },
 };
 const CHTEASE = {
@@ -69,7 +69,7 @@ function showChapterEnd(){
   if (n === 4) {
     if (S.f.c4_vell) extra.push('Vell is alive. A Guild journeyman owes the Fourth his life, and the Guild pays its debts, one way or the other.');
     if (S.f.c4_guildKnows) extra.push('Ocelot knows a Malazan squad held a roof for one of his. Vell told him, and then told the rest of the clan.');
-    if (S.f.c4_seen) extra.push('A Tiste Andii knows the Fourth\'s faces. That is Rake\'s business now.');
+    if (S.f.c4_seen) extra.push('A Tiste Andii knows the Fourth\'s faces. That is the Spawn\'s business now.');
     if (S.f.c4_tuftDark) extra.push('Tuft has not slept. She says the dark was polite. She says it the way you say a thing you are trying not to say.');
     if (S.f.c4_kalamLook) extra.push('Kalam looked at the sergeant a beat too long before he went up. He knows something was told. He does not know by whom. Yet.');
     if (S.f.c4_reprisalFought) extra.push('Guild blood in the lane and in a cooperage yard. Ocelot sent his knives after the Fourth, and fewer walked home than went out, the old one holding his ribs. Ocelot will count that.');
@@ -84,7 +84,7 @@ function showChapterEnd(){
     if (S.f.c5_toolSaw) extra.push('A T\'lan Imass looked at the ridge, once, and told the sergeant to stay small. That is the kindest thing anyone has said to the Fourth in a month.');
     if (S.f.c5_cusserUsed) extra.push('Kettle used the cusser. She has not stopped talking about it. Brisk wrote it in the ledger with a line under it.');
     if (S.f.c5_spotted) extra.push('The Adjunct\'s camp saw movement on the ridge. Lorn did not look up. The Imass did.');
-    if (S.f.c5_crone) extra.push('Crone says Rake is interested in the hill. Crone laughed when she said it. That is worse.');
+    if (S.f.c5_crone) extra.push('Crone says her lord is interested in the hill. Crone laughed when she said it. That is worse.');
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
   }
   if (n === 1) {

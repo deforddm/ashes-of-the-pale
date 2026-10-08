@@ -13,7 +13,7 @@ const c3Spot = () => { const k = S.f.bonesSpotLast; if (!k) return '';
     : `\n\nFiddler watches his last silver go across the cobbles to Hedge. "That's the first time my silver's ever gone to him on purpose," he says. Hedge, stacking it: "On purpose is the best way."`; };
 const CH3 = {
   title:'Blue Fire', number:'Three',
-  intro:{loc:'Darujhistan', sub:'The Gadrobi District · dusk', cap:'Blue lamps coming on one at a time along the walls, and above the lake a mountain that nobody looks at.',
+  intro:{loc:'Darujhistan', sub:'The Worry Gate · dusk', cap:'Blue lamps coming on one at a time along the walls, and above the lake a mountain that nobody looks at.',
     paras:[
 () => `The road comes down out of the Gadrobi Hills in switchbacks, the way a drunk comes down a stair, and the wagon comes down it the same way, with Brisk at the brake and ${S.f.c2_wagon ? 'Pell the mule' : 'the mule'} expressing an opinion at every turn. There are goats on the slopes and goatherds who do not look up at Malazans, and a shrine to a god whose face somebody has chiselled off with care. Kettle has stopped counting munitions. She is counting chimneys.`,
 `Then the hills open, and there is the lake, flat and grey as a slate, and on the near shore a city so large that the eye refuses it and goes looking for its edges, and does not find them. Walls inside walls. Domes, towers, a hill with palaces on it like teeth. Smoke from ten thousand kitchens. You are Sergeant {sgt}, Fourth Squad, and you have seen Pale and Genabaris and Nathilog, and you have never seen anything that made you feel so precisely the size of one wagon.`,

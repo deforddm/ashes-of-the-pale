@@ -692,7 +692,7 @@ ${SQUAD().includes('tuft') ? `Tuft is watching the place where the coin was. "Th
 
     c6_rallick:()=>({sp: S.f.c4_rallick ? 'The man from the ridge' : 'A man in a doorway', fx:()=>{ S.f.c6_rallick=1; }, txt: S.f.c6_rallick ?
 `He's still in the doorway, still watching the gate. He hasn't moved. You get the feeling he could stand there a year.` :
-`He's in the doorway of a shuttered house on the south side of the street, in a dark plain coat, with a cheap tiger mask hanging from his belt and not on his face, as if the Fete were weather he'd decided not to be out in until he had to. You didn't see him until you were next to him. ${S.f.c4_rallick ? `You know him. The ridge on the Gadrobi roofs; the window three streets north. He knows you too.` : ''}
+`He's in the doorway of a shuttered house on the south side of the street, in a dark plain coat, with a cheap tiger mask hanging from his belt and not on his face, as if the Fete were weather he'd decided not to be out in until he had to. You didn't see him until you were next to him. ${S.f.c4_rallick ? `You know him. The ridge on the Gadrobi roofs; the window up on the hill. He knows you too.` : ''}
 
 ${S.f.c4_rallick ? `He looks at you. He doesn't say *go home* this time. He said it on a roof, and you didn't listen then either.` : `"Go home, Malazan," he says, without looking at you. "This isn't your war."`}
 
@@ -1755,7 +1755,7 @@ She hasn't left the squad. She'll walk back to the crossing with you in the morn
 
     /* ---- the Tyrant ---- */
     c6_tyrant:()=>{ const kn = S.f.c6_mammotKnown, eye = C6H.here(S.f.c6_mammotEye) ? S.f.c6_mammotEye : null, nm = id => C6H.nm(id, 'you');
-      return {sp:'The old priest', scene:'garden_storm', fx:()=>{ if (!S.f.c6_tuft) S.f.c6_tuft = S.f.c6_badgeCold ? 'dark' : 'kept'; S.f.c6_tyrantUp=1; }, txt:
+      return {sp:'The old priest', scene:'garden_storm', fx:()=>{ if (!S.f.c6_tuft) S.f.c6_tuft = S.f.c6_badgeCold ? 'dark' : C6H.here('tuft') ? 'kept' : 'gone'; /* v3.16: 'kept' only if Tuft is alive and here; 'gone' keeps the garden gates shut and matches no fate */ S.f.c6_tyrantUp=1; }, txt:
 `${kn ? `You're watching the white steps when it starts, because of what ${nm(kn)} saw on the terrace; which is why you see the rest.` : `You're looking at the sky when it starts, which is why you miss the rest.`}
 
 Out of the east, over the city, five shapes are coming back toward the Moon's Spawn. Winged, long-necked, bigger than any bird has a right to be, and the first of them is red where the lanterns catch it. They fly low and slow and without a sound, the way hurt things fly: the red one with a wing that won't open all the way, the last of them dropping behind and labouring to catch up. Wherever they went tonight, it cost them. ${kn ? `You see them only at the edge of your eye. You don't look up.` : `Nobody in the garden sees them but you.`}
@@ -2353,7 +2353,7 @@ ${S.f.c6_key === 'bridgeburners' ? `And the house is still there.` : `And there'
 
 At the far end of the lawn, where the flowerbed was, where the Adjunct knelt and a black stick grew, ${S.f.c6_key === 'bridgeburners' ? `there's the house you watched come up out of the lawn in the night, with the Tyrant going into it. In daylight it's worse.` : `there's a house that wasn't there last night.`} It isn't large. Squat and dark, made of wood that is still growing, you'd swear, if you stood and watched it long enough: a peaked roof, a door, one small window with a light in it that isn't any colour a lamp makes. Round it, a yard. And in the yard, mounds. Low grassed mounds, a dozen or more, as if the house had arrived with its graves already dug. One of them is fresh. Bare earth, still dark with the wet.${preUsed('garden_hound') ? ` And out of the yard, across the lawn, runs a single ridge of root, black, the thickness of a man's arm, to the scorched patch by the east wall where Kettle's sharper went off, and stops there, like a dog that has come to the end of its chain to see who knocked.` : ''}
 
-Nobody in the Fourth says who's under it. Nobody knows. The man in the plain coat is nowhere.
+Nobody in the Fourth says who's under it. Nobody knows.
 
 An old man in dark red robes is standing at the edge of the yard with his hands folded, looking at the mounds the way you'd look at a grave you had come a long way to stand at.${C6H.here(S.f.c6_darkMissed) ? ` When the Fourth comes level with him he turns his head, and finds ${S.f.c6_darkMissed === 'sgt' ? 'you' : NAME(S.f.c6_darkMissed)}, and inclines his own: once, slow, with the eyes kept up. The right way. Then he goes back to his mounds, a man who has corrected a sum and does not need to be thanked for it.` : ''}
 

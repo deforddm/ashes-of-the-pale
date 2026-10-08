@@ -338,7 +338,7 @@ It tells you anyway. Ravens can't help it; it's why they're kept.
 
 "A tyrant, child. A Jaghut. One of the old ones, the ones who were kings when kings meant something, which is to say when they meant *everyone else is dead*. He was put in that hill by his own kind and they sat on the lid, and then they went away, and the lid has been sitting on itself ever since." It preens. "And now a bag of bones with a flint sword is taking the lid off, for a woman who carries a hole in the world on her hip, for an Empress who wants a tyrant of her own. Oh, it is *so* Malazan."
 
-"My lord is *interested* in that hill." It says the word the way you'd say the name of a very sharp knife. "Anomander Rake does not get interested often. When he does, things change shape. Cities. Continents. Soldiers." It looks you over, from boots to helm, slowly. "I came to see what shape things will be. I will tell him you were here. He will not care. That is the kindest thing I can promise you."
+"My lord is *interested* in that hill." It says the word the way you'd say the name of a very sharp knife. "My lord does not get interested often. When he does, things change shape. Cities. Continents. Soldiers." It looks you over, from boots to helm, slowly. "I came to see what shape things will be. I will tell him you were here. He will not care. That is the kindest thing I can promise you."
 
 And then it laughs, and laughs, the cracked crow's laugh going out over the ridge and the vale and the thread of smoke, and not one of the Rhivi turns round.`,
       ch:[{t:'"Get off the stone."', go:'c5_crone_off'}]}),
