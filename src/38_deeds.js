@@ -14,26 +14,29 @@ const statsHTML = s => `<div class="kv stats">${statsRows(s).map(([k, v]) => `<s
 const allSergeants = () => roster().list.map(e => ({e, s:e.id === (S && S.sid) ? S : loadSlot(e.id)})).filter(x => x.s);
 
 /* ---- the route: the Fourth's road across Genabackis, drawn as far as the sergeant has come ---- */
-const ROUTE = [ // chapter -> where on the map (0..1), what to call it, and where its name sits (a: 'l' left of the mark, 'c' above it, else right; dy nudges it down)
-  {x:.12, y:.14, t:'The Pale'}, {x:.2, y:.3, t:'The Pale camp'}, {x:.36, y:.44, t:'The Rhivi Plain'}, {x:.55, y:.6, t:'Darujhistan', a:'l'},
-  {x:.6, y:.74, t:'The Daru roofs', a:'l', dy:10}, {x:.8, y:.44, t:'The Gadrobi Hills', a:'c'}, {x:.66, y:.86, t:'The Fete', dy:12}, {x:.86, y:.7, t:'The quorl hill', a:'l'}];
+const ROUTE = [ // chapter -> where on the map (0..1), what to call it, where its name sits (a: 'l' left of the mark, 'c' above it, else right; dy nudges it down), and the road walked to reach it (via)
+  {x:.36, y:.12, t:'Pale', a:'l'}, {x:.4, y:.18, t:'The camp at Pale', a:'l', dy:8}, {x:.6, y:.34, t:'The Rhivi Plain'},
+  {x:.5, y:.78, t:'Darujhistan', a:'l', via:[[.76, .36], [.82, .46], [.76, .58], [.64, .68]]}, {x:.44, y:.9, t:'The Daru roofs', a:'l', dy:8},
+  {x:.76, y:.58, t:'Gadrobi Hills', a:'l', via:[[.64, .68]]}, {x:.54, y:.88, t:'The Fete', dy:10, via:[[.64, .68]]}, {x:.7, y:.63, t:'The quorl hill', dy:16, via:[[.64, .68]]}];
 function drawRoute(cv, s, t){
   const {ctx, W, H} = (() => { const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if (cv.width !== Math.round(w*dpr)) { cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); } const c = cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); return {ctx:c, W:w, H:h}; })();
   if (!W) return;
-  // parchment, the lake, the hills, the plain
+  // parchment, the lake, the hills, the plain (the same lie of the land as the Genabackis map: the lake south of Pale, the city on its south-east shore)
   const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2a2218'); bg.addColorStop(1, '#1c1610'); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = 'rgba(0,0,0,.18)'; for (let i = 0; i < 60; i++) ctx.fillRect(hash(i, 3)*W, hash(i, 4)*H, 1 + hash(i, 5)*2, 1);
-  ctx.fillStyle = '#16304a'; ctx.beginPath(); ctx.ellipse(W*.66, H*1.02, W*.34, H*.2, 0, 0, 7); ctx.fill(); // Lake Azur
-  ctx.fillStyle = 'rgba(106,168,255,.18)'; ctx.font = `italic ${Math.round(Math.max(10, H*.05))}px 'IM Fell English', serif`; ctx.textAlign = 'center'; ctx.fillText('Lake Azur', W*.84, H*.97);
-  for (let i = 0; i < 9; i++) { const hx = W*(.72 + hash(i, 7)*.2), hy = H*(.42 + hash(i, 8)*.22); poly(ctx, [[hx - 12, hy + 6], [hx, hy - 8], [hx + 12, hy + 6]], 'rgba(90,70,48,.55)'); } // the Gadrobi Hills
-  for (let i = 0; i < 14; i++) ctx.fillStyle = 'rgba(140,130,90,.12)', ctx.fillRect(W*(.28 + hash(i, 9)*.3), H*(.32 + hash(i, 10)*.2), 10, 1); // the plain's grass
-  ctx.fillStyle = 'rgba(40,30,22,.9)'; ctx.fillRect(W*.1, H*.12, W*.08, H*.08); // the ruins of Pale
-  const reached = [0, 1, 2, 3, 4, 5, 6, 7].filter(n => n <= (s.chapter || 0)), pts = reached.map(n => ({x:ROUTE[n].x*W, y:ROUTE[n].y*H}));
-  // the Moon's Spawn: over Pale at the start, over the city from chapter 3
-  const spawn = (s.chapter || 0) >= 3 ? {x:W*.62, y:H*.5} : {x:W*.22, y:H*.08}; ell(ctx, spawn.x, spawn.y, W*.05, H*.035, '#07070a'); glow(ctx, spawn.x, spawn.y, W*.08, '#9a86e0', .08);
+  ctx.fillStyle = '#16304a'; ctx.beginPath(); ctx.ellipse(W*.36, H*.58, W*.2, H*.18, 0, 0, 7); ctx.fill(); // Lake Azur
+  ctx.fillStyle = 'rgba(106,168,255,.22)'; ctx.font = `italic ${Math.round(Math.max(10, H*.06))}px 'IM Fell English', serif`; ctx.textAlign = 'center'; ctx.fillText('Lake Azur', W*.32, H*.6);
+  for (let i = 0; i < 6; i++) { const hx = W*(.47 + i*.035), hy = H*(.2 + (i % 2)*.04); poly(ctx, [[hx - 7, hy + 5], [hx, hy - 6], [hx + 7, hy + 5]], 'rgba(90,70,48,.5)'); } // the Tahlyn Mountains
+  for (let i = 0; i < 9; i++) { const hx = W*(.7 + hash(i, 7)*.18), hy = H*(.5 + hash(i, 8)*.24); poly(ctx, [[hx - 10, hy + 5], [hx, hy - 6], [hx + 10, hy + 5]], 'rgba(90,70,48,.45)'); } // the Gadrobi Hills
+  for (let i = 0; i < 14; i++) ctx.fillStyle = 'rgba(140,130,90,.12)', ctx.fillRect(W*(.15 + hash(i, 9)*.6), H*(.05 + hash(i, 10)*.3), 10, 1); // the plain's grass
+  ctx.fillStyle = 'rgba(40,30,22,.9)'; ctx.fillRect(W*.36 - 7, H*.12 - 6, 14, 12); // the ruins of Pale
+  const ch = s.chapter || 0, reached = [0, 1, 2, 3, 4, 5, 6, 7].filter(n => n <= ch), pts = [];
+  reached.forEach(n => { (n ? ROUTE[n].via || [] : []).forEach(([x, y]) => pts.push({x:x*W, y:y*H})); pts.push({x:ROUTE[n].x*W, y:ROUTE[n].y*H}); });
+  // the Moon's Spawn: it left Pale three days before the prologue; over the lake from chapter 3 until it moves off west after the Fete
+  if (ch >= 3 && ch <= 6) { const spawn = {x:W*.4, y:H*.5}; ell(ctx, spawn.x, spawn.y, W*.05, H*.035, '#07070a'); glow(ctx, spawn.x, spawn.y, W*.08, '#9a86e0', .08); }
   // the road
   ctx.strokeStyle = 'rgba(232,192,115,.75)'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.setLineDash([]);
-  ROUTE.forEach((r, n) => { const x = r.x*W, y = r.y*H, on = n <= (s.chapter || 0), here = n === (s.chapter || 0) && !(s.chapters && s.chapters[7] != null);
+  ROUTE.forEach((r, n) => { const x = r.x*W, y = r.y*H, on = n <= ch, here = n === ch && !(s.chapters && s.chapters[7] != null);
     if (!on) { ctx.fillStyle = 'rgba(200,190,170,.18)'; ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill(); return; }
     if (here) glow(ctx, x, y, 18, '#e8c073', .35 + Math.sin(t/300)*.15);
     ctx.fillStyle = here ? '#e8c073' : '#c9973f'; ctx.beginPath(); ctx.arc(x, y, here ? 5 : 3.5, 0, 7); ctx.fill();
