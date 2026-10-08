@@ -579,11 +579,11 @@ Then: "Sergeant." And the conversation, such as it was, is over, and something i
 
 "Sergeant. Fine night for a walk."
 
-${S.f.decoy ? `He holds out a satchel. Kettle's. "Your sapper's ledger. Every stick accounted for, one of them named, and a spoon listed under *equipment*. I've read the Imperial tax code, Sergeant. I've never been so thoroughly bored by a document." He lets Kettle take it. "Keep it. Lose it again and I'll know where to look."${S.f.p_kettleLooked && SQUAD().includes('kettle') ? ` He looks at her a moment longer. "Red hair under the soot," he says. "I wrote that down as well."` : ''}` :
+${S.f.decoy ? `He holds out a satchel. Kettle's. "Your sapper's ledger. Every one accounted for, one of them named, and a spoon listed under *equipment*. I've read the Imperial tax code, Sergeant. I've never been so thoroughly bored by a document." He lets Kettle take it. "Keep it. Lose it again and I'll know where to look."${S.f.p_kettleLooked && SQUAD().includes('kettle') ? ` He looks at her a moment longer. "Red hair under the soot," he says. "I wrote that down as well."` : ''}` :
   S.f.gaveClaw ? `"The High Mage sends his regards." A beat. "He doesn't, in fact. But it's the form, and you were helpful, and I like to see helpful people rewarded with the form."` :
   S.f.marked ? `"I know the name now. {sgt}. It's a good name." He lets that sit. "Try to keep it attached."` :
   S.f.clawFooled ? `"Grave detail," he says, pleasantly. "You'd be surprised how much of the camp has been on grave detail this week. Whole squads of it. Nobody's dug anything."${S.f.p_clawFaces ? ` He looks along the Fourth one face at a time, the way he did at the crater. "I remember faces, Sergeant. It's a failing. I'm working on it."` : ''}` :
-  `"Another time, I said, at the tunnel mouth. This is another time." He lets you look at his empty hands. "You'll have heard we're flying south. Not you. You're the wagon. I find I approve. Wagons see the country."${named && named !== 'sgt' ? ` He nods to ${NAME(named)}, by name. Nobody has told him it.` : named ? ` "I keep my appointments, Sergeant."` : ''}`}${S.f.c1_kalamWary ? `
+  `"Another time, I said, at the tunnel mouth. This is another time." He lets you look at his empty hands. "You'll have heard the Bridgeburners are flying south. Not you. You're the wagon. I find I approve. Wagons see the country."${named && named !== 'sgt' ? ` He nods to ${NAME(named)}, by name. Nobody has told him it.` : named ? ` "I keep my appointments, Sergeant."` : ''}`}${S.f.c1_kalamWary ? `
 
 His eyes go past your shoulder, once, to the dark between two tents, and come back. "You've brought a friend," he says. You haven't. You don't look round. You're fairly sure Kalam would rather you didn't.` : ''}`,
       ch:[{t:'"Who are you?"', go:'c1_claw_who'},
@@ -732,7 +732,7 @@ The first Hound comes through the tents like a wave through a fence. It's the co
     c1_claw_go:()=>({sp:'The cadre tent', fx:()=>{S.f.c1_key='claw'; loy('tuft',-2); loy('brisk',-1); S.f.clawFavour=1;}, txt:
 `"The crate," you say. Tuft makes a sound. Brisk doesn't, which is worse.
 
-Two figures come out of the dark on your flanks, grey, quiet, with knives already out and faces you'll never be able to describe. They don't look at you. They look at the tent, and the crate in it, and the flames.
+Two figures come out of the dark on your flanks, grey, quiet, with knives already out and faces you'll never be able to describe. They came into the camp after the city fell, and they aren't the Host's. They don't look at you. They look at the tent, and the crate in it, and the flames.
 
 The grey cloak, to nobody: "Three rounds, Sergeant. Then we tidy."
 
