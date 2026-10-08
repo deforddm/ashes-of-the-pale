@@ -181,7 +181,7 @@ ${SQUAD().includes('brisk') ? `Brisk looks at the gap, and then back the way you
     if (C5H.who('c5_otDusted')) x.push(`Red dust in ${C5H.third('c5_otDusted')}'s seams that will not brush out. Tuft has noticed.`);
     if (f.c5_cloakGone) x.push('Ellis\'s cloak went into the grey after Toc. She wears his now.');
     else if (f.c5_holdMissed) x.push('Ellis took her cloak back from Brisk at dawn. Not from the sergeant. From Brisk.');
-    if (f.c5_houndPassed) x.push(`Two Hounds of Shadow looked across a fold in the hills at the Fourth and saw stones. ${C5H.third('c5_houndBy').replace(/^t/, 'T')} made sure of it.`);
+    if (f.c5_houndPassed) x.push(`The Hounds of Shadow looked across a fold in the hills at the Fourth and saw stones. ${C5H.third('c5_houndBy').replace(/^t/, 'T')} made sure of it.`);
     else if (C5H.who('c5_houndLooked')) x.push(`A Hound of Shadow looked at ${C5H.third('c5_houndLooked')} for one heartbeat, the way a dog looks at a door it means to know again.`);
     return x; },
 
@@ -1243,7 +1243,7 @@ ${S.f.c1_key ? `You've heard it before. At Pale, in the tent lines, the night th
 
 They come out of the rent at a run.
 
-Two of them. The size of horses. Black, or the colour of the place where black ends, with eyes like lamps seen through smoke. They come out of the grey onto the hillside in one long stride and the turf tears under their feet like cloth, and they go *past you*.
+Two of them, and then more behind, too many and too fast to count: the pack. The size of horses. Black, or the colour of the place where black ends, with eyes like lamps seen through smoke. They come out of the grey onto the hillside in one long stride and the turf tears under their feet like cloth, and they go *past you*.
 
 ${C5H.tuftOut() ? `Past Tuft at the lip, so close the wind of them lifts her hair. ` : ''}Past the fire. Past ${SQUAD().includes('brisk') ? `Brisk with her shield up` : `the squad`}, close enough to touch. Past you. The wind of them goes over you like a wave. They don't look at you. They don't look at anything. They go up the hillside toward the crest, and the thing sitting on it, and the thing sitting on it stops laughing.
 
@@ -1258,11 +1258,11 @@ It gets up the way a man gets up who has forgotten he has no legs: all at once, 
 
 It runs. Over the crest, and down the far side, and up the next hill, a small painted figure bounding across the starlit grass on its strings like a child's toy thrown down a stair.
 
-The Hounds catch it on the next hill.
+Then something falls out of the sky onto the grass of the next hill. Loose, and slow, curling as it falls, the way a kite-string falls when the kite has gone. The puppet's strings. They go slack all at once, from the nothing they were hanging from, as if somebody somewhere had cut them, and drift down, and lie on the hillside like cobweb. The puppet goes down in the grass in a heap.
 
-You see it against the stars. You'll wish you hadn't. Two shapes the size of horses, and one small shape between them, and then the small shape is in two places, and then in more than two. The sound comes across the fold a heartbeat late: wood, splitting. A great deal of wood, splitting, and under it, a man's voice going up and up and up, and then, very suddenly, not.
+The Hounds catch it there.
 
-Something falls out of the sky onto the grass of the next hill. Loose, and slow, curling as it falls, the way a kite-string falls when the kite has gone. The puppet's strings. They go slack all at once, from the nothing they were hanging from, and drift down, and lie on the hillside like cobweb.
+You see it against the stars. You'll wish you hadn't. Shapes the size of horses, and one small shape among them, and then the small shape is in two places, and then in more than two. The sound comes across the fold a heartbeat late: wood, splitting. A great deal of wood, splitting, and under it, a man's voice going up and up and up, and then, very suddenly, not.
 
 The Hounds stand over what's left, for a moment. One of them lifts its head, and looks, across the fold, at the fire. At Paran, standing with his sword in his hand. At the Fourth.
 
@@ -1303,11 +1303,39 @@ Then it looks away.
 ${by({kettle:`Kettle lets out the rest of the breath, very slowly. "It *looked* at me," she whispers. "Sergeant. Why does everything *look* at me?"`, _:''})}`,
       ch:[{t:'—', go:'c5_hounds_gone'}]}),
     c5_hounds_gone:()=>({sp:'The next hill', scene:'hills_night', txt:
-`Then they're gone. Not over the hill. Just gone, the way a shadow goes when the lamp's moved.
+`Then they turn.
 
-Paran lowers his sword. He's alive. He's standing by the dead fire with the sword hanging from his hand, alive, looking at the next hill, and you understand from his face that he'd expected, when the Hounds came out of the grey, that they had come for him.
+Not away. Toward the fold. They come down off the next hill together, not hurrying, low to the grass, the size of horses, and the lamp-eyes are on Paran and only on Paran.${S.f.c5_houndPassed ? ` They don't so much as glance at the fire. Whatever ${C5H.nm('c5_houndBy')} did on the hillside, it's holding.` : C5H.who('c5_houndLooked') ? ` Only on him; except once, coming down, so quick you'd have missed it if you weren't watching for it, a flick of lamp-light across the fold to ${C5H.nm('c5_houndLooked')}, and back. Like a dog checking a door.` : ''}
 
-"Not me," he says. Quite quietly. "Not this time." He sounds almost disappointed. He sounds like a man who has been told that the debt is still outstanding.
+Paran draws. You hear the sword come out, a thin clean sound. He doesn't run. He walks out from the fire to the foot of the slope to meet them, as if he'd been waiting for this since Pale, and you're up and running, ${SQUAD().includes('brisk') ? `Brisk beside you with the shield, ` : ''}and twenty paces is too far. It's much too far.
+
+Then the dark behind the Hounds stands up.
+
+A man. Taller than any man. Hair to his waist, white, gone silver under the stars. And a sword, a great two-handed sword, black, that doesn't take the starlight: the air round the blade smokes, the way air smokes round an iron bar left out in a hard frost.
+
+The first Hound turns to meet him, faster than anything you've ever seen move, and dies anyway. The black sword takes it across the shoulders. It doesn't fall the way things fall. It drops, all at once, as if whatever held it up had been taken somewhere else.
+
+And you hear chains.
+
+Not near. A long way off, and all round, and under your boots: a great many chains, heavy, dragging over stone, as if the sword were a door and on the far side of it something had just taken up the slack. It goes on for a long moment. Then it stops.
+
+The second Hound is on Paran. He's down under it, with his sword in it to the hilt and its jaws at his shoulder, and the tall man walks the three paces to it without hurrying and brings the black sword down across its back. The chains again. Louder. Closer. The Hound slumps across Paran like a dropped tent, and its blood comes out over him, black in the starlight, over his chest and his arms and his hands.
+
+The rest of the pack is gone. Not over the hill. Just gone, the way a shadow goes when the lamp's moved.
+
+The tall man stands over Paran. He looks for a long time at the sword in Paran's hand, the ordinary-looking sword, the way you'd look at a coin somebody had just tossed. Then he speaks to him, low and unhurried, like a man remarking on the weather. You're too far off for most of it. You catch the end: "*…when your luck turns, Captain, break it.*"
+
+Then he looks up, across the fold, at the fire, and at you. The black sword goes over his shoulder, and the sound of chains goes with it, dwindling, and he walks back into the dark he came out of, and the dark closes.
+
+${SQUAD().includes('tuft') ? `Tuft has both hands over her ears, and it isn't the chains she's keeping out. ${seenVis('v5_paran') ? `"It's the wagon," she says. "The one in the card. Sergeant, there are *people* in that sword, pulling, and I've *seen* them."` : `"There are people in it," she says. "In the sword. Sergeant, there are *people* in that sword, pulling."`}
+
+` : ''}${SQUAD().includes('ohl') ? `Ohl, on his knees by the fire, very quietly: "Hood didn't get those two. Something else did. Something that keeps what it takes."
+
+` : ''}It takes ${SQUAD().includes('brisk') ? `Brisk and you` : `three of you`} to get the Hound off him. It's heavier than it should be, and cold, and it doesn't smell of anything at all. Paran doesn't help. He's lying on his back with his eyes open and one hand closed tight on the blood, and he isn't behind his eyes. For a long count of breaths he isn't anywhere. Then he breathes in like a man coming up out of deep water, and he is.
+
+He gets up on his own. He stands in the starlight with his sword in one hand and his hands black to the wrist, and he looks at them, and then at the dark where the tall man went.
+
+"Not this time," he says. He doesn't sound like anything.
 
 The rent on the hillside curls in at the edges, and closes, and is grass.`,
       ch:[{t:'Tuft.', req:()=>S.f.c5_key === 'through' && !S.f.c5_ellisThrough, go:'c5_tuft_back'},
@@ -1321,7 +1349,7 @@ There's grey in her hair.
 
 Not much. A lock of it, at the left temple, where the wind of the rent was strongest. It wasn't there at dusk. It's the grey of ash, the grey of an old woman's plait, and it doesn't take the firelight, and when she moves her head it doesn't quite move with the rest.
 
-"I didn't go in," she says. "I want you to know. I stood at the threshold. Like you said." She looks at the fire. "They came past me. The Hounds. Both of them. Close enough that I could feel the heat off them, and they're not hot, Sergeant, they're *cold*, they're cold like the space under a door."
+"I didn't go in," she says. "I want you to know. I stood at the threshold. Like you said." She looks at the fire. "They came past me. The Hounds. All of them. Close enough that I could feel the heat off them, and they're not hot, Sergeant, they're *cold*, they're cold like the space under a door."
 
 "One of them stopped." Her voice is quite calm. "Just for a heartbeat. On the threshold, next to me. It put its head down and smelled my hand. The way a dog does, when it's deciding if it knows you." A pause. "And then it went on. It was very polite about it."
 
@@ -1343,37 +1371,9 @@ ${SQUAD().includes('ohl') ? `Ohl has the oilcloth on his knee. He hasn't opened 
 Nobody sleeps. The stars go round.`,
       ch:[{t:'Keep watch.', go:'c5_hounds'}]}),
     c5_hounds:()=>({sp:'The fold below the far hill', scene:'hills_night', fx:()=>{ S.f.c5_rakeNight=1; }, txt:
-`Past the middle of the night Paran goes out of the firelight. Not far: to the lip of the fold, twenty paces, where he can see the next hill and the pale litter of strings on it. He stands there with his back to the fire. You watch him go. You're the only one who does.
+`Past the middle of the night Paran goes out of the firelight. Not far: to the place where the Hounds died, twenty paces off. There's nothing there now. Nobody saw anyone take them. He stands over the torn turf with his back to the fire, looking at his hands. You watch him. You're the only one who does.
 
-So you see them come.
-
-No baying this time. No grey. Two shapes on the slope above him where a heartbeat ago there were none, low to the grass, the size of horses: not the pair from the rent, you'd swear to that, but two more of the same kind, and the lamp-eyes are on him and only on him. They aren't passing anything tonight.${S.f.c5_houndPassed ? ` They don't so much as glance at the fire. Whatever ${C5H.nm('c5_houndBy')} did on the hillside, it's holding.` : C5H.who('c5_houndLooked') ? ` Only on him; except once, going past, so quick you'd have missed it if you weren't watching for it, a flick of lamp-light across the fold to ${C5H.nm('c5_houndLooked')}, and back. Like a dog checking a door.` : ''}
-
-Paran draws. You hear the sword come out, a thin clean sound, and you're up and running, ${SQUAD().includes('brisk') ? `Brisk beside you with the shield, ` : ''}and twenty paces is too far. It's much too far.
-
-Then the dark behind the Hounds stands up.
-
-A man. Taller than any man. Hair to his waist, white, gone silver under the stars. And a sword, a great two-handed sword, black, that doesn't take the starlight: the air round the blade smokes, the way air smokes round an iron bar left out in a hard frost.
-
-The first Hound turns to meet him, faster than anything you've ever seen move, and dies anyway. The black sword takes it across the shoulders. It doesn't fall the way things fall. It drops, all at once, as if whatever held it up had been taken somewhere else.
-
-And you hear chains.
-
-Not near. A long way off, and all round, and under your boots: a great many chains, heavy, dragging over stone, as if the sword were a door and on the far side of it something had just taken up the slack. It goes on for a long moment. Then it stops.
-
-The second Hound is on Paran. He's down under it, with his sword in it to the hilt and its jaws at his shoulder, and the tall man walks the three paces to it without hurrying and brings the black sword down across its back. The chains again. Louder. Closer. The Hound slumps across Paran like a dropped tent, and its blood comes out over him, black in the starlight, over his chest and his arms and his hands.
-
-The tall man stands over them. He looks down at Paran under the dead Hound. He looks for a long time at the sword in Paran's hand, the ordinary-looking sword, the way you'd look at a coin somebody had just tossed. Then he looks up, across the fold, at the fire, and at you.
-
-He says nothing. The black sword goes over his shoulder, and the sound of chains goes with it, dwindling, and he walks back into the dark he came out of, and the dark closes.
-
-${SQUAD().includes('tuft') ? `Tuft has both hands over her ears, and it isn't the chains she's keeping out. "There are people in it," she says. "In the sword. Sergeant, there are *people* in that sword, pulling."
-
-` : ''}${SQUAD().includes('ohl') ? `Ohl, on his knees by the fire, very quietly: "Hood didn't get those two. Something else did. Something that keeps what it takes."
-
-` : ''}It takes ${SQUAD().includes('brisk') ? `Brisk and you` : `three of you`} to get the Hound off him. It's heavier than it should be, and cold, and it doesn't smell of anything at all. Paran gets up on his own. He stands in the starlight with his sword in one hand and his hands black to the wrist, and he looks at them, and then at the dark where the tall man went.
-
-"Not this time," he says again. He doesn't sound disappointed now. He doesn't sound like anything.
+He stays there till the stars have gone round a long way. Once he wipes his hands on his coat, slowly, and looks at them again, and stops trying.
 
 Nobody sleeps. Somewhere before dawn there's a sound of hooves, slow and uneven, coming down into the fold from the west, and Toc's horse walks into the last of the firelight dragging its reins, lathered and shaking, and stops by the fire because it has nowhere else to stop.`,
       ch:[{t:'Dawn.', go:'c5_dawn'}]}),
@@ -1419,7 +1419,7 @@ It's the right sentence. You'll think about it for a long time, and you won't fi
     c5_dawn_ridge:()=>({sp:'The long ridge', scene:'hills', txt:
 `Up the fall, in the grey light, with the scree going out from under you and nobody caring now how loud it is.
 
-The Rhivi are still on the ridge. They've been there all night; you can see it in how they're lying. They watched the frost go out round the long barrow. They watched the grey light on the far hill, and the two shapes that came out of it, and the tall one that came after them out of the dark, and went back into it. They watched the Adjunct go by in the dark, alone, and did not shoot, and are still alive because they did not.
+The Rhivi are still on the ridge. They've been there all night; you can see it in how they're lying. They watched the frost go out round the long barrow. They watched the grey light on the far hill, and the shapes that came out of it, and the tall one that came after them out of the dark, and went back into it. They watched the Adjunct go by in the dark, alone, and did not shoot, and are still alive because they did not.
 
 The woman with the bundle is standing, below the crest, among the horses. She has it in both arms now, against her chest, the good red Rhivi wool, and she's looking west, toward the city, the way the Adjunct went. The bundle is very still.${S.f.c5_sethBundle ? ` It looks bigger than it did yesterday. Nobody says so.` : S.f.c2_key === 'light' ? ` It's bigger than it was on the plain. Nobody says so.` : ''}
 
@@ -1520,7 +1520,7 @@ The grey lock at her temple is still there in daylight. It's the colour of ash. 
 
 "Near the Adjunct there was nothing," she says. "A hole in the world. I couldn't feel Meanas, I couldn't feel *me*. I've never been so frightened." She turns the top card over. It's blank; the paint's worn off. She turns it back. "And then the rent, and it was everything. And the Hounds came out of it and went past us like we were furniture."
 
-"Somebody sent them." She looks west, toward the city. "Somebody who knew exactly where that puppet would be. That's the part I can't stop thinking about. We weren't the only ones watching this hill."`}
+"Somebody sent them." She looks west, toward the city. "Somebody who knew exactly where that puppet would be. That's the part I can't stop thinking about. We weren't the only ones watching this hill."${seenVis('v3_qb') ? ` She doesn't look at you. "I know who. I watched one of Whiskeyjack's sell that puppet to Shadow, in the card, and laugh about it after. I just didn't know it would be *here*."` : ''}`}
 
 ${C5H.red() ? `Her eyes go, despite herself, to ${C5H.red() === 'sgt' ? 'your hands' : NAME(C5H.red())}. "${typeof trickBy === 'function' && trickBy('otataral') ? `And now one of us is carrying a pinch of *her*,` : `And now one of us has *her* in their seams,`}" she says. "Like salt. Like it's nothing." She doesn't say she minds. ${C5H.red() === 'sgt' ? `She shifts, very slightly, away from you; and then, ashamed of it, back.` : `She shifts, very slightly, so that you're between her and it.`}` : ''}`,
       ch:[{t:'Back to the row.', go:'c5_close'}]}),

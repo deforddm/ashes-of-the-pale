@@ -1967,7 +1967,7 @@ The sound comes a heartbeat later, faint, over the whole city at once. Chains. T
 
 Then nothing. The pale thing is gone. Not dead. *Gone*, the way a thing goes that's been taken somewhere.
 
-${SQUAD().includes('tuft') ? (S.card === 'chains' ? `Tuft has her hand over her sleeve, over the Deck. "Bound," she whispers. "At both ends. It came up at the gate. I didn't know what it *meant*."` : `"That sword," Tuft says. She's shaking. "Everything it kills goes *with* it. I felt that one go. It's still going."`) : ''}
+${SQUAD().includes('tuft') ? (S.card === 'chains' ? `Tuft has her hand over her sleeve, over the Deck. "Bound," she whispers. "At both ends. It came up at the gate. ${seenVis('v6_rake') ? `I saw it in the card, and I still didn't believe it.` : `I didn't know what it *meant*.`}"` : `"That sword," Tuft says. She's shaking. "Everything it kills goes *with* it. I felt that one go. It's still going."`) : ''}
 
 ${SQUAD().includes('ohl') ? `Ohl has the oilcloth half out. He doesn't write. "No," he says. "Whatever that was, it isn't mine. Hood didn't get it. Something else did."` : ''}
 
@@ -2097,7 +2097,7 @@ ${SQUAD().includes('kettle') ? `Kettle is sitting at the top of the ladder with 
 
 "No," she agrees. "We did the other thing." She looks down the hole at the dark where the cussers are, doing nothing. "I like the other thing."` : ''}
 
-${SQUAD().includes('tuft') && S.card === 'chains' ? `Tuft has her hand over her sleeve, over the Deck. "Bound," she whispers. "At both ends. I didn't know what it *meant*."` : ''}`,
+${SQUAD().includes('tuft') && S.card === 'chains' ? `Tuft has her hand over her sleeve, over the Deck. "Bound," she whispers. "At both ends. ${seenVis('v6_rake') ? `I saw it in the card, and I still didn't believe it.` : `I didn't know what it *meant*.`}"` : ''}`,
       ch:[{t:'Back up the hill. Dawn.', go:'c6_dawn'}]}),
 
     /* ==== the choice: the alley ==== */
@@ -2285,7 +2285,7 @@ The sound comes a heartbeat later, faint, over the whole city at once. Chains, d
 
 Then the pale thing is gone. Not dead. *Gone*, the way a thing goes that's been taken somewhere.
 
-${SQUAD().includes('tuft') ? (S.card === 'chains' ? `Tuft has her hand over her sleeve, over the Deck. "Bound," she whispers. "At both ends. It came up at the gate. I didn't know what it *meant*."` : `Tuft is looking at the roof where the smoke was. Near the Adjunct she felt nothing; she's feeling something now. "Everything it kills goes *with* it," she says. "Sergeant. I felt that go. It's still going."`) : ''}
+${SQUAD().includes('tuft') ? (S.card === 'chains' ? `Tuft has her hand over her sleeve, over the Deck. "Bound," she whispers. "At both ends. It came up at the gate. ${seenVis('v6_rake') ? `I saw it in the card, and I still didn't believe it.` : `I didn't know what it *meant*.`}"` : `Tuft is looking at the roof where the smoke was. Near the Adjunct she felt nothing; she's feeling something now. "Everything it kills goes *with* it," she says. "Sergeant. I felt that go. It's still going."`) : ''}
 
 On the cobbles at your feet, going away across the square toward the lake, a drop of blood every few paces, black under the blue lamps.`,
       ch:[{t:'Follow the blood.', go:'c6_alley_women'}]}),

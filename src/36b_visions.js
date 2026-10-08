@@ -8,13 +8,13 @@ const VISIONS = {
     {go:'Walk to the gate.', txt:
 `Paran is dead. He knows it the way he knows cold: not as news, as weather.
 
-There was a street in Pale, and a lamp, and a recruit with a girl's face stepping close as if to ask him the way. There was a knife he never saw, only felt, going in under the ribs as neatly as a key into a lock. Then the cobbles were against his cheek, and then they weren't.
+There were tent lines in the dark at Pale, and a lamp, and a recruit with a girl's face stepping close as if to ask him the way. There was a knife he never saw, only felt, going in under the ribs as neatly as a key into a lock. Then the mud was against his cheek, and then it wasn't.
 
 Now there is a plain. Flat grey ground to every side, and a sky above it white and hard as a scoured pan. The light comes from everywhere and warms nothing. He is standing, which seems unfair. His hands are his own. There is no blood on his coat.
 
-Ahead, a gate. Not in a wall: there is no wall. Two pale posts and a lintel, and a figure beside them, waiting with the patience of a thing that has never once been late.`},
+Ahead, a gate. Not in a wall: there is no wall. Only the gate, and it is made of people. Bodies, packed and wound together into posts and a lintel, and every one of them moving, slowly, the way a sleeper moves who can't wake. Beside it a figure waits with the patience of a thing that has never once been late.`},
     {txt:
-`The gatekeeper is tall and grey and has a face the way a hill has one: there if you want it to be. It doesn't look at him so much as account for him.
+`The gatekeeper is tall and grey and has a face the way a hill has one: there if you want it to be. It doesn't look at him so much as account for him. If it is Death's own face, it is a very ordinary one, and some part of Paran that was raised to have opinions about furniture is disappointed.
 
 It wants his name. Not in words. The question is simply in him, the way thirst is.
 
@@ -32,34 +32,36 @@ He hears it before he sees it: a small bright ringing, a coin spun on a tabletop
 
 "This one," she says to the gatekeeper. Not to Paran. "We'll have this one back."`},
     {txt:
-`They talk over his head. He follows perhaps a third of it. There is a price; the gate gives nothing for nothing. The woman doesn't argue the price, only the terms, and when she names them a cold goes through him that has nothing to do with the plain. *Someone else. Someone close. Sooner than they should.* He doesn't hear a name. He isn't meant to.
+`They talk over his head, and Paran, who was raised in a noble house, finds he will not stand for it.
 
-The young man has noticed the sword at Paran's hip, which Paran didn't know he was wearing. "Nice blade," he says. "What do you call it?"
+"And what does it cost me?" he says. "Whatever you're buying."
 
-It has never had a name.`,
-     ch:[{t:'"Mine."', set:['v1_paranSword','mine']},
+The woman looks at him properly for the first time, and likes what she sees about as much as a buyer likes a horse that bites. There is a price, she tells him; the gate gives nothing for nothing. Not his price. Someone else's. Someone close. Sooner than they should. He doesn't hear a name. He isn't meant to. He asks it twice, and is not answered twice, and understands that this is the bargain, and that the only part of it that is his to choose is whether to walk back through that gate or not.
+
+The young man has noticed the sword at Paran's hip. "Nice blade," he says. "What do you call it?"`,
+     ch:[{t:'"Chance."', set:['v1_paranSword','mine']},
          {t:'"Who\'s asking?"', set:['v1_paranSword','who']}]},
-    {txt:()=>`"${S.f.v1_paranSword === 'who' ? `Nobody you'd want to owe` : `Not any more`}," says the young man, pleased with himself. "Call it *Chance*." And from then on, it is.
+    {txt:()=>`${S.f.v1_paranSword === 'who' ? `"Oh, you *know* who's asking," says the young man. "And you know what you call it. You named it the day you bought it, years back, on a whim." He grins. "*Chance*. Did you think nobody heard?"` : `"*Chance*," says the young man, delighted, as if Paran had handed him a present. "Named it the day you bought it, on a whim, didn't you? And never once wondered who might hear."`} The woman doesn't smile. That, Paran understands, is why they are here.
 
-The light changes. Not darker: thinner, as if something had been taken out of it. Two shapes come across the plain at a lope, big as horses, and sit down at a polite distance, and Paran's hands remember Itko Kan before the rest of him does. The village. The dead in their doorways. The tracks.
+The light changes. Not darker: thinner, as if something had been taken out of it. Shapes come across the plain at a lope, big as horses, and sit down at a polite distance, and Paran's hands remember Itko Kan before the rest of him does. The village. The dead in their doorways. The tracks.
 
-Between the Hounds stands a figure made of shadow and bad temper, small and ragged, with a throne's worth of grievance in the set of its shoulders. It hisses at the Twins. It looks at Paran, and giggles.
+Among the Hounds stands a figure made of shadow and bad temper, small and ragged, with a throne's worth of grievance in the set of its shoulders. It hisses at the Twins. It looks at Paran, and giggles.
 
-He is looking at what killed those people. He makes himself a promise on the spot, with nothing to make it on but his own name, and it is the first thing on this plain that feels like his.
+He is looking at what killed those people. He finds he has bared his teeth, and is slow to notice. Then he tells it so, out loud, on Hood's own doorstep: that the day it comes through this gate, he will be on the far side, waiting for it. Smiling. It is the first thing on this plain that feels like his.
 
-The shadow tilts its head, as if it heard. "Oh, send him back," it says, to nobody. "Let him run about. I want to see who he runs *to*."`},
+The shadow tilts its head. "Oh, send him back," it says, to nobody. "Let him run about. I want to see who he runs *to*."`},
     {bg:'room', go:'Wake.', txt:
 `He wakes because something hurts, which is how he knows it's working.
 
-A low ceiling, smoke-dark. Candle, wet wool, and some herb burnt to cover something else. A woman's voice in the next room, tired and exact, telling someone they can stop hovering. A healer has been at him: he can feel the knit of it under his ribs, a seam somebody else sewed.
+On his back, in the mud, in the dark between the tents, with a lamp somebody has set down by his head and a surgeon swearing at him in a low, steady, professional voice. There is a hand pressed under his ribs where the knife went in, and something knitting there that is not the surgeon's doing.
 
-He remembers a street and a knife. Everything after is a word on the tip of his tongue. A gate. A promise he made, though he can't recall to whom.
+He remembers a lane and a knife. Everything after is a word on the tip of his tongue. A gate. A price somebody else will pay. A promise he made, though he can't recall to whom.
 
-The coin he can still hear, very faintly, somewhere in the room. Spinning.`},
+The coin he can still hear, very faintly, somewhere in the dark. Spinning. And further off, beyond the tents, toward the cadre row, something begins to howl.`},
     {sp:'Tuft', fig:'tuft', bg:'deck', txt:
 `The ringing stops. Tuft has her palm flat on the card, as if to keep it from getting up.
 
-"He was dead," she says, very quietly. "I *watched* him be dead." She puts the card away. Her hands are cold.`}]},
+"He was dead," she says, very quietly. "I *watched* him be dead." Then she looks up the tent lines, toward the cadre row, where nothing is howling yet. "That hasn't happened, has it, Sergeant? Not yet." She puts the card away. Her hands are cold.`}]},
 
   v2_crone:{ch:2, who:'Crone', where:'The Pillar of Fire', fig:'crone', bg:'plainfire', cap:'The Rhivi Plain from very high up, going red at the edges.', steps:[
     {bg:'plainnight', go:'Circle lower.', txt:
@@ -67,28 +69,28 @@ The coin he can still hear, very faintly, somewhere in the room. Spinning.`},
 
 The Rhivi Plain goes by beneath her like a hide pegged out to dry: grass, grass, a river like a dropped thread, grass. Her wings are older than most of the gods who'd claim to have made her, and they ache, and she ignores them. There's a chip in her beak she has had for longer than there have been cities. She has opinions about all of it.
 
-Below, two figures on foot. A woman, and a man the size of a small barn. Mages: she can taste it, the way you taste rain coming. And somewhere off past them, a third thing that is not a figure at all but a *gap*: a dry old cold that drinks sorcery the way sand drinks water.`},
+Below, two figures on foot. A woman, fat and running, and behind her, following, a man the size of a small barn who would rather be anywhere else. Mages, both: she can taste it, the way you taste rain coming. And far off past them, two more, standing still to watch: a woman with a dry old cold on her that drinks sorcery the way sand drinks water, and beside her a thing that walks like a man and isn't.`},
     {bg:'plainnight', txt:
 `She circles lower, because curiosity is the only vice she has never once regretted.
 
-The woman stops walking. Crone feels her reach for her warren, and reach, and find the gap pressing on it like a hand over a mouth. And then the woman does a very foolish thing, or a very brave one. Crone has lived long enough to know those are usually the same thing.
+The woman stops running. Crone feels her reach for her warren, and reach, and find it heavy and dull, as if a hand were over its mouth. The big man catches up. He doesn't want to. And then the woman does a very foolish thing, or a very brave one. Crone has lived long enough to know those are usually the same thing.
 
-She opens her warren. All of it. Inside the gap.
+She turns, and takes hold of him, and opens her warren. All of it.
 
 The plain goes white.`},
     {txt:
-`The fire goes up out of the grass like a tree grown in a heartbeat, root to crown, and the sound comes after, one flat *whump* that hits Crone under the wings and throws her up and sideways. She tumbles. She rights herself. She swears, in a language nobody has spoken since before the Imass learned to count.
+`The fire goes up out of the grass like a tree grown in a heartbeat, root to crown, and the sound comes after, one flat *whump* that hits Crone under the wings and throws her up and sideways. She tumbles. She rights herself. She swears, in a language nobody has spoken for a hundred thousand years.
 
-In the fire there are two shapes, and then there are not, and then, for a breath, there is one.
+In the fire there are two shapes, and then, for a breath, there is one.
 
 And there is more in it than fire. Crone hangs on the hot updraught and tastes. The woman's own warren, red and tidy. Under it something cold and very old, a sorceress who had been dead some days and had not finished being dead. Tellann's dust. And under all of that, faint as a smell in a closed room, a thing that has no business near a grass plain: the reek of *dragons*. A door that should stay shut, open a crack.`,
      ch:[{t:'Laugh.', set:['v2_croneSaid','laugh']},
          {t:'Count the warrens.', set:['v2_croneSaid','count']}]},
-    {txt:()=>`${S.f.v2_croneSaid === 'count' ? `She counts, the way she counts everything. Four. Five. Five warrens in one fire, on a grass plain, on an ordinary evening. She will dine out on this for a thousand years, if she can find anyone old enough to dine with.` : `"Ha!" she shouts at the fire, at the plain, at the whole stupid lovely world. Nobody laughs back. That's the trouble with the young: no sense of occasion.`}
+    {txt:()=>`${S.f.v2_croneSaid === 'count' ? `She counts, the way she counts everything. Five. Six. Seven. Seven warrens in one fire, on a grass plain, on an ordinary evening. She will dine out on this for a thousand years, if she can find anyone old enough to dine with.` : `"Ha!" she shouts at the fire, at the plain, at the whole stupid lovely world. Nobody laughs back. That's the trouble with the young: no sense of occasion.`}
 
-Where the fire was, a black ring in the grass. In the middle of it, two shapes wound round each other so tightly that whoever finds them won't be able to tell where one stops.
+Where the fire was, a black ring in the grass, and glass in the middle of it. In the glass, two shapes: the big one on his back, and the woman with her arms round him, holding on.
 
-Crone doesn't go down. There's nothing down there that is hers to look at any more. She turns north, toward the warlord's fires, with the news hot in her beak.`},
+She'll go down later, on the way back south, and sit on the big one's shoulder while the glass ticks, because somebody always comes to look and she likes to see who. First, the news. She turns north, toward the warlord's fires, with it hot in her beak.`},
     {bg:'camp', txt:
 `Brood's camp is hide tents and cookfires over three hills, and Rhivi children chase her shadow across it shrieking, which she allows.
 
@@ -110,9 +112,11 @@ Crone hears it. Crone hears everything.
     {txt:
 `Quick Ben walks into Shadow the way a man walks into a creditor's house: smiling, hands where they can be seen, already counting the exits.
 
-It's grey here. Not dark: grey, the colour of a thing that has forgotten what colour it was. The ground is ash-soft and keeps no footprints, and there are shapes at the edge of seeing that are trees, or men, or neither. Somewhere a long way off, the Hounds are baying. He has heard them before. He makes a point of not listening for which way.`},
+It's grey here. Not dark: grey, the colour of a thing that has forgotten what colour it was. The ground is ash-soft and keeps no footprints, and there are shapes at the edge of seeing that are trees, or men, or neither. Somewhere a long way off, the Hounds are baying. He has heard them before. He makes a point of not listening for which way.
+
+It doesn't help. The baying stops, and a little later there are Hounds pacing beside him in the grey, one on each side, big as horses and close enough to touch, not hurrying him. An escort. He has had worse. He can't, offhand, remember when.`},
     {txt:
-`Shadowkeep comes up out of the grey like a bad decision: walls, towers, a gate, none of them agreeing with the others about where they are. He walks in. Nobody stops him. That is the first warning, and he files it.
+`Shadowkeep comes up out of the grey like a bad decision: walls, towers, a gate, none of them agreeing with the others about where they are. The Hounds walk him in through the gate and across a courtyard and up to a door, and lie down outside it, and nobody else stops him. He files that.
 
 The throne room is a great deal of floor and one chair. On the chair sits a smudge in a ragged cloak, all elbows and malice, drumming its fingers on the armrest with a sound like beetles.
 
@@ -154,34 +158,34 @@ He lands on his back on a floor somewhere real. A ceiling. A spider. His own hea
 
   v4_rallick:{ch:4, cards:['assassin'], who:'Rallick Nom', where:"Tarlow's Warehouse", fig:'rallick', bg:'warehouse', cap:'Tar, old rope and river. One lamp, and a great deal of dark above it.', steps:[
     {txt:
-`Rallick Nom waits in the dark of Tarlow's warehouse because he was told to. He does what the Guild tells him, mostly, and has done for years, and has never once enjoyed it.
+`Rallick Nom lies flat on the roof of Tarlow's warehouse with a crossbow under his hand, because he was told to. He does what the Guild tells him, mostly, and has done for years, and has never once enjoyed it.
 
-The place stinks of tar and rope and river. Ocelot stands in the one patch of lamplight with his hands tucked in his sleeves, talking. Ocelot likes talking. Tonight it's the war on the roofs: who the Guild blames, which is the Malazans, and what the Guild means to do about it, which is a great deal.
+The place stinks of tar and rope and river, even up here. Below, in the yard, Ocelot stands in the one patch of lamplight with his hands tucked in his sleeves, talking low. Ocelot likes talking. Tonight it's the war on the roofs: who the Guild blames, which is the Malazans, and what the Guild means to do about it, which is spring a trap. Rallick has walked two of them halfway here already. They'll come the rest of the way on their own.
 
-Round them in the dark, a dozen of the clan. Crossbows, knives. Rallick can hear them breathe. He can hear them being pleased with themselves.`},
+Round the yard and on the roofs about it, a dozen of the clan. Crossbows, knives. Rallick can hear them breathe. He can hear them being pleased with themselves.`},
     {txt:
-`He says nothing. He is a tall man in a purple cloak with a face like a shut door, and people tell him things to fill the silence, and he lets them.
+`He says nothing. He is a tall man in a plain coat and a cap, with a face like a shut door, and people tell him things to fill the silence, and he lets them.
 
-Under his shirt, where nobody in the clan knows, he wears a coat of fine mail he paid too much for. He wears it because he doesn't believe a word Ocelot says about this war, and because people who believed things have been falling off roofs all season.`,
+Under his shirt, where nobody in the clan knows, he wears a coat of fine mail he paid too much for. He wears it because he doesn't believe a word Ocelot says about this war, and because people who believed things have been falling off roofs for weeks.`,
      ch:[{t:'"It isn\'t the Malazans."', set:['v4a_rallickSaid','say']},
          {t:'Keep it behind your teeth.', set:['v4a_rallickSaid','keep']}]},
-    {txt:()=>`${S.f.v4a_rallickSaid === 'say' ? `Ocelot looks at him the way a man looks at a fly in his wine. "Then who, Nom?" Rallick has no answer he can prove. He shrugs. The talk goes on.` : `He keeps it. A man who says what he thinks in the Guild is a man who gets sent to stand in Tarlow's warehouse.`}
+    {txt:()=>`${S.f.v4a_rallickSaid === 'say' ? `He said it once, at the Phoenix, when Ocelot gave him tonight's work. Ocelot looked at him the way a man looks at a fly in his wine. "Then who, Nom?" Rallick had no answer he could prove. So here he is.` : `He keeps it. A man who says what he thinks in the Guild is a man who gets sent to lie on the roof of Tarlow's warehouse.`}
 
-Above them, something touches the roof.
+Behind him, something touches the roof.
 
 Not a footstep. Less. The sound a cat would make if a cat weighed what a woman weighs and didn't want to be heard. Rallick's head comes up. Nobody else's does.`},
     {txt:
-`They come down out of the dark like ink dropped in water. Tall, dark-skinned, grey-cloaked, falling from the beams with no ropes and landing with no sound, and the killing starts before the first of them touches the floor. The lamp goes over. Somebody screams, and stops.
+`They come down out of the sky like ink dropped in water. Tall, dark-skinned, grey-cloaked, falling onto the roofs and into the yard with no ropes and landing with no sound, and the killing starts before the first of them touches the ground. The lamp in the yard goes over. Somebody screams, and stops.
 
-Rallick moves. He doesn't think. Thinking is for afterwards. A quarrel takes him in the chest like a big man's punch, and another in the side, and the mail holds, and the bolts drop at his feet, and he is still standing, which nobody across the warehouse expected. Least of all him.`},
+A quarrel takes Rallick between the shoulder blades like a big man's punch. It knocks the wind out of him and his face into the tar, and the mail holds, and he is still alive, which nobody on that roof expected. Least of all him.`},
     {txt:
-`One of them is in front of him. A long blade. It moves like poured water and it is better than he is, much better, and for a quarter of a heartbeat it is surprised that he's still alive. A quarter is enough. His knife goes in under the arm.
+`He rolls. He doesn't think. Thinking is for afterwards. One of them is coming along the ridge to finish him, a long blade low, moving like poured water, better than he is, much better; and for a quarter of a heartbeat it is surprised that the dead man has turned over. A quarter is enough. The crossbow is still under his hand, and he answers with it.
 
-It falls. And then, while he's still looking at it, it isn't there. No body. No blood. A grey cloak on the boards, settling, empty, the way a dust-sheet settles when you pull it off a chair.
+It falls. And then, while he's still looking at it, it isn't there. No body. No blood. A grey cloak on the tiles, settling, empty, the way a dust-sheet settles when you pull it off a chair.
 
 Rallick does not stop to wonder at that. Wondering is also for afterwards.`},
     {bg:'roofs', go:'Run.', txt:
-`Ocelot is at the side door, wrapped in some sorcery that makes him hard to look at, hissing his name. They go out together into the alley and the river mist, running, and behind them in the warehouse the sounds go on for a while, and then don't.
+`Ocelot is at the foot of the yard wall, wrapped in some sorcery that makes him hard to look at, hissing his name. Rallick goes down to him, and they go out together into the alley and the river mist, running, and behind them in the yard the sounds go on for a while, and then don't.
 
 Two streets on, Ocelot stops to be sick against a wall. Rallick stands over him and looks up. Against the glow of the blue lamps, something tall goes from one roofline to the next without troubling to jump.
 
@@ -191,17 +195,17 @@ Two streets on, Ocelot stops to be sick against a wall. Rallick stands over him 
 
   v4_hunter:{ch:4, cards:['knight'], who:'A Tiste Andii hunter', where:'The Roofs', fig:'andiihunter', bg:'roofs', cap:'Roof tiles and lake mist, and the blue fire of a city that does not look up.', steps:[
     {txt:
-`She has been killing this city's assassins for a season, and she has stopped counting, which troubles her a little, on the nights she lets it.
+`She has been killing this city's assassins for weeks now, and she has stopped counting, which troubles her a little, on the nights she lets it.
 
 She is Tiste Andii, and very old. She stands on a ridge of tiles above the harbour with the mist coming up between the buildings, and the human city glows round her in its absurd blue fire, and she finds it, as she always does, a little beautiful and a little sad. Short lives, lit very brightly.
 
 Her lord has given an order. The Guild is to be ended, so that no one can buy it. She does not ask whether it is just. It is *necessary*. That word is older than *just*, and she has lived by it longer.`},
     {txt:
-`Below, a warehouse. The prey has gathered in it like moths in a lantern. Serrat's hand goes down, and they drop.
+`Below, a warehouse yard, and the roofs round it. The prey has gathered there like moths round a lantern. Serrat's hand goes down, and they drop.
 
 The work is quick. She has done it so often it has a shape, like a dance she knows too well to enjoy. Lamp, blade, the next one, the next. A man screaming in a language she has learned and never spoken.
 
-One of them doesn't die. A tall one in a purple cloak takes two bolts in the chest and keeps standing, and her kinsman goes in close to finish him, and the tall one's knife comes up, and her kinsman is gone. She feels him go: a thread cut somewhere inside her that has been tied for longer than this city has stood.`,
+One of them doesn't die. A tall one lying on the warehouse roof takes a quarrel between the shoulder blades and doesn't stay down, and her kinsman goes along the ridge to finish him, and the tall one turns over with a crossbow in his hands, and her kinsman is gone. She feels him go: a thread cut somewhere inside her that has been tied for longer than this city has stood.`,
      ch:[{t:'Go after the tall one.', set:['v4b_hunter','chase']},
          {t:'Hold. Count your own.', set:['v4b_hunter','count']}]},
     {txt:()=>`${S.f.v4b_hunter === 'chase' ? `She goes after him and loses him in the alleys, which has not happened to her in a very long time.` : `She holds, and counts her own, because someone must.`}
@@ -273,7 +277,7 @@ The coin sits in his pocket, warm as a hand. He doesn't think about that either.
     {txt:
 `Sorry sits on a wall in the dark above a rich man's garden, and somewhere far down inside her a girl is trying to remember the word for *sea*.
 
-The one who wears her doesn't notice the girl. He notices the garden: the guard by the gate with his lamp, the second guard asleep on a bench, the vine, the open window. He notices how the mist lies, and which shadows will hold a body. He has been noticing things like this for a very long time. He is very good at it, and he is tired, though he would not say so.
+The one who wears her doesn't notice the girl. He notices the garden: the one guard walking it with his lamp, the vine, the open window. He notices how the mist lies, and which shadows will hold a body. He has been noticing things like this for a very long time. He is very good at it, and he is tired, though he would not say so.
 
 He is a god. He is using her the way a man uses a glove.`},
     {txt:
@@ -288,9 +292,9 @@ Below, a boy is climbing down a vine.
 
 The god knows him at once. Not his name: his *luck*. It comes off him like heat off a stone, the Twins' coin turning over in his pocket, and the god's attention narrows on him the way a blade narrows on a whetstone.`},
     {txt:
-`The guard with the lamp is walking the wrong way. Toward the wall. Toward her.
+`The guard is walking the wrong way. Toward the wall. Toward her.
 
-The god doesn't hurry. He comes down off the wall into the shadow under it without a sound, and the guard sees a girl, a slip of a thing in a dark coat, and his face does something kind and puzzled (*are you lost, miss?*), and that is the last thing his face does.
+The god doesn't hurry. He comes down off the wall into the shadow under it without a sound, and the guard sees a girl, a slip of a thing in a grey shawl, and his face does something kind and puzzled (*are you lost, miss?*), and that is the last thing his face does.
 
 It's quick. It's very quick. The girl inside doesn't see it. She feels her own hands do it, and that is worse. Then the god lays the guard down on the grass as tidily as folded laundry, and steps back up onto the wall.`},
     {go:'Later.', txt:
@@ -308,9 +312,9 @@ Deep inside, in a gap, the girl is still trying to remember the word for sea.`},
     {txt:
 `Paran stands by a dead fire on a hillside with his sword in his hand and watches a puppet run for its life.
 
-It goes over the crest in the starlight, small and jerking on its strings, toward the next hill. Hairlock. A mage of the Second, once; a soul sewn into painted wood. It has spent a month trying to kill him, and an hour ago it threw his friend into a hole in the world.
+It goes over the crest in the starlight, small and jerking on its strings, toward the next hill. Hairlock. A mage of the Second, once; a soul sewn into painted wood. It has spent weeks trying to kill him, and tonight it threw his friend into a hole in the world.
 
-And it is calling him. Not aloud. Inside his skull, in that warm, reasonable, grown man's voice that forgets it has no knees. *Captain. Captain, please. Help me. I'll tell you everything. They're coming. Help me.*`,
+And it is calling him. Not aloud. Inside his skull, in that warm, reasonable, grown man's voice that forgets it has no knees. *Captain. Captain, please. Help me. Throw me through, anywhere, and I'll give you anything. They're coming. Help me.*`,
      ch:[{t:'"No."', set:['v5_paranSaid','no']},
          {t:'"Ask Toc."', set:['v5_paranSaid','toc']},
          {t:'Say nothing at all.', set:['v5_paranSaid','nothing']}]},
@@ -318,57 +322,56 @@ And it is calling him. Not aloud. Inside his skull, in that warm, reasonable, gr
       toc:`"Ask Toc," Paran says, under his breath. "Ask him, wherever you sent him." It isn't mercy. He doesn't pretend it is.`,
       nothing:`He says nothing. He lets the voice beg on into the silence and doesn't answer it, and that is his answer.`}[S.f.v5_paranSaid] || ''}
 
-The Hounds catch it on the next hill. He watches. He makes himself. When the sound comes across the fold, wood and a man's voice going up, he doesn't look away, because the people of Itko Kan didn't get to.
+The strings go slack. Somebody, somewhere, has cut them. And the Hounds catch it on the next hill.
 
-Then the dark comes.
+He watches. He makes himself. More of them than he can count in the dark, and one small shape among them, and then the small shape is in pieces. When the sound comes across the fold, wood and a man's voice going up, he doesn't look away, because the people of Itko Kan didn't get to.
 
-Nobody else at the fire sees it; they are watching the Hounds, or the grass, or each other. But Paran is looking, and he sees the night on the next hill *thicken*, as if someone had poured more of it in. A tall shape inside the thickness. A long sword, black as a well. Two strokes. The Hounds don't even turn.
+Then they turn, and come down off the hill, and they are coming for him.
 
-And the dark stays there, over the hill, and keeps them.`},
-    {go:'Kneel.', txt:
-`Later, an hour perhaps, while the soldiers at the fire count themselves, Paran walks across the fold alone.
+He doesn't run. There isn't anywhere. He walks out from the fire to meet them, and behind him there are soldiers getting up, too far off, much too far. The first Hound is on him and he is down under it with Chance in it to the hilt, and its jaws are at his shoulder; and then the dark behind it *thickens*, as if someone had poured more of it in. A tall shape inside the thickness. A long sword, black as a well. Two strokes, and two Hounds die, and the rest are simply not there any more.
 
-The tall one is waiting on the hilltop among the wreckage of the puppet. Silver hair. Dark skin. Taller than a doorway. He leans on the black sword the way an old man leans on a stick, and Paran, who was raised among nobles and has stood before an empress, has never in his life been in the presence of anyone so entirely out of his reach.
+And under the hill, all round, a sound like chains.`},
+    {go:'Close your hand.', txt:
+`The tall one stands over him in the starlight. Silver hair. Dark skin. Taller than a doorway. He leans on the black sword the way an old man leans on a stick, and Paran, who was raised among nobles and has stood before an empress, has never in his life been in the presence of anyone so entirely out of his reach.
 
-"The Twins have let go of you," the tall one says, as if remarking on the weather. "They've kept the sword. When your luck turns, Captain, break it."
+"You don't learn, do you, mortal," the tall one says, as if remarking on the weather. "The Twins have let go of you, and in some haste. You're not their tool any more. Your sword is. When your luck turns, Captain, break it."
 
 Then he is simply not there.
 
-The Hounds lie where they fell, huge and still, smaller somehow than they were alive. There is blood on the grass, black in the starlight. Paran kneels. He doesn't know why. He puts his hand in it.`},
+The dead Hound lies across Paran, huge and still, smaller somehow than it was alive. Its blood is over his chest and his arms and his hands, black in the starlight. He looks at it. He doesn't know why he does what he does next. He closes his hand on it.`},
     {bg:'wagon', fig:'', txt:
 `There is a wagon.
 
 It is enormous, a house on wheels, a town, and it groans forward through a grey with no sky in it, and it is pulled by chains, and the chains are fastened to people. Thousands. Bent nearly double, hauling, faces down: the ones who fell under the wheels and the ones still on their feet, all of them pulling. The sound is a whole army breathing and never resting.
 
-A chained man beside him, old, with a face like a cracked plate, looks up long enough to say something about dragons, as if it were the weather. Then he looks down, and pulls.
+A chained man beside him, old, with a face like a cracked plate, looks up long enough to say that the tall one put him here, a very long time ago, as if it were the weather. Then he looks down, and pulls.
 
-At the end of two fresh chains, the Hounds. Alive here, in their way. Shackled. Snarling at nothing.`},
+At the end of two fresh chains, the Hounds. Alive here, in their way. Shackled. One of them comes at him to the end of its chain, and stops, and looks at him a long moment, and lets him be.`},
     {bg:'wagon', fig:'', go:'Drag.', txt:
-`And there's a coin. He can hear it, spinning, somewhere just behind his ear.
+`He calls on the Twins. He doesn't know how; he only knows he is owed.
 
-The Twins are here, because the sword is theirs and he came in by the sword. He can feel the young man's attention on him like a hand on the back of his neck, amused, leaning closer to see what the toy will do.
+And there's a coin. He can hear it, spinning, somewhere just behind his ear, and the young man's attention is on him like a hand on the back of his neck, sulky, put out, leaning closer to see what the toy will do. *The chains,* it tells him, as if he were very slow, *are held in Darkness. Everything in here is.*
 
 Paran has been the toy long enough.
 
-He turns, and takes hold of that attention the way you'd take a dog by the scruff, and *drags*. And the Hounds smell a god where no god belongs, and come up off their chains after it in two long strides, and Paran runs with them, holding the Twin out ahead of him like a lantern on a pole, through the grey, toward a darkness that isn't this one: a door, an older and deeper night.
+He turns, and takes hold of that attention the way you'd take a dog by the scruff, and *drags*. And the Hounds smell a god where no god belongs, and come up after it, dragging their chains, in two long strides, and Paran runs with them, holding the Twin out ahead of him like a lantern on a pole, through the grey, into a darkness that isn't this one: an older and deeper night.
 
-He lets go. The Hounds go through. The coin stops.`},
+He lets go. The Hounds go into it, chains and all, and are gone. The coin stops.`},
     {go:'Walk back to the fire.', txt:
-`He is kneeling on a hillside in the Gadrobi Hills with his hand on clean grass.
+`He is lying on a hillside in the Gadrobi Hills with his hand on the grass.
 
-No blood. No Hounds. The dark has gone off the hill like a tide going out, and there are stars, and a puppet's strings lying in the grass like cobweb.
+No Hounds. Nobody saw anyone take them; there is only torn turf where they lay, and a stain the frost won't settle on. The dark has gone off the hill like a tide going out, and there are stars, and a puppet's strings lying in the grass of the next hill like cobweb.
 
-His hand is shaking. There's something in it now, under the skin, that wasn't there before. It smells of rain on a dog's back. He wipes it on his coat. It doesn't come off.
+His hand is shaking. It's black to the wrist, and there's something in it now, under the skin, that wasn't there before. It smells of rain on a dog's back. He wipes it on his coat. It doesn't come off.
 
-He walks back to the fire. Nobody asks where he's been. At dawn, he'll ride.`},
+He gets up. Nobody at the fire asks where he's been. At dawn, he'll ride.`},
     {sp:'Tuft', fig:'tuft', bg:'deck', txt:
 `Tuft's thumb is resting on the card, on the grey figure at the door. She takes it away. "Not yet," she says, to nobody. "That's *tonight*. It hasn't happened yet." Her hands are cold.`}]},
-
   v6_rake:{ch:6, who:'Anomander Rake', where:'The Belfry', fig:'rake', bg:'belfry', cap:'A bell-tower roof over a city of masks, and a black mountain over the lake.', steps:[
     {txt:
 `Anomander Rake sits on the roof of K'rul's belfry with his back to the bell-housing and his sword across his knees, and he is tired.
 
-Below him, the city of blue fire on the night of the Fête. Masks and music and the smell of a hundred kitchens, and under it, if he lets himself, the other smell: gas in the deep conduits, and earth turned in a garden where something was buried today that should not have been. He doesn't let himself, yet. He has a few minutes. He has had very few minutes, in a very long life, and he has learned to sit still in them.
+He left Lady Simtal's party a little while ago, before the old priest in the Jaghut mask took it off; his glass is still on her balustrade, untouched. Below him, the city of blue fire on the night of the Fete. Masks and music and the smell of a hundred kitchens, and under it, if he lets himself, the other smell: gas in the deep conduits, and earth turned in a garden where something was buried today that should not have been. He doesn't let himself, yet. He has a few minutes. He has had very few minutes, in a very long life, and he has learned to sit still in them.
 
 Over the lake hangs his fortress, hurt. He can feel the cracks in it the way an old soldier feels rain in his knee.`},
     {txt:
@@ -381,7 +384,7 @@ They talk. Not much. Two old men on a bench. K'rul says he cannot help tonight; 
          {t:'"It passes. It always passes. That\'s the worst of it."', set:['v6_rakeSaid','passes']}]},
     {txt:()=>`${S.f.v6_rakeSaid === 'passes' ? `The old god makes a sound that might be a laugh, if dust could laugh. Neither of them says anything for a while after that. It's companionable.` : `He looks down at the lit streets as he says it, and the god who made the warrens doesn't ask what *this* is.`}
 
-Then something comes into the sky over the far side of the city.
+Then something comes up into the sky out of the Daru District, down the hill.
 
 He feels it before he sees it, a wrongness in the air like a bad tooth. A demon lord of the Galayn, let off its leash by someone who wants him spent (he can guess who; the Empress keeps an Adjunct for exactly this), and it comes toward his roof with all its considerable patience. As he watches, it stops pretending to be a shape a city would recognise, and spreads, and becomes a dragon.
 
@@ -397,19 +400,24 @@ They meet over the city. It isn't beautiful. It's two enormous things trying ver
 
 He is older.`},
     {bg:'garden', txt:
-`It breaks first. It falls away from him burning and goes down into the hill district like a thrown torch, through a wall, through a garden, through wards that scream as they come apart. Baruk's house. Of course. This city has a habit of putting its best people in the way.
+`It breaks first. It falls away from him burning and goes down among the great houses of the Estate District like a thrown torch, into a street, through the end of a wall and the wards on it, which scream as they come apart. Baruk's wall. Of course. This city has a habit of putting its best people in the way.
 
-Rake comes down after it, a man again, the sword in his hand. The demon has made itself a man too: huge, broken, crawling across the courtyard toward a boy, with its hands out. A skinny boy, a thief by the look of him, with a coin on him that Rake can smell from here. Brood asked for that boy to live. Brood asks for very little.
+Rake comes down after it, a man again, the sword in his hand. The demon has made itself a man too: huge, scorched, getting up out of the rubble in the street, and talking. Not to him. To a boy standing white-faced at Baruk's gate, a skinny boy, a thief by the look of him, with a coin on him that Rake can smell from here. The demon is offering him a way out of the city, safe, with the Empress's blessing. The boy is nodding.
 
-Rake puts himself between them.`},
-    {bg:'garden', go:'Walk back into the night.', txt:
-`Dragnipur goes in.
+"Galayn," says Rake, behind it.
+
+The demon turns. It makes him the same offer, very reasonably: the Empress will let him go, too. He has only to leave.`,
+     ch:[{t:'"No."', set:['v6_rakeNo','no']},
+         {t:'Draw the sword. That is the answer.', set:['v6_rakeNo','draw']}]},
+    {bg:'garden', go:'Lean on the sword.', txt:()=>`${S.f.v6_rakeNo === 'draw' ? `He draws. It is the only answer he has ever given that kind of offer.` : `"No," he says, and draws.`}
+
+It has an axe, and it is good with it. He takes the axe on the shoulder, blocking, and feels the bone ache under the cut; and then he is inside its reach, and Dragnipur goes in.
 
 He feels the demon arrive inside the sword: the chain closing, the new weight on the wagon, one more soul pulling in the grey for ever. He feels, as he always feels, that he has done something necessary and something unforgivable, and that they are the same thing, and that he will carry it.
 
 He is bleeding. He notices that after a while.
 
-The boy is staring at him. Rake gives him a grave nod, as one gentleman to another, and turns and walks out through the broken wall into the night of the Fête, which isn't over yet.`},
+The boy is staring at him. "Brood asked me to let you live," Rake tells him, leaning on the sword. "I find I can. Baruk is in trouble in there, and I am in no state to help him. Go." And the boy goes, through the broken wall, at a run. The night of the Fete isn't over yet.`},
     {sp:'Tuft', fig:'tuft', bg:'deck', txt:
 `Tuft has her hand over the card as if to keep it warm. "Tonight," she says. "It's *tonight*, Sergeant. Over us." She looks up at a sky with nothing in it. Yet. Her hands are cold.`}]},
 
@@ -421,7 +429,7 @@ It's a small thing. Black, and hard, and heavier than an acorn has any right to 
 
 She opens her hand. She puts it in the hole. She covers it.`},
     {txt:
-`Behind the hedge, people are laughing. The Fête. Music and masks. She thinks, very clearly, of a street in Malaz City a long time ago, and of her mother's hands, and of fire; and then she stops thinking it, with the ease of long practice.
+`Behind the hedge, people are laughing. The Fete. Music and masks. She thinks, very clearly, of a street in Malaz City a long time ago, and of her mother's hands, and of fire; and then she stops thinking it, with the ease of long practice.
 
 Her shoulders are shaking. She notes it, the way she'd note a fault in a subordinate, and waits for it to stop. It takes longer than it should.
 
@@ -432,39 +440,43 @@ When it stops she stands and brushes the earth from her knees, and decides. The 
 
 Hours later, in the dark, she feels the tyrant fall.
 
-Somewhere past the garden walls there is a great cold shout in the earth, then a silence, then something old being dragged down into roots. She stands very still in a side street and feels the whole plan go out of the world like a blown lamp. Raest, taken. The city, standing. Whiskeyjack, she has heard, still alive. Everything she has bled for since the spring, gone in a breath.
+Somewhere past the garden walls there is a great cold shout in the earth, then a silence, then something old being dragged down into roots. She stands very still in a side street and feels the whole plan go out of the world like a blown lamp. Raest, taken. The city, standing. Whiskeyjack, she has heard, still alive. Everything she has bled for since Pale, gone in a breath.
 
-She has one thing left in her sleeve. The High Mage's gift: a word, a seal, and a demon lord of the Galayn, bound and waiting.
+She has one thing left. The High Mage's gift, carried all the way from Pale: a demon lord of the Galayn, bound small and waiting to be let out.
 
-She says the word. Over the roofs, something vast unfolds and goes looking for the Lord of Moon's Spawn. She doesn't watch it go.`},
-    {bg:'alley', txt:
+She lets it out. Over the Daru roofs, something vast unfolds and goes looking for the Lord of Moon's Spawn. She doesn't watch it go.`},
+    {bg:'alley', txt:()=>
 `The boy is easy to find. Luck leaves a trail, if you know what it smells like.
 
-She finds him in an empty street under the low black weight of the floating mountain, running, and steps out in front of him with her sword drawn. He stops. She sees his face. Young. So young. She lifts the blade.
+She finds him in a narrow alley off the Daru District, under the low black weight of the floating mountain, and puts him against the wall with her left hand flat on his chest and her sword in her right. He stops struggling. She sees his face. Young. So young. She lifts the blade.${S.f.c6_key === 'alley' ? (S.f.c6_steppedIn ? `
 
-Another blade meets it.
+And between her and him, for far longer than it should have taken, a squad of her own Empress's marines in some lady's blue, shields locked, who will not move, and will not tell her why.` : `
 
-A stranger in a blue cloak, out of nowhere: broad, quick, ordinary in every way except that he is better than she is, and she has not met many of those. Steel rings on steel. Her sword, that kills sorcery, is only a sword against a man with none, and he knows it. He cuts her. She feels it go in along the ribs. He cuts her again.
+At the alley mouth, a squad of her own Empress's marines in some lady's blue stands aside to let her work, as they should. She does not look at them again.`) : ''}
 
-She runs. She has never run from anything in her life. She runs.`},
+Another blade meets hers.
+
+A squat, dark man in a faded crimson cloak, out of a doorway that was empty, with a plain sword in each hand: quick, quiet, and better than she is, and she has not met many of those. Steel rings on steel. Her sword, that kills sorcery, is only a sword against a man who isn't using any, and he knows it. Two blades against her one. One of them opens her shoulder.
+
+She breaks off. She goes up the alley past the blue lamp, fast, very nearly running. She has never run from anything in her life. She is not running now. Very nearly.`},
     {bg:'alley', fig:'lorn', txt:
-`An alley. A blue lamp. Wet stone. She stops to breathe, with her hand pressed to her side and the blood coming through her fingers, and leans on the wall.
+`Another alley, down toward the lake. A rain-barrel. Wet stone, and the smell of the water at the end of it. She stops to breathe, with her hand pressed to her shoulder and the blood coming through her fingers, and leans on the wall.
 
-Two people come into the alley. Not soldiers. A big woman with forearms like a smith's, and another behind her. Innkeepers, by the look of them; somebody's aunts. Lorn straightens to tell them to move along.
+Two women come into the alley. Not soldiers. A big one in an apron with a cudgel over her shoulder, and a lean one beside her with a kitchen knife held down along her leg. Innkeepers, by the look of them; somebody's aunts. Lorn straightens to tell them to move along.
 
-The first knife goes in before she has finished straightening. The second follows it. They don't say anything. They don't need to. Then they're gone, and she is sitting in the wet without having decided to, and the blue lamp is very bright.`},
+The cudgel comes before she has finished straightening. The knife follows it. They don't say anything. They don't need to. Then they're gone, and she is lying on her back in the wet without having decided to, and the sky between the walls is very far away.`},
     {bg:'alley', fig:'paran', txt:
-`Footsteps. A man kneeling. She knows the face, though it takes her a moment. Paran. Her captain, once. The young officer she took off the road at Itko Kan because he looked as if he might be worth something.
+`Footsteps. A man kneeling, lifting her head off the stones onto his knee. She knows the face, though it takes her a moment. Paran. Her captain, once. The young officer she took off the road at Itko Kan because he looked as if he might be worth something.
 
 He looks, now, like something that has died and come back. She supposes that's fair.
 
-She tries to tell him something. She isn't sure what. That she was right. That she wasn't. That the Empress... no. He holds her hand while she tries, and doesn't help her finish, and she is grateful for that.
+She tries to tell him something. She isn't sure what. That she was right. That she wasn't. That the Empress… no. He doesn't help her finish, and she is grateful for that.
 
-The last thing she feels is his hand closing on the hilt of her sword, gently, the way you'd take a cup from someone who has fallen asleep holding it.`},
-    {sp:'Tuft', bg:'dawn', fig:'paran', txt:
-`Then the card shows Tuft only this: a man in a grey dawn street, carrying a dead woman in his arms like a sleeping child, walking toward the lake. He doesn't look up. He doesn't put her down.
-
-Tuft lets the card go. "She was *afraid*," she says at last. "The whole time. I didn't know she could be." Her hands are cold.`}]},
+The last thing she feels is the easing: a small, tired thing, like taking off her boots at the end of a long road.`},
+    {sp:'The Deck of Dragons', bg:'alley', fig:'paran', txt:
+`Then the card shows only this: a man closing a dead woman's eyes, and taking up her plain sword, and putting it through his belt beside his own empty scabbard; and then carrying her up a dark alley in his arms like a sleeping child. He doesn't look up. He doesn't put her down.`},
+    {sp:'Tuft', fig:'tuft', bg:'deck', txt:
+`Tuft lets the card go. "She was *afraid*," she says at last. "The whole time. I didn't know she could be." Her hands are cold.`}]},
 };
 const VISION_IDS = Object.keys(VISIONS);
 /* which vision the turned card opens this chapter: Ch4 keys its four by card; every other chapter has one, for any card */
@@ -474,25 +486,31 @@ function visionFor(ch, card){
   return vs.find(k => VISIONS[k].cards && VISIONS[k].cards.includes(card)) || vs.find(k => !VISIONS[k].cards) || null;
 }
 let VIS = null; // the vision playing: {id, done, ret, resume, bg, fig}
+/* watched again from the journal: the closing beat is Tuft in the present, so it changes; without her, the card just goes dark */
+const visAgain = st => !!(VIS && VIS.replay && st.sp === 'Tuft');
+const visTuftHere = () => !!(S && S.squad && S.squad.includes('tuft') && !(S.dead && S.dead.tuft));
 function visNodes(id){
   const V = VISIONS[id], n = V.steps.length;
   V.steps.forEach((st, i) => { DLG[`vis_${id}_${i}`] = () => { const last = i === n - 1, nx = last ? () => visEnd() : `vis_${id}_${i + 1}`;
+    if (visAgain(st)) return {sp:visTuftHere() ? 'Tuft' : 'The Deck of Dragons', onshow:() => visStep(id, i), ch:[{t:'Put the cards away.', go:nx}],
+      txt:visTuftHere() ? (VIS.again ? `Tuft lets the card go. She has watched this one before. It doesn't get any easier, and she doesn't say anything. Her hands are cold.` : `Tuft lets the card go. She doesn't say anything for a long time. Her hands are cold.`) : `The card goes still, and dark, and is only paint and wood again.`};
     return {sp:st.sp || V.who, txt:typeof st.txt === 'function' ? st.txt() : st.txt, onshow:() => visStep(id, i),
-      ch:st.ch ? st.ch.map(c => ({t:c.t, fx:() => { S.f[c.set[0]] = c.set[1]; }, go:nx})) : [{t:st.go || (last ? 'Put the cards away.' : '—'), go:nx}]}; }; });
+      ch:st.ch ? st.ch.map(c => ({t:c.t, fx:() => { S.f[c.set[0]] = c.set[1]; }, go:nx})) : [{t:st.go || (last ? 'Put the cards away.' : 'Go on.'), go:nx}]}; }; });
 }
 /* each step: its backdrop and figure; and the save never points at a vision node, so a reload comes back where the vision began */
 function visStep(id, i){
   if (!VIS) return; const V = VISIONS[id], st = V.steps[i];
   VIS.bg = st.bg || V.bg; VIS.fig = st.fig != null ? st.fig : V.fig; VIS.step = i;
+  if (visAgain(st) && !visTuftHere()) VIS.fig = '';
   const sh = $('#sheet'); if (sh) sh.classList.add('vsheet');
   S.node = VIS.resume || null; save();
 }
 function playVision(id, done){
   const V = VISIONS[id]; if (!V || typeof DLG === 'undefined') return done && done();
   visNodes(id);
-  S.seenVisions = S.seenVisions || []; if (!S.seenVisions.includes(id)) S.seenVisions.push(id);
+  S.seenVisions = S.seenVisions || []; const again = S.seenVisions.includes(id); if (!again) S.seenVisions.push(id);
   const ret = {view, kind:G.sceneKind, bg:S.bg, node:S.node}, cardNode = 'c' + S.chapter + '_card';
-  VIS = {id, ret, done:done || (() => { if (ret.node && DLG[ret.node]) talk(ret.node); }), resume:done ? (DLG[cardNode] ? cardNode : ret.node) : ret.node, bg:V.bg, fig:V.fig, t0:performance.now()};
+  VIS = {id, ret, replay:!done, again, done:done || (() => { if (ret.node && DLG[ret.node]) talk(ret.node); }), resume:done ? (DLG[cardNode] ? cardNode : ret.node) : ret.node, bg:V.bg, fig:V.fig, t0:performance.now()};
   $('#sheet').hidden = true; $('#modal').hidden = true; routeAnim = null;
   document.body.classList.add('vision');
   view = 'scene'; B = null; G.sceneKind = 'vision'; AUDIO.setScene('dark'); AUDIO.play('reveal');
