@@ -579,7 +579,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.16.1';
+const VERSION = '3.17.0';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -1045,6 +1045,16 @@ const TPL = {
     get quest(){ return squadQuest('ellis', `Toc said the Claw was done with her. The Claw has not said so. Somewhere in Darujhistan there is a house with her name in a ledger, and she means to find out which way it is written.`); },
     banter:[`"You took me on because a one-eyed Claw told you to. I'd think about that, Sergeant."`,`"Six years I counted sentries for people who never said thank you. This lot say it. I'm not used to it. Don't stop."`,`"If the Claw come for me, they'll come at night and they'll come quiet. I'll hear them. I'm telling you so you'll know it wasn't your fault."`],
     rel:{brisk:'Brisk watched her walk for a day and then stopped watching. That is a promotion.',kettle:'They trade: arrows for trip-cord, and neither has said what for.',tuft:'Ellis watches her the way she watched sentries. Tuft has noticed and, oddly, does not mind.',ohl:'He asked about the glove. She said "later." He wrote nothing down, and she noticed.'}},
+  vell:{name:'Vell',role:'Rope man · Guild journeyman',sig:'V',col:'#b0a0c8',hp:15,ac:13,atk:4,dmg:[1,6,1],rng:1,mv:6,init:4,st:{might:1,wits:1,guile:3},ab:['grapple','salve'],
+    epithet:'"I carry rope. That\'s all I do."',origin:'Darujhistan, the Daru District',age:17,service:'Four years carrying rope for Ocelot\'s clan. A week with the Fourth.',height:'Not tall yet. All elbows. Lands like a cat.',
+    weapon:'A rope-and-hook, forty feet of tarred line, and a knife he is still learning which end of',armour:'A Guild runner\'s coat the colour of slate at night, and three sets of Ohl\'s stitches',
+    bio:`A journeyman of the Assassins' Guild who has never killed anybody, and says so to everyone, as if it were a password. Strings the lines the clans cross the roofs on. Talks when he is frightened, which is often, and climbs when he is more frightened than that.`,
+    bio2:`Born in a Daru stairwell, taken onto the roofs at thirteen because he was light and didn't look down. The Fourth stood between him and a Tiste Andii on a roof one night, for no reason anyone could give him, and he has been trying to work out what he owes for it ever since. The Guild keeps its debts longer than anyone. So, it turns out, does Vell.`,
+    traits:['Counts the roofs between here and anywhere','Ties knots in whatever is in his hands','Says his own name three times when nervous','Has never once looked down'],
+    gear:['Forty feet of tarred line and a three-tined hook','A Guild runner\'s whistle, which he is not supposed to have any more','A Daru copper with a hole in it, for luck, on a string'],
+    get quest(){ return squadQuest('vell', `The Guild knows a Malazan squad held a roof for him, and that he walks with it now. Some of the clans call that a debt paid. Some of them call it something else. Vell means to find out which, before one of them finds him.`); },
+    banter:[`"You could have stepped aside. Everybody steps aside. I keep asking myself what I'm for, that you didn't."`,`"In the Guild they'd have charged me for the rope. You lot just ask if I've eaten."`,`"I'll get you onto any roof in this city, Sergeant. Off it's harder. Off is the part people forget."`],
+    rel:{brisk:'Brisk carried him off the Daru roof. He has decided she is the safest place in the world, and stands behind her shield without being told.',kettle:'She asked how much the hook weighs, and then how far it would carry a sharper. He has been afraid of her ever since, and adores her.',tuft:'She wears the cloak the Andii left on his hook. He doesn\'t ask for it back.',ohl:'Ohl stitched him on the roof and has been checking the stitches ever since, which Vell finds embarrassing and secretly wonderful.',ellis:'He has heard about the scout who went looking for her captain. He keeps her place, he says, and means it.'}},
 };
 /* "Unfinished business" on the sheets: the opening line (base) until a chapter settles it, so a sheet read in Chapter 7 doesn't contradict Chapter 7 */
 function squadQuest(id, base){
@@ -1075,7 +1085,7 @@ function squadQuest(id, base){
   return base;
 }
 const PORDER = ['sgt','brisk','kettle','tuft','ohl'];
-const VERB = {sgt:'cuts at',brisk:'drives her spear at',kettle:'looses a quarrel at',tuft:'lashes shadow at',ohl:'cracks a cudgel at',ellis:'puts an arrow into'};
+const VERB = {sgt:'cuts at',brisk:'drives her spear at',kettle:'looses a quarrel at',tuft:'lashes shadow at',ohl:'cracks a cudgel at',ellis:'puts an arrow into',vell:'puts a knife into'};
 const FOES = {
   deserter:{name:'Deserter',sig:'D',hp:11,ac:12,atk:3,dmg:[1,6,1],rng:1,mv:4,init:1,verb:'hacks at'},
   xbow:{name:'Deserter crossbow',sig:'X',hp:8,ac:11,atk:3,dmg:[1,8,0],rng:5,mv:3,init:2,verb:'shoots at'},
@@ -1093,7 +1103,8 @@ const CARDS = { // the Herald, the Crown and the Wain are added by Chapters 5, 7
   blank:{name:'The unpainted card',house:'—',hue:'#d8d0c0',txt:'No house. No figure. Gesso and grain, and nothing on it yet.',fx:'None. It isn\'t anyone\'s yet.'},
 };
 const LEVELS = [0,100,250,450,700,1000,1400,1900]; // levels 1..8
-const STR_MAX = 6;
+/* a caster's strain cap grows with the squad: 6, then 7 at level 4 and 8 at level 7 (15: lvT) */
+const strMax = () => 6 + (typeof lvT === 'function' ? lvT() : 0);
 
 /* explore map: # rubble  . ground  , ash  R ruin  ~ crater  = tents  T tunnel  P burial pit */
 const PALE = [
@@ -1124,6 +1135,8 @@ const AREAS = {
 };
 const CHAPTERS = {}; // n -> chapter module (CH1, CH2, ...), registered at boot
 const ITEMS = {};     // gear items, merged from chapters
+/* the Measure each soldier's role grows: +1 to the first at level 4, +1 to the second at level 8 (15: lvStat) */
+const STATUP = {sgt:['wits','might'], brisk:['might','wits'], kettle:['wits','might'], tuft:['guile','wits'], ohl:['wits','might'], ellis:['guile','wits'], vell:['guile','might']};
 /* ability picks: level 3 = a named talent per squadmate; levels 5 and 7 = veteran picks shared by all */
 const PICKS = {
   3:{ sgt:[['discipline','Marine Discipline','Every squadmate wears +1 armour. Eleven years of telling people where to stand.'],['sappers_eye','Sapper\'s Eye','The squad rolls +2 initiative, and the sergeant\'s free swings hit +2.']],
@@ -1131,7 +1144,8 @@ const PICKS = {
       kettle:[['longfuse','Crossbow Cradle','A munitions cradle on the heavy crossbow: sharpers, burners, smokers and cussers never scatter, and reach one tile further.'],['quorl','Quorl Signal','Once a fight: a Moranth drop. A sharper from the sky, anywhere within 5, not from the satchel.']],
       tuft:[['shadowstep','Shadow Step','Step through Meanas to any open tile within 4. Nobody gets a free swing. Strain 1.'],['mockra','Mockra Whisper','Mockra, the mind: an enemy within 4 turns on its own side for a turn and goes for the nearest of them instead of you. Bosses may resist. Strain 3.']],
       ohl:[['triage','Field Triage','Mend heals +3 and reaches 4 tiles.'],['argument','Argument with Hood','Once a fight: a downed squadmate within 2 stands up at 6 health. Strain 3.']],
-      ellis:[['quickshot','Quick Shot','Once a fight: two arrows at one target within reach.'],['ghost','Ghost Step','Enemies take −2 to hit Ellis. Six years of not being where the sentry looked.']] },
+      ellis:[['quickshot','Quick Shot','Once a fight: two arrows at one target within reach.'],['ghost','Ghost Step','Enemies take −2 to hit Ellis. Six years of not being where the sentry looked.']],
+      vell:[['ropeswing','Rope Swing','Once a turn, without using his action: swing to any open tile within 3 (further as the squad levels). Nobody gets a free swing.'],['snare','Snare','Whatever the hook hauls in is tangled in the line: −2 to hit and −2 armour through its next turn.']] },
   vet:[['iron','Iron','+6 health.'],['keen','Keen','+1 to hit.'],['fleet','Fleet','+1 move.'],['nerve','Nerve','+1 initiative, and +1 to every skill check this soldier rolls.']],
 };
 function registerChapter(n, CH){
@@ -1238,6 +1252,8 @@ const kitAb = id => { const ab = [...TPL[id].ab]; if (id === 'kettle' && S && ((
 function recruit(id){ if (!TPL[id] || S.squad.includes(id)) return; S.squad.push(id); S.loy[id] ??= 0; S.gear[id] ??= {}; S.picks[id] ??= [];
   if (S.lvl >= 3 && PICKS[3][id] && !S.picks[id].some(k => PICKS[3][id].some(o => o[0] === k)) && !S.picksDue.includes(3)) S.picksDue.push(3);
   note(`${NAME(id)} joins the Fourth.`, 'good'); AUDIO.play('up'); save(); }
+/* a squadmate who leaves by choice, for somewhere of their own (Ellis, to find Toc): no 'gone' flag, a plain note */
+function letGo(id, why){ if (!S.squad.includes(id) || id === 'sgt') return; S.squad = S.squad.filter(x => x !== id); S.gear[id] = {}; S.trail = S.trail.slice(0, Math.max(1, S.squad.length - 1)); note(why || `${NAME(id)} goes ${id === 'ohl' ? 'his' : 'her'} own way.`); save(); }
 function unrecruit(id){ if (!S.squad.includes(id) || id === 'sgt') return; S.squad = S.squad.filter(x => x !== id); S.f[id + 'Gone'] = 1; S.trail = S.trail.slice(0, Math.max(1, S.squad.length - 1)); note(`${NAME(id)} is gone.`, 'bad'); save(); }
 /* a squadmate who fell in a mortal fight: gone from the squad for good, remembered in S.dead. The battle writes the note. */
 function kill(id){ if (id === 'sgt' || !S.squad.includes(id)) return; S.squad = S.squad.filter(x => x !== id); S.dead ??= {}; S.dead[id] = {ch:S.chapter, where:(B && B.def && B.def.title) || ''}; S.gear[id] = {}; S.trail = S.trail.slice(0, Math.max(1, S.squad.length - 1)); save(); }
@@ -1245,7 +1261,9 @@ function kill(id){ if (id === 'sgt' || !S.squad.includes(id)) return; S.squad = 
 const listCount = () => 211 + (S.f.c2_key === 'light' ? 1 : 0) + (S.f.c4_key === 'aside' ? 1 : 0) + Object.keys(S.dead || {}).length + (S.f.listAdds || 0);
 const has = (id, k) => (S.picks[id] || []).includes(k);
 /* stat with gear and veteran picks folded in */
-function statOf(id, stat){ let v = TPL[id].st[stat]; Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (it && it.stat && it.stat[stat]) v += it.stat[stat]; }); if (has(id,'nerve')) v += 1; return v; }
+/* the role's Measure, grown at levels 4 and 8 */
+const lvStat = (id, stat) => { const u = STATUP[id], l = (S && S.lvl) || 1; return !u ? 0 : (u[0] === stat && l >= 4 ? 1 : 0) + (u[1] === stat && l >= 8 ? 1 : 0); };
+function statOf(id, stat){ let v = TPL[id].st[stat] + lvStat(id, stat); Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (it && it.stat && it.stat[stat]) v += it.stat[stat]; }); if (has(id,'nerve')) v += 1; return v; }
 function gain(id){ const it = ITEMS[id]; if (!it || S.kit.includes(id)) return; S.kit.push(id); note(`Found: ${it.name}.`, 'good'); AUDIO.play('coin');
   // auto-equip into an empty slot, on whoever it suits best (31c)
   const who = placeGear(id); if (who) note(`${NAME(who)} takes it: it suits ${who === 'sgt' ? 'you' : NAME(who)} best of those with a free hand for it.`, 'good'); }
@@ -1287,6 +1305,7 @@ function loy(id, n){ S.loy[id] = Math.max(-3, Math.min(3, S.loy[id] + n)); notes
 function note(t, c=''){ notes.push({t, c}); }
 function gainXP(n){
   S.xp += n; const before = S.lvl; let l = 1; while (l < LEVELS.length && S.xp >= LEVELS[l]) l++; S.lvl = l;
+  if (before < 5 && S.lvl >= 5 && S.tricks) Object.entries(S.tricks).forEach(([k, t]) => { if (TRICKS[k] && TRICKS[k].use === 'chapter' && t.left != null) t.left++; }); // level 5: one more charge, this chapter too
   if (S.lvl > before) { AUDIO.play('up'); for (let k = before + 1; k <= S.lvl; k++) if ([3,5,7].includes(k)) S.picksDue.push(k); }
   return S.lvl > before;
 }
@@ -1295,8 +1314,11 @@ function gainXP(n){
 const lvB = () => Math.max(0, ((S && S.lvl) || 1) - 1);
 const lvDmg = (l = (S && S.lvl) || 1) => [3,5,7].filter(k => l >= k).length;
 const lvAc = (l = (S && S.lvl) || 1) => [4,8].filter(k => l >= k).length;
-function lvlNote(){ const l = S.lvl, extra = [l === 3 || l === 5 || l === 7 ? '+1 damage on every blow' : '', l === 4 || l === 8 ? '+1 armour' : ''].filter(Boolean);
-  return `The squad reaches level ${l}: +4 health${extra.length ? ', ' : ' and '}+1 to hit${extra.length ? `, and ${extra.join(' and ')}` : ''} for everyone. Rally and the heals grow with it.`; }
+/* tiers for the rest of the skills and spells: reach, duration, how hard a boss must roll to shrug it off. lvT: +1 at levels 4 and 7; lvAt(n): from level n */
+const lvT = (l = (S && S.lvl) || 1) => [4,7].filter(k => l >= k).length;
+const lvAt = n => ((S && S.lvl) || 1) >= n ? 1 : 0;
+function lvlNote(){ const l = S.lvl, extra = {3:'+1 damage on every blow', 4:'+1 armour, +1 to the Measure each soldier\'s role leans on, a longer reach and a bigger strain limit for the spells', 5:'+1 damage on every blow, longer Veils and darks, and one more use of every chapter trick', 6:'Rally twice a fight, and the talents get sharper', 7:'+1 damage on every blow, and the spells reach further and hold longer', 8:'+1 armour, and +1 to each soldier\'s second Measure'}[l];
+  return `The squad reaches level ${l}: +4 health and +1 to hit for everyone${extra ? `, and ${extra}` : ''}. Every skill and spell grows with it.`; }
 
 
 /* ============ skill checks ============
@@ -1537,48 +1559,51 @@ function sceneShell(kind){
 const TRICKS = {
   fold:{name:'Tattersail\'s Fold', ch:0, use:'chapter', n:1, where:'Tattersail\'s tent',
     lore:'A cadre mage\'s trick with the Deck: fold the turned card back into the spread and let another come up. Tattersail does it without looking. The Deck lets her, mostly.',
-    fx:'Once a chapter: when Tuft turns the chapter\'s card, draw again and keep either.'},
+    get fx(){ return `${trickTimes('fold')} a chapter: when Tuft turns the chapter's card, draw again and keep either. One more use from level 5.`; }},
   line:{name:'The Line', ch:1, use:'fight', ab:'t_line', where:'the cadre row, the night of the Hounds',
     lore:'Shields locked rim to rim across a tent row, with something out of Shadow on the other side of them. Paran remembered it. So did the shields.',
-    fx:'Once a fight: the bearer and every squadmate beside them take +3 armour and cannot be flanked until the bearer\'s next turn.'},
+    get fx(){ return `Once a fight: the bearer and every squadmate beside them take +${3 + lvT()} armour and cannot be flanked until the bearer's next turn. Grows with level.`; }},
   song:{name:'Rhivi Spirit-Song', ch:2, use:'fight', ab:'t_song', where:'the Rhivi outriders on the plain',
     lore:'The words the Rhivi sing over their dead, so the spirits of the grass will carry them. Sung for the living, they carry something else.',
     fx:'Once a fight: every squadmate within 4 heals 1d6+2, and 1 more for each squad level past the first, wakes from any daze, and steps out of any fire under them.'},
   pull:{name:'The Lady\'s Pull', ch:3, use:'chapter', n:2, ab:'t_pull', where:'the Phoenix Inn, watching a boy spin a coin',
     lore:'Oponn are twins, back to back. The Lady pulls and the Lord pushes, and nobody who has felt the one has escaped the other.',
-    fx:'Twice a chapter: spin the coin after a failed check and roll it again, or before an attack and roll it twice, keeping the better. The Lord pushes back: the squad\'s next check is −2.'},
+    get fx(){ return `${trickTimes('pull')} a chapter: spin the coin after a failed check and roll it again, or before an attack and roll it twice, keeping the better. The Lord pushes back: the squad's next check is −2. One more use from level 5.`; }},
   bluefire:{name:'Blue Fire', ch:3, use:'chapter', n:2, ab:'t_bluefire', where:'Hedge\'s cellar under the gas mains',
     lore:'A pig\'s bladder of Darujhistan\'s lamp-gas, tied off, with a sapper\'s fuse in the neck. Hedge calls it "the city\'s own sharper." Fiddler calls it something else.',
-    fx:'Twice a chapter: throw it, range 4. 2d6 to everything in a 3×3, squad included, and everything caught is dazzled: −3 to hit through the next round.'},
+    get fx(){ return `${trickTimes('bluefire')} a chapter: throw it, range 4. 2d6${lvDmg() ? '+' + lvDmg() : ''} to everything in a 3×3, squad included, and everything caught is dazzled: −3 to hit through the next round. Grows with level.`; }},
   cant:{name:'Claw Hand-Cant', ch:4, use:'fight', ab:'t_cant', where:'Kalam\'s roof',
     lore:'The Claw talks with its fingers: a flick for watch, a curl for here, a cut across the palm that means this one, now. Kalam showed it once and said he hadn\'t.',
-    fx:'Once a fight, and it does not use the bearer\'s action: sign an enemy within 6. The next hit on it this round is a critical.'},
+    get fx(){ const n = 1 + lvT(); return `Once a fight, and it does not use the bearer's action: sign an enemy within 6. The next ${n > 1 ? ['','','two','three'][n] + ' hits' : 'hit'} on it this round ${n > 1 ? 'are criticals' : 'is a critical'}. Grows with level.`; }},
   rope:{name:'The Rope\'s Way', ch:4, use:'fight', ab:'t_rope', where:'the rope-line across the roofs',
     lore:'The Patron of Assassins is called the Rope. On the roofs of Darujhistan there are lines strung between the chimneys that nobody admits to stringing, and the ones who use them do not fall.',
-    fx:'Once a fight, and it does not use the bearer\'s action: swap places with any squadmate within 5. Nobody gets a free swing.'},
+    get fx(){ return `Once a fight, and it does not use the bearer's action: swap places with any squadmate within ${5 + lvT()}. Nobody gets a free swing. Grows with level.`; }},
   otataral:{name:'Otataral Dust', ch:5, use:'chapter', n:2, ab:'t_otataral', not:['tuft','ohl'], where:'the ward-stone the Adjunct\'s sword cut',
     notWhy:{tuft:'won\'t touch it. Meanas goes quiet near it', ohl:'won\'t touch it. Denul goes thin near it'},
     lore:'Red dust mined at the edge of the Otataral Desert, in Seven Cities. The Adjunct\'s sword is made of it. The cut she left in the ward-stone was still shedding it.',
-    fx:'Twice a chapter: a pinch thrown at an enemy within 3. For the rest of the fight its sorcery fails: no lances, no slams, no shadow-bolts, one blow a turn. Tuft and Ohl will not carry it.'},
+    get fx(){ return `${trickTimes('otataral')} a chapter: a pinch thrown at an enemy within ${3 + lvT()}. For the rest of the fight its sorcery fails: no lances, no slams, no shadow-bolts, one blow a turn. Grows with level. Tuft and Ohl will not carry it.`; }},
   dark:{name:'A Courtesy of Darkness', ch:6, use:'fight', ab:'t_dark', sorcery:true, elder:true, where:'the terrace at Lady Simtal\'s',
     lore:'A tall guest in a black dragon mask inclined his head, once, the way the Tiste Andii do to someone whose face they know. Something of Kurald Galain came with the nod and has not left.',
-    fx:'Once a fight: a 3×3 of Andii dark within 5, for 2 rounds. Nothing shoots into it or out of it, and enemies standing in it are −2 to hit. Elder sorcery: otataral does not touch it.'},
+    get fx(){ return `Once a fight: a 3×3 of Andii dark within 5, for ${2 + lvAt(5)} rounds. Nothing shoots into it or out of it, and enemies standing in it are −2 to hit. Grows with level. Elder sorcery: otataral does not touch it.`; }},
   rime:{name:'Omtose Rime', ch:6, use:'fight', ab:'t_rime', sorcery:true, elder:true, where:'the Tyrant\'s frost on the garden lawn',
     lore:'Jaghut ice, Omtose Phellack, the warren of the old cold. A ring of it went across the lawn and stopped at the bearer\'s boots, and a little of it stayed.',
-    fx:'Once a fight: an enemy within 4 is rimed. It loses its next turn (a boss shakes that off on 12+), and every hit on it does +2 through the next round. Elder sorcery: otataral does not touch it.'},
+    get fx(){ return `Once a fight: an enemy within 4 is rimed. It loses its next turn (a boss shakes that off on ${12 + 2*lvT()}+), and every hit on it does +${2 + lvT()} through the next round. Grows with level. Elder sorcery: otataral does not touch it.`; }},
 };
 /* who carries trick k, if they are still with the squad */
 const trickBy = k => { const t = S && S.tricks && S.tricks[k]; return t && SQUAD().includes(t.who) ? t.who : null; };
 /* uses left: a 'fight' trick is 1 while carried (the fight tracks its own use); a 'chapter' trick counts charges */
-function trickLeft(k){ const T = TRICKS[k], t = S && S.tricks && S.tricks[k]; if (!T || !t || !trickBy(k)) return 0; return T.use === 'chapter' ? Math.max(0, t.left ?? T.n) : 1; }
-function spendTrick(k){ const T = TRICKS[k], t = S.tricks && S.tricks[k]; if (!T || !t) return; if (T.use === 'chapter') t.left = Math.max(0, (t.left ?? T.n) - 1); tally('tricksUsed'); save(); }
+/* a chapter trick's charges: one more from level 5 */
+const trickN = k => (TRICKS[k] && TRICKS[k].n || 0) + lvAt(5);
+const trickTimes = k => ['Never','Once','Twice','Three times','Four times'][trickN(k)] || `${trickN(k)} times`;
+function trickLeft(k){ const T = TRICKS[k], t = S && S.tricks && S.tricks[k]; if (!T || !t || !trickBy(k)) return 0; return T.use === 'chapter' ? Math.max(0, t.left ?? trickN(k)) : 1; }
+function spendTrick(k){ const T = TRICKS[k], t = S.tricks && S.tricks[k]; if (!T || !t) return; if (T.use === 'chapter') t.left = Math.max(0, (t.left ?? trickN(k)) - 1); tally('tricksUsed'); save(); }
 function earnTrick(k, who){
   const T = TRICKS[k]; if (!T) return; S.tricks ??= {}; if (S.tricks[k]) return;
-  S.tricks[k] = {who, ch:S.chapter || 0, left:T.n ?? null}; tally('tricks'); AUDIO.play('up');
+  S.tricks[k] = {who, ch:S.chapter || 0, left:T.n != null ? trickN(k) : null}; tally('tricks'); AUDIO.play('up');
   note(`✦ ${NAME(who)} learns a trick: ${T.name}. ${T.fx}`, 'trick');
 }
 /* a new chapter: every charged trick comes back full */
-function refillTricks(){ Object.entries((S && S.tricks) || {}).forEach(([k, t]) => { const T = TRICKS[k]; if (T && T.use === 'chapter') t.left = T.n; }); }
+function refillTricks(){ Object.entries((S && S.tricks) || {}).forEach(([k, t]) => { const T = TRICKS[k]; if (T && T.use === 'chapter') t.left = trickN(k); }); }
 /* the battle abilities a squadmate brings from their tricks */
 const trickAbs = id => Object.keys((S && S.tricks) || {}).filter(k => S.tricks[k].who === id && TRICKS[k] && TRICKS[k].ab).map(k => TRICKS[k].ab);
 /* the tricks a squadmate carries, for the sheet */
@@ -2063,6 +2088,34 @@ const POR = {
     ctx.fillStyle = PR.lin(ctx, -40, 0, -28, 0, [[0,'#3a2a1c'], [.5,'#1e1610'], [1,'#0a0806']]); ctx.beginPath(); ctx.moveTo(-40, -26); ctx.bezierCurveTo(-41, -30, -35, -32, -30, -30); ctx.bezierCurveTo(-27, -28, -27, -20, -30, -18); ctx.bezierCurveTo(-34, -16, -40, -18, -40, -22); ctx.closePath(); ctx.fill(); // the gloved fist on the grip
     PR.stroke(ctx, 'rgba(120,100,80,.5)', .4, () => { for (let i=0;i<3;i++){ ctx.moveTo(-31, -28 + i*3); ctx.quadraticCurveTo(-33, -27 + i*3, -36, -28 + i*3); } }); PR.soft(ctx, -36, -28, 3, 1.6, '#ffe0b0', .2);
     ctx.fillStyle = '#1a120c'; PR.path(ctx, [[-42, -20], [-30, -19], [-28, -10], [-40, -8]]); ctx.fill(); PR.stitch(ctx, 'rgba(160,130,90,.45)', .35, () => { ctx.moveTo(-41, -12); ctx.lineTo(-29.5, -13.5); });
+    return F; },
+  /* Vell: seventeen, Daru, Ocelot's rope boy. Soot, a stitched cut along the cheekbone, a mop of black curls, and the tarred line coiled over his shoulder with the hook on the end of it */
+  vell(ctx){ const F = {cy:-73, w:12.2, h:18.6, jaw:.66, chin:4, skin:'#c9a48a', iris:'#5a4a3a', lip:'#a06a5a', browCol:'#1a120c', browW:1.25, arch:.9, browL:.1, rim:'#b0a0c8', rimA:.14, nose:.9, look:.55, smileL:.15, smileR:.35, mouthW:3.6};
+    // the coil of tarred rope over his left shoulder, across the chest, and the hook hanging off it
+    PR.torsoPath(ctx, 32, 3); ctx.fillStyle = PR.lit(ctx, '#3e3a46', '#121016', -32, 24); ctx.fill();
+    ctx.save(); PR.torsoPath(ctx, 32, 3); ctx.clip();
+    PR.stroke(ctx, 'rgba(0,0,0,.35)', .8, () => { ctx.moveTo(-6, -46); ctx.quadraticCurveTo(-4, -20, -8, 2); ctx.moveTo(16, -40); ctx.quadraticCurveTo(14, -20, 18, 2); }); // the coat's front edges
+    PR.stitch(ctx, 'rgba(190,180,210,.22)', .45, () => { ctx.moveTo(-5, -44); ctx.lineTo(-7, 2); });
+    for (let i=0;i<5;i++){ ctx.strokeStyle = PR.lin(ctx, -30, 0, 30, 0, [[0,'#6a5434'], [.5,'#3a2c18'], [1,'#120c06']]); ctx.lineWidth = 3.2; ctx.beginPath(); ctx.moveTo(-30, -40 + i*1.6); ctx.bezierCurveTo(-10, -30 + i*2, 10, -12 + i*2, 30, -2 + i*1.4); ctx.stroke();
+      PR.stroke(ctx, 'rgba(220,190,130,.18)', .5, () => { for (let k=0;k<9;k++){ const tt = k/9, x = -30 + 60*tt, y = -40 + i*1.6 + (38 + i*.2)*tt*tt*.9 + Math.sin(tt*3)*4; ctx.moveTo(x - 1, y - 1); ctx.lineTo(x + 1.2, y + 1.2); } }); } // the lay of the strands
+    ctx.restore();
+    // the hook: black iron, three tines, hanging by his hip on the right
+    ctx.lineCap = 'round'; ctx.strokeStyle = '#2a2a30'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(22, -26); ctx.lineTo(23, -12); ctx.stroke();
+    ctx.lineWidth = 2; [-1, 0, 1].forEach(dx => { ctx.beginPath(); ctx.moveTo(23, -12); ctx.quadraticCurveTo(23 + dx*7, -10, 23 + dx*6, -18); ctx.stroke(); });
+    PR.stroke(ctx, 'rgba(210,210,230,.45)', .5, () => { ctx.moveTo(22, -25); ctx.lineTo(23.2, -13); ctx.moveTo(16.4, -17); ctx.quadraticCurveTo(16.6, -11, 22, -11.6); });
+    PR.neck(ctx, F, 5.8);
+    ctx.fillStyle = PR.lit(ctx, '#34303c', '#0e0c12', -12, 12); PR.path(ctx, [[-11, -42], [-7, -49], [7, -49], [11, -42], [0, -41]]); ctx.fill(); // the collar, turned up
+    F.under = (ctx, F) => { PR.soft(ctx, 6, F.cy + 4, 4, 3, '#1a1410', .3); PR.soft(ctx, -6, F.cy + 7, 3.4, 2.4, '#1a1410', .22); PR.dots(ctx, F, 24, 'rgba(40,30,30,.25)', .45, [1, 9]); }; // soot
+    PR.face(ctx, F);
+    // the cut along the left cheekbone, stitched (Ohl's)
+    PR.stroke(ctx, 'rgba(120,40,30,.75)', .6, () => { ctx.moveTo(-9.6, F.cy + 1.4); ctx.quadraticCurveTo(-6.6, F.cy + 3.4, -3.8, F.cy + 3.2); });
+    PR.stroke(ctx, 'rgba(30,20,20,.8)', .35, () => { for (let i=0;i<4;i++){ const x = -9 + i*1.6, y = F.cy + 1.9 + i*.42; ctx.moveTo(x - .2, y - 1); ctx.lineTo(x + .2, y + 1); } });
+    // a mop of black curls
+    ctx.beginPath(); ctx.moveTo(-13, F.cy + 1); ctx.bezierCurveTo(-15, F.cy - 15, -8, F.cy - 22.4, 0, F.cy - 22); ctx.bezierCurveTo(9, F.cy - 22.4, 15, F.cy - 15, 13, F.cy + 1); ctx.quadraticCurveTo(12, F.cy - 9, 4, F.cy - 12.6); ctx.quadraticCurveTo(0, F.cy - 13.6, -4, F.cy - 12.6); ctx.quadraticCurveTo(-12, F.cy - 9, -13, F.cy + 1);
+    ctx.fillStyle = PR.lin(ctx, -14, 0, 14, 0, [[0,'#3a2c26'], [.45,'#1a1210'], [1,'#060404']]); ctx.fill();
+    for (let i=0;i<26;i++){ const a = Math.PI*(.95 + i/25*1.1), r0 = 12.6 + (i%3)*.9, x = Math.cos(a)*r0*1.02, y = F.cy - 7 + Math.sin(a)*r0*1.12, rr = 2.2 + (i%4)*.5;
+      ctx.fillStyle = ['#2a1e18','#140e0a','#3c2e26'][i%3]; ctx.beginPath(); ctx.arc(x, y, rr, 0, 7); ctx.fill(); PR.stroke(ctx, 'rgba(120,100,90,.25)', .35, () => { ctx.arc(x - .4, y - .3, rr*.6, 3.6, 5.4); }); }
+    for (let i=0;i<4;i++){ const x = -6 + i*3.6, y = F.cy - 15.4 + (i%2)*1.1; ctx.fillStyle = ['#2a1e18','#1a1210'][i%2]; ctx.beginPath(); ctx.arc(x, y, 2.1, 0, 7); ctx.fill(); } // a curl or two over the brow
     return F; },
 };
 function paintPortrait(ctx, id, W, H, st){
@@ -3997,7 +4050,7 @@ const unitAt = (x,y) => B.units.find(u => u.hp > 0 && u.x === x && u.y === y);
 const inB = (x,y) => x>=0 && y>=0 && x<8 && y<10;
 const wall = (x,y) => !inB(x,y) || B.def.map[y][x] === '#';
 const free = (x,y,self) => !wall(x,y) && !B.units.some(u => u !== self && u.hp > 0 && u.x === x && u.y === y);
-const veilPen = () => Math.round(5 * (B && B.warren ? B.warren.meanas : 1)); // 1 outside a fight, for the squad sheet
+const veilPen = () => Math.round((5 + lvT()) * (B && B.warren ? B.warren.meanas : 1)); // 1 outside a fight, for the squad sheet
 const pace = ms => ms * SET.speed; // combat pace setting (Slow / Normal / Fast)
 /* a timer that belongs to this battle: it does nothing if the battle was won, left, restarted or replaced meanwhile */
 function later(fn, ms){ const b0 = B; return setTimeout(() => { if (B && B === b0) fn(); }, ms); }
@@ -4024,7 +4077,7 @@ function mkParty(id, x, y){
   Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (!it) return; u.ac += it.ac || 0; u.atk += it.atk || 0; u.maxhp += it.hp || 0; u.mv += it.mv || 0; u.rng += it.rng || 0; if (it.dmg) u.dmg = it.dmg; });
   // veteran picks and talents
   if (has(id,'iron')) u.maxhp += 6; if (has(id,'keen')) u.atk += 1; if (has(id,'fleet')) u.mv += 1; if (has(id,'nerve')) u.init += 1;
-  ['quorl','shadowstep','mockra','argument','quickshot'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
+  ['quorl','shadowstep','mockra','argument','quickshot','ropeswing'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
   trickAbs(id).forEach(k => { if (AB[k]) u.ab.splice(u.ab.length - 1, 0, k); }); // tricks won on hard checks (16b, 31b)
   if (B && B.def.nomagic && u.magic) { u.rng = 1; if (id === 'tuft') { u.dmg = [1,4,1]; u.verb = 'jabs a knife at'; } } // otataral: a knife, or the cudgel
   u.ac += lvAc(); if (u.dmg && lvDmg()) u.dmg = [u.dmg[0], u.dmg[1], (u.dmg[2] || 0) + lvDmg()]; // levels 3/5/7 hit harder, 4/8 stand harder (15)
@@ -4054,7 +4107,7 @@ function startBattle(id, opt={}){
   if (opt.carry) B.units.forEach(u => { if (u.side === 'p' && opt.carry[u.id] != null) { u.hp = clamp(opt.carry[u.id], 1, u.maxhp); u.strain = (opt.strain && opt.strain[u.id]) || 0; } }); // into the second area as they came out of the first
   (def.allies || []).forEach(a => { const at = freeNear(a[1], a[2]); if (at) B.units.push(mkAlly(a[0], at.x, at.y)); });
   def.foes.forEach((f,i) => { if (opt.drop && opt.drop.includes(i)) return; B.units.push(mkFoe(f[0], f[1], f[2], f[0]==='stone' && S.f.noisy ? 10 : 0)); });
-  const squadInit = (SQUAD().some(id => has(id,'sappers_eye')) ? 2 : 0) + (S.card === 'raven' ? 2 : 0);
+  const squadInit = (SQUAD().some(id => has(id,'sappers_eye')) ? 2 + lvAt(6) : 0) + (S.card === 'raven' ? 2 : 0);
   const initRoll = u => d20() + u.init + (u.side === 'p' ? squadInit : 0);
   B.units.forEach(u => u.ini = initRoll(u));
   B.initOrder = [...B.units].sort((a,b) => b.ini - a.ini);
@@ -4148,7 +4201,7 @@ function lose(){
   if (P) { S.gods.used.push(who); S.godsMet ??= []; if (!S.godsMet.includes(who)) S.godsMet.push(who); tally('godsAnswered'); } // godsMet: the glossary's record of who has answered
   save();
   const story = DIFF() === DIFFS.story, left = story ? null : (() => { const ch = S.gods; const n = [...SQUAD().filter(id => id !== 'sgt' && PATRONS[id] && (S.loy[id] || 0) > 0), 'sgt'].filter(id => !ch.used.includes(id)).length; return n; })();
-  if (P) sh.innerHTML = `${art('patrons/' + who, 'godsig')}<div class="sp godsp">${esc(P.title)}</div><div class="txt god">${fmt(P.txt(who))}</div>
+  if (P) sh.innerHTML = `${art('patrons/' + (P.sig || who), 'godsig')}<div class="sp godsp">${esc(P.title)}</div><div class="txt god">${fmt(P.txt(who))}</div>
     <div class="note trick">The Fourth's road would have ended here. ${who === 'sgt' ? 'The soldiers\' god' : `${esc(NAME(who))}'s god`} would not let it.${story ? '' : ` ${esc(P.god)} will not answer again this chapter. ${left ? `${left} more ${left === 1 ? 'god is' : 'gods are'} still listening.` : 'No one else is listening.'}`}</div>
     <div class="choices"><button class="choice" id="bRetry">Rise, and fight it again</button></div>`;
   else sh.innerHTML = `<div class="sp godsp">No one answers</div><div class="txt god">${fmt(`Every god who had a reason to listen has already spent it this chapter. Hood's gate opens the rest of the way, and it is very quiet on the other side.\n\nAnd then it is morning, and the Fourth is where this chapter began, with all of it still to do, and nobody quite able to say why they are so tired.`)}</div>
@@ -4160,14 +4213,15 @@ function lose(){
     S = migrate(JSON.parse(snap)); if (st) S.stats = st; S.gods = gods; if (met) S.godsMet = met; startBattle(S.battle, S.bopt || {}); }; // the count and the gods remember the lost fight
 }
 
+const grapR = () => 3 + lvT();
 /* abilities. The heals and Rally grow with the squad's level (lvB, 15), so they keep up with the road's harder blows */
 const rallyHeal = () => 5 + 2*lvB(), salveHeal = () => 8 + lvB();
 const AB = {
-  rally:{name:'Rally', self:true, desc:()=>`Squadmates within 4 heal ${rallyHeal()}, shake off a daze, stop bleeding, and get +2 to hit and +2 damage through next round. Grows with the squad's level. Once a fight.`, ok:()=>!B.used.rally,
-    run(u){ B.used.rally = 1; AUDIO.play('heal'); party().forEach(p => { if (cheb(u,p) <= 4) { heal(p, rallyHeal()); p.rallyUntil = B.round + 1; p.bleed = 0; if (p.stun) { p.stun = false; float(p, 'steadied', '#9fe0b8'); } } }); blog(`${u.name}: "On me, you sorry lot!" The squad steadies.`); }},
-  bash:{name:'Shield bash', desc:()=>`Adjacent enemy: 1d6+${3 + lvDmg()} damage, and it loses its next turn on a hit. Recharges after 2 rounds.`, ok:u=>!(u.cdBash >= B.round),
+  rally:{name:'Rally', self:true, desc:()=>`Squadmates within 4 heal ${rallyHeal()}, shake off a daze, stop bleeding, and get +2 to hit and +2 damage through next round. Grows with the squad's level. ${lvAt(6) ? 'Twice a fight from level 6.' : 'Once a fight (twice from level 6).'}`, ok:()=>(B.used.rally || 0) < 1 + lvAt(6),
+    run(u){ B.used.rally = (B.used.rally || 0) + 1; AUDIO.play('heal'); party().forEach(p => { if (cheb(u,p) <= 4) { heal(p, rallyHeal()); p.rallyUntil = B.round + 1; p.bleed = 0; if (p.stun) { p.stun = false; float(p, 'steadied', '#9fe0b8'); } } }); blog(`${u.name}: "On me, you sorry lot!" The squad steadies.`); }},
+  bash:{name:'Shield bash', desc:()=>`Adjacent enemy: 1d6+${3 + lvDmg()} damage, and it loses its next turn on a hit. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}.`, ok:u=>!(u.cdBash >= B.round),
     tiles:u=>foes().filter(f => cheb(u,f) === 1),
-    run(u,x,y){ const t = unitAt(x,y); u.cdBash = B.round + 2; const r = attack(u, t, {dmg:[1,6,3 + lvDmg()], verb:'shield-bashes'}); if (r.hit && (t.hp - r.dmg > 0 || t.immortal)) { t.stun = true; blog(`${t.name} reels, dazed.`); } }},
+    run(u,x,y){ const t = unitAt(x,y); u.cdBash = B.round + 2 - lvAt(6); const r = attack(u, t, {dmg:[1,6,3 + lvDmg()], verb:'shield-bashes'}); if (r.hit && (t.hp - r.dmg > 0 || t.immortal)) { t.stun = true; blog(`${t.name} reels, dazed.`); } }},
   sharper:{name:'Sharper', item:'sharper', boom:true, aoe:1, range:4, desc:()=>'Throw, range 4. 1d10+2 where it lands and 1d6 to everything next to it, squad included. A natural 1 scatters it.',
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => { blast(pt, [[1,10,2],[1,6,0]], '#f2c46b'); AUDIO.play('boom', .8); sparks(pt.x, pt.y, 26, '#f2c46b'); }); blog(`${u.name} lobs a sharper.`); }},
   burner:{name:'Burner', item:'burner', boom:true, aoe:1, range:4, desc:()=>'Throw, range 4. 1d6 to everything in a 3×3 and leaves it burning for 2 rounds. A natural 1 scatters it.',
@@ -4180,35 +4234,51 @@ const AB = {
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => { AUDIO.play('burner', .5); sparks(pt.x, pt.y, 18, '#9a968e', .35);
       for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(pt.x+dx, pt.y+dy)) B.smoke.push({x:pt.x+dx, y:pt.y+dy, until:B.round+2}); });
       blog(`${u.name} breaks a smoker. Grey rolls out across the ${placeWord(B.def)} and sits there like a held breath.`); }},
-  veil:{name:'Veil', strain:2, desc:()=>`Meanas illusion on a squadmate within 4: enemies take −${veilPen()} to hit them for 2 rounds. Strain 2.`,
+  veil:{name:'Veil', strain:2, desc:()=>`Meanas illusion on a squadmate within 4: enemies take −${veilPen()} to hit them for ${2 + lvAt(5)} rounds. Grows with level. Strain 2.`,
     tiles:u=>party().filter(p => cheb(u,p) <= 4),
-    run(u,x,y){ const t = unitAt(x,y); t.veilUntil = B.round + 2; AUDIO.play('magic'); sparks(t.x, t.y, 14, '#c9bbff', .4); blog(`${u.name} folds shadow around ${t.name}. They blur at the edges.`); float(t,'veiled','#c9bbff'); }},
+    run(u,x,y){ const t = unitAt(x,y); t.veilUntil = B.round + 2 + lvAt(5); AUDIO.play('magic'); sparks(t.x, t.y, 14, '#c9bbff', .4); blog(`${u.name} folds shadow around ${t.name}. They blur at the edges.`); float(t,'veiled','#c9bbff'); }},
   /* Phantom (Meanas): shadow folded over an enemy's eyes for two rounds. It fights phantoms; half the blows that would land go into the dark. */
-  phantom:{name:'Phantom', strain:2, desc:()=>'Meanas shadow over the eyes of an enemy within 5 for its next 2 turns: it swings at phantoms, and half the blows that would have landed go into the dark (−50% to hit). Strain 2.',
+  phantom:{name:'Phantom', strain:2, desc:()=>`Meanas shadow over the eyes of an enemy within 5 for its next ${2 + lvT()} turns: it swings at phantoms, and half the blows that would have landed go into the dark (−50% to hit). Grows with level. Strain 2.`,
     tiles:u=>foes().filter(f => cheb(u,f) <= 5),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#9a86e0', t:performance.now(), dur:400, wob:true});
-      t.blindTurns = 2; float(t,'blinded','#9a86e0'); sparks(t.x, t.y, 14, '#6a58b0', .45);
-      blog(`${u.name} pulls Meanas down over ${t.name}'s eyes. For its next two turns it will be fighting phantoms.`); }},
+      t.blindTurns = 2 + lvT(); float(t,'blinded','#9a86e0'); sparks(t.x, t.y, 14, '#6a58b0', .45);
+      blog(`${u.name} pulls Meanas down over ${t.name}'s eyes. For its next ${['','one','two','three','four','five'][t.blindTurns] || t.blindTurns} turns it will be fighting phantoms.`); }},
   mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${(has('ohl','triage') ? 6 : 3) + lvB()}${B && B.warren && B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
     tiles:u=>party().filter(p => cheb(u,p) <= (has(u.id,'triage') ? 4 : 3)),
     run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,(has(u.id,'triage') ? 6 : 3) + lvB()) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
   salve:{name:'Salve', item:'salve', desc:()=>`Heal ${salveHeal()}, yourself or an adjacent squadmate.`, tiles:u=>party().filter(p => cheb(u,p) <= 1),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, salveHeal()); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
-  mark:{name:'Tracker\'s Mark', desc:()=>'An enemy within 5 is marked: every hit on it does +2 damage for two rounds.', tiles:u=>foes().filter(f => cheb(u,f) <= 5 && canShoot(u,f) && !(f.markedUntil >= B.round)),
-    run(u,x,y){ const t = unitAt(x,y); t.markedUntil = B.round + 2; AUDIO.play('click'); float(t,'marked','#f2c46b'); blog(`${u.name} marks ${t.name}: a nick of chalk on the ground, a word to the squad, and it is a target.`); }},
-  quickshot:{name:'Quick Shot', desc:()=>'Once a fight: two arrows at one target within range.', ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng && canShoot(u,f)),
-    run(u,x,y){ const t = unitAt(x,y); B.used.quickshot = 1; attack(u, t); later(() => { if (t.hp > 0) attack(u, t, {verb:'puts a second arrow into'}); }, pace(320)); }},
+  mark:{name:'Tracker\'s Mark', desc:()=>`An enemy within 5 is marked: every hit on it does +${2 + lvT()} damage for two rounds. Grows with level.`, tiles:u=>foes().filter(f => cheb(u,f) <= 5 && canShoot(u,f) && !(f.markedUntil >= B.round)),
+    run(u,x,y){ const t = unitAt(x,y); t.markedUntil = B.round + 2; t.markDmg = 2 + lvT(); AUDIO.play('click'); float(t,'marked','#f2c46b'); blog(`${u.name} marks ${t.name}: a nick of chalk on the ground, a word to the squad, and it is a target.`); }},
+  quickshot:{name:'Quick Shot', desc:()=>`Once a fight: ${lvAt(6) ? 'three' : 'two'} arrows at one target within range${lvAt(6) ? '' : ' (three from level 6)'}.`, ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng && canShoot(u,f)),
+    run(u,x,y){ const t = unitAt(x,y); B.used.quickshot = 1; attack(u, t); later(() => { if (t.hp > 0) attack(u, t, {verb:'puts a second arrow into'}); }, pace(320)); if (lvAt(6)) later(() => { if (t.hp > 0) attack(u, t, {verb:'puts a third arrow into'}); }, pace(640)); }},
+  /* Vell's rope-and-hook: a throw at range that hauls whatever it bites to the tile beside him. The heavy take the hook and stay put. */
+  grapple:{name:'Grappling Hook', desc:()=>`Throw the hook at an enemy 2 to ${grapR()} tiles off: 1d6+${1 + lvDmg()} on a hit, and it is hauled to the open tile beside Vell nearest it. Bosses and the very heavy take the hook but don't come. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
+    ok:u=>!(u.cdHook >= B.round), tiles:u=>foes().filter(f => cheb(u,f) >= 2 && cheb(u,f) <= grapR() && canShoot(u,f)),
+    run(u,x,y){ const t = unitAt(x,y); if (!t) return; u.cdHook = B.round + 2 - lvAt(6); AUDIO.play('bow');
+      const r = attack(u, t, {dmg:[1,6,1 + lvDmg()], verb:'throws the hook at'}); if (!r.hit) return;
+      const heavy = t.boss || t.immortal || t.maxhp >= 45;
+      later(() => { if (t.hp <= 0) return;
+        if (heavy) { blog(`The hook bites into ${t.name}. ${t.name} doesn't come. Vell lets go of the line before it takes him instead.`); float(t, 'too heavy', '#a99a88'); return; }
+        const at = DIRS.map(([dx, dy]) => ({x:u.x + dx, y:u.y + dy})).filter(p => free(p.x, p.y, t)).sort((a, b) => cheb(a, t) - cheb(b, t))[0];
+        if (!at) { blog(`There's nowhere beside Vell to haul ${t.name} to. The hook comes back with a piece of it.`); return; }
+        sparks(t.x, t.y, 8, '#b0a0c8', .4); t.x = at.x; t.y = at.y; t.facing = u.x >= t.x ? 1 : -1; AUDIO.play('step'); float(t, 'hauled in', '#b0a0c8');
+        if (has(u.id, 'snare')) { t.snareUntil = B.round + 1; float(t, 'snared', '#b0a0c8'); }
+        blog(`Vell hauls on the line with his whole weight and ${t.name} comes off its feet and across the ground to him${has(u.id, 'snare') ? `, tangled to the knees in tarred rope` : ''}.`); updBattleUI(); }, pace(300)); }},
+  ropeswing:{name:'Rope Swing', free:true, desc:()=>`Once a turn, and it does not use his action: swing to any open tile within ${3 + lvT()}. Nobody gets a free swing. Grows with level.`, ok:u=>u.swungTurn !== B.turn,
+    tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 3 + lvT() && free(x,y,u) && !(x === u.x && y === u.y)) out.push({x,y,step:true}); return out; },
+    run(u,x,y){ u.swungTurn = B.turn; AUDIO.play('step'); sparks(u.x, u.y, 8, '#b0a0c8', .4); u.x = x; u.y = y; sparks(x, y, 8, '#b0a0c8', .4); blog(`${u.name} throws the hook at something high and goes with it.`); updBattleUI(); }},
   /* talents (level 3 picks) */
   quorl:{name:'Quorl Signal', boom:true, aoe:1, range:5, desc:()=>'Once a fight: a Moranth drop. A sharper from the sky, range 5, not from the satchel.', ok:()=>!B.used.quorl,
     run(u,x,y){ B.used.quorl = 1; const pt = {x,y}; AUDIO.play('bow'); B.fx.push({kind:'arc', from:{x:pt.x + 1.5, y:-3}, to:pt, t:performance.now(), dur:REDUCE() ? 1 : pace(480), drop:true}); later(() => { blast(pt, [[1,10,2],[1,6,0]], '#f2c46b'); AUDIO.play('boom', .8); sparks(pt.x, pt.y, 26, '#f2c46b'); }, REDUCE() ? 1 : pace(500)); blog(`${u.name} shows a lamp to the sky. Something with wings answers.`); }},
-  shadowstep:{name:'Shadow Step', strain:1, desc:()=>'Step through Meanas to any free tile within 4. No free swings. Strain 1.', tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 4 && free(x,y,u) && !(x === u.x && y === u.y)) out.push({x,y,step:true}); return out; },
+  shadowstep:{name:'Shadow Step', strain:1, desc:()=>`Step through Meanas to any free tile within ${4 + lvT()}. No free swings. Grows with level. Strain 1.`, tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 4 + lvT() && free(x,y,u) && !(x === u.x && y === u.y)) out.push({x,y,step:true}); return out; },
     run(u,x,y){ AUDIO.play('shadow'); sparks(u.x, u.y, 12, '#c9bbff', .4); u.x = x; u.y = y; sparks(x, y, 12, '#c9bbff', .4); blog(`${u.name} is somewhere else.`); }},
   /* Mockra, the warren of the mind: not a lost turn (that is Phantom) but a turned one. The enemy hears its own side say something
      unforgivable and spends its next turn going for the nearest of them instead of the squad. */
-  mockra:{name:'Mockra Whisper', strain:3, desc:()=>'An enemy within 4 hears its own side whisper something unforgivable. On its next turn it goes for the nearest of them instead of you. Bosses resist on 12+. Strain 3.',
+  mockra:{name:'Mockra Whisper', strain:3, desc:()=>`An enemy within 4 hears its own side whisper something unforgivable. On its next turn it goes for the nearest of them instead of you. Bosses resist on ${12 + 2*lvT()}+. Grows with level. Strain 3.`,
     tiles:u=>foes().filter(f => cheb(u,f) <= 4 && !f.turned),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#e0a8d8', t:performance.now(), dur:400, wob:true});
-      if (t.boss && d20() >= 12) { blog(`${t.name} shakes the whisper off.`); float(t,'resists','#a99a88'); }
+      if (t.boss && d20() >= 12 + 2*lvT()) { blog(`${t.name} shakes the whisper off.`); float(t,'resists','#a99a88'); }
       else { t.turned = true; sparks(t.x, t.y, 12, '#e0a8d8', .4); float(t,'turned','#e0a8d8'); blog(`${u.name} puts a word in ${t.name}'s ear, in a voice it knows. ${t.name} looks round at its own side, slowly.`); } }},
   argument:{name:'Argument with Hood', strain:3, desc:()=>`Once a fight: a downed squadmate within 2 stands up at ${6 + 2*lvB()} health. Strain 3.`, ok:()=>!B.used.argument,
     tiles:u=>B.units.filter(p => p.side === 'p' && !p.ally && p.hp <= 0 && cheb(u,p) <= 2 && freeNear(p.x, p.y, p)),
@@ -4246,12 +4316,12 @@ function provokes(u, from, to){ return threatsAt(u, from.x, from.y).filter(e => 
 function atkCalc(a, t, o={}){
   const mine = a.side === 'p';
   const line = lineCovers(t), fl = !o.aoo && !line && flanked(a, t, o.from); // The Line: no flanking anyone in it
-  const wallBonus = t.side === 'p' && friendsOf(t).some(f => !f.ally && has(f.id,'shieldwall') && cheb(f,t) === 1) ? 2 : 0;
-  const discipline = t.side === 'p' && !t.ally && SQUAD().some(id => has(id,'discipline')) ? 1 : 0;
-  const aooBonus = o.aoo && !a.ally && a.side === 'p' && (has(a.id,'holdline') || has(a.id,'sappers_eye')) ? 2 : 0;
-  const bonus = (o.bonus || 0) + (mine && a.steady ? 2 : 0) + (mine && B.howlUntil >= B.round ? -1 : 0) + (!mine && B.foeRallyUntil >= B.round ? 2 : 0) + (!mine && t.clawMarkUntil >= B.round ? 2 : 0) + a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus + (a.dazzleUntil >= B.round ? -3 : 0) + (!mine && inDark(a.x, a.y) ? -2 : 0); // Blue Fire dazzles; Andii dark blinds
-  const ghost = t.side === 'p' && !t.ally && has(t.id,'ghost') ? 2 : 0;
-  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost + (line ? 3 : 0) + (t.darkUntil >= B.round ? 2 : 0);
+  const wallBonus = t.side === 'p' && friendsOf(t).some(f => !f.ally && has(f.id,'shieldwall') && cheb(f,t) === 1) ? 2 + lvAt(6) : 0;
+  const discipline = t.side === 'p' && !t.ally && SQUAD().some(id => has(id,'discipline')) ? 1 + lvAt(8) : 0;
+  const aooBonus = o.aoo && !a.ally && a.side === 'p' && (has(a.id,'holdline') || has(a.id,'sappers_eye')) ? 2 + lvAt(6) : 0;
+  const bonus = (o.bonus || 0) + (mine && a.steady ? 2 : 0) + (mine && B.howlUntil >= B.round ? -1 : 0) + (!mine && B.foeRallyUntil >= B.round ? 2 : 0) + (!mine && t.clawMarkUntil >= B.round ? 2 : 0) + a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus + (a.dazzleUntil >= B.round ? -3 : 0) + (!mine && a.snareUntil >= B.round ? -2 : 0) + (!mine && inDark(a.x, a.y) ? -2 : 0); // Blue Fire dazzles; Andii dark blinds
+  const ghost = t.side === 'p' && !t.ally && has(t.id,'ghost') ? 2 + lvAt(6) : 0;
+  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost + (line ? 3 + lvT() : 0) + (t.darkUntil >= B.round ? 2 : 0) + (t.side === 'e' && t.snareUntil >= B.round ? -2 : 0);
   return {bonus, ac, critOn:mine && S.card === 'assassin' ? 19 : 20, fl};
 }
 /* chance to hit in percent: a natural 1 always misses, a crit always hits */
@@ -4264,7 +4334,7 @@ function attack(a, t, o={}){
   if (mine && !a.ally) a.fired = true; // a ranged squadmate who has fired is no longer posted up
   let crit = nat >= critOn;
   let hit = crit || (nat !== 1 && nat + bonus >= ac);
-  if (hit && mine && t.cantRound === B.round) { t.cantRound = -1; if (!crit) { crit = true; blog(`<em>The hand-cant said this one, now.</em>`); } } // Claw Hand-Cant
+  if (hit && mine && t.cantRound === B.round) { if (--t.cantLeft <= 0) t.cantRound = -1; if (!crit) { crit = true; blog(`<em>The hand-cant said this one, now.</em>`); } } // Claw Hand-Cant
   if (hit && !crit && t.parryLeft > 0 && t.side === 'e') { t.parryLeft--; hit = false; later(() => { float(t, 'parried', '#cfc8b8'); AUDIO.play('sword'); }, pace(140)); blog(`${t.name} turns ${a.name}'s blow aside. <em>Parried.</em>`); }
   let dark = false; if (hit && a.blindTurns > 0 && R(2) === 0) { hit = false; crit = false; dark = true; } // Phantom: half the blows that would land go into the dark
   if (crit && mine && !a.ally) tally('crits');
@@ -4280,7 +4350,7 @@ function attack(a, t, o={}){
   const tagTxt = tags ? ` <span class="stat">[${tags}]</span>` : '';
   const land = ranged ? pace(200) : pace(140); // the blow lands when the bolt arrives or the lunge connects
   if (!hit) { blog(dark ? `${a.name} ${verb} ${t.name} and hits a phantom instead: the blow goes into the dark${tagTxt}${math}.` : `${a.name} ${verb} ${t.name} and misses${tagTxt}${math}.`); later(() => { float(t, dark ? 'into the dark' : 'miss', dark ? '#9a86e0' : '#a99a88'); if (!ranged) sparks(t.x, t.y - .2, 4, '#cfc8b8', .5); }, land); return {hit:false}; }
-  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0) + (t.rimeUntil >= B.round ? 2 : 0) + (a.side === 'p' && a.rallyUntil >= B.round ? 2 : 0);
+  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? (t.markDmg || 2) : 0) + (t.rimeUntil >= B.round ? (t.rimeDmg || 2) : 0) + (a.side === 'p' && a.rallyUntil >= B.round ? 2 : 0);
   blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${tagTxt}${math}.`);
   later(() => { if (t.hp <= 0) return; if (crit) sparks(t.x, t.y, 16, '#ffcf7a'); else sparks(t.x, t.y - .1, 5, '#f08a7c', .6);
     hurt(t, dmg, crit); foeRiders(a, t, dmg);
@@ -4290,7 +4360,7 @@ function attack(a, t, o={}){
 }
 function castStrain(u, cost){
   if (!cost) return; u.strain += cost;
-  if (u.strain > STR_MAX) { const over = u.strain - STR_MAX, dmg = over * 3; u.strain = STR_MAX; blog(`<em>${u.name} overdraws the warren.</em> Blood from the nose, ${dmg} damage.`); hurt(u, dmg); }
+  if (u.strain > strMax()) { const over = u.strain - strMax(), dmg = over * 3; u.strain = strMax(); blog(`<em>${u.name} overdraws the warren.</em> Blood from the nose, ${dmg} damage.`); hurt(u, dmg); }
 }
 
 /* player input */
@@ -4545,7 +4615,7 @@ function updBattleUI(){
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
   const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied (+2 hit, +2 damage)' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', u.turned ? 'turned on its own' : '', u.blindTurns > 0 ? `blinded by shadow (−50% to hit, ${u.blindTurns} turn${u.blindTurns > 1 ? 's' : ''})` : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
-  ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
+  ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${strMax()}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="bhint">${tapWord(hint)}</div>
     <div class="abil">${u.ab.map(k => { const a = AB[k]; const cnt = a.item ? `<small>×${itemLeft(a.item)}</small>` : a.trick && TRICKS[a.trick].use === 'chapter' ? `<small>×${trickLeft(a.trick)}</small>` : ''; const dis = (B.acted && !a.free) || !abOk(u,k);
       return `<button class="btn ${B.mode === k ? 'on' : ''} ${a.trick ? 'trk' : ''}" id="ab_${k}" data-k="${k}" ${dis ? 'disabled' : ''}>${a.trick ? '✦ ' : ''}${a.name}${cnt}</button>`; }).join('')}
@@ -4723,30 +4793,30 @@ Object.assign(AB, {
   t_bluefire:{name:TRICKS.bluefire.name, trick:'bluefire', boom:true, aoe:1, range:4, desc:()=>TRICKS.bluefire.fx,
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => {
       const caught = B.units.filter(v => v.hp > 0 && cheb(v, pt) <= 1); caught.forEach(v => { v.dazzleUntil = B.round + 1; });
-      blast(pt, [[2,6,0],[2,6,0]], '#6fb7ff'); AUDIO.play('burner', 1.1); sparks(pt.x, pt.y, 34, '#6fb7ff', .9); sparks(pt.x, pt.y, 14, '#e8f4ff', 1.3); });
+      blast(pt, [[2,6,lvDmg()],[2,6,lvDmg()]], '#6fb7ff'); AUDIO.play('burner', 1.1); sparks(pt.x, pt.y, 34, '#6fb7ff', .9); sparks(pt.x, pt.y, 14, '#e8f4ff', 1.3); });
       blog(`${u.name} lobs a bladder of lamp-gas. It goes up blue, the colour of every street in Darujhistan, all at once.`); }},
   t_cant:{name:TRICKS.cant.name, trick:'cant', free:true, desc:()=>TRICKS.cant.fx,
     tiles:u=>foes().filter(f => cheb(u,f) <= 6 && f.cantRound !== B.round),
-    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.cantRound = B.round; AUDIO.play('click'); float(t, 'this one', '#f2c46b'); blog(`${u.name}'s fingers say it: a flick, a curl, a cut across the palm. <em>This one. Now.</em>`); }},
+    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.cantRound = B.round; t.cantLeft = 1 + lvT(); AUDIO.play('click'); float(t, 'this one', '#f2c46b'); blog(`${u.name}'s fingers say it: a flick, a curl, a cut across the palm. <em>This one. Now.</em>`); }},
   t_rope:{name:TRICKS.rope.name, trick:'rope', free:true, desc:()=>TRICKS.rope.fx,
-    tiles:u=>party().filter(p => p !== u && !p.ally && cheb(u,p) <= 5),
+    tiles:u=>party().filter(p => p !== u && !p.ally && cheb(u,p) <= 5 + lvT()),
     run(u,x,y){ const t = unitAt(x,y); if (!t) return; const ux = u.x, uy = u.y; sparks(ux, uy, 10, '#9a86e0', .4); sparks(t.x, t.y, 10, '#9a86e0', .4);
       u.x = t.x; u.y = t.y; t.x = ux; t.y = uy; AUDIO.play('shadow'); B.moved = true; blog(`${u.name} and ${t.name} are each where the other was. Nobody saw the rope.`); }},
   t_otataral:{name:TRICKS.otataral.name, trick:'otataral', desc:()=>TRICKS.otataral.fx,
-    tiles:u=>foes().filter(f => cheb(u,f) <= 3 && !f.otat),
+    tiles:u=>foes().filter(f => cheb(u,f) <= 3 + lvT() && !f.otat),
     run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.otat = true; AUDIO.play('burner', .4); sparks(t.x, t.y, 18, '#c8644a', .5); float(t, 'otataral', '#e0846a');
       const lost = []; if (t.ai === 'raest') lost.push('its ice'); if (t.kind === 'stone') lost.push('its slam'); if ((t.attacks || 1) > 1) { t.attacks = 1; lost.push('its second blow'); }
       if (t.rng > 1 && (t.magic || /shadow|sorcer|bolt|lance|warren|spell/i.test(t.verb || ''))) { t.rng = 1; lost.push('its sorcery'); }
       blog(`${u.name} throws a pinch of red dust at ${t.name}. ${lost.length ? `It loses ${lost.join(', ')} for the rest of the fight.` : 'Nothing about it was magic. It sneezes.'}`); }},
   t_dark:{name:TRICKS.dark.name, trick:'dark', sorcery:true, elder:true, aoe:1, range:5, smoke:true, darkness:true, desc:()=>TRICKS.dark.fx,
     run(u,x,y){ const pt = {x, y}; AUDIO.play('shadow'); sparks(x, y, 22, '#3a3070', .5);
-      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(x+dx, y+dy)) B.smoke.push({x:x+dx, y:y+dy, until:B.round+2, dark:true});
+      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(x+dx, y+dy)) B.smoke.push({x:x+dx, y:y+dy, until:B.round + 2 + lvAt(5), dark:true});
       blog(`${u.name} says nothing and inclines their head. Kurald Galain comes down over the ${placeWord(B.def)} like a cloak over a lamp.`);
       updBattleUI(); afterAct(); }},
   t_rime:{name:TRICKS.rime.name, trick:'rime', sorcery:true, elder:true, desc:()=>TRICKS.rime.fx,
     tiles:u=>foes().filter(f => cheb(u,f) <= 4),
-    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.rimeUntil = B.round + 1; AUDIO.play('slam'); sparks(t.x, t.y, 24, '#bfe8ff', .7);
-      if (t.boss && d20() >= 12) { blog(`Rime goes over ${t.name} in a ring and cracks. It keeps moving, but it is brittle now.`); float(t, 'brittle', '#bfe8ff'); }
+    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.rimeUntil = B.round + 1; t.rimeDmg = 2 + lvT(); AUDIO.play('slam'); sparks(t.x, t.y, 24, '#bfe8ff', .7);
+      if (t.boss && d20() >= 12 + 2*lvT()) { blog(`Rime goes over ${t.name} in a ring and cracks. It keeps moving, but it is brittle now.`); float(t, 'brittle', '#bfe8ff'); }
       else { t.stun = true; blog(`Rime goes over ${t.name} in a ring, and it stops, white to the eyes.`); float(t, 'rimed', '#bfe8ff'); } }},
 });
 
@@ -4867,9 +4937,9 @@ Object.assign(AB, {
     run(u){ const d = (B.warren && B.warren.denul) || 1, near = party().filter(p => !p.ally && cheb(p, u) <= 3); AUDIO.play('heal');
       near.forEach(p => { heal(p, Math.max(1, Math.round(roll(2,4,2 + lvB()) * d))); p.bleed = 0; sparks(p.x, p.y, 10, '#9fe0b8', .35); });
       blog(`${u.name} opens his hands and lets Denul out like water from a cup. ${near.length > 1 ? 'Everyone close enough feels it.' : 'There is nobody close enough but him.'}${d < 1 ? ' It comes thin here.' : ''}`); }},
-  stanch:{name:'Stanch', strain:2, desc:()=>'A squadmate within 3 cannot drop below 1 health until Ohl\'s next turn, and stops bleeding. No healing. Strain 2.',
+  stanch:{name:'Stanch', strain:2, desc:()=>'A squadmate within 3 cannot drop below 1 health until Ohl\'s next turn, stops bleeding, and heals 1 for each squad level past the first. Strain 2.',
     tiles:u=>party().filter(p => !p.ally && cheb(u, p) <= 3 && p.stanch !== u),
-    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.stanch = u; t.bleed = 0; AUDIO.play('heal'); float(t, 'stanched', '#9fe0b8'); sparks(t.x, t.y, 8, '#9fe0b8', .3);
+    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.stanch = u; t.bleed = 0; if (lvB()) heal(t, lvB()); AUDIO.play('heal'); float(t, 'stanched', '#9fe0b8'); sparks(t.x, t.y, 8, '#9fe0b8', .3);
       blog(`${u.name} puts two fingers on ${t === u ? 'his own' : `${t.name}'s`} wound and says something to Hood in Ehrlii. ${t === u ? 'He' : t.name} is not going anywhere until he says so.`); }},
 });
 
@@ -4897,6 +4967,7 @@ const PATRONS = {
   tuft:{god:'Shadowthrone', title:'Shadowthrone, King of High House Shadow', txt:id => `The dark at the edge of the field takes the shape of a Hound and lies down across Tuft's legs, heavy and warm as a dog by a fire. The cards in her sleeve go cold all at once.\n\nHigh House Shadow does not do favours. It keeps accounts. Tuft, when she can talk again, says it was polite.`},
   ohl:{god:'Soliel', title:'Soliel, Mistress of Healing', txt:id => `Ohl, face down, says something in Ehrlii, and for once it is not an argument with Hood. It is a prayer, and it is to a woman.\n\nThe air smells of temple oil from a city two thousand leagues away, and the bleeding stops. Soliel, Mistress of Healing, does not often answer soldiers. Ohl has been asking for twenty-two years.`},
   ellis:{god:'Cotillion', title:'Cotillion, the Rope', txt:id => `Ellis's gloved hand closes on a cord that is not there, and it holds her weight. And the next one's. And the next.\n\nThe Patron of Assassins has a fondness for people who know how to fall, and Ellis has been falling the right way since a dock in Genabaris.`},
+  vell:{god:'Cotillion', title:'Cotillion, the Rope', sig:'ellis', txt:id => `The line on Vell's shoulder goes taut on its own, and something on the other end of it, very high up, takes his weight. And everyone else's.\n\nEvery rope boy in Darujhistan says a word to the Rope before he goes over a parapet. Vell has said his ten thousand times. Tonight, for the first time, somebody was listening.`},
   sgt:{god:'Fener', title:'Fener, the Boar of Summer', txt:id => `Something huge and hot goes past in the dark, smelling of summer and blood, and the ground shakes the way it shakes under a charge.\n\nFener, the Boar of Summer, is the god soldiers swear by when they are too tired to swear by anything else. He likes a fight that is not finished. This one is not finished.`},
 };
 /* who answers next: the squad's own gods, most loyal first (only for those whose loyalty is above nothing), then the soldiers' god */
@@ -5002,17 +5073,17 @@ function openChars(i, tab){ requestAnimationFrame(() => { const c = $('#chars');
     ${w === id ? `<button class="btn" data-uneq="${it.slot}">Remove</button>` : `<button class="btn" data-eq="${it.id}">${w ? `Take from ${NAME(w)}` : 'Equip'}</button>`}<small>${it.line}</small></div>`; }).join('') : `<p class="fine">Nothing found yet that ${id === 'sgt' ? 'you' : c.name} could use.</p>`;
   const loyN = id === 'sgt' ? null : S.loy[id];
   const gb = gearBonus(id), plus = (total, b) => b ? `${total - b} <span class="gbon">+${b}</span> = <b>${total}</b>` : `${total}`;
-  const bar = (k, v, cls='', b=0) => `<div class="stbar"><span>${k}</span><div class="bar ${cls}"><i style="width:${Math.min(1, v/4)*100}%"></i>${b ? `<i class="gb" style="left:${Math.min(1, v/4)*100}%;width:${Math.min(1, (v + b)/4)*100 - Math.min(1, v/4)*100}%"></i>` : ''}</div><span>${b ? `${v}<span class="gbon">+${b}</span>` : v}</span></div>`;
+  const bar = (k, v, cls='', b=0) => `<div class="stbar"><span>${k}</span><div class="bar ${cls}"><i style="width:${Math.min(1, v/5)*100}%"></i>${b ? `<i class="gb" style="left:${Math.min(1, v/5)*100}%;width:${Math.min(1, (v + b)/5)*100 - Math.min(1, v/5)*100}%"></i>` : ''}</div><span>${b ? `${v}<span class="gbon">+${b}</span>` : v}</span></div>`;
   const abil = kitAb(id).map(k => { const a = AB[k]; let d; try { d = B ? a.desc() : a.desc(); } catch(e) { d = {rally:'Squadmates within 4 heal 5, and 2 more for each level past the first, and get +2 to hit and +2 damage through next round. Once per fight.', bash:'Adjacent enemy: 1d6+3 and it loses its next turn on a hit. Recharges after 2 rounds.', sharper:'Thrown, range 4. 1d10+2 at the centre, 1d6 around it. Scatters on a natural 1.', burner:'Thrown, range 4. 1d6 to a 3×3 and leaves it burning for 2 rounds.', cusser:'Fired from the crossbow\'s cradle, range 3. 3d8 centre and adjacent, 1d8 one step further. Scatters on 1–2.', smoker:'Thrown, range 4. A 3×3 of smoke for 2 rounds: nobody shoots into it or out of it.', veil:'Meanas illusion: enemies take −5 to hit the target for 2 rounds (more where Meanas is strong). Strain 2.', phantom:'Shadow over an enemy\'s eyes for its next 2 turns: half the blows that would land go into the dark (−50% to hit). Strain 2.', mend:'Denul healing, 2d6+3, weaker where Denul falters. Strain 3.', salve:'Heal 8, and 1 more for each level past the first, self or adjacent.'}[k]; }
     return `<div>${a.item && ART['munitions/' + a.item] ? zoomArt('munitions/' + a.item, 'ico abico', a.name) : ''}<b>${a.name}${a.item ? ` <span class="stat">×${S.inv[a.item]}</span>` : ''}</b><span>${d}</span></div>`; }).join('');
   const banter = c.banter ? c.banter[loyN <= -1 ? 0 : loyN >= 2 ? 2 : 1] : null;
   const rel = c.rel ? Object.entries(c.rel).filter(([k]) => SQ.includes(k)).map(([k,v]) => `<li><b>${TPL[k].name}.</b> ${v}</li>`).join('') : SQ.slice(1).map(k => `<li><b>${TPL[k].name}.</b> ${loyLabel(S.loy[k])}.</li>`).join('');
-  const soldier = `<div class="sec"><h4>Measure</h4><div class="grid2">${bar('Might', c.st.might, '', gb.might)}${bar('Wits', c.st.wits, 'w', gb.wits)}${bar('Guile', c.st.guile, 'g', gb.guile)}<div class="stbar"><span>Level</span><div class="bar"><i style="width:${S.lvl/8*100}%"></i></div><span>${S.lvl}</span></div></div></div>
-    <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${plus(hp, gb.hp)}</span><span>Armour</span><span>${plus(ac, gb.ac)}</span><span>To hit</span><span>${gb.atk ? `+${atk - gb.atk} <span class="gbon">+${gb.atk}</span> = <b>+${atk}</b>` : `+${atk}`}</span><span>Damage</span><span>${(d => `${d[0]}d${d[1]}${d[2] + lvDmg() ? '+' + (d[2] + lvDmg()) : ''}`)(gb.dmg || c.dmg)}${lvDmg() ? ` <span class="gbon">level +${lvDmg()}</span>` : ''}${gb.dmg ? ' <span class="gbon">weapon</span>' : ''}</span><span>Reach</span><span>${rng > 1 ? `${gb.rng ? `${rng - gb.rng} <span class="gbon">+${gb.rng}</span> = <b>${rng}</b>` : rng} tiles` : 'adjacent'}</span><span>Move</span><span>${plus(mv, gb.mv)}</span><span>Initiative</span><span>+${init}</span>${c.magic ? `<span>Strain limit</span><span>${STR_MAX}</span>` : ''}</div></div>
+  const soldier = `<div class="sec"><h4>Measure</h4><div class="grid2">${bar('Might', c.st.might + lvStat(id,'might'), '', gb.might)}${bar('Wits', c.st.wits + lvStat(id,'wits'), 'w', gb.wits)}${bar('Guile', c.st.guile + lvStat(id,'guile'), 'g', gb.guile)}<div class="stbar"><span>Level</span><div class="bar"><i style="width:${S.lvl/8*100}%"></i></div><span>${S.lvl}</span></div></div></div>
+    <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${plus(hp, gb.hp)}</span><span>Armour</span><span>${plus(ac, gb.ac)}</span><span>To hit</span><span>${gb.atk ? `+${atk - gb.atk} <span class="gbon">+${gb.atk}</span> = <b>+${atk}</b>` : `+${atk}`}</span><span>Damage</span><span>${(d => `${d[0]}d${d[1]}${d[2] + lvDmg() ? '+' + (d[2] + lvDmg()) : ''}`)(gb.dmg || c.dmg)}${lvDmg() ? ` <span class="gbon">level +${lvDmg()}</span>` : ''}${gb.dmg ? ' <span class="gbon">weapon</span>' : ''}</span><span>Reach</span><span>${rng > 1 ? `${gb.rng ? `${rng - gb.rng} <span class="gbon">+${gb.rng}</span> = <b>${rng}</b>` : rng} tiles` : 'adjacent'}</span><span>Move</span><span>${plus(mv, gb.mv)}</span><span>Initiative</span><span>+${init}</span>${c.magic ? `<span>Strain limit</span><span>${strMax()}</span>` : ''}</div></div>
     <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of a tile next to an enemy gives that enemy one free swing a turn, wherever you step to. Once you have moved and then acted, your movement for the turn is spent. The squad can move through its own people, but not stop on them. End a turn without acting and you are Steady: +2 to your next attack or save. A ranged squadmate who has not fired yet this fight is Posted up: the first enemy to step into their reach takes a free shot. Gold numbers are what gear adds.</p></div>
     <div class="sec"><h4>Abilities</h4><div class="abl">${abil}</div></div>
     ${talents.length ? `<div class="sec"><h4>Learned</h4><div class="abl">${talents.map(o => `<div><b>${o[1]}</b><span>${o[2]}</span></div>`).join('')}</div></div>` : ''}
-    ${S && tricksOf(id).length ? `<div class="sec trks"><h4>✦ Tricks</h4><div class="abl">${tricksOf(id).map(k => { const T = TRICKS[k], left = T.use === 'chapter' ? ` <small>${trickLeft(k)} of ${T.n} left this chapter</small>` : ' <small>once a fight</small>';
+    ${S && tricksOf(id).length ? `<div class="sec trks"><h4>✦ Tricks</h4><div class="abl">${tricksOf(id).map(k => { const T = TRICKS[k], left = T.use === 'chapter' ? ` <small>${trickLeft(k)} of ${trickN(k)} left this chapter</small>` : ' <small>once a fight</small>';
       return `<div><b>${esc(T.name)}${left}</b><span>${esc(T.fx)}</span><i>${esc(T.lore)} Won at ${esc(T.where)}.</i></div>`; }).join('')}</div></div>` : ''}
     <div class="sec"><h4>Arms</h4><p>${c.weapon}.</p><p>${c.armour}.</p>${Object.values(S.gear[id] || {}).filter(g => ITEMS[g]).map(g => `<p class="gearl">${zoomArt('item/' + g, 'ico item', ITEMS[g].name)}<span>${ITEMS[g].line}</span></p>`).join('')}</div>
     <div class="sec kit"><h4>Kit</h4>${S.kit.length ? `<div class="row allocrow"><button class="btn" id="bAlloc">Allocate gear</button><span class="fine">Re-deals everything the squad carries to whoever it suits best.</span></div>` : ''}${kit}</div>
@@ -5095,7 +5166,7 @@ function openModal(tab){
       <span>Squad level</span><span>${S.lvl} (${S.xp}/${LEVELS[S.lvl] ?? '—'} xp)</span>${S.card ? `<span>Deck reading</span><span>${CARDS[S.card].name}</span>` : ''}</div>
       ${S.card ? `<div class="cardinline" style="margin-top:12px"><canvas id="icard" width="240" height="360"></canvas></div><p class="fine" style="text-align:center">${CARDS[S.card].fx}</p>` : ''}
       ${S.wounds ? `<h4 class="jh">Wounds carried (Bridgeburner)</h4><div class="kv wounds">${SQUAD().map(id => woundOf(id) == null ? '' : `<span>${esc(NAME(id))}</span><span>${woundOf(id)} / ${S.wounds[id + '_max'] || '?'} health ${S.inv.salve > 0 && woundOf(id) < (S.wounds[id + '_max'] || 0) ? `<button class="btn sm" data-salve="${id}">Salve +8</button>` : ''}</span>`).join('')}</div><p class="fine">Wounds close when the squad rests: at the start of a chapter, or where the story lets them sleep.</p>` : ''}
-      <p class="fine" style="margin-top:10px">Moranth munitions hit everything in the blast, your own squad included. Warren magic builds strain; past ${STR_MAX}, the caster pays in blood.</p>`,
+      <p class="fine" style="margin-top:10px">Moranth munitions hit everything in the blast, your own squad included. Warren magic builds strain; past ${strMax()}, the caster pays in blood (the limit grows at levels 4 and 7).</p>`,
     deeds:()=>deedsHTML(),
     journal:()=>`${journalHead()}<div class="route sm"><canvas id="jRoute"></canvas></div><h4 class="jh">Notes</h4><ul class="jl">${journalNotes().map(l => `<li>${l}</li>`).join('')}</ul>${artJournalHTML()}${typeof visionsHTML === 'function' ? visionsHTML() : ''}${glossHTML()}`,
     save:()=>`${S ? `<p class="fine">Playing as <b class="who">Sergeant ${esc(S.name)}</b>. The game saves itself on this device as you play, under your sergeant's name. Anyone else can start their own sergeant from the title, and each keeps a save of their own.</p>
@@ -5161,7 +5232,7 @@ function journalNotes(){
     done(5) ? `The Adjunct has gone on to the city. Paran is following her. Under the barrow, something has started to knock.` : '',
   ] : [];
   const c4 = ch >= 4 ? [
-    f.c4_key === 'shield' ? `On the roofs the Fourth stood between a Guild boy and the Tiste Andii hunting him, and held. The boy's name is Vell.` : f.c4_key === 'aside' ? `On the roofs you let the Tiste Andii through. It killed the Guild boy in one motion, looked at the sergeant, and nodded.` : '',
+    f.c4_key === 'shield' ? `On the roofs the Fourth stood between a Guild boy and the Tiste Andii hunting him, and held. The boy's name is Vell.${SQUAD().includes('vell') ? ` He walks with the Fourth now, with forty feet of tarred line on his shoulder.` : ''}${f.c4_ellisToc ? ` Ellis went east that night, into the hills, to find her captain.` : ''}` : f.c4_key === 'aside' ? `On the roofs you let the Tiste Andii through. It killed the Guild boy in one motion, looked at the sergeant, and nodded.` : '',
     f.c4_reprisalFought ? `The Guild came for the Fourth after. Fewer of them walked home than went out.` : '',
   ] : [];
   const c3 = ch >= 3 ? [
@@ -5226,7 +5297,7 @@ const GLOSS = [
   [1, 'Shadowthrone', 'King of High House Shadow, on a throne in Shadowkeep. Nobody agrees on what he wants. Everybody agrees he is laughing.', () => godMet('tuft') || watchedVis('v3_qb')],
   [1, 'Soliel, Mistress of Healing', 'A goddess of healing, with temples across the Empire. Healers pray to her. She does not often answer soldiers.', () => godMet('ohl')],
   [1, 'Fener', 'The Boar of Summer, the god of war: the soldiers\' god, for when Hood is standing too close.', () => godMet('sgt')],
-  [1, () => godMet('ellis') ? 'Cotillion, the Rope' : 'The Rope', 'The Patron of Assassins, of High House Shadow. The Guild calls on him on the rooftops; anyone with a long drop under them might.', () => godMet('ellis') || (S.chapter || 0) >= 4],
+  [1, () => godMet('ellis') || godMet('vell') ? 'Cotillion, the Rope' : 'The Rope', 'The Patron of Assassins, of High House Shadow. The Guild calls on him on the rooftops; anyone with a long drop under them might.', () => godMet('ellis') || godMet('vell') || (S.chapter || 0) >= 4],
   [2, 'The Rhivi', 'Herders and riders of the central plains, who fight beside the Empire\'s enemies and carry their dead a long way.'],
   [2, 'Great Ravens', 'Ravens as big as a man, who remember everything and serve a lord they talk about far too much. Crone is the eldest.'],
   [3, 'Darujhistan', 'The City of Blue Fire: the last free city on Genabackis, lit by gas drawn up from the caverns beneath it.'],
@@ -5257,6 +5328,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.17.0', ['Vell can join the Fourth. Stand between him and the Tiste Andii on the Chapter 4 roofs, then ask him to come with you. He fights with a grappling hook: a ranged throw that hauls an enemy to the tile beside him.', 'The Fourth has room for one recruit at a time. If Ellis is with you when Vell asks, she can go east to find Toc and leave the place to him. If she went into the rift after Toc, Vell can come down a rope into the vault under the crossing in Chapter 6 and offer himself then.', 'Every skill, spell, talent and trick now grows with level: longer reach, longer Veils and darks, harder for bosses to shrug off, more uses of the chapter tricks from level 5, and a higher strain limit at levels 4 and 7. Munitions stay as the Moranth made them.', 'At level 4 each soldier gains +1 to the Measure their role leans on (Wits for the sergeant, Kettle and Ohl; Might for Brisk; Guile for Tuft, Ellis and Vell), and at level 8 +1 to a second one. The character sheets show it.', 'Choices that showed only a dash now say what they do.']],
   ['3.16.1', ['Levels count for more. Every level still gives +4 health and +1 to hit; now levels 3, 5 and 7 add +1 damage on every blow, and levels 4 and 8 add +1 armour. The character sheets show it.', 'Rally grows with the squad: it heals 5, plus 2 for every level past the first, reaches 4 tiles, wakes the dazed, stops bleeding, and gives +2 to hit and +2 damage through the next round.', 'Denul Wash is worth casting: 2d4+2 plus the squad\'s level past the first, to everyone within 3 of Ohl, for strain 3. Mend, salves, the Rhivi Spirit-Song, Shield Bash and Argument with Hood grow with level too.', 'Bridgeburner is still hard, but no longer close to hopeless.']],
   ['3.16.0', ['The whole story has been checked against the novels, Gardens of the Moon and the books after it, and set right wherever it strayed.', 'A few names have changed: the clerk at the Worry Gate is Pennick, Brisk\'s brother is Tavrin, and the card once called Chains is now the Wain.', 'The maps of Genabackis, Darujhistan, Pale and the Gadrobi Hills now follow the lie of the land in the books.', 'Tuft remembers what she has seen in the Deck\'s visions, and the visions now follow the books.', 'The painted set is finished: every card Tuft deals, a painting at the end of every chapter, and one picture at each chapter\'s opening.', 'A Courtesy of Darkness and Omtose Rime come from the oldest magic, and now work even beside otataral, as the books say they should.', 'What\'s new shows everything since you last played. The journal keeps notes to the end of the book, and its glossary grows as you meet things.', 'Deeds now count your tricks, the gods\' answers and the visions you have seen.', 'Bigger buttons, clearer small text, curly apostrophes, gentler motion when you ask for it, and updates that download once.']],
   ['3.15.4', ['End turn now ignores taps for a moment at the start of each squad turn, so a double tap can\'t skip a squadmate.']],
@@ -6492,7 +6564,8 @@ function showChapterEnd(){
     if (S.f.c3_pinup) extra.push('Two painted women on a crate lid, Rumjugs and Sweetlard, rode out of the crossing on the Bridgeburners\' tailboard. Nobody knows who they are. Hedge thinks he will.');
   }
   if (n === 4) {
-    if (S.f.c4_vell) extra.push('Vell is alive. A Guild journeyman owes the Fourth his life, and the Guild pays its debts, one way or the other.');
+    if (S.f.c4_vell) extra.push(SQUAD().includes('vell') ? 'Vell is alive, and walks with the Fourth. A Guild journeyman owed it his life, and has decided to pay in person.' : 'Vell is alive. A Guild journeyman owes the Fourth his life, and the Guild pays its debts, one way or the other.');
+    if (S.f.c4_ellisToc) extra.push('Ellis went east, into the hills, to find Toc. The Fourth counts the gap.');
     if (S.f.c4_guildKnows) extra.push('Ocelot knows a Malazan squad held a roof for one of his. Vell told him, and then told the rest of the clan.');
     if (S.f.c4_seen) extra.push('A Tiste Andii knows the Fourth\'s faces. That is the Spawn\'s business now.');
     if (S.f.c4_tuftDark) extra.push('Tuft has not slept. She says the dark was polite. She says it the way you say a thing you are trying not to say.');
@@ -6568,7 +6641,7 @@ function showChapterIntro(){
   bindHud();
 }
 /* ============ the finale: the road taken, a page per squadmate, the sergeant, and the end of the book ============ */
-const FIN_IDS = ['brisk','kettle','tuft','ohl','ellis'];
+const FIN_IDS = ['brisk','kettle','tuft','ohl','ellis','vell'];
 let finAnim = null;
 function finKey(){ return S.chapters[7] || S.f.c7_key || 'outlaw'; }
 function finCall(f, ...a){ try { return f ? f(...a) : null; } catch(e) { console.warn('finale', e); return null; } }
@@ -11661,7 +11734,7 @@ A scrabble on the parapet. Hands. A body coming over the edge of your roof, fast
 He sees you. He sees the squad. His face does a thing you have seen faces do on battlefields, at the moment when the last door shuts.
 
 Two roofs behind him, coming over the ridge without hurry, tall, silver-haired: one of them. Closing.`,
-      ch:[{t:'—', go:'c4_vell'}]}),
+      ch:[{t:'The boy.', go:'c4_vell'}]}),
     c4_vell:()=>({sp:'The boy', scene:'roof_night', txt:
 `"I'm nobody," the boy says. He says it to you, because you're the one in front, and his voice cracks on it like a boy's does. "I'm nobody. I'm *nobody*. Please."
 
@@ -11805,7 +11878,7 @@ And then it *nods*.
 Once. Slow. The way one soldier nods to another across a field, after, when both of them are still standing and neither of them had to be. A courtesy. An acknowledgement. *I see you. I will know you.*
 
 And it's gone. Over the parapet, into the dark, without a sound.`,
-      ch:[{t:'—', go:'c4_aside_body'}]}),
+      ch:[{t:'The boy.', go:'c4_aside_body'}]}),
     c4_aside_body:()=>({sp:'Two roofs over', scene:'roof_night', fx:()=>{ gain('ropehook'); gain('andiicloak'); }, txt:
 `It left its cloak.
 
@@ -12031,14 +12104,68 @@ He puts it in your hand and closes your fingers over it with both of his, the wa
 
 ${S.f.c3_falseName ? `You give him the one off the headstone in Unta. It's the one this city has. He repeats it carefully, to get it right, and you feel something like shame and don't know what to do with it.` : `You tell him. He repeats it carefully, to get it right.`}
 
-"I'll remember," he says, and he will. That's the thing about debts in this city. The Guild keeps them longer than anyone.`,
+\"I'll remember," he says, and he will. That's the thing about debts in this city. The Guild keeps them longer than anyone.`,
+      ch:[{t:'"Come with us."', req:()=>!SQUAD().includes('ellis'), go:'c4_vell_join'},
+          {t:'"Come with us."', req:()=>SQUAD().includes('ellis'), go:'c4_vell_ellis'},
+          {t:'Leave him under the lamp.', go:'c4_corner'}]}),
+    /* ---- v3.17: Vell joins the Fourth. One recruit at a time: if Ellis is with the squad, she has to go first (to find Toc) ---- */
+    c4_vell_join:()=>({sp:'Vell', scene:'city_street', fx:()=>{ S.f.c4_vellJoined=1; recruit('vell'); loy('vell',1); }, txt:
+`He looks at you as if you'd said it in Malazan, which you did.
+
+"With *you*." He looks at the squad${SQUAD().includes('brisk') ? `, and at Brisk last, and longest` : ''}. "I'm Guild. You're the Empire. There's a contract on every one of you in this city, or there would be, if anybody could find you to write it on." He stops. "That's why. Isn't it. Nobody can find you."
+
+"They'll find me here," he says again, slower. "Tonight, or tomorrow. And the first thing they'll ask is why a Malazan squad held a roof for me, and I won't have an answer, and in the Guild that's the same as having the wrong one."
+
+He looks at the coil of line on his shoulder, and the hook on the end of it, and back at you.
+
+"I carry rope," he says. "That's all I do. I get people onto roofs and off them. That's not soldiering."
+
+${SQUAD().includes('kettle') ? `"It is in the Fourth," says Kettle. "Can it carry a sharper? How far? Asking for a friend. The friend is me."` : `"It is now," you tell him.`}
+
+Vell laughs, once, the way people do when they've been frightened for so long that the laugh gets out before they can stop it. Then he says his name, for the fourth time, to the whole squad this time, as if he were joining a clan: "Vell." And steps off the kerb, out of the lamp, and walks down the street with the Fourth.
+
+${SQUAD().includes('ohl') ? `Ohl falls in beside him without a word and takes his wrist, and counts. "You've been stitched by a cobbler," he says. "I'll do it properly at the crossing. It'll hurt more. That's how you'll know."` : ''}`,
+      ch:[{t:'Down to the crossing.', go:'c4_corner'}]}),
+    c4_vell_ellis:()=>({sp:'Ellis', scene:'city_street', txt:
+`Before he can answer, Ellis does.
+
+She's been standing a pace back, the way she always stands, at the edge of the lamp where she can see the street both ways. Now she comes into the light.
+
+"Six is what the Fourth carries," she says. "Whiskeyjack's counted it twice. It won't stretch to seven." She looks at the boy, and at the rope, and then east, over the roofs, toward the Gadrobi Hills, where the sky has gone from black to the grey that comes before black admits anything.
+
+"He's out there," she says. "Toc. With her, with the Adjunct, in the hills. I've known since the plain. I've been counting the days the way you count a debt." She pulls the glove tight at the wrist, finger by finger. "He told me the Claw was done with me. He never said *he* was. Somebody should go and see which."
+
+"He knows the roofs, Sergeant. I know the hills." She almost smiles. "That's a fair trade, in this city. Ask him."`,
+      ch:[{t:'"Go and find him, Ellis."', go:'c4_ellis_toc'},
+          {t:'"Not tonight, Vell. The Fourth\'s full."', go:'c4_vell_later'}]}),
+    c4_ellis_toc:()=>({sp:'Ellis', scene:'city_street', fx:()=>{ S.f.c4_ellisToc=1; S.f.c4_vellJoined=1; letGo('ellis', 'Ellis goes east, into the hills, to find her captain.'); recruit('vell'); loy('vell',1); }, txt:
+`"Toc's the one who'd say thank you," she says. "So I'll say it for him." She doesn't, quite. She nods to you instead, once, the scouts' nod, the one that means *seen*.
+
+${SQUAD().includes('brisk') ? `Brisk hands her the ration count for the hills without being asked: three days' worth, wrapped, and a stub of pencil. "We don't leave people," Brisk says. "You're not being left. You're being sent. It's different. I've decided."` : ''}
+
+${SQUAD().includes('kettle') ? `Kettle gives her two lengths of trip-cord. She doesn't say what for. Ellis doesn't ask. She ties them round her wrist.` : ''}
+
+${SQUAD().includes('ohl') ? `"Let me look at the hand," Ohl says. "Later," says Ellis, for the last time, and this time they both know it's a joke.` : ''}
+
+Then she turns to the boy. "Vell. The sergeant counts twice. Stand where the count's easy." And she goes east along the street, not fast, a scout's walk, and at the corner she lifts the gloved hand over her shoulder once, and is gone.
+
+Vell stands under the lamp with his mouth open. "Did she just—"
+
+"She did," you say. "Down to the crossing. Ohl will want to redo your stitches."`,
+      ch:[{t:'Down to the crossing.', go:'c4_corner'}]}),
+    c4_vell_later:()=>({sp:'Vell', scene:'city_street', fx:()=>{ S.f.c4_vellLater=1; if (SQUAD().includes('ellis')) loy('ellis',1); }, txt:
+`Vell nods as if he'd expected it. He probably had.
+
+"The debt keeps," he says. "The Guild's good at that, if nothing else." He touches the hook on his shoulder. "If you ever need a roof, Sergeant. Any roof. Ask for the rope boy in Ocelot's clan. They'll know who you mean."
+
+${SQUAD().includes('ellis') ? `Ellis goes back to the edge of the lamp, where she can see the street both ways. "Thank you," she says, very low, without turning round. "I'd have gone. I'd like it in the ledger that I'd have gone."` : ''}`,
       ch:[{t:'Leave him under the lamp.', go:'c4_corner'}]}),
     c4_corner:()=>({sp:'The street corner', scene:'city_street', txt:
 `You go down the street, toward the Gadrobi crossing, and at the corner, under the next lamp, there's a man.
 
 He's wearing a guardsman's coat, the city's grey and blue, with the brass buttons, and a guardsman's cap, and he's leaning on the wall with his arms folded the way the Watch lean on walls, and he isn't a guardsman. The coat fits. The cap is right. It's the way he's standing, which is not the way a man stands when he's waiting for his shift to end, but the way a man stands when he's waiting for something else to begin.
 
-He doesn't look at you. He's looking up the street, the way you've come, toward the lamp where you left Vell. He watches it with no expression at all. Then, as you pass him, very slightly, without turning his head, he moves his weight off the wall, and back.
+He doesn't look at you. He's looking up the street, the way you've come, toward the lamp ${SQUAD().includes('vell') ? 'where Vell stood a minute ago' : 'where you left Vell'}. He watches it with no expression at all. Then, as you pass him, very slightly, without turning his head, he moves his weight off the wall, and back.
 
 That's all.
 
@@ -12050,7 +12177,7 @@ ${SQUAD().includes('ellis') ? `Ellis, when you're round the corner, very low: "T
 
 He looks at you for the first time. Grey eyes, tired, in an ordinary face you'll never be able to describe. He looks at you for as long as it takes a lamp to hiss.
 
-Then he nods back. Not much. Barely. The nod of a man who has noticed that a Malazan sergeant walked a Guild journeyman down off the roofs tonight and left him where his own people would find him, and has put that somewhere, in a ledger you'll never see, in a hand you'll never read.
+Then he nods back. Not much. Barely. The nod of a man who has noticed that a Malazan sergeant walked a Guild journeyman down off the roofs tonight and ${SQUAD().includes('vell') ? `didn't leave him there` : `left him where his own people would find him`}, and has put that somewhere, in a ledger you'll never see, in a hand you'll never read.
 
 And he looks away up the street again, and you are no longer there, as far as he's concerned, and you never were.
 
@@ -12061,7 +12188,13 @@ ${SQUAD().includes('tuft') ? `Tuft, when you catch up with the squad: "Whoever t
     c4_dawn:()=>({sp:'The roof above the dig', scene:'roof', txt:
 `Whiskeyjack isn't on his bucket. He's on the chandler's roof, over the dig, where the Fourth slept the first night, and by the look of him he has been standing there a long time. The sky over the Gadrobi Hills has gone from black to the grey that comes before black admits anything.
 
-He doesn't say anything when you come up the ladder. He counts. ${SQUAD().length === 6 ? 'Six' : 'Five'}. Something in his shoulders lets go by the width of a hair.
+He doesn't say anything when you come up the ladder. He counts. ${numw(SQUAD().length, true)}. Something in his shoulders lets go by the width of a hair.${SQUAD().includes('vell') ? ` Then his eyes go back along the row to the boy with the rope on his shoulder${S.f.c4_ellisToc ? `, standing where Ellis stood` : ''}, and stop there.
+
+"Ocelot's," you say. "Vell. He carries rope." ${S.f.c4_ellisToc ? `And then, because it has to be said: "Ellis has gone east, sir. To the hills. To find Toc."
+
+He takes that the way he takes everything, all the way down, without blinking. "Good," he says, at last. "Somebody should." ` : ''}
+
+Whiskeyjack looks at Vell a long time. Vell looks back, because he doesn't know any better. "Can you get a man onto any roof in this city?" "Yes, sir." "Off it?" "That's harder, sir." "It always is." He looks at you. "Your count, Sergeant. Your call." That's all.` : ''}
 
 "Report."
 
@@ -12152,7 +12285,7 @@ ${S.f.c4_key === 'shield' ? `It isn't true. You both know it isn't true. He says
 
 The Fourth is in a row under the eaves. Nobody is asleep.
 
-${S.f.c4_key === 'shield' ? `A Guild debt, in horn, is in your pocket. A Tiste Andii's cloak is ${SQUAD().includes('tuft') ? `on Tuft's shoulders, and she hasn't taken it off` : `in the pack, weighing nothing`}. A boy called Vell is somewhere in the Daru District, being stitched by somebody who isn't Ohl, telling his clan-master how a Malazan squad held a roof. The Guild will hate you for it a little less than it hates everyone else. That will have to be enough.` : `A dead boy's rope-and-hook is coiled at your feet. A Tiste Andii's cloak is ${SQUAD().includes('tuft') ? `on Tuft's shoulders, and she hasn't taken it off` : `in the pack, weighing nothing`}. The Guild asked its question in an alley, and you answered it, and nobody liked the answer. And somewhere on that black mountain over the lake, something tall has your face.`}
+${S.f.c4_key === 'shield' ? `A Guild debt, in horn, is in your pocket. A Tiste Andii's cloak is ${SQUAD().includes('tuft') ? `on Tuft's shoulders, and she hasn't taken it off` : `in the pack, weighing nothing`}. ${SQUAD().includes('vell') ? `A boy called Vell is asleep under the eaves at the end of the row with the line coiled under his head, ${SQUAD().includes('ohl') ? `stitched properly now, by Ohl, who is still muttering about cobblers` : `stitched by a cobbler and not complaining`}. Somewhere in the Daru District his clan-master is hearing how a Malazan squad held a roof for him, and then took him. The Guild will make of that what it makes of things.${S.f.c4_ellisToc ? ` And east, somewhere in the Gadrobi Hills, a scout with a gloved hand is walking toward her captain.` : ''}` : `A boy called Vell is somewhere in the Daru District, being stitched by somebody who isn't Ohl, telling his clan-master how a Malazan squad held a roof. The Guild will hate you for it a little less than it hates everyone else. That will have to be enough.`}` : `A dead boy's rope-and-hook is coiled at your feet. A Tiste Andii's cloak is ${SQUAD().includes('tuft') ? `on Tuft's shoulders, and she hasn't taken it off` : `in the pack, weighing nothing`}. The Guild asked its question in an alley, and you answered it, and nobody liked the answer. And somewhere on that black mountain over the lake, something tall has your face.`}
 
 The squad is awake. You could talk to any of them. It's the hour for it.`,
       ch:[{t:'Tuft.', req:()=>SQUAD().includes('tuft') && !S.f.c4_closeTuft, fx:()=>{S.f.c4_closeTuft=1;}, go:'c4_close_tuft'},
@@ -12160,6 +12293,7 @@ The squad is awake. You could talk to any of them. It's the hour for it.`,
           {t:'Brisk.', req:()=>SQUAD().includes('brisk') && !S.f.c4_closeBrisk, fx:()=>{S.f.c4_closeBrisk=1;}, go:'c4_close_brisk'},
           {t:'Kettle.', req:()=>SQUAD().includes('kettle') && !S.f.c4_closeKettle, fx:()=>{S.f.c4_closeKettle=1;}, go:'c4_close_kettle'},
           {t:'Ellis.', req:()=>SQUAD().includes('ellis') && !S.f.c4_closeEllis, fx:()=>{S.f.c4_closeEllis=1;}, go:'c4_close_ellis'},
+          {t:'Vell.', req:()=>SQUAD().includes('vell') && !S.f.c4_closeVell, fx:()=>{S.f.c4_closeVell=1;}, go:'c4_close_vell'},
           {t:'Watch the last lamp go out.', go:'c4_close_end'}]}),
     c4_close_tuft:()=>({sp:'Tuft', scene:'roof', txt:
 `She's sitting at the end of the row with her knees drawn up, in the grey cloak, looking at the Spawn. The light doesn't touch it. It doesn't quite touch her either.
@@ -12210,6 +12344,19 @@ A long silence.
 She opens her eyes and looks at the city, going grey in the dawn, all those roofs, all those houses under them, all those kitchens with gas pipes coming up through the floor.
 
 "Hedge'd say I've gone soft." She thinks about it. "Fiddler'd say I've gone sapper. I'd rather Fiddler." She shuts her eyes again.` : ` She opens her eyes and looks at the city, going grey in the dawn, all those roofs, all those houses under them. Then she shuts them again.`}${preUsed('c4_clan') ? ` "And I set a roof on fire with a *sharper*. Do you know how hard that is? Away from the edge, and the gas found it anyway." She hugs the satchel. "Fiddler's going to stand there and not say anything. For a *week*."` : ''} "Sergeant. That thing on the roof. The tall one. ${S.f.c4_key === 'shield' ? `I put a quarrel in it and it didn't look round.${preUsed('andii_roof') ? ' I lit it up and looked it in the face and it didn\'t *mind*.' : ''}` : `It walked past me close enough to touch, and I had the crossbow in my hands, and I didn't lift it. I *couldn't*.`}" A long breath. "That's the first thing in six years I couldn't make stop being a thing. I don't like it. I want you to know I don't like it."`,
+      ch:[{t:'Back to the row.', go:'c4_close'}]}),
+    c4_close_vell:()=>({sp:'Vell', scene:'roof', txt:
+`He isn't asleep. He's lying on his back under the eaves with his eyes open and the line coiled under his head, looking at the underside of the Spawn the way you'd look at a ceiling you'd never noticed was there.
+
+"I've been on every roof in the Daru District," he says. "Some of the Gadrobi. Never this one. It's a good roof. Bad gutters." He turns his head. "In the Guild you get told where to put the line and you put it and you don't ask where the people crossing it are going. I never asked. Not once in four years."
+
+A long pause.
+
+"Where are we going, Sergeant?"
+
+You tell him what you can, which isn't much. He listens to all of it, nodding at the places a journeyman nods at a clan-master.
+
+"All right," he says, when you've finished. "That's more than Ocelot ever told me." He shuts his eyes. "I'll put the line wherever you want it. I'd just like to know, after. Where it went."`,
       ch:[{t:'Back to the row.', go:'c4_close'}]}),
     c4_close_ellis:()=>({sp:'Ellis', scene:'roof', txt:
 `She's at the parapet, sitting with her legs over the drop, where she can see the whole of the Gadrobi roofs going grey. She doesn't turn round.
@@ -12471,6 +12618,12 @@ ${S.inv.cusser > 0 ? `Kettle doesn't say anything. She puts her face down agains
 
 "Lorn," she says. Only that, at first. Then: "I carried a letter to her once. Genabaris, three years ago. She took it without looking at me and read it standing, and when she'd read it she looked at me for the first time, and I understood that she was deciding whether I'd read it too." A breath. "I hadn't. She believed me. I've never been so glad to be believed." She goes up the ladder ahead of you. "She has a sword. You'll know it when you're near it. Everyone does."
 
+` : SQUAD().includes('vell') ? `Vell finds you at the ladder as the squad goes up, with the line on his shoulder and Ohl's new stitches pulling at his cheek when he talks.
+
+"The hills," he says. "I've never been out of the city. Not once. There's nothing to tie a line *to* out there, is there. It's all just—" He makes a flat gesture. "Ground." He goes up the ladder ahead of you. "I'll manage. I'll tie it to Brisk."
+
+` : ''}${S.f.c4_ellisToc ? `Nobody says it, at the ladder, but everybody counts the gap where a scout used to go first. East is where she went.
+
 ` : ''}Three days of it, then. Out through the Worry Gate, east, on foot, with the packs and no wagon, because a wagon is a thing an Adjunct can see from a hill.
 
 The first day the hills are just hills. The second day the stones start: one on a crest, then three, then a line of them along a ridge like the back of a buried animal. The sheep go round them. The squad goes round them too, after Brisk watches the sheep for a while and says nothing and leads the way the sheep went.
@@ -12585,7 +12738,9 @@ And then it laughs, and laughs, the cracked crow's laugh going out over the ridg
 
 It doesn't go east, over the vale, as you'd feared. It goes up. Up and up, until it's a speck, and then it's a speck that stays, a black mote hung in the pale sky over the Gadrobi Hills, watching.
 
-${SQUAD().includes('ellis') ? `Ellis, lying on her back in the grass, squinting at it: "It'll stay up there all day. A raven that size, that high. The Adjunct's going to see it." A pause. "She'll know whose it is. She won't know it's anything to do with us. That's the best cover I've ever had. I hate it."` : `Kettle, lying on her back in the grass, squinting at it: "Can I shoot it?" Brisk: "No." Kettle: "Can I *want* to shoot it?" Brisk thinks about this. "Yes."`}`,
+${SQUAD().includes('ellis') ? `Ellis, lying on her back in the grass, squinting at it: "It'll stay up there all day. A raven that size, that high. The Adjunct's going to see it." A pause. "She'll know whose it is. She won't know it's anything to do with us. That's the best cover I've ever had. I hate it."` : `Kettle, lying on her back in the grass, squinting at it: "Can I shoot it?" Brisk: "No." Kettle: "Can I *want* to shoot it?" Brisk thinks about this. "Yes."`}${SQUAD().includes('vell') ? `
+
+Vell, flat on his face in the heather with his hands over his head: "Things don't *fly* that big in the city." Muffled. "I'm just saying. Nobody told me about the size of things out here."` : ''}`,
       ch:[{t:'Back to the ridge.', go:()=>startExplore()}]}),
     c5_crone_again:()=>({sp:'A speck in the sky', txt:
 `${S.f.c5_night ? `The sky over the ridge is black and full of stars and there's no speck in it. You have the strong impression that there's a raven in it anyway.` : `The raven is a black mote high over the ridge. It hasn't moved in an hour. Once, very faintly, carried down on the wind from a height no bird should reach, you hear it laugh.`}`,
@@ -12835,7 +12990,7 @@ ${nearMiss() ? `Nearly all of the Fourth, anyway. Up on the nearest barrow, wher
   _:`{who} gets them moving, and the barrow underfoot turns over like a blanket, and {who} goes down in the heaving turf, and by the time the Fourth is a line again, the line is late.`})}
 
 Late is enough. All along the row, before anybody's feet are set, something stands up.`,
-      ch:[{t:'—', go:'c5_wards'}]}),
+      ch:[{t:'They\'re up.', go:'c5_wards'}]}),
     c5_wards:()=>({sp:'The small barrows', scene:'hills_dusk', txt:
 `They come up out of the ground the way the dead come up in stories and never do in life: slowly, with the earth running off them. Three of them, out of three barrows, and they were men once, or something built like men, and they've been lying under the turf in the dark for longer than there have been Gadrobi. Black iron at their throats. Grey skin gone to leather. Their hands come up first, and then their heads, and then they stand, and turn their empty faces toward the squad with a patience that is worse than hurry.
 
@@ -12863,13 +13018,13 @@ Kettle stands up out of the grass, in full view of the vale, in full view of the
 "*Down!*"
 
 ${SQUAD().includes('brisk') ? `Brisk has her by the collar and on the ground before the cusser's at the top of its arc.` : `The squad goes down. Kettle goes down last, and slowest, because she wants to watch.`}`,
-      ch:[{t:'—', fx:()=>{ S.inv.cusser -= 1; S.f.c5_cusserUsed=1; }, go:()=>startBattle('barrow_wards',C5H.wardOpt('The cusser comes down in the middle of the small barrows, and the whole vale hears it.'))}]}),
+      ch:[{t:'Down!', fx:()=>{ S.inv.cusser -= 1; S.f.c5_cusserUsed=1; }, go:()=>startBattle('barrow_wards',C5H.wardOpt('The cusser comes down in the middle of the small barrows, and the whole vale hears it.'))}]}),
     c5_after_wards:()=>({sp:'The small barrows', scene:'hills_dusk', fx:()=>{ S.f.c5_wardsFought=1; gain('barrowflint'); if (SQUAD().includes('kettle') && S.f.c5_cusserUsed) loy('kettle',1); }, txt:
 `${S.f.c5_cusserUsed ? `You'll remember the cusser. Everyone in the vale will. It goes off in the middle of the small barrows with a sound that isn't a sound, that's a *shove*, a hand the size of a hill in the middle of your back, and the row of barrows goes up into the dusk in a fountain of turf and bone and frost, and comes down again for a long time afterwards, pattering, like rain after the rain. The stone thing is on its knees in the crater with one side of it gone. It gets up anyway.
 
 The rest of it is shorter and uglier and yours.` : C5H.wardsPre() ? `Kettle's sharper went off against the stone thing's flank, and the ice in its joints cracked white, and it fought the rest of the fight like a landslide with a limp. The noise went along the row like a fist on every door, and one more barrow answered it. Frost on your blade. Frost on your teeth.` : `It's short and ugly and cold. The dead fight the way the dead fight, without fear and without hurry, and the stone thing fights like a landslide with an opinion. Frost on your blade. Frost on your teeth.`} When it's done, the dead are dead again, properly this time, and the ward is a heap of split stone and grey slush steaming in the grass, and the Fourth is standing in a row of opened graves with its breath smoking, counting.
 
-${SQUAD().length === 6 ? 'Six' : 'Five'}. You count twice.
+${numw(SQUAD().length, true)}. You count twice.
 
 ${(S.f.c5_rise === 'ok' || S.f.c5_rise === 'near') && SQUAD().includes('brisk') ? `Brisk wipes the frost off her shield rim with her sleeve. "In line before they stood," she says, to nobody. "That's the job." She'll put it in the ledger. She doesn't put things in the ledger for luck.` : S.f.c5_rise === 'fail' ? `Nobody says anything about the line being late. Nobody has to.` : ''}${S.f.c5_packLost ? ` Somebody's pack is in the turf under what's left of a wight. Nobody is going to dig for it.` : ''}
 
@@ -12928,7 +13083,7 @@ The first rider sits a horse like a man who was taught properly and has since st
 
 ${SQUAD().includes('ellis') ? `Ellis has stood up.
 
-She's stood up in full view of the vale without thinking about it, the way you'd stand up in a tavern when someone you'd thought was dead came through the door. Her gloved hand is at her mouth. "Toc," she says, through it. "Hood's breath. It's *Toc*."` : `Kettle squints. "One eye," she says. "The one on the plain. With the dead horses."`}
+She's stood up in full view of the vale without thinking about it, the way you'd stand up in a tavern when someone you'd thought was dead came through the door. Her gloved hand is at her mouth. "Toc," she says, through it. "Hood's breath. It's *Toc*."` : S.f.c4_ellisToc ? `Kettle squints. "One eye," she says. "The one on the plain. With the dead horses." A pause. "Ellis found him, then." Nobody answers. There's nobody riding with him but the captain.` : `Kettle squints. "One eye," she says. "The one on the plain. With the dead horses."`}
 
 The riders don't go to the Adjunct. Not at first. The captain reins in at the head of the vale and sits looking along it, at the split stones and the frost and the T'lan Imass in its hole, and at ${S.f.c5_cusserUsed ? `the smoke of the cusser still hanging over the ridge of small barrows` : C5H.wardsPre() ? `the torn turf along the ridge of small barrows, and the black scorch of a sharper in it` : `the torn turf along the ridge of small barrows`}; and then he turns his horse, and comes toward you.`,
       ch:[{t:'Go down to meet them.', go:()=>startExplore()}]}),
@@ -12947,7 +13102,9 @@ And he laughs. It comes out of him all at once, a young man's laugh with nothing
 
 He turns round to you with her hand still in one of his. "Sergeant," he says. "You kept her." A breath. "Good."` : S.f.c2_ellisRefused ? `"Sergeant." He's looking past you, along the row, counting. Five. He knew it would be five. He counts it again anyway, and you watch him not find what he knew he wouldn't.
 
-"I left her at a garrison on the Adjunct's road," he says. "A bad one; I said it would be. She walked out of it inside a week, and nobody saw her go, and nobody's seen her since." He picks a burr off his bowstring. "That's Ellis. That's what they taught her: when you're not wanted, don't be anywhere." A short breath through the nose. "She'll be fine. She's always fine. It's the thing I'd most like to beat out of her."` : `"Sergeant." He's looking past you, along the row, counting.`}
+"I left her at a garrison on the Adjunct's road," he says. "A bad one; I said it would be. She walked out of it inside a week, and nobody saw her go, and nobody's seen her since." He picks a burr off his bowstring. "That's Ellis. That's what they taught her: when you're not wanted, don't be anywhere." A short breath through the nose. "She'll be fine. She's always fine. It's the thing I'd most like to beat out of her."` : S.f.c4_ellisToc ? `"Sergeant." He's looking past you, along the row, counting. He arrives at the number, and stops at the boy with the rope, and his eye comes back to you.
+
+"She found me," he says. "Two nights ago. Out of the dark at the fire, the way they taught her, and sat down across it, and said *you never said you were done with me*, as if we'd been talking for an hour." He picks a burr off his bowstring. "I sent her back to you. She wouldn't go. She's on the ridge behind us now, watching my back, and she won't come down into the vale while the Adjunct's in it." Something happens at the corner of his mouth. "She said to tell you she's still counting. She said you'd know what it meant."` : `"Sergeant." He's looking past you, along the row, counting.`}
 
 "You've been busy." He nods at the ridge: the torn barrows, the slush, the dead. "We heard it from two hills over. The captain thought it was the Adjunct. I said the Adjunct doesn't make noise." The eye comes back to you. ${S.f.c5_cusserUsed ? `"What in Hood's name did you *throw*?"` : C5H.wardsPre() ? `"That was a sharper. I know the sound. Within a long bowshot of *her*." A breath. "What in Hood's name were you throwing sharpers *at*?"` : `"What in Hood's name was *that*?"`}`,
       ch:[{t:'"Kettle had a cusser. She\'s been saving it."', req:()=>!!S.f.c5_cusserUsed, go:'c5_toc_more'},
@@ -13272,7 +13429,7 @@ ${S.f.c1_sawHairlock ? `You know it. You saw it on a crate in Tattersail's tent 
 ${SQUAD().includes('tuft') ? `Tuft has stopped breathing. "That's a man," she whispers. "Sergeant, that's a *man*. In there. Tied up in string."` : ''}
 
 The painted head turns. Wood creaks. The black eyes find the fire, and the man with the sword across his knees, and stop.`,
-      ch:[{t:'—', go:'c5_hairlock_voice'}]}),
+      ch:[{t:'Keep still.', go:'c5_hairlock_voice'}]}),
     c5_hairlock_voice:()=>({sp:'The puppet', scene:'hills_night', txt:
 `"*Captain.*"
 
@@ -13289,7 +13446,7 @@ ${SQUAD().includes('ohl') ? `Ohl, very quietly, in Ehrlii: not an argument with 
 "I'm going to open you up, Captain," the puppet says, reasonably, "and see what the coin was for."
 
 It lifts one wooden hand, on its string, and the air over the fold *tears*.`,
-      ch:[{t:'—', go:'c5_rent_open'}]}),
+      ch:[{t:'The tear.', go:'c5_rent_open'}]}),
     c5_rent_open:()=>({sp:'The rent', scene:'hills_night', txt:
 `There's no sound. That comes after. First there's the tear itself: a line of grey light down the hillside above the fire, from the puppet's feet to the bottom of the fold, as if someone had taken a knife to the dark and slit it like cloth. And the edges of the slit curl back. And behind them is *grey*. Not light. Not dark. Grey, going away forever, full of a wind that smells like a struck match and a slaughterhouse and a sea.
 
@@ -13307,10 +13464,12 @@ It takes Toc too.
 
 You see it. You'll see it for years. The grey reaches out across the turf like a tide coming in over flat sand, fast, and it goes over Toc's boots and his knees, and he looks down at it, and then up, and his one eye finds ${SQUAD().includes('ellis') ? `Ellis` : `you`}, across the fire. He doesn't shout. He opens his mouth to say something, and whatever it was is still in his mouth when the grey closes over his head.
 
-The horse comes out of it. Somehow. It's on its feet on the turf, and it bolts, west, into the dark, dragging its reins. Toc doesn't come out. Toc isn't anywhere.
+The horse comes out of it. Somehow. It's on its feet on the turf, and it bolts, west, into the dark, dragging its reins. Toc doesn't come out. Toc isn't anywhere.${S.f.c4_ellisToc ? `
+
+On the ridge above the fold, somebody stands up out of the heather and runs for the tear. Grass-dyed leathers. A gloved hand out in front of her, reaching. She's too far. She was always going to be too far; she chose the ridge so she'd be too far from the Adjunct, and it's the same distance. When you look again she's on her knees at the edge of the fold, with that hand flat on the turf where her captain was.` : ''}
 
 The rent is still open. A tear of grey light on the hillside, curling at the edges, and pulling, and pulling.`,
-      ch:[{t:'—', go:'c5_rent'}]}),
+      ch:[{t:'Hold on.', go:'c5_rent'}]}),
     c5_rent:()=>({sp:'The rent', scene:'hills_night', txt: SQUAD().includes('ellis') ?
 `Ellis is already moving.
 
@@ -13524,7 +13683,7 @@ Kettle, who talks when she's frightened, who talked through the Pale and the tun
 The Hound's eyes come across the fold. Lamps, seen through smoke. They go over the dead fire, and over Paran, and stop on Paran, a long time. Then they go on: across the flattened grass where the Fourth is lying, and over it, the way your eyes go over a row of stones on a hillside. Nothing there. Furniture.
 
 They don't stop.`,
-      ch:[{t:'—', go:'c5_hounds_gone'}]}),
+      ch:[{t:'Breathe.', go:'c5_hounds_gone'}]}),
     c5_hound_held:()=>({sp:'The next hill', scene:'hills_night', fx:()=>{ S.f.c5_houndLooked = ROLL().who || 'sgt'; }, txt:
 `${by({
   kettle:`Kettle manages it for a long time, for Kettle. Face in the grass, mouth shut. Then something comes out of her anyway: not a word, the start of one, a little catch of breath like a hiccup.`,
@@ -13539,7 +13698,7 @@ On ${by({sgt:'you', _:'{who}'})}. For one heartbeat, less, the Hound looks acros
 Then it looks away.
 
 ${by({kettle:`Kettle lets out the rest of the breath, very slowly. "It *looked* at me," she whispers. "Sergeant. Why does everything *look* at me?"`, _:''})}`,
-      ch:[{t:'—', go:'c5_hounds_gone'}]}),
+      ch:[{t:'Breathe.', go:'c5_hounds_gone'}]}),
     c5_hounds_gone:()=>({sp:'The next hill', scene:'hills_night', txt:
 `Then they turn.
 
@@ -13596,7 +13755,7 @@ Not much. A lock of it, at the left temple, where the wind of the rent was stron
 ${SQUAD().includes('ohl') ? `Ohl hasn't said anything. He's looking at the grey in her hair. After a long time he reaches out and puts his hand on her head, the way you'd bless a child, and takes it away again, and doesn't say what he found.` : ''}`,
       ch:[{t:'Count.', go:'c5_night_after'}]}),
     c5_night_after:()=>({sp:'The fold below the far hill', scene:'hills_night', txt:
-`${SQUAD().length === 6 ? `Six.` : `Five.`} You count twice. You count a third time, because the number's right and it doesn't feel right.
+`${numw(SQUAD().length, true)}. You count twice. You count a third time, because the number's right and it doesn't feel right.
 
 ${S.f.c5_ellisThrough ? `There's a place by the fire, next to where Toc sat, where the grass is pressed flat in the shape of someone sitting close to someone else. Nobody sits in it. Nobody says they're not sitting in it.` : S.f.c5_ellisHeld ? `Ellis is sitting on the far side of the fire from you, with her back to you, facing the hillside where the rent was. She hasn't moved since the Hounds went. She isn't going to. ${S.f.c5_cloakGone ? `Her cloak is somewhere in the grey with Toc. ` : ''}Brisk has put a blanket round her shoulders, and she hasn't taken it off, and she hasn't acknowledged it's there.` : S.f.c5_tuftMarked ? `Tuft is sitting beside you. Everyone keeps looking at her hair and then looking away.` : `Tuft is sitting at the far edge of the firelight with her knees drawn up, facing the place where the rent was. She hasn't said a word since *yes, Sergeant*. Kettle is sitting beside her, not talking either, which for Kettle is a kind of shouting.`}
 
@@ -13620,7 +13779,7 @@ Nobody sleeps. Somewhere before dawn there's a sound of hooves, slow and uneven,
     c5_dawn:()=>({sp:'The Gadrobi Hills · dawn', scene:'hills', fx:()=>{ gain('scoutcloak'); }, txt:
 `Dawn in the hills comes up grey, then brown, the way it has for longer than there have been people to watch it. The frost on the grass round the long barrow has gone out in the night another twenty paces, in a ring, white, as neat as a drawn line.
 
-Paran is on his horse. He's grey in the face, grey the way Tuft went grey near the Adjunct, as if something had been drawn out of him in the night and not put back. He has Toc's horse on a lead rein. He sat with it, you think, the last hour before light. Behind its saddle, rolled tight and strapped with a scout's knot, a Second Army cloak; he unstraps it without a word and holds it down to you, and you take it.${S.f.c5_cloakGone && SQUAD().includes('ellis') ? ` You know already whose it's going to be.` : ''}
+Paran is on his horse. He's grey in the face, grey the way Tuft went grey near the Adjunct, as if something had been drawn out of him in the night and not put back. He has Toc's horse on a lead rein. He sat with it, you think, the last hour before light.${S.f.c4_ellisToc ? ` The ridge where Ellis knelt is empty. There's a line of prints in the frost going west from it, a scout's, the kind that are trying not to be there, and then not trying any more.` : ''} Behind its saddle, rolled tight and strapped with a scout's knot, a Second Army cloak; he unstraps it without a word and holds it down to you, and you take it.${S.f.c5_cloakGone && SQUAD().includes('ellis') ? ` You know already whose it's going to be.` : ''}
 
 His hands are still black to the wrist. You saw him wash them in the spring, twice, and it hasn't come off, and he's stopped trying. Where the Hounds died there's nothing: torn turf, and a dark stain the frost won't settle on, and nothing else. Nobody saw anyone take them.
 
@@ -13791,6 +13950,8 @@ const C6H = {
   names:ids => C6H.list(ids.map(id => NAME(id))),
   fell:() => (S.f.lastFallen || []).filter(id => id !== 'sgt'),
   dead:() => Object.keys(S.dead || {}).filter(id => S.dead[id] && S.dead[id].ch === 6),
+  /* Vell can join under the crossing: he was shielded on the roof, isn't with the Fourth already, and nobody holds the sixth place (Ellis gone into the grey, or never taken) */
+  vellCan:() => !!S.f.c4_vell && !SQUAD().includes('vell') && !SQUAD().includes('ellis') && !(S.dead && S.dead.vell) && !S.f.c6_vellAsked,
   her:ids => ids.length === 1 ? (ids[0] === 'ohl' ? 'him' : 'her') : 'them',
   count:(n, w) => !(n > 0) ? `No ${w}s` : `${C6H.num(n)} ${w}${n === 1 ? '' : 's'}`,   // Kettle's count: "Two sharpers", "No cussers"
   /* the roller as the text's subject: "you" for the sergeant, the name for anyone else (only straight after a check) */
@@ -14101,7 +14262,7 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
     c6_start:()=>({sp:'Whiskeyjack · Bridgeburners', scene:'cellar', fx:()=>{ S.f.c6_started=1; }, txt:
 `The vault under the Gadrobi crossing, at noon on the day of the Fete. Down the ladder-hole comes the city: drums three streets off, a crowd laughing at something, a man selling masks in a voice like a gull. Down here the pipes hiss on every side the way they always have, and the lantern is on its crate, and Hedge's forty munitions sleep in the walls with the Moranth's twelve cussers beside them, and none of them is going to the Fete.
 
-Whiskeyjack is sitting on the crate with the broken seal. He looks up when you come down the ladder, and counts. ${SQUAD().length === 6 ? 'Six' : 'Five'}. ${S.f.c5_ellisThrough ? `You watch him arrive at it, and check it, and find the place where the sixth isn't. He doesn't ask. He knows he's about to be told.` : `You watch him arrive at it, and check it, and let it be right.`}
+Whiskeyjack is sitting on the crate with the broken seal. He looks up when you come down the ladder, and counts. ${numw(SQUAD().length, true)}. ${S.f.c5_ellisThrough ? `You watch him arrive at it, and check it, and find the place where the sixth isn't. He doesn't ask. He knows he's about to be told.` : `You watch him arrive at it, and check it, and let it be right.`}
 
 He isn't alone. Fiddler and Hedge are on the far side of the vault arguing in whispers over a bundle of something blue. Kalam is at the foot of the ladder, doing nothing with his hands. Quick Ben is sitting on a pipe with his knees drawn up, smiling at the lantern.
 
@@ -14110,7 +14271,35 @@ And against the wall, standing, as if sitting down were a thing he had lately fo
 Up in the crossing, tethered beside the Bridgeburners' mule, there's a horse somebody has brushed until it shines. ${S.f.c2_wagon ? `Pell, tethered on its other side, has already bitten it once, on principle.` : `The Fourth's mule, tethered on its other side, has already bitten it once, on principle.`}
 
 "Report," says Whiskeyjack.`,
-      ch:[{t:'Give it to him. In order.', go:'c6_report'}]}),
+      ch:[{t:'Give it to him. In order.', req:()=>!C6H.vellCan(), go:'c6_report'},
+          {t:'Somebody is coming down the ladder-hole. Not on the ladder.', req:()=>C6H.vellCan(), fx:()=>{ S.f.c6_vellAsked=1; }, go:'c6_vell'}]}),
+    /* ---- v3.17: if the Fourth came back from the hills without Ellis, the rope boy from the Daru roof comes to settle his debt ---- */
+    c6_vell:()=>({sp:'Vell', scene:'cellar', txt:
+`A line comes down out of the light first, tarred, with a three-tined hook on the end of it that catches on the lip of the ladder-hole above. Then a boy comes down it hand over hand, fast and clumsy, all elbows, and lands on the vault floor on his heels and very nearly sits down.
+
+Kalam has a knife out. Nobody saw him draw it. Vell looks at the knife, and at Kalam, and decides, visibly, not to look at either of them again.
+
+"Vell," he says, to the room. "Journeyman. Ocelot's clan." Then, to you, because you're the one he knows: "Sergeant. The Guild hears things. It heard the Fourth came back in through the Worry Gate one short." He swallows. "I've been owing you a roof for a week. I've decided I'd rather pay it than carry it. I carry rope. I can get your people onto any roof in this city tonight, and off it, which is harder."
+
+${S.f.c5_ellisThrough ? `He looks along the row, at the place where the scout isn't. "I'm not her," he says. "I know I'm not. I'd just keep the place warm."` : ''}
+
+Whiskeyjack hasn't moved. He looks at the boy for a long time. Then at you. "Your count, Sergeant," he says. "Your call."`,
+      ch:[{t:'"Fourth Squad, Vell. If you want it."', go:'c6_vell_yes'},
+          {t:'"Not today, Vell. Go home."', go:'c6_vell_no'}]}),
+    c6_vell_yes:()=>({sp:'Vell', scene:'cellar', fx:()=>{ S.f.c6_vellJoined=1; recruit('vell'); loy('vell',1); }, txt:
+`"Fourth Squad," he says, trying the weight of it the way you'd try a line before you put your weight on it. It holds.
+
+${SQUAD().includes('ohl') ? `Ohl has him by the chin before he's finished saying it, turning his face to the lantern. "Who did these stitches?" "A cobbler." "I can tell." ` : ''}${SQUAD().includes('brisk') ? `Brisk moves up one place in the row without being asked, to leave a space beside her. Vell looks at the space for a moment, and then goes and stands in it, very straight.` : ''}
+
+Kalam puts the knife away. "Ocelot's rope boy," he says, to nobody in particular. "In a Malazan squad. In this city. Today." He sounds almost pleased. "Quick. Are you seeing this?"
+
+"I'm seeing it," says Quick Ben, from his pipe, smiling at the lantern. "I'm choosing not to have an opinion until tonight."`,
+      ch:[{t:'"Sir. The report."', go:'c6_report'}]}),
+    c6_vell_no:()=>({sp:'Vell', scene:'cellar', fx:()=>{ S.f.c6_vellNo=1; }, txt:
+`He nods as if he'd expected it. He probably had. "The debt keeps," he says. "The Guild's good at that."
+
+He goes back up the line the way he came down it, faster, and the hook comes free of the ladder-hole behind him, and the light up there is only light.`,
+      ch:[{t:'"Sir. The report."', go:'c6_report'}]}),
     c6_report:()=>({sp:'Whiskeyjack', scene:'cellar', fx:()=>{ S.f.c6_reported=1; }, txt:
 `You give it to him the way he taught you: in order, without anything in it that isn't so.
 
@@ -14900,23 +15089,40 @@ They come over the balustrade from the lake side the way water comes over a weir
 
 ${S.f.c4_key === 'aside' ? `The one in front is older than the rest, grey at the temples. You've seen him before: on Kalam's roof among the dead, looking at the space by your feet where you stood aside; and in an alley under the roofs, sitting against a wall with a hand to his ribs, telling you the Guild wasn't buying.
 
-He smiles. It's the first time you've seen him do it. "Ocelot's standing word was that you'd turn up again," he says, in Malazan, with the Daru bend on the vowels. "Ocelot's standing word was, if the ones who stand aside are ever in the way again, bring a friend." A fifth shape comes over the balustrade behind him, bigger than the rest, and straightens up. "I brought a friend."` : S.f.c4_key === 'shield' && S.kit.includes('guildtoken') ? `The one in front is older than the rest. He looks at your armband, and then at your face, and something in his own face changes, as if checking what he sees against something he's been told.
+He smiles. It's the first time you've seen him do it. "Ocelot's standing word was that you'd turn up again," he says, in Malazan, with the Daru bend on the vowels. "Ocelot's standing word was, if the ones who stand aside are ever in the way again, bring a friend." A fifth shape comes over the balustrade behind him, bigger than the rest, and straightens up. "I brought a friend."` : SQUAD().includes('vell') ? `The one in front is older than the rest. His eyes go along the Fourth, and stop, and narrow, at the boy with the line on his shoulder.
+
+"Vell," he says.
+
+"Harl." Vell's voice cracks on it. He steps out of the row before you can stop him, into the lantern-light, with his hands open. "They're with me. Or I'm with them. It's — it's a long story, and it's Ocelot's, and he knows it."
+
+"Ocelot knows a lot of stories." The blade doesn't come up. It doesn't go down. "We've business at the far end of the house tonight. Not with you." A long look at you, over the boy's head. "Not yet."` : S.f.c4_key === 'shield' && S.kit.includes('guildtoken') ? `The one in front is older than the rest. He looks at your armband, and then at your face, and something in his own face changes, as if checking what he sees against something he's been told.
 
 "Vell's Malazans," he says. Quietly, in Malazan, with the Daru bend. "Ocelot's clan owes you a boy." His blade doesn't come up. It doesn't go down either. "We've business at the far end of the house tonight. Not with you."` : `The one in front is older than the rest. "Guards," he says, in Daru, and then, looking harder, in Malazan: "Not guards."${preUsed('house_guards') ? ` His eyes go to Kettle's satchel. "The stable yard. The whole hill heard you."` : ''} His blade comes up. "Doesn't matter. Tonight you're in the way."`}
 
 ${SQUAD().includes('kettle') ? `Kettle has her hand on the satchel. "There's a whole house under us," she says, very fast. "And a hall full of candles, and gas in the walls. Sharpers only, Sergeant. Small ones. *Small.*"` : ''}`,
-      ch:[{t:'Hold up Vell\'s token.', req:()=>S.f.c4_key === 'shield' && S.kit.includes('guildtoken'), go:'c6_knives_pass'},
+      ch:[{t:'"Let them by, Vell."', req:()=>SQUAD().includes('vell'), go:'c6_knives_pass'},
+          {t:'Hold up Vell\'s token.', req:()=>!SQUAD().includes('vell') && S.f.c4_key === 'shield' && S.kit.includes('guildtoken'), go:'c6_knives_pass'},
           {t:'"Close up."', req:()=>S.f.c4_key === 'aside', go:()=>startBattle('terrace_knives_2',{})},
           {t:'Kettle skims a sharper along the marble.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.f.c4_key === 'aside' && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('terrace_knives_2',{pre:true})},
           {t:'"Close up."', req:()=>S.f.c4_key !== 'aside', go:()=>startBattle('terrace_knives',{})},
           {t:'Kettle skims a sharper along the marble.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.f.c4_key !== 'aside' && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('terrace_knives',{pre:true})},
           {t:'Not yet. Back down the steps.'}]}),
     c6_knives_pass:()=>({sp:'The upper terrace', fx:()=>{ S.f.c6_guildPassed=1; S.f.c6_knivesDone=1; }, txt:
-`You hold it up. A disc of black horn the size of a thumbnail, with a hole through it and nothing carved on it at all.
+`${SQUAD().includes('vell') ? `Vell doesn't hold anything up. He stands where he is, between the Fourth and the Guild, the way you stood on a roof once, with nothing in his hands but rope.
+
+Harl looks at him a long time. "You're with *them*," he says, as if he's only now believing it. "Ocelot said. I said he was drunk."
+
+"They held a roof," says Vell. "Nobody else did."
+
+Something at the corner of the old man's mouth. "No," he says. "Nobody else did." He looks at you. "He complains about the stitches?"
+
+"Constantly," you say.
+
+"Good. That's a rope man."` : `You hold it up. A disc of black horn the size of a thumbnail, with a hole through it and nothing carved on it at all.
 
 The older one looks at it. Then at you. Then, for a long moment, at your face again, as if matching it to a description.
 
-"Vell's," he says. "He said a Malazan had it. He said you'd hold it up like it was a knife." Something at the corner of his mouth. "He's walking. He complains about the stitches. He's a rope man again."
+"Vell's," he says. "He said a Malazan had it. He said you'd hold it up like it was a knife." Something at the corner of his mouth. "He's walking. He complains about the stitches. He's a rope man again."`}
 
 He lowers his blade.
 
@@ -14998,7 +15204,7 @@ ${SQUAD().includes('tuft') ? `"The dust," Tuft breathes, beside you. "Sergeant. 
 The man in the plain coat steps in. Twice. It takes less time than it takes to tell. Orr is on his knees on the mosaic with a look of enormous surprise, as if somebody had told him a joke he'd never heard before; and then he's on his face.
 
 The tall guest looks down at the body for a moment. Then he turns and goes back to his pillar, and the space goes with him, and it's as if he'd never crossed the terrace at all.`,
-      ch:[{t:'—', go:'c6_duel_after'}]}),
+      ch:[{t:'On.', go:'c6_duel_after'}]}),
     c6_duel_after:()=>({sp:'The terrace', scene:'fete_hall', fx:()=>{ S.f.c6_duelDone=1; }, txt:
 `The man in the plain coat wipes his blade on his own sleeve. He doesn't look at the body. He walks across the terrace to the hall doors, where a slender man in a silk coat the colour of a bruise has just come through them and stopped dead: Murillio, with his sheaf of masks still over his arm.
 
@@ -15062,7 +15268,7 @@ Whiskeyjack is by the fountain.`,
       ch:[{t:'The garden.', go:()=>startExplore()}]}; },
     c6_wj_garden:()=>({sp:'Whiskeyjack', fx:()=>{ S.f.c6_wjGarden=1; }, txt: S.f.c6_wjGarden ?
 `He's leaning on his halberd by the fountain, watching the sapling at the far end of the lawn. He doesn't look round. "Sergeant."` :
-`He's standing by the fountain in a guard's blue, leaning on a halberd like a staff, and he's the only person in the garden who doesn't look as if he's at a party. ${(S.f.c6_masks || 0) >= 5 ? `There's a folded paper in his other hand, in your writing. He doesn't mention it. He puts it away where you can see him put it away. ` : ''}He counts you. ${SQUAD().length === 6 ? 'Six' : 'Five'}.
+`He's standing by the fountain in a guard's blue, leaning on a halberd like a staff, and he's the only person in the garden who doesn't look as if he's at a party. ${(S.f.c6_masks || 0) >= 5 ? `There's a folded paper in his other hand, in your writing. He doesn't mention it. He puts it away where you can see him put it away. ` : ''}He counts you. ${numw(SQUAD().length, true)}.
 
 "Sergeant." He doesn't take his eyes off the far end of the lawn. "You saw her."
 
@@ -15579,7 +15785,7 @@ Up on the terrace somebody screams, and the music stops in the middle of a bar.`
            get not(){ return S.f.c6_tuft === 'kept' ? ['tuft'] : []; }, notWhy:{tuft:'is standing by the sapling where he put her, with her eyes open'},
            edges:id => [S.f.c6_mammotKnown && ['you knew what was under the mask', 2], S.f.c6_mammotEye === id && [`it has seen ${NAME(id)}'s face`, -2], S.f.c5_wardsFought && ['you held the barrow dead in the hills', 1]],
            go:'c6_rime_ok', fail:'c6_rime_bad'},
-          {t:'—', go:'c6_choice'}]}; },
+          {t:'Leave them to it.', go:'c6_choice'}]}; },
     /* ✦ Omtose Rime (Might 17): stand in the ring's path for two strangers in fox masks */
     c6_rime_ok:()=>({sp:'The garden', scene:'garden_storm', fx:()=>{ S.f.c6_rimeHeld = ROLL().who || 'sgt'; }, txt:
 `${by({
@@ -15603,7 +15809,7 @@ ${by({
   ohl:`Ohl looks at his hands. There's frost in the creases of them that his own warmth won't shift. "Well," he says, quite calmly. "That's new." He flexes them. "Hood's *teeth*, that's cold."`,
   kettle:`Kettle looks down at the white rim round her boots, and then at her hands, where the frost is. "I've got some," she says. "Sergeant. It *stayed*. I've got some of it." She sounds like somebody who has been handed a cusser.`,
   _:`There's frost on {who}'s knuckles that doesn't melt. Something of that ring stopped at {who}'s boots and didn't go on with the rest.`})}`,
-      ch:[{t:'—', go:'c6_choice'}]}),
+      ch:[{t:'On.', go:'c6_choice'}]}),
     c6_rime_bad:()=>({sp:'The garden', scene:'garden_storm', fx:()=>{ const w = ROLL().who || 'sgt'; S.f.c6_rimeBit = w; S.rattled ??= {}; S.rattled[w] = 1; note(`The frost is in ${NAME(w)}'s hands: rattled, −1 on the next check.`, 'bad'); }, txt:
 `${by({
   brisk:`Brisk gets there, and the ring doesn't care. It goes over her boots and up her shins like water over a weir, and her feet go out from under her on the white gravel, and she goes down on her own shield with the cold in her to the knee.`,
@@ -15615,7 +15821,7 @@ ${by({
 From nowhere, Hedge has the two fox masks by their collars and is throwing them at the steps, one and then the other, like a man throwing sacks onto a cart.
 
 ${by({sgt:`You get up. Your fingers are white to the second knuckle, and there's no feeling in them, and there won't be for a while.`, ohl:`Ohl gets up. His fingers are white to the second knuckle, and there's no feeling in them, which for a surgeon is a kind of blindness.`, _:`{who} gets up. Her fingers are white to the second knuckle, and there's no feeling in them, and there won't be for a while.`})}`,
-      ch:[{t:'—', go:'c6_choice'}]}),
+      ch:[{t:'On.', go:'c6_choice'}]}),
     c6_choice:()=>({sp:'The garden', scene:'garden_storm', txt:
 `Everything happens at once. That's how you'll tell it afterwards, and it's the only true way to tell it.
 
@@ -15908,7 +16114,7 @@ And from that alley mouth, from where she went, something goes up.
 Pale. Enormous. Unfolding into the sky over the Daru roofs like a sheet shaken out of a window: too many joints, too many edges, a long neck, a head that's almost a dragon's and isn't. Every mask in the square turns up to it at once. You don't. You don't stop to look. You'll look later, and wish you hadn't.
 
 Into the alley.`,
-      ch:[{t:'—', go:'c6_alley_line'}]}),
+      ch:[{t:'Into the alley.', go:'c6_alley_line'}]}),
     c6_alley_line:()=>({sp:'The Adjunct', scene:'alley_night', txt:
 `An alley off the Daru District, so narrow you could touch both walls at once, wet, with one blue lamp on a bracket at the far end and a doorway halfway down.
 
@@ -16193,6 +16399,7 @@ ${SQUAD().length > 1 ? `The squad is awake. You could talk to any of them. It's 
           {t:'Tuft.', req:()=>SQUAD().includes('tuft') && !S.f.c6_closeTuft, fx:()=>{ S.f.c6_closeTuft=1; }, go:'c6_close_tuft'},
           {t:'Ohl.', req:()=>SQUAD().includes('ohl') && !S.f.c6_closeOhl, fx:()=>{ S.f.c6_closeOhl=1; }, go:'c6_close_ohl'},
           {t:'Ellis.', req:()=>SQUAD().includes('ellis') && !S.f.c6_closeEllis, fx:()=>{ S.f.c6_closeEllis=1; }, go:'c6_close_ellis'},
+          {t:'Vell.', req:()=>SQUAD().includes('vell') && !S.f.c6_closeVell, fx:()=>{ S.f.c6_closeVell=1; }, go:'c6_close_vell'},
           {t:'Look at the house.', go:'c6_close_end'}]}; },
     c6_close_brisk:()=>{ const dead = Object.keys(S.dead || {}).filter(id => S.dead[id] && S.dead[id].ch === 6);
       return {sp:'Brisk', scene:'fete_garden', txt:
@@ -16288,6 +16495,19 @@ ${S.f.c6_horses ? `After a long time: "The old man with the ponies. He'll be at 
 
 She doesn't look at you. You sit there until the sun is properly up, and she lets you, and that's the whole of it.`,
       ch:[{t:'Back to the steps.', go:'c6_close'}]}),
+    c6_close_vell:()=>({sp:'Vell', scene:'fete_garden', txt:
+`He's sitting on the balustrade with his legs over the drop, which is the only way he knows how to sit anywhere high, coiling the line. He's coiled it three times since you sat down. It was coiled already.
+
+${S.f.c6_key === 'alley' ? `"I've seen people die," he says. "On the roofs. You don't get to carry rope four years and not." He looks at his hands. "I've never seen anybody *decide* to. Like that. In an alley. With everybody watching." A pause. "I'll carry the line wherever you want it, Sergeant. I just want you to know I saw."` : S.f.c6_key === 'cellars' ? `"All night under the crossing," he says. "On crates. With acid in the wax and the whole city over our heads singing." He laughs, very quietly, the frightened laugh. "In the Guild we'd have charged double for that. I'd have charged double, a month ago."` : `"I've been on this roof before," he says. "Simtal's. Twice. For the Guild." He nods at the hall, at the stairs, at the bodies the night left on them. "Never on the inside. It's worse on the inside. I always thought it'd be better."`}
+
+${S.f.c6_guildPassed ? `"Harl'll tell Ocelot I stood with you on the terrace," he says. "In front of the clan. With the Guild going by." He coils the line a fourth time. "There's no going back up after that. Not on those roofs."
+
+"Do you want to?"
+
+He thinks about it honestly, the way he thinks about everything, out loud and in order. "No," he says, surprised. "I don't think I do."` : `"The Guild'll have heard I was here," he says. "They hear everything." He coils the line a fourth time. "I'll find out what they made of it when they want me to."`}
+
+The sun comes up over the lake behind him and he doesn't turn round to look at it. He's looking at the squad, counting, the way he's watched you count. He gets it right.`,
+      ch:[{t:'Back to the steps.', go:'c6_close'}]}),
     c6_close_end:()=>({sp:'Lady Simtal\'s garden · dawn', scene:'fete_garden', txt:
 `The house at the end of the lawn.
 
@@ -16354,6 +16574,7 @@ const C7H = {
     if (id === 'tuft') { if (key === 'empire' && C7H.leashed()) return false; return key === 'outlaw' ? l >= -1 : key === 'empire' ? l >= 1 : l >= 0; }
     if (id === 'ohl') return key === 'outlaw' ? l >= -1 : key === 'empire' ? l >= 1 : l >= 0;
     if (id === 'ellis') return key === 'outlaw' ? l >= -1 : key === 'empire' ? (!C7H.soldOut() && f.c7_ledger !== 'retained' && l >= 2) : l >= -1;
+    if (id === 'vell') return key === 'outlaw' ? l >= 1 : key === 'empire' ? l >= 2 : l >= -1;
     return l >= -1; },
   follows:(id, key) => { const m = S.f.c7_follow; return (m && S.f.c7_key === key && id in m) ? !!m[id] : C7H.wouldFollow(id, key); },
   followMap:key => { const m = {}; SQUAD().filter(id => id !== 'sgt').forEach(id => { m[id] = C7H.wouldFollow(id, key); }); return m; },
@@ -16383,6 +16604,10 @@ const C7H = {
       if (key === 'outlaw') return fol ? 'Ellis, riding ahead.' : 'Not Ellis. She rides her own road.';
       if (key === 'empire') return fol ? 'Ellis, home to Genabaris.' : 'Not Ellis. Not back into their hands.';
       return fol ? 'Ellis, among her mother\'s people.' : 'Not Ellis. Not in this city.'; }
+    if (id === 'vell') { if (key === 'disband') return 'Vell goes home, to the roofs.';
+      if (key === 'outlaw') return fol ? 'Vell, a long way from any roof he knows.' : 'Not Vell. There\'s nothing to tie a line to on a plain.';
+      if (key === 'empire') return fol ? 'Vell, into the Empire, in a Guild coat.' : 'Not Vell. Not into the Empire.';
+      return fol ? 'Vell, on every roof in the city.' : 'Not Vell. Not on these roofs, not yet.'; }
     return ''; },
   count:(n, w) => { n = Math.max(0, n | 0); return n === 0 ? `no ${w}s` : `${C7H.num(n)} ${w}${n === 1 ? '' : 's'}`; },
   pr:id => id === 'ohl' ? {she:'he', She:'He', her:'him', hers:'his'} : {she:'she', She:'She', her:'her', hers:'her'},
@@ -16466,7 +16691,8 @@ const CH7 = {
              {id:'claw', name:'A grey cloak', kind:'claw', x:10, y:8, still:true, node:()=>'c7_claw', show:()=>!S.f.c7_clawGone, fresh:()=>!S.f.c7_clawDone},
              {id:'ellisback', name:'Somebody in the alley', kind:'ellis', x:3, y:10, still:true, node:()=>'c7_ellis_back', show:()=>!!S.f.c5_ellisThrough && !S.f.c7_ellisBack && !S.f.c7_ellisLeft && !C7H.isDead('ellis'), fresh:()=>true},
              {id:'ellisdoor', name:'Ellis', kind:'ellis', x:7, y:8, still:true, node:()=>'c7_ellis_door', show:()=>!!S.f.c2_ellisRefused && !S.f.c7_ellisJoined && !S.f.c7_ellisWalked, fresh:()=>!S.f.c7_ledgerIn},
-             {id:'vell', name:'Vell', kind:'vell', x:12, y:9, node:()=>'c7_vell', show:()=>!!S.f.c4_vell, fresh:()=>!S.f.c7_vell},
+             {id:'vell', name:'Vell', kind:'vell', x:12, y:9, node:()=>'c7_vell', show:()=>!!S.f.c4_vell && !C7H.has('vell') && !C7H.isDead('vell'), fresh:()=>!S.f.c7_vell},
+             {id:'harl', name:'An old man in a Guild coat', kind:'guildveteran', x:12, y:9, still:true, node:()=>'c7_harl', show:()=>C7H.has('vell'), fresh:()=>!S.f.c7_vell},
              {id:'veteran', name:'An old man mending a net', kind:'guildveteran', x:12, y:9, still:true, node:()=>'c7_veteran', show:()=>S.f.c4_key === 'aside' && !S.f.c4_vell, fresh:()=>!S.f.c7_veteran} ] },
 
     /* . grass  , scrub and Jammit's Worry (the road east)  r rock  M barrow stone  x Rhivi stake  # drop  < the road back west to the city */
@@ -17431,7 +17657,7 @@ ${C7H.has('kettle') ? `Kettle is staring at the cord. Her mouth is working and n
 ${C7H.has('ohl') ? `Ohl has the oilcloth half out of his coat. He hasn't opened it. He's looking at her the way he looks at a wound that's closed on its own, when he'd been sure it wouldn't.` : ''}
 
 ${C7H.dead().length ? `Then she looks along the squad again, slowly, the way she reads ground, and finds the ${C7H.dead().length > 1 ? 'gaps' : 'gap'}. "${C7H.names(C7H.dead())}," she says. It isn't a question. You tell her anyway: the alley, the otataral, last night. She listens the way she listened to Toc's orders, all the way to the end.${C7H.isDead('kettle') ? ` Then she looks down at the cord on her wrist, and doesn't say anything at all.` : ''}` : ''}`,
-      ch:[{t:'"Fourth Squad. If you want it."', go:'c7_ellis_take'},
+      ch:[{t:'"Fourth Squad. If you want it."', req:()=>!C7H.has('vell'), go:'c7_ellis_take'},
           {t:'"You don\'t owe us anything. Go where you like, Ellis."', go:'c7_ellis_let'}]}),
     c7_ellis_take:()=>({sp:'Ellis', fx:()=>{ recruit('ellis'); S.f.c7_ellisBack=1; loy('ellis',1); if (C7H.has('ohl')) S.f.c7_ohlEllis=1; }, txt:
 `"Fourth Squad," she says, the way she said it on the plain beside a dead mare, trying the weight. It's heavier than it was. She seems to find that she can carry it.
@@ -17621,7 +17847,7 @@ Out on the step, Ohl has her burned hand before she can say no. She says no. ${S
 She looks east along the Lakefront toward the Worry Gate, and then at the Fourth, counting, and then at you.
 
 "Where are you going, Sergeant?"`,
-      ch:[{t:'"With the Fourth. Fourth Squad, if you want it."', go:'c7_ellis_join'},
+      ch:[{t:'"With the Fourth. Fourth Squad, if you want it."', req:()=>!C7H.has('vell'), go:'c7_ellis_join'},
           {t:'"Wherever you like, Ellis."', go:'c7_ellis_own'}]}),
     c7_ellis_join:()=>{ const took = C7H.soldOut(); return {sp:'Ellis', fx:()=>{ if (took) S.f.c7_ellisWalked=1; else { recruit('ellis'); S.f.c7_ellisJoined=1; loy('ellis',1); } }, txt: took ?
 `She looks at you, and at the paper-shaped place in your coat where the grey cloak's pardon is.
@@ -17661,6 +17887,22 @@ He stands, and hitches the rope up on his shoulder.
 
 "That's the debt. I'm told it's paid." He looks at you. "I don't feel it's paid. I'm going to go on not feeling it for a while, if that's all right."`,
       ch:[{t:'"It\'s all right, Vell."'}]}; },
+    /* v3.17: Vell is with the Fourth, so the Guild's word on the quay comes to him, from the old man who let them by on the terrace */
+    c7_harl:()=>{ const done = !!S.f.c7_clawDone, shot = !!S.f.c7_clawFought && !S.f.c7_vellWarned; return {sp:'An old man in a Guild coat', fx:()=>{ S.f.c7_vell=1; S.f.c7_vellWarned=1; }, txt:
+`An old man in a dark coat is sitting on a bollard at the mouth of the east alley, grey at the temples, ${S.f.c6_guildPassed ? `the one who called the Fourth furniture on the terrace last night` : `with a Guild blade across his knees that he isn't bothering to hide`}. Vell sees him before you do. Vell stops walking.
+
+"Harl," he says.
+
+"Rope boy." The old man doesn't get up. He looks Vell over, the stitches and the line and the Malazan company he keeps, without hurrying, the way you'd look over a knot somebody else had tied. "The clan says you're paid up. The clan says a lot of things this morning." Then, to you: "Malazan. A word, because the boy's in it, and the Guild looks after its own even when they've stopped being its own."
+
+${shot ? `He nods past you at the splinters in the piling by the pier. "There was a man on the chandlery roof across from the green door, with a crossbow. The grey man's. We were on our way up to have a word with him." A shrug. "You had the word first. Louder."` : done ? `"There was a man on the chandlery roof across from the green door, with a crossbow. The grey man's. We had a word with him before the lamps were out. You'd never have known. That's how it's meant to work."` : `"There's a man on the chandlery roof across from the green door with a crossbow," he says. "Since before the lamps went out. The grey man's." A small pause. "Was. We had a word with him. He isn't on the roof any more."`}
+
+"His name was Hollin. Out of Unta." He looks at Vell, not at you. "He'll want it. He keeps names now, I'm told. Picked it up somewhere."
+
+Vell doesn't say anything. He's looking at the chandlery roof, at the place where a man was, measuring it the way he measures every roof: where the line would go, and how you'd get off.
+
+"That's the Guild's half," says Harl, and gets up, and goes back into the alley. "The boy's half, he's paying in person. I'm told it's not paid yet. I'm told he likes it that way."`,
+      ch:[{t:'"Vell?"'}]}; },
     c7_veteran:()=>{ const st = S.f.c6_steppedIn ? 'settled' : S.f.c6_terraceFought ? 'lapsed' : 'open';
       return {sp:'An old man mending a net', fx:()=>{ S.f.c7_veteran=1; S.f.c7_grudge=st; if (st === 'settled') S.f.c7_vellWarned=1; }, txt:
 `You know him. The older man from the Daru roof, grey at the temples, a Guild blade across his knees among the dead the night Kalam's candles went out; the man in the alley afterward with his hand pressed to his ribs, asking his question again. He's sitting on the step of the east alley mending a fishing net, badly, which is how you know it isn't his net.
@@ -18401,6 +18643,7 @@ ${SQUAD().length > 1 ? `You could talk to any of them. It's the hour for it.` : 
           {t:'Tuft.', req:()=>C7H.has('tuft') && !S.f.c7_closeTuft, fx:()=>{ S.f.c7_closeTuft=1; }, go:'c7_close_tuft'},
           {t:'Ohl.', req:()=>C7H.has('ohl') && !S.f.c7_closeOhl, fx:()=>{ S.f.c7_closeOhl=1; }, go:'c7_close_ohl'},
           {t:'Ellis.', req:()=>C7H.has('ellis') && !S.f.c7_closeEllis, fx:()=>{ S.f.c7_closeEllis=1; }, go:'c7_close_ellis'},
+          {t:'Vell.', req:()=>C7H.has('vell') && !S.f.c7_closeVell, fx:()=>{ S.f.c7_closeVell=1; }, go:'c7_close_vell'},
           {t:'The last of it.', go:'c7_close_end'}]}; },
     c7_close_brisk:()=>{ const k = S.f.c7_key || 'outlaw', fol = C7H.follows('brisk', k), read = S.f.c7_letter === 'brisk'; return {sp:'Brisk', scene:'quorl_hill', txt:
 `${k === 'disband' ? `She's already standing. She hands you the ration ledger, closed. "The count's on the last page," she says. "It's right."
@@ -18444,6 +18687,13 @@ She takes the hand away. "That's the last thing I can do for her. It's a good on
 ${held ? `Then she looks at you, and says one sentence, the first she has said to you since the hillside that wasn't an answer to an order; and it's the right one.
 
 "You held on to me on that hill because you'd decided I was yours, and I've been angry at you for it every morning since, and I've decided you were right."` : ''}`,
+      ch:[{t:'Back to the squad.', go:'c7_close'}]}; },
+    c7_close_vell:()=>{ const k = S.f.c7_key || 'outlaw', fol = C7H.follows('vell', k); return {sp:'Vell', scene:'quorl_hill', txt:
+`${k === 'disband' ? `He's coiling the line. He's done it four times. "Home, then," he says. "Down there." He nods at the city, small and blue on its lake. "I'll have to explain to the clan what a sergeant is. They won't believe me." He stops coiling. "I'll tell him anyway. Somebody should know."` : k === 'city' && fol ? `"I could show you every roof," he says, looking down at the city. "Every one. Which gutters hold. Where the lines go. Where you'd put a man if you wanted him not to be seen." He grins, and then stops grinning. "I'd like to show you the ones that don't matter, too. The ones with nothing on them but a view."` : k === 'outlaw' && fol ? `He's looking at the quorl as if it might eat him, which is fair. "I've never been anywhere," he says. "I've been *up*. That's different." He hitches the line on his shoulder. "North. All right. What do you tie a rope to, in the north?" "Each other," says ${C7H.has('brisk') ? 'Brisk, going past' : 'somebody'}. He thinks about that the way he thinks about everything, out loud and in order. "All right," he says.` : k === 'empire' && fol ? `"The Empire," he says. "The one with the contract on all of you." He looks at you. "I'm going to the place where everybody hates the Guild, with the people the Guild was paid to hate." A long breath. "I asked to. I'd like that written down somewhere."` : `He's standing a little way off, with the line on his shoulder, looking at the city and not at you.
+
+"I can't," he says. "${k === 'outlaw' ? `North. Away from every roof I know. I'd be no use to you on a plain, Sergeant, I'd be a boy with a rope and nothing to throw it at` : k === 'empire' ? `The Empire. I can't walk into Genabaris with a Guild coat on and a debt in my mouth. They'd hang me for the coat` : `I can't stay in a city where I've stood on a roof with Malazans in front of the whole Guild. Not yet. Ask me in a year`}." He swallows. "I'm sorry. I'd like it on the record that I'm sorry."
+
+"It's on the record," you tell him. He nods, and grips your forearm the Guild way, wrist to wrist, hard, like a line taking weight. Then he goes.`}`,
       ch:[{t:'Back to the squad.', go:'c7_close'}]}; },
     c7_close_end:()=>{ const k = S.f.c7_key || 'outlaw', n = C7H.countFollow(k); return {sp:'The quorl hill · noon', scene:k === 'outlaw' ? 'road_east' : 'quorl_hill', txt:
 `${k === 'outlaw' ? `The quorl lifts under you with a lurch like a boat on a swell. The grass goes flat below in a roaring ring. The hill drops away, and the road, and the Rhivi on it, and the city tilts on the rim of its lake, blue and small; and then there's only the sky, and the sky has nothing in it but the Host's quorls strung out north like a line of geese, and the Fourth among them.` : k === 'disband' ? `The last quorl goes up. The grass lies down in its ring, and slowly stands again. The hill empties the way a room empties at the end of a long night: not all at once, and then all at once.` : k === 'empire' ? `The last quorl goes up. The grass lies down in its ring, and slowly stands again. It's very quiet on the hill without them. The road goes back past the city and away north-west, wide of Pale, toward Genabaris and the sea. It's a long road, and by the end of it you'll know every rut.` : `The last quorl goes up. The grass lies down in its ring, and slowly stands again. Below, the city: blue, loud even from here, with a house in a garden that wasn't there yesterday and a gate that needs somebody on it.`}
@@ -18605,6 +18855,16 @@ The Host's lines are a city of tents with no Empire in it. The Fourth Regiment i
     const p4 = l >= 2 ? `"I'm still not used to it," she says. "Don't stop."` : l <= -2 ? `She never says thank you. She told you on the plain she wasn't used to it. She never got used to it.` : `"I'd like it in the ledger," she says, "that I ${f.c7_ellisBack ? 'came back' : 'was here'}."`;
     return {title:'Which way it is written', txt:C7H.join([p1, p2, p3, p4])};
   }
+  if (id === 'vell') {
+    const home = !fol || k === 'disband';
+    const p1 = home ? (k === 'city' || k === 'disband' ? `Vell goes back up onto the roofs of Darujhistan. Not for the Guild, not at first. He strings lines nobody has paid for, between roofs nobody needs to cross, and sits on the ridges at dusk with his legs over the drop and watches the blue come up out of the city street by street.` : `Vell stays in Darujhistan, on the roofs, where there's always something to tie a line to.`) + ` ${f.c6_guildPassed ? `The clans call him *the Malazans' rope*, to his face, and it isn't an insult, quite. Harl buys him a drink once a month and never says why.` : `The clans call him *the Malazans' rope*, to his face. He has stopped minding. He has started, slightly, to like it.`}` :
+      k === 'outlaw' ? `Vell goes north with the Host, on a quorl, with his eyes shut the whole way and the line round his waist and tied to the saddle-horn with a knot Kettle says she'd want to study. On the plain there's nothing to tie a rope to. By the first winter he's found things anyway: a ridge, a gully, a wall the Host needs a man on top of before morning. The sappers call him *the boy with the hook*. He tells everyone his name. They learn it.` :
+      k === 'empire' ? `Vell goes west with the Fourth, into the Empire, in a Guild coat he won't take off. At Genabaris a harbour clerk asks what he is, and he says *rope*, and the clerk writes it down, because there's no column for anything else. He's the only Daru on the books of the Malazan marines. He has the column to himself.` :
+      `Vell stays in Darujhistan, by Coll's gate and Kruppe's door, which between them see everything that comes into the city, and puts a line on every roof the Fourth might ever need to leave by. He never says where they are. "Off is the hard part," he says. "Off is the part people forget."`;
+    const p2 = `${f.c4_ellisToc ? `He kept a scout's place warm, he says, when anybody asks how he came to the Fourth. He means it as a joke. It isn't, entirely.` : f.c6_vellJoined ? `He came down a rope into a vault under the Gadrobi crossing, the day of the Fete, to pay a debt. He's been paying it since, in person. He has decided he likes it that way.` : `He walked down off the Daru roofs with a Malazan squad, the night a tall shape came over the ridge for him, and never went back up.`}${f.c7_vell ? ` He keeps the name the Guild gave him on the quay, *Hollin, out of Unta*, written small inside his coat with the others he's started to keep.` : ''}`;
+    const p3 = l >= 2 ? `"In the Guild you put the line where you're told," he says, "and you don't ask where it goes." He grins. "I always know where it goes now. I always ask. Somebody always tells me."` : l <= -2 ? `He never quite forgave you for the things he saw, and never quite said so. The debt, he says, is paid. He says it a little too often.` : `"I'd like it written down," he says, "that I asked where the line went. Every time."`;
+    return {title:'Where the line goes', txt:C7H.join([p1, p2, p3])};
+  }
   return {title:(TPL[id] && TPL[id].role) || '', txt:(TPL[id] && TPL[id].quest) || ''};
 };
 
@@ -18635,29 +18895,36 @@ C7H.gone = (id, key) => {
   if (!TPL[id] || id === 'sgt' || SQUAD().includes(id)) return null;
   if (C7H.isDead(id)) {
     const no = C7H.listNo(id), who = C7H.has('ohl') ? 'ohl' : C7H.has('brisk') ? 'brisk' : 'sgt';
-    const entry = {brisk:'Cawn. Corporal, heavy infantry', kettle:'Falar. Sapper', tuft:'Malaz City, the Mouse Quarter. Mage, Meanas', ohl:'Ehrlitan. Healer, Denul', ellis:'Genabaris, the river quarter. Scout'}[id] || TPL[id].role;
+    const entry = {brisk:'Cawn. Corporal, heavy infantry', kettle:'Falar. Sapper', tuft:'Malaz City, the Mouse Quarter. Mage, Meanas', ohl:'Ehrlitan. Healer, Denul', ellis:'Genabaris, the river quarter. Scout', vell:'Darujhistan, the Daru District. Rope'}[id] || TPL[id].role;
     const line = `*${NAME(id)}. ${entry}. ${C7H.Num(no)}.*`;
     let body;
     if (who === 'ohl') body = {
       brisk:`Ohl writes it small, the way he writes all of them, and sits with the charcoal in his hand a long time. "She let me call her child," he says. "Nine years a soldier, and twenty-nine, and she let me."${f.c7_tav ? ` A pause. "Her brother's alive. On the Moranth's rolls. She'd have counted his rations first and hugged him second."` : ''} He writes something else under it, very small. "We don't leave people," he says. "She'd want it on her line. There isn't room. I've put it in anyway."`,
       kettle:`Ohl writes it small, the way he writes all of them. "Nine stitchings," he says. "I'd have liked ten." He looks at the name a long time. "She had all her fingers. She mentioned it often. She mentioned it the night before, to me, as if I might have forgotten."${f.c7_debt === 'closed' ? ` He folds the oilcloth. "The Moranth wrote her down too," he says. "On their other roll. They said the dead don't owe. I've never liked a Moranth before."` : ''}`,
       tuft:`Ohl writes it small, the way he writes all of them. "Nineteen," he says. "Fourteen months with us. It felt longer to everyone, and not long enough." He folds the oilcloth. "She slept with a lamp lit. I've kept it lit."${f.c7_tattersail ? ` A long pause. "She'd have liked to see the child grow. I'll write to her about it. I don't know where to send it. I'll write anyway."` : ''}`,
+      vell:`Ohl writes it small, the way he writes all of them, under the line for the boy on the roof that he crossed out a week ago. "I crossed him out once," he says. "Because he lived. I didn't know you could be crossed out twice." He doesn't cross this one out. "He'd want the rope written in. *Rope.* That's all he did, he said." He writes it. "It wasn't all he did."`,
       ellis:`Ohl writes it small, the way he writes all of them, just under the space he left for Toc. "Her captain's space and hers, side by side," he says. "One open. One not. She'd have laughed at that, without any sound." He puts the charcoal away. "I never did get to look at her hand. Toc asked for it, on the plain. I'd like that in the ledger."`}[id];
     else if (who === 'brisk') body = {
       ohl:`Brisk wrote him in the ration ledger the night of it, under the count, because somebody had to write him somewhere. Then she wrote him on his own oilcloth, at the bottom, in her square hand: the last name on a list that was never meant to have one of the Fourth on it. "He meant to die before he wrote one of us," she says. "He managed it." She closes the oilcloth. "He'd call that a technicality."`,
       kettle:`Brisk writes it in the ration ledger, under the count, in her square hand. "She called me *the wall*," she says. "Not to my face. I knew. I'd have liked her to say it to my face once."`,
       tuft:`Brisk writes it in the ration ledger, under the count. "She stood behind the shield without being told," she says. "From the first week. I noticed. I never said." She closes the ledger. "I should have said."`,
+      vell:`Brisk writes it in the ration ledger, under the count, in her square hand. "I carried him off the Daru roof," she says. "He weighed nothing. He stood behind the shield after that, every fight, without being told." She closes the ledger. "We don't leave people. I'm writing him so I don't."`,
       ellis:`Brisk writes it in the ration ledger, under the count. "I handed her the rations count after one day," she says. "That's a promotion. She knew it." A pause. ${f.c5_briskHeld ? `"I held her down on a hillside once, so she wouldn't go," she says. "I'd do it again. There's nothing to hold."` : `"We don't leave people. We didn't. She went anyway." She closes the ledger. "I'm writing it so I'll stop looking."`}`}[id];
     else body = {
       brisk:`You write it yourself, on Ohl's oilcloth, in the space under the last name, in the small careful letters he'd have used. She prayed to no one and saluted Hood anyway. You salute him for her. It's the only order of hers you ever took.`,
       kettle:`You write it yourself, on Ohl's oilcloth, in the small careful letters he'd have used. She never dropped anything in her life. She threw a great deal. You find you're waiting for the count at breakfast, and it doesn't come.`,
       tuft:`You write it yourself, on Ohl's oilcloth, in the small careful letters he'd have used. The Deck is in your pack. You haven't opened it. You don't know how to read it, and it would only say nothing about you, which was the compliment.`,
       ohl:`You write it yourself, at the foot of his own list, in letters as small and careful as you can make them. He meant to die before he wrote one of the Fourth. He managed it. He'd call that a technicality. You make the tea, in the morning, the way he made it. It's terrible. It's technically medicine.`,
+      vell:`You write it yourself, on Ohl's oilcloth, in the small careful letters he'd have used. He said his name three times when he was frightened. You say it three times, once for each, and then put the line away.`,
       ellis:`You write it yourself, on Ohl's oilcloth, in the small careful letters he'd have used. She counted horses before people and apologised for it. You count the horses first, now, and don't apologise to anybody.`}[id];
     return {title:C7H.Num(no), txt:C7H.join([line, body || `${NAME(id)} did not get up. The Fourth carried the name the rest of the way.`])};
   }
   if (id !== 'ellis') return null;
   const lc = f.c7_ledger, act = f.c7_ledgerAct, horse = !!f.c7_tocHorse;
+  if (f.c4_ellisToc && !f.c7_ellisBack && !f.c7_ellisLeft) return {title:'He kept riding', txt:C7H.join([
+`She went east off a Daru street corner, the night the Fourth took on a rope boy, to find her captain in the hills. She found him. She was on the ridge above the fold when the grey took him, and too far, the way she'd chosen to be.`,
+`In the morning there was a line of prints going west from the ridge, a scout's, trying not to be there and then not trying. Toc's horse went west too. Somebody at the Worry Gate stabled a horse that week for a woman with a glove, and didn't ask her name, and didn't need it.`,
+`"He kept riding," she says, to the horse, wherever she is. "So will we."${f.c7_tocNeither ? ` The Moranth have him on neither of their rolls, under a mark they don't use often. Nobody told her. She'd have said she knew.` : ''}`])};
   if (f.c7_ellisLeft) return {title:'He kept riding', txt:C7H.join([
 `She came back out of the grey on the Lakefront at dawn, with ash in her hair and Kettle's cord on her wrist, and the sergeant told her she could go where she liked, and she did.`,
 `There was a horse in the stable at the Worry Gate that nobody was riding. It remembered her. She rides. South, some days; east, most. She looks at the ground more than the sky, and once in a long while, where the grass is pressed flat in a way grass shouldn't be, she gets down and puts her gloved hand flat on the prints and counts the days.`,

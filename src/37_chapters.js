@@ -67,7 +67,8 @@ function showChapterEnd(){
     if (S.f.c3_pinup) extra.push('Two painted women on a crate lid, Rumjugs and Sweetlard, rode out of the crossing on the Bridgeburners\' tailboard. Nobody knows who they are. Hedge thinks he will.');
   }
   if (n === 4) {
-    if (S.f.c4_vell) extra.push('Vell is alive. A Guild journeyman owes the Fourth his life, and the Guild pays its debts, one way or the other.');
+    if (S.f.c4_vell) extra.push(SQUAD().includes('vell') ? 'Vell is alive, and walks with the Fourth. A Guild journeyman owed it his life, and has decided to pay in person.' : 'Vell is alive. A Guild journeyman owes the Fourth his life, and the Guild pays its debts, one way or the other.');
+    if (S.f.c4_ellisToc) extra.push('Ellis went east, into the hills, to find Toc. The Fourth counts the gap.');
     if (S.f.c4_guildKnows) extra.push('Ocelot knows a Malazan squad held a roof for one of his. Vell told him, and then told the rest of the clan.');
     if (S.f.c4_seen) extra.push('A Tiste Andii knows the Fourth\'s faces. That is the Spawn\'s business now.');
     if (S.f.c4_tuftDark) extra.push('Tuft has not slept. She says the dark was polite. She says it the way you say a thing you are trying not to say.');
@@ -143,7 +144,7 @@ function showChapterIntro(){
   bindHud();
 }
 /* ============ the finale: the road taken, a page per squadmate, the sergeant, and the end of the book ============ */
-const FIN_IDS = ['brisk','kettle','tuft','ohl','ellis'];
+const FIN_IDS = ['brisk','kettle','tuft','ohl','ellis','vell'];
 let finAnim = null;
 function finKey(){ return S.chapters[7] || S.f.c7_key || 'outlaw'; }
 function finCall(f, ...a){ try { return f ? f(...a) : null; } catch(e) { console.warn('finale', e); return null; } }

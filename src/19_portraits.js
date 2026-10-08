@@ -267,6 +267,34 @@ const POR = {
     PR.stroke(ctx, 'rgba(120,100,80,.5)', .4, () => { for (let i=0;i<3;i++){ ctx.moveTo(-31, -28 + i*3); ctx.quadraticCurveTo(-33, -27 + i*3, -36, -28 + i*3); } }); PR.soft(ctx, -36, -28, 3, 1.6, '#ffe0b0', .2);
     ctx.fillStyle = '#1a120c'; PR.path(ctx, [[-42, -20], [-30, -19], [-28, -10], [-40, -8]]); ctx.fill(); PR.stitch(ctx, 'rgba(160,130,90,.45)', .35, () => { ctx.moveTo(-41, -12); ctx.lineTo(-29.5, -13.5); });
     return F; },
+  /* Vell: seventeen, Daru, Ocelot's rope boy. Soot, a stitched cut along the cheekbone, a mop of black curls, and the tarred line coiled over his shoulder with the hook on the end of it */
+  vell(ctx){ const F = {cy:-73, w:12.2, h:18.6, jaw:.66, chin:4, skin:'#c9a48a', iris:'#5a4a3a', lip:'#a06a5a', browCol:'#1a120c', browW:1.25, arch:.9, browL:.1, rim:'#b0a0c8', rimA:.14, nose:.9, look:.55, smileL:.15, smileR:.35, mouthW:3.6};
+    // the coil of tarred rope over his left shoulder, across the chest, and the hook hanging off it
+    PR.torsoPath(ctx, 32, 3); ctx.fillStyle = PR.lit(ctx, '#3e3a46', '#121016', -32, 24); ctx.fill();
+    ctx.save(); PR.torsoPath(ctx, 32, 3); ctx.clip();
+    PR.stroke(ctx, 'rgba(0,0,0,.35)', .8, () => { ctx.moveTo(-6, -46); ctx.quadraticCurveTo(-4, -20, -8, 2); ctx.moveTo(16, -40); ctx.quadraticCurveTo(14, -20, 18, 2); }); // the coat's front edges
+    PR.stitch(ctx, 'rgba(190,180,210,.22)', .45, () => { ctx.moveTo(-5, -44); ctx.lineTo(-7, 2); });
+    for (let i=0;i<5;i++){ ctx.strokeStyle = PR.lin(ctx, -30, 0, 30, 0, [[0,'#6a5434'], [.5,'#3a2c18'], [1,'#120c06']]); ctx.lineWidth = 3.2; ctx.beginPath(); ctx.moveTo(-30, -40 + i*1.6); ctx.bezierCurveTo(-10, -30 + i*2, 10, -12 + i*2, 30, -2 + i*1.4); ctx.stroke();
+      PR.stroke(ctx, 'rgba(220,190,130,.18)', .5, () => { for (let k=0;k<9;k++){ const tt = k/9, x = -30 + 60*tt, y = -40 + i*1.6 + (38 + i*.2)*tt*tt*.9 + Math.sin(tt*3)*4; ctx.moveTo(x - 1, y - 1); ctx.lineTo(x + 1.2, y + 1.2); } }); } // the lay of the strands
+    ctx.restore();
+    // the hook: black iron, three tines, hanging by his hip on the right
+    ctx.lineCap = 'round'; ctx.strokeStyle = '#2a2a30'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(22, -26); ctx.lineTo(23, -12); ctx.stroke();
+    ctx.lineWidth = 2; [-1, 0, 1].forEach(dx => { ctx.beginPath(); ctx.moveTo(23, -12); ctx.quadraticCurveTo(23 + dx*7, -10, 23 + dx*6, -18); ctx.stroke(); });
+    PR.stroke(ctx, 'rgba(210,210,230,.45)', .5, () => { ctx.moveTo(22, -25); ctx.lineTo(23.2, -13); ctx.moveTo(16.4, -17); ctx.quadraticCurveTo(16.6, -11, 22, -11.6); });
+    PR.neck(ctx, F, 5.8);
+    ctx.fillStyle = PR.lit(ctx, '#34303c', '#0e0c12', -12, 12); PR.path(ctx, [[-11, -42], [-7, -49], [7, -49], [11, -42], [0, -41]]); ctx.fill(); // the collar, turned up
+    F.under = (ctx, F) => { PR.soft(ctx, 6, F.cy + 4, 4, 3, '#1a1410', .3); PR.soft(ctx, -6, F.cy + 7, 3.4, 2.4, '#1a1410', .22); PR.dots(ctx, F, 24, 'rgba(40,30,30,.25)', .45, [1, 9]); }; // soot
+    PR.face(ctx, F);
+    // the cut along the left cheekbone, stitched (Ohl's)
+    PR.stroke(ctx, 'rgba(120,40,30,.75)', .6, () => { ctx.moveTo(-9.6, F.cy + 1.4); ctx.quadraticCurveTo(-6.6, F.cy + 3.4, -3.8, F.cy + 3.2); });
+    PR.stroke(ctx, 'rgba(30,20,20,.8)', .35, () => { for (let i=0;i<4;i++){ const x = -9 + i*1.6, y = F.cy + 1.9 + i*.42; ctx.moveTo(x - .2, y - 1); ctx.lineTo(x + .2, y + 1); } });
+    // a mop of black curls
+    ctx.beginPath(); ctx.moveTo(-13, F.cy + 1); ctx.bezierCurveTo(-15, F.cy - 15, -8, F.cy - 22.4, 0, F.cy - 22); ctx.bezierCurveTo(9, F.cy - 22.4, 15, F.cy - 15, 13, F.cy + 1); ctx.quadraticCurveTo(12, F.cy - 9, 4, F.cy - 12.6); ctx.quadraticCurveTo(0, F.cy - 13.6, -4, F.cy - 12.6); ctx.quadraticCurveTo(-12, F.cy - 9, -13, F.cy + 1);
+    ctx.fillStyle = PR.lin(ctx, -14, 0, 14, 0, [[0,'#3a2c26'], [.45,'#1a1210'], [1,'#060404']]); ctx.fill();
+    for (let i=0;i<26;i++){ const a = Math.PI*(.95 + i/25*1.1), r0 = 12.6 + (i%3)*.9, x = Math.cos(a)*r0*1.02, y = F.cy - 7 + Math.sin(a)*r0*1.12, rr = 2.2 + (i%4)*.5;
+      ctx.fillStyle = ['#2a1e18','#140e0a','#3c2e26'][i%3]; ctx.beginPath(); ctx.arc(x, y, rr, 0, 7); ctx.fill(); PR.stroke(ctx, 'rgba(120,100,90,.25)', .35, () => { ctx.arc(x - .4, y - .3, rr*.6, 3.6, 5.4); }); }
+    for (let i=0;i<4;i++){ const x = -6 + i*3.6, y = F.cy - 15.4 + (i%2)*1.1; ctx.fillStyle = ['#2a1e18','#1a1210'][i%2]; ctx.beginPath(); ctx.arc(x, y, 2.1, 0, 7); ctx.fill(); } // a curl or two over the brow
+    return F; },
 };
 function paintPortrait(ctx, id, W, H, st){
   const s = H/120; ctx.clearRect(0,0,W,H); ctx.save(); ctx.translate(W/2, H*.98); ctx.scale(s, s);

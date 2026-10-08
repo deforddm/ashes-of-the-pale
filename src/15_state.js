@@ -47,6 +47,8 @@ const kitAb = id => { const ab = [...TPL[id].ab]; if (id === 'kettle' && S && ((
 function recruit(id){ if (!TPL[id] || S.squad.includes(id)) return; S.squad.push(id); S.loy[id] ??= 0; S.gear[id] ??= {}; S.picks[id] ??= [];
   if (S.lvl >= 3 && PICKS[3][id] && !S.picks[id].some(k => PICKS[3][id].some(o => o[0] === k)) && !S.picksDue.includes(3)) S.picksDue.push(3);
   note(`${NAME(id)} joins the Fourth.`, 'good'); AUDIO.play('up'); save(); }
+/* a squadmate who leaves by choice, for somewhere of their own (Ellis, to find Toc): no 'gone' flag, a plain note */
+function letGo(id, why){ if (!S.squad.includes(id) || id === 'sgt') return; S.squad = S.squad.filter(x => x !== id); S.gear[id] = {}; S.trail = S.trail.slice(0, Math.max(1, S.squad.length - 1)); note(why || `${NAME(id)} goes ${id === 'ohl' ? 'his' : 'her'} own way.`); save(); }
 function unrecruit(id){ if (!S.squad.includes(id) || id === 'sgt') return; S.squad = S.squad.filter(x => x !== id); S.f[id + 'Gone'] = 1; S.trail = S.trail.slice(0, Math.max(1, S.squad.length - 1)); note(`${NAME(id)} is gone.`, 'bad'); save(); }
 /* a squadmate who fell in a mortal fight: gone from the squad for good, remembered in S.dead. The battle writes the note. */
 function kill(id){ if (id === 'sgt' || !S.squad.includes(id)) return; S.squad = S.squad.filter(x => x !== id); S.dead ??= {}; S.dead[id] = {ch:S.chapter, where:(B && B.def && B.def.title) || ''}; S.gear[id] = {}; S.trail = S.trail.slice(0, Math.max(1, S.squad.length - 1)); save(); }
@@ -54,7 +56,9 @@ function kill(id){ if (id === 'sgt' || !S.squad.includes(id)) return; S.squad = 
 const listCount = () => 211 + (S.f.c2_key === 'light' ? 1 : 0) + (S.f.c4_key === 'aside' ? 1 : 0) + Object.keys(S.dead || {}).length + (S.f.listAdds || 0);
 const has = (id, k) => (S.picks[id] || []).includes(k);
 /* stat with gear and veteran picks folded in */
-function statOf(id, stat){ let v = TPL[id].st[stat]; Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (it && it.stat && it.stat[stat]) v += it.stat[stat]; }); if (has(id,'nerve')) v += 1; return v; }
+/* the role's Measure, grown at levels 4 and 8 */
+const lvStat = (id, stat) => { const u = STATUP[id], l = (S && S.lvl) || 1; return !u ? 0 : (u[0] === stat && l >= 4 ? 1 : 0) + (u[1] === stat && l >= 8 ? 1 : 0); };
+function statOf(id, stat){ let v = TPL[id].st[stat] + lvStat(id, stat); Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (it && it.stat && it.stat[stat]) v += it.stat[stat]; }); if (has(id,'nerve')) v += 1; return v; }
 function gain(id){ const it = ITEMS[id]; if (!it || S.kit.includes(id)) return; S.kit.push(id); note(`Found: ${it.name}.`, 'good'); AUDIO.play('coin');
   // auto-equip into an empty slot, on whoever it suits best (31c)
   const who = placeGear(id); if (who) note(`${NAME(who)} takes it: it suits ${who === 'sgt' ? 'you' : NAME(who)} best of those with a free hand for it.`, 'good'); }
@@ -96,6 +100,7 @@ function loy(id, n){ S.loy[id] = Math.max(-3, Math.min(3, S.loy[id] + n)); notes
 function note(t, c=''){ notes.push({t, c}); }
 function gainXP(n){
   S.xp += n; const before = S.lvl; let l = 1; while (l < LEVELS.length && S.xp >= LEVELS[l]) l++; S.lvl = l;
+  if (before < 5 && S.lvl >= 5 && S.tricks) Object.entries(S.tricks).forEach(([k, t]) => { if (TRICKS[k] && TRICKS[k].use === 'chapter' && t.left != null) t.left++; }); // level 5: one more charge, this chapter too
   if (S.lvl > before) { AUDIO.play('up'); for (let k = before + 1; k <= S.lvl; k++) if ([3,5,7].includes(k)) S.picksDue.push(k); }
   return S.lvl > before;
 }
@@ -104,6 +109,9 @@ function gainXP(n){
 const lvB = () => Math.max(0, ((S && S.lvl) || 1) - 1);
 const lvDmg = (l = (S && S.lvl) || 1) => [3,5,7].filter(k => l >= k).length;
 const lvAc = (l = (S && S.lvl) || 1) => [4,8].filter(k => l >= k).length;
-function lvlNote(){ const l = S.lvl, extra = [l === 3 || l === 5 || l === 7 ? '+1 damage on every blow' : '', l === 4 || l === 8 ? '+1 armour' : ''].filter(Boolean);
-  return `The squad reaches level ${l}: +4 health${extra.length ? ', ' : ' and '}+1 to hit${extra.length ? `, and ${extra.join(' and ')}` : ''} for everyone. Rally and the heals grow with it.`; }
+/* tiers for the rest of the skills and spells: reach, duration, how hard a boss must roll to shrug it off. lvT: +1 at levels 4 and 7; lvAt(n): from level n */
+const lvT = (l = (S && S.lvl) || 1) => [4,7].filter(k => l >= k).length;
+const lvAt = n => ((S && S.lvl) || 1) >= n ? 1 : 0;
+function lvlNote(){ const l = S.lvl, extra = {3:'+1 damage on every blow', 4:'+1 armour, +1 to the Measure each soldier\'s role leans on, a longer reach and a bigger strain limit for the spells', 5:'+1 damage on every blow, longer Veils and darks, and one more use of every chapter trick', 6:'Rally twice a fight, and the talents get sharper', 7:'+1 damage on every blow, and the spells reach further and hold longer', 8:'+1 armour, and +1 to each soldier\'s second Measure'}[l];
+  return `The squad reaches level ${l}: +4 health and +1 to hit for everyone${extra ? `, and ${extra}` : ''}. Every skill and spell grows with it.`; }
 

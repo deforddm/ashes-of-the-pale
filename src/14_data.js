@@ -58,6 +58,16 @@ const TPL = {
     get quest(){ return squadQuest('ellis', `Toc said the Claw was done with her. The Claw has not said so. Somewhere in Darujhistan there is a house with her name in a ledger, and she means to find out which way it is written.`); },
     banter:[`"You took me on because a one-eyed Claw told you to. I'd think about that, Sergeant."`,`"Six years I counted sentries for people who never said thank you. This lot say it. I'm not used to it. Don't stop."`,`"If the Claw come for me, they'll come at night and they'll come quiet. I'll hear them. I'm telling you so you'll know it wasn't your fault."`],
     rel:{brisk:'Brisk watched her walk for a day and then stopped watching. That is a promotion.',kettle:'They trade: arrows for trip-cord, and neither has said what for.',tuft:'Ellis watches her the way she watched sentries. Tuft has noticed and, oddly, does not mind.',ohl:'He asked about the glove. She said "later." He wrote nothing down, and she noticed.'}},
+  vell:{name:'Vell',role:'Rope man · Guild journeyman',sig:'V',col:'#b0a0c8',hp:15,ac:13,atk:4,dmg:[1,6,1],rng:1,mv:6,init:4,st:{might:1,wits:1,guile:3},ab:['grapple','salve'],
+    epithet:'"I carry rope. That\'s all I do."',origin:'Darujhistan, the Daru District',age:17,service:'Four years carrying rope for Ocelot\'s clan. A week with the Fourth.',height:'Not tall yet. All elbows. Lands like a cat.',
+    weapon:'A rope-and-hook, forty feet of tarred line, and a knife he is still learning which end of',armour:'A Guild runner\'s coat the colour of slate at night, and three sets of Ohl\'s stitches',
+    bio:`A journeyman of the Assassins' Guild who has never killed anybody, and says so to everyone, as if it were a password. Strings the lines the clans cross the roofs on. Talks when he is frightened, which is often, and climbs when he is more frightened than that.`,
+    bio2:`Born in a Daru stairwell, taken onto the roofs at thirteen because he was light and didn't look down. The Fourth stood between him and a Tiste Andii on a roof one night, for no reason anyone could give him, and he has been trying to work out what he owes for it ever since. The Guild keeps its debts longer than anyone. So, it turns out, does Vell.`,
+    traits:['Counts the roofs between here and anywhere','Ties knots in whatever is in his hands','Says his own name three times when nervous','Has never once looked down'],
+    gear:['Forty feet of tarred line and a three-tined hook','A Guild runner\'s whistle, which he is not supposed to have any more','A Daru copper with a hole in it, for luck, on a string'],
+    get quest(){ return squadQuest('vell', `The Guild knows a Malazan squad held a roof for him, and that he walks with it now. Some of the clans call that a debt paid. Some of them call it something else. Vell means to find out which, before one of them finds him.`); },
+    banter:[`"You could have stepped aside. Everybody steps aside. I keep asking myself what I'm for, that you didn't."`,`"In the Guild they'd have charged me for the rope. You lot just ask if I've eaten."`,`"I'll get you onto any roof in this city, Sergeant. Off it's harder. Off is the part people forget."`],
+    rel:{brisk:'Brisk carried him off the Daru roof. He has decided she is the safest place in the world, and stands behind her shield without being told.',kettle:'She asked how much the hook weighs, and then how far it would carry a sharper. He has been afraid of her ever since, and adores her.',tuft:'She wears the cloak the Andii left on his hook. He doesn\'t ask for it back.',ohl:'Ohl stitched him on the roof and has been checking the stitches ever since, which Vell finds embarrassing and secretly wonderful.',ellis:'He has heard about the scout who went looking for her captain. He keeps her place, he says, and means it.'}},
 };
 /* "Unfinished business" on the sheets: the opening line (base) until a chapter settles it, so a sheet read in Chapter 7 doesn't contradict Chapter 7 */
 function squadQuest(id, base){
@@ -88,7 +98,7 @@ function squadQuest(id, base){
   return base;
 }
 const PORDER = ['sgt','brisk','kettle','tuft','ohl'];
-const VERB = {sgt:'cuts at',brisk:'drives her spear at',kettle:'looses a quarrel at',tuft:'lashes shadow at',ohl:'cracks a cudgel at',ellis:'puts an arrow into'};
+const VERB = {sgt:'cuts at',brisk:'drives her spear at',kettle:'looses a quarrel at',tuft:'lashes shadow at',ohl:'cracks a cudgel at',ellis:'puts an arrow into',vell:'puts a knife into'};
 const FOES = {
   deserter:{name:'Deserter',sig:'D',hp:11,ac:12,atk:3,dmg:[1,6,1],rng:1,mv:4,init:1,verb:'hacks at'},
   xbow:{name:'Deserter crossbow',sig:'X',hp:8,ac:11,atk:3,dmg:[1,8,0],rng:5,mv:3,init:2,verb:'shoots at'},
@@ -106,7 +116,8 @@ const CARDS = { // the Herald, the Crown and the Wain are added by Chapters 5, 7
   blank:{name:'The unpainted card',house:'—',hue:'#d8d0c0',txt:'No house. No figure. Gesso and grain, and nothing on it yet.',fx:'None. It isn\'t anyone\'s yet.'},
 };
 const LEVELS = [0,100,250,450,700,1000,1400,1900]; // levels 1..8
-const STR_MAX = 6;
+/* a caster's strain cap grows with the squad: 6, then 7 at level 4 and 8 at level 7 (15: lvT) */
+const strMax = () => 6 + (typeof lvT === 'function' ? lvT() : 0);
 
 /* explore map: # rubble  . ground  , ash  R ruin  ~ crater  = tents  T tunnel  P burial pit */
 const PALE = [
@@ -137,6 +148,8 @@ const AREAS = {
 };
 const CHAPTERS = {}; // n -> chapter module (CH1, CH2, ...), registered at boot
 const ITEMS = {};     // gear items, merged from chapters
+/* the Measure each soldier's role grows: +1 to the first at level 4, +1 to the second at level 8 (15: lvStat) */
+const STATUP = {sgt:['wits','might'], brisk:['might','wits'], kettle:['wits','might'], tuft:['guile','wits'], ohl:['wits','might'], ellis:['guile','wits'], vell:['guile','might']};
 /* ability picks: level 3 = a named talent per squadmate; levels 5 and 7 = veteran picks shared by all */
 const PICKS = {
   3:{ sgt:[['discipline','Marine Discipline','Every squadmate wears +1 armour. Eleven years of telling people where to stand.'],['sappers_eye','Sapper\'s Eye','The squad rolls +2 initiative, and the sergeant\'s free swings hit +2.']],
@@ -144,7 +157,8 @@ const PICKS = {
       kettle:[['longfuse','Crossbow Cradle','A munitions cradle on the heavy crossbow: sharpers, burners, smokers and cussers never scatter, and reach one tile further.'],['quorl','Quorl Signal','Once a fight: a Moranth drop. A sharper from the sky, anywhere within 5, not from the satchel.']],
       tuft:[['shadowstep','Shadow Step','Step through Meanas to any open tile within 4. Nobody gets a free swing. Strain 1.'],['mockra','Mockra Whisper','Mockra, the mind: an enemy within 4 turns on its own side for a turn and goes for the nearest of them instead of you. Bosses may resist. Strain 3.']],
       ohl:[['triage','Field Triage','Mend heals +3 and reaches 4 tiles.'],['argument','Argument with Hood','Once a fight: a downed squadmate within 2 stands up at 6 health. Strain 3.']],
-      ellis:[['quickshot','Quick Shot','Once a fight: two arrows at one target within reach.'],['ghost','Ghost Step','Enemies take −2 to hit Ellis. Six years of not being where the sentry looked.']] },
+      ellis:[['quickshot','Quick Shot','Once a fight: two arrows at one target within reach.'],['ghost','Ghost Step','Enemies take −2 to hit Ellis. Six years of not being where the sentry looked.']],
+      vell:[['ropeswing','Rope Swing','Once a turn, without using his action: swing to any open tile within 3 (further as the squad levels). Nobody gets a free swing.'],['snare','Snare','Whatever the hook hauls in is tangled in the line: −2 to hit and −2 armour through its next turn.']] },
   vet:[['iron','Iron','+6 health.'],['keen','Keen','+1 to hit.'],['fleet','Fleet','+1 move.'],['nerve','Nerve','+1 initiative, and +1 to every skill check this soldier rolls.']],
 };
 function registerChapter(n, CH){

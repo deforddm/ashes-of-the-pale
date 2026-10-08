@@ -7,6 +7,8 @@ const C6H = {
   names:ids => C6H.list(ids.map(id => NAME(id))),
   fell:() => (S.f.lastFallen || []).filter(id => id !== 'sgt'),
   dead:() => Object.keys(S.dead || {}).filter(id => S.dead[id] && S.dead[id].ch === 6),
+  /* Vell can join under the crossing: he was shielded on the roof, isn't with the Fourth already, and nobody holds the sixth place (Ellis gone into the grey, or never taken) */
+  vellCan:() => !!S.f.c4_vell && !SQUAD().includes('vell') && !SQUAD().includes('ellis') && !(S.dead && S.dead.vell) && !S.f.c6_vellAsked,
   her:ids => ids.length === 1 ? (ids[0] === 'ohl' ? 'him' : 'her') : 'them',
   count:(n, w) => !(n > 0) ? `No ${w}s` : `${C6H.num(n)} ${w}${n === 1 ? '' : 's'}`,   // Kettle's count: "Two sharpers", "No cussers"
   /* the roller as the text's subject: "you" for the sergeant, the name for anyone else (only straight after a check) */
@@ -317,7 +319,7 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
     c6_start:()=>({sp:'Whiskeyjack · Bridgeburners', scene:'cellar', fx:()=>{ S.f.c6_started=1; }, txt:
 `The vault under the Gadrobi crossing, at noon on the day of the Fete. Down the ladder-hole comes the city: drums three streets off, a crowd laughing at something, a man selling masks in a voice like a gull. Down here the pipes hiss on every side the way they always have, and the lantern is on its crate, and Hedge's forty munitions sleep in the walls with the Moranth's twelve cussers beside them, and none of them is going to the Fete.
 
-Whiskeyjack is sitting on the crate with the broken seal. He looks up when you come down the ladder, and counts. ${SQUAD().length === 6 ? 'Six' : 'Five'}. ${S.f.c5_ellisThrough ? `You watch him arrive at it, and check it, and find the place where the sixth isn't. He doesn't ask. He knows he's about to be told.` : `You watch him arrive at it, and check it, and let it be right.`}
+Whiskeyjack is sitting on the crate with the broken seal. He looks up when you come down the ladder, and counts. ${numw(SQUAD().length, true)}. ${S.f.c5_ellisThrough ? `You watch him arrive at it, and check it, and find the place where the sixth isn't. He doesn't ask. He knows he's about to be told.` : `You watch him arrive at it, and check it, and let it be right.`}
 
 He isn't alone. Fiddler and Hedge are on the far side of the vault arguing in whispers over a bundle of something blue. Kalam is at the foot of the ladder, doing nothing with his hands. Quick Ben is sitting on a pipe with his knees drawn up, smiling at the lantern.
 
@@ -326,7 +328,35 @@ And against the wall, standing, as if sitting down were a thing he had lately fo
 Up in the crossing, tethered beside the Bridgeburners' mule, there's a horse somebody has brushed until it shines. ${S.f.c2_wagon ? `Pell, tethered on its other side, has already bitten it once, on principle.` : `The Fourth's mule, tethered on its other side, has already bitten it once, on principle.`}
 
 "Report," says Whiskeyjack.`,
-      ch:[{t:'Give it to him. In order.', go:'c6_report'}]}),
+      ch:[{t:'Give it to him. In order.', req:()=>!C6H.vellCan(), go:'c6_report'},
+          {t:'Somebody is coming down the ladder-hole. Not on the ladder.', req:()=>C6H.vellCan(), fx:()=>{ S.f.c6_vellAsked=1; }, go:'c6_vell'}]}),
+    /* ---- v3.17: if the Fourth came back from the hills without Ellis, the rope boy from the Daru roof comes to settle his debt ---- */
+    c6_vell:()=>({sp:'Vell', scene:'cellar', txt:
+`A line comes down out of the light first, tarred, with a three-tined hook on the end of it that catches on the lip of the ladder-hole above. Then a boy comes down it hand over hand, fast and clumsy, all elbows, and lands on the vault floor on his heels and very nearly sits down.
+
+Kalam has a knife out. Nobody saw him draw it. Vell looks at the knife, and at Kalam, and decides, visibly, not to look at either of them again.
+
+"Vell," he says, to the room. "Journeyman. Ocelot's clan." Then, to you, because you're the one he knows: "Sergeant. The Guild hears things. It heard the Fourth came back in through the Worry Gate one short." He swallows. "I've been owing you a roof for a week. I've decided I'd rather pay it than carry it. I carry rope. I can get your people onto any roof in this city tonight, and off it, which is harder."
+
+${S.f.c5_ellisThrough ? `He looks along the row, at the place where the scout isn't. "I'm not her," he says. "I know I'm not. I'd just keep the place warm."` : ''}
+
+Whiskeyjack hasn't moved. He looks at the boy for a long time. Then at you. "Your count, Sergeant," he says. "Your call."`,
+      ch:[{t:'"Fourth Squad, Vell. If you want it."', go:'c6_vell_yes'},
+          {t:'"Not today, Vell. Go home."', go:'c6_vell_no'}]}),
+    c6_vell_yes:()=>({sp:'Vell', scene:'cellar', fx:()=>{ S.f.c6_vellJoined=1; recruit('vell'); loy('vell',1); }, txt:
+`"Fourth Squad," he says, trying the weight of it the way you'd try a line before you put your weight on it. It holds.
+
+${SQUAD().includes('ohl') ? `Ohl has him by the chin before he's finished saying it, turning his face to the lantern. "Who did these stitches?" "A cobbler." "I can tell." ` : ''}${SQUAD().includes('brisk') ? `Brisk moves up one place in the row without being asked, to leave a space beside her. Vell looks at the space for a moment, and then goes and stands in it, very straight.` : ''}
+
+Kalam puts the knife away. "Ocelot's rope boy," he says, to nobody in particular. "In a Malazan squad. In this city. Today." He sounds almost pleased. "Quick. Are you seeing this?"
+
+"I'm seeing it," says Quick Ben, from his pipe, smiling at the lantern. "I'm choosing not to have an opinion until tonight."`,
+      ch:[{t:'"Sir. The report."', go:'c6_report'}]}),
+    c6_vell_no:()=>({sp:'Vell', scene:'cellar', fx:()=>{ S.f.c6_vellNo=1; }, txt:
+`He nods as if he'd expected it. He probably had. "The debt keeps," he says. "The Guild's good at that."
+
+He goes back up the line the way he came down it, faster, and the hook comes free of the ladder-hole behind him, and the light up there is only light.`,
+      ch:[{t:'"Sir. The report."', go:'c6_report'}]}),
     c6_report:()=>({sp:'Whiskeyjack', scene:'cellar', fx:()=>{ S.f.c6_reported=1; }, txt:
 `You give it to him the way he taught you: in order, without anything in it that isn't so.
 
@@ -1116,23 +1146,40 @@ They come over the balustrade from the lake side the way water comes over a weir
 
 ${S.f.c4_key === 'aside' ? `The one in front is older than the rest, grey at the temples. You've seen him before: on Kalam's roof among the dead, looking at the space by your feet where you stood aside; and in an alley under the roofs, sitting against a wall with a hand to his ribs, telling you the Guild wasn't buying.
 
-He smiles. It's the first time you've seen him do it. "Ocelot's standing word was that you'd turn up again," he says, in Malazan, with the Daru bend on the vowels. "Ocelot's standing word was, if the ones who stand aside are ever in the way again, bring a friend." A fifth shape comes over the balustrade behind him, bigger than the rest, and straightens up. "I brought a friend."` : S.f.c4_key === 'shield' && S.kit.includes('guildtoken') ? `The one in front is older than the rest. He looks at your armband, and then at your face, and something in his own face changes, as if checking what he sees against something he's been told.
+He smiles. It's the first time you've seen him do it. "Ocelot's standing word was that you'd turn up again," he says, in Malazan, with the Daru bend on the vowels. "Ocelot's standing word was, if the ones who stand aside are ever in the way again, bring a friend." A fifth shape comes over the balustrade behind him, bigger than the rest, and straightens up. "I brought a friend."` : SQUAD().includes('vell') ? `The one in front is older than the rest. His eyes go along the Fourth, and stop, and narrow, at the boy with the line on his shoulder.
+
+"Vell," he says.
+
+"Harl." Vell's voice cracks on it. He steps out of the row before you can stop him, into the lantern-light, with his hands open. "They're with me. Or I'm with them. It's — it's a long story, and it's Ocelot's, and he knows it."
+
+"Ocelot knows a lot of stories." The blade doesn't come up. It doesn't go down. "We've business at the far end of the house tonight. Not with you." A long look at you, over the boy's head. "Not yet."` : S.f.c4_key === 'shield' && S.kit.includes('guildtoken') ? `The one in front is older than the rest. He looks at your armband, and then at your face, and something in his own face changes, as if checking what he sees against something he's been told.
 
 "Vell's Malazans," he says. Quietly, in Malazan, with the Daru bend. "Ocelot's clan owes you a boy." His blade doesn't come up. It doesn't go down either. "We've business at the far end of the house tonight. Not with you."` : `The one in front is older than the rest. "Guards," he says, in Daru, and then, looking harder, in Malazan: "Not guards."${preUsed('house_guards') ? ` His eyes go to Kettle's satchel. "The stable yard. The whole hill heard you."` : ''} His blade comes up. "Doesn't matter. Tonight you're in the way."`}
 
 ${SQUAD().includes('kettle') ? `Kettle has her hand on the satchel. "There's a whole house under us," she says, very fast. "And a hall full of candles, and gas in the walls. Sharpers only, Sergeant. Small ones. *Small.*"` : ''}`,
-      ch:[{t:'Hold up Vell\'s token.', req:()=>S.f.c4_key === 'shield' && S.kit.includes('guildtoken'), go:'c6_knives_pass'},
+      ch:[{t:'"Let them by, Vell."', req:()=>SQUAD().includes('vell'), go:'c6_knives_pass'},
+          {t:'Hold up Vell\'s token.', req:()=>!SQUAD().includes('vell') && S.f.c4_key === 'shield' && S.kit.includes('guildtoken'), go:'c6_knives_pass'},
           {t:'"Close up."', req:()=>S.f.c4_key === 'aside', go:()=>startBattle('terrace_knives_2',{})},
           {t:'Kettle skims a sharper along the marble.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.f.c4_key === 'aside' && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('terrace_knives_2',{pre:true})},
           {t:'"Close up."', req:()=>S.f.c4_key !== 'aside', go:()=>startBattle('terrace_knives',{})},
           {t:'Kettle skims a sharper along the marble.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.f.c4_key !== 'aside' && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('terrace_knives',{pre:true})},
           {t:'Not yet. Back down the steps.'}]}),
     c6_knives_pass:()=>({sp:'The upper terrace', fx:()=>{ S.f.c6_guildPassed=1; S.f.c6_knivesDone=1; }, txt:
-`You hold it up. A disc of black horn the size of a thumbnail, with a hole through it and nothing carved on it at all.
+`${SQUAD().includes('vell') ? `Vell doesn't hold anything up. He stands where he is, between the Fourth and the Guild, the way you stood on a roof once, with nothing in his hands but rope.
+
+Harl looks at him a long time. "You're with *them*," he says, as if he's only now believing it. "Ocelot said. I said he was drunk."
+
+"They held a roof," says Vell. "Nobody else did."
+
+Something at the corner of the old man's mouth. "No," he says. "Nobody else did." He looks at you. "He complains about the stitches?"
+
+"Constantly," you say.
+
+"Good. That's a rope man."` : `You hold it up. A disc of black horn the size of a thumbnail, with a hole through it and nothing carved on it at all.
 
 The older one looks at it. Then at you. Then, for a long moment, at your face again, as if matching it to a description.
 
-"Vell's," he says. "He said a Malazan had it. He said you'd hold it up like it was a knife." Something at the corner of his mouth. "He's walking. He complains about the stitches. He's a rope man again."
+"Vell's," he says. "He said a Malazan had it. He said you'd hold it up like it was a knife." Something at the corner of his mouth. "He's walking. He complains about the stitches. He's a rope man again."`}
 
 He lowers his blade.
 
@@ -1214,7 +1261,7 @@ ${SQUAD().includes('tuft') ? `"The dust," Tuft breathes, beside you. "Sergeant. 
 The man in the plain coat steps in. Twice. It takes less time than it takes to tell. Orr is on his knees on the mosaic with a look of enormous surprise, as if somebody had told him a joke he'd never heard before; and then he's on his face.
 
 The tall guest looks down at the body for a moment. Then he turns and goes back to his pillar, and the space goes with him, and it's as if he'd never crossed the terrace at all.`,
-      ch:[{t:'—', go:'c6_duel_after'}]}),
+      ch:[{t:'On.', go:'c6_duel_after'}]}),
     c6_duel_after:()=>({sp:'The terrace', scene:'fete_hall', fx:()=>{ S.f.c6_duelDone=1; }, txt:
 `The man in the plain coat wipes his blade on his own sleeve. He doesn't look at the body. He walks across the terrace to the hall doors, where a slender man in a silk coat the colour of a bruise has just come through them and stopped dead: Murillio, with his sheaf of masks still over his arm.
 
@@ -1278,7 +1325,7 @@ Whiskeyjack is by the fountain.`,
       ch:[{t:'The garden.', go:()=>startExplore()}]}; },
     c6_wj_garden:()=>({sp:'Whiskeyjack', fx:()=>{ S.f.c6_wjGarden=1; }, txt: S.f.c6_wjGarden ?
 `He's leaning on his halberd by the fountain, watching the sapling at the far end of the lawn. He doesn't look round. "Sergeant."` :
-`He's standing by the fountain in a guard's blue, leaning on a halberd like a staff, and he's the only person in the garden who doesn't look as if he's at a party. ${(S.f.c6_masks || 0) >= 5 ? `There's a folded paper in his other hand, in your writing. He doesn't mention it. He puts it away where you can see him put it away. ` : ''}He counts you. ${SQUAD().length === 6 ? 'Six' : 'Five'}.
+`He's standing by the fountain in a guard's blue, leaning on a halberd like a staff, and he's the only person in the garden who doesn't look as if he's at a party. ${(S.f.c6_masks || 0) >= 5 ? `There's a folded paper in his other hand, in your writing. He doesn't mention it. He puts it away where you can see him put it away. ` : ''}He counts you. ${numw(SQUAD().length, true)}.
 
 "Sergeant." He doesn't take his eyes off the far end of the lawn. "You saw her."
 
@@ -1795,7 +1842,7 @@ Up on the terrace somebody screams, and the music stops in the middle of a bar.`
            get not(){ return S.f.c6_tuft === 'kept' ? ['tuft'] : []; }, notWhy:{tuft:'is standing by the sapling where he put her, with her eyes open'},
            edges:id => [S.f.c6_mammotKnown && ['you knew what was under the mask', 2], S.f.c6_mammotEye === id && [`it has seen ${NAME(id)}'s face`, -2], S.f.c5_wardsFought && ['you held the barrow dead in the hills', 1]],
            go:'c6_rime_ok', fail:'c6_rime_bad'},
-          {t:'—', go:'c6_choice'}]}; },
+          {t:'Leave them to it.', go:'c6_choice'}]}; },
     /* ✦ Omtose Rime (Might 17): stand in the ring's path for two strangers in fox masks */
     c6_rime_ok:()=>({sp:'The garden', scene:'garden_storm', fx:()=>{ S.f.c6_rimeHeld = ROLL().who || 'sgt'; }, txt:
 `${by({
@@ -1819,7 +1866,7 @@ ${by({
   ohl:`Ohl looks at his hands. There's frost in the creases of them that his own warmth won't shift. "Well," he says, quite calmly. "That's new." He flexes them. "Hood's *teeth*, that's cold."`,
   kettle:`Kettle looks down at the white rim round her boots, and then at her hands, where the frost is. "I've got some," she says. "Sergeant. It *stayed*. I've got some of it." She sounds like somebody who has been handed a cusser.`,
   _:`There's frost on {who}'s knuckles that doesn't melt. Something of that ring stopped at {who}'s boots and didn't go on with the rest.`})}`,
-      ch:[{t:'—', go:'c6_choice'}]}),
+      ch:[{t:'On.', go:'c6_choice'}]}),
     c6_rime_bad:()=>({sp:'The garden', scene:'garden_storm', fx:()=>{ const w = ROLL().who || 'sgt'; S.f.c6_rimeBit = w; S.rattled ??= {}; S.rattled[w] = 1; note(`The frost is in ${NAME(w)}'s hands: rattled, −1 on the next check.`, 'bad'); }, txt:
 `${by({
   brisk:`Brisk gets there, and the ring doesn't care. It goes over her boots and up her shins like water over a weir, and her feet go out from under her on the white gravel, and she goes down on her own shield with the cold in her to the knee.`,
@@ -1831,7 +1878,7 @@ ${by({
 From nowhere, Hedge has the two fox masks by their collars and is throwing them at the steps, one and then the other, like a man throwing sacks onto a cart.
 
 ${by({sgt:`You get up. Your fingers are white to the second knuckle, and there's no feeling in them, and there won't be for a while.`, ohl:`Ohl gets up. His fingers are white to the second knuckle, and there's no feeling in them, which for a surgeon is a kind of blindness.`, _:`{who} gets up. Her fingers are white to the second knuckle, and there's no feeling in them, and there won't be for a while.`})}`,
-      ch:[{t:'—', go:'c6_choice'}]}),
+      ch:[{t:'On.', go:'c6_choice'}]}),
     c6_choice:()=>({sp:'The garden', scene:'garden_storm', txt:
 `Everything happens at once. That's how you'll tell it afterwards, and it's the only true way to tell it.
 
@@ -2124,7 +2171,7 @@ And from that alley mouth, from where she went, something goes up.
 Pale. Enormous. Unfolding into the sky over the Daru roofs like a sheet shaken out of a window: too many joints, too many edges, a long neck, a head that's almost a dragon's and isn't. Every mask in the square turns up to it at once. You don't. You don't stop to look. You'll look later, and wish you hadn't.
 
 Into the alley.`,
-      ch:[{t:'—', go:'c6_alley_line'}]}),
+      ch:[{t:'Into the alley.', go:'c6_alley_line'}]}),
     c6_alley_line:()=>({sp:'The Adjunct', scene:'alley_night', txt:
 `An alley off the Daru District, so narrow you could touch both walls at once, wet, with one blue lamp on a bracket at the far end and a doorway halfway down.
 
@@ -2409,6 +2456,7 @@ ${SQUAD().length > 1 ? `The squad is awake. You could talk to any of them. It's 
           {t:'Tuft.', req:()=>SQUAD().includes('tuft') && !S.f.c6_closeTuft, fx:()=>{ S.f.c6_closeTuft=1; }, go:'c6_close_tuft'},
           {t:'Ohl.', req:()=>SQUAD().includes('ohl') && !S.f.c6_closeOhl, fx:()=>{ S.f.c6_closeOhl=1; }, go:'c6_close_ohl'},
           {t:'Ellis.', req:()=>SQUAD().includes('ellis') && !S.f.c6_closeEllis, fx:()=>{ S.f.c6_closeEllis=1; }, go:'c6_close_ellis'},
+          {t:'Vell.', req:()=>SQUAD().includes('vell') && !S.f.c6_closeVell, fx:()=>{ S.f.c6_closeVell=1; }, go:'c6_close_vell'},
           {t:'Look at the house.', go:'c6_close_end'}]}; },
     c6_close_brisk:()=>{ const dead = Object.keys(S.dead || {}).filter(id => S.dead[id] && S.dead[id].ch === 6);
       return {sp:'Brisk', scene:'fete_garden', txt:
@@ -2503,6 +2551,19 @@ ${S.f.c6_key === 'cellars' ? `"That paper," she says, to the lake. "In your coat
 ${S.f.c6_horses ? `After a long time: "The old man with the ponies. He'll be at the horse fair in the spring, outside the Worry Gate." She pulls her glove tight at the wrist. "I might go."` : ''}
 
 She doesn't look at you. You sit there until the sun is properly up, and she lets you, and that's the whole of it.`,
+      ch:[{t:'Back to the steps.', go:'c6_close'}]}),
+    c6_close_vell:()=>({sp:'Vell', scene:'fete_garden', txt:
+`He's sitting on the balustrade with his legs over the drop, which is the only way he knows how to sit anywhere high, coiling the line. He's coiled it three times since you sat down. It was coiled already.
+
+${S.f.c6_key === 'alley' ? `"I've seen people die," he says. "On the roofs. You don't get to carry rope four years and not." He looks at his hands. "I've never seen anybody *decide* to. Like that. In an alley. With everybody watching." A pause. "I'll carry the line wherever you want it, Sergeant. I just want you to know I saw."` : S.f.c6_key === 'cellars' ? `"All night under the crossing," he says. "On crates. With acid in the wax and the whole city over our heads singing." He laughs, very quietly, the frightened laugh. "In the Guild we'd have charged double for that. I'd have charged double, a month ago."` : `"I've been on this roof before," he says. "Simtal's. Twice. For the Guild." He nods at the hall, at the stairs, at the bodies the night left on them. "Never on the inside. It's worse on the inside. I always thought it'd be better."`}
+
+${S.f.c6_guildPassed ? `"Harl'll tell Ocelot I stood with you on the terrace," he says. "In front of the clan. With the Guild going by." He coils the line a fourth time. "There's no going back up after that. Not on those roofs."
+
+"Do you want to?"
+
+He thinks about it honestly, the way he thinks about everything, out loud and in order. "No," he says, surprised. "I don't think I do."` : `"The Guild'll have heard I was here," he says. "They hear everything." He coils the line a fourth time. "I'll find out what they made of it when they want me to."`}
+
+The sun comes up over the lake behind him and he doesn't turn round to look at it. He's looking at the squad, counting, the way he's watched you count. He gets it right.`,
       ch:[{t:'Back to the steps.', go:'c6_close'}]}),
     c6_close_end:()=>({sp:'Lady Simtal\'s garden · dawn', scene:'fete_garden', txt:
 `The house at the end of the lawn.

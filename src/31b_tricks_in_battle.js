@@ -22,29 +22,29 @@ Object.assign(AB, {
   t_bluefire:{name:TRICKS.bluefire.name, trick:'bluefire', boom:true, aoe:1, range:4, desc:()=>TRICKS.bluefire.fx,
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => {
       const caught = B.units.filter(v => v.hp > 0 && cheb(v, pt) <= 1); caught.forEach(v => { v.dazzleUntil = B.round + 1; });
-      blast(pt, [[2,6,0],[2,6,0]], '#6fb7ff'); AUDIO.play('burner', 1.1); sparks(pt.x, pt.y, 34, '#6fb7ff', .9); sparks(pt.x, pt.y, 14, '#e8f4ff', 1.3); });
+      blast(pt, [[2,6,lvDmg()],[2,6,lvDmg()]], '#6fb7ff'); AUDIO.play('burner', 1.1); sparks(pt.x, pt.y, 34, '#6fb7ff', .9); sparks(pt.x, pt.y, 14, '#e8f4ff', 1.3); });
       blog(`${u.name} lobs a bladder of lamp-gas. It goes up blue, the colour of every street in Darujhistan, all at once.`); }},
   t_cant:{name:TRICKS.cant.name, trick:'cant', free:true, desc:()=>TRICKS.cant.fx,
     tiles:u=>foes().filter(f => cheb(u,f) <= 6 && f.cantRound !== B.round),
-    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.cantRound = B.round; AUDIO.play('click'); float(t, 'this one', '#f2c46b'); blog(`${u.name}'s fingers say it: a flick, a curl, a cut across the palm. <em>This one. Now.</em>`); }},
+    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.cantRound = B.round; t.cantLeft = 1 + lvT(); AUDIO.play('click'); float(t, 'this one', '#f2c46b'); blog(`${u.name}'s fingers say it: a flick, a curl, a cut across the palm. <em>This one. Now.</em>`); }},
   t_rope:{name:TRICKS.rope.name, trick:'rope', free:true, desc:()=>TRICKS.rope.fx,
-    tiles:u=>party().filter(p => p !== u && !p.ally && cheb(u,p) <= 5),
+    tiles:u=>party().filter(p => p !== u && !p.ally && cheb(u,p) <= 5 + lvT()),
     run(u,x,y){ const t = unitAt(x,y); if (!t) return; const ux = u.x, uy = u.y; sparks(ux, uy, 10, '#9a86e0', .4); sparks(t.x, t.y, 10, '#9a86e0', .4);
       u.x = t.x; u.y = t.y; t.x = ux; t.y = uy; AUDIO.play('shadow'); B.moved = true; blog(`${u.name} and ${t.name} are each where the other was. Nobody saw the rope.`); }},
   t_otataral:{name:TRICKS.otataral.name, trick:'otataral', desc:()=>TRICKS.otataral.fx,
-    tiles:u=>foes().filter(f => cheb(u,f) <= 3 && !f.otat),
+    tiles:u=>foes().filter(f => cheb(u,f) <= 3 + lvT() && !f.otat),
     run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.otat = true; AUDIO.play('burner', .4); sparks(t.x, t.y, 18, '#c8644a', .5); float(t, 'otataral', '#e0846a');
       const lost = []; if (t.ai === 'raest') lost.push('its ice'); if (t.kind === 'stone') lost.push('its slam'); if ((t.attacks || 1) > 1) { t.attacks = 1; lost.push('its second blow'); }
       if (t.rng > 1 && (t.magic || /shadow|sorcer|bolt|lance|warren|spell/i.test(t.verb || ''))) { t.rng = 1; lost.push('its sorcery'); }
       blog(`${u.name} throws a pinch of red dust at ${t.name}. ${lost.length ? `It loses ${lost.join(', ')} for the rest of the fight.` : 'Nothing about it was magic. It sneezes.'}`); }},
   t_dark:{name:TRICKS.dark.name, trick:'dark', sorcery:true, elder:true, aoe:1, range:5, smoke:true, darkness:true, desc:()=>TRICKS.dark.fx,
     run(u,x,y){ const pt = {x, y}; AUDIO.play('shadow'); sparks(x, y, 22, '#3a3070', .5);
-      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(x+dx, y+dy)) B.smoke.push({x:x+dx, y:y+dy, until:B.round+2, dark:true});
+      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(x+dx, y+dy)) B.smoke.push({x:x+dx, y:y+dy, until:B.round + 2 + lvAt(5), dark:true});
       blog(`${u.name} says nothing and inclines their head. Kurald Galain comes down over the ${placeWord(B.def)} like a cloak over a lamp.`);
       updBattleUI(); afterAct(); }},
   t_rime:{name:TRICKS.rime.name, trick:'rime', sorcery:true, elder:true, desc:()=>TRICKS.rime.fx,
     tiles:u=>foes().filter(f => cheb(u,f) <= 4),
-    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.rimeUntil = B.round + 1; AUDIO.play('slam'); sparks(t.x, t.y, 24, '#bfe8ff', .7);
-      if (t.boss && d20() >= 12) { blog(`Rime goes over ${t.name} in a ring and cracks. It keeps moving, but it is brittle now.`); float(t, 'brittle', '#bfe8ff'); }
+    run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.rimeUntil = B.round + 1; t.rimeDmg = 2 + lvT(); AUDIO.play('slam'); sparks(t.x, t.y, 24, '#bfe8ff', .7);
+      if (t.boss && d20() >= 12 + 2*lvT()) { blog(`Rime goes over ${t.name} in a ring and cracks. It keeps moving, but it is brittle now.`); float(t, 'brittle', '#bfe8ff'); }
       else { t.stun = true; blog(`Rime goes over ${t.name} in a ring, and it stops, white to the eyes.`); float(t, 'rimed', '#bfe8ff'); } }},
 });

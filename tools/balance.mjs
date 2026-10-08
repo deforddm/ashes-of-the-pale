@@ -10,6 +10,7 @@
 //   --naive=N    baseline runs per battle (enemy ai() drives the squad: no abilities, no munitions); 0 to skip
 //   --only=a,b   just these battle ids
 //   --par=P      pages in parallel inside the one browser (default 4; most of a run is timer waits, not CPU)
+//   --vell       from Chapter 4 on, Vell fills the recruit's place instead of Ellis (one recruit at a time, v3.17)
 //   --lvl=K      add K to the squad level curve (SYNTH's is min(8, 1 + chapter); a squad that fights everything runs ~1 higher)
 //   --lean       smart runs with no munitions and no salves (the satchel spent elsewhere)
 //   --rich       smart runs with no per-fight cap on munitions (the whole satchel spent here)
@@ -29,6 +30,7 @@ import { server, browser as launch, openGame } from './page.mjs';
 
 const args = process.argv.slice(2);
 const opt = (k, d) => { const a = args.find(a => a.startsWith('--' + k + '=')); return a ? a.split('=')[1] : d; };
+const VELL = process.argv.includes('--vell');
 const RUNS = +opt('runs', 20), NOE = +opt('noellis', 12), NAIVE = +opt('naive', 10), PAR = +opt('par', 4), LVL = +opt('lvl', 0);
 const ONLY = (opt('only', '') || '').split(',').filter(Boolean), LEAN = args.includes('--lean'), RICH = args.includes('--rich');
 const JSONOUT = opt('json', '/tmp/ashes-balance.json'), QUIET = args.includes('--quiet');
@@ -90,7 +92,7 @@ const INIT = () => {
     const n = spec.ch;
     S = newState('Hask'); S.chapter = n; S.lvl = Math.max(1, Math.min(8, 1 + n + (spec.lvl || 0))); S.xp = LEVELS[S.lvl - 1];
     S.chapters = { 0: 'given' }; const keys = { 1: 'line', 2: 'light', 3: 'report', 4: 'shield', 5: 'hold', 6: 'x' }; for (let i = 1; i < n; i++) S.chapters[i] = keys[i];
-    if (spec.ellis) S.squad.push('ellis'); migrate(S);
+    if (spec.ellis) S.squad.push(spec.vell ? 'vell' : 'ellis'); migrate(S);
     S.picksDue = []; if (S.lvl >= 3) S.squad.forEach(id => { const o = PICKS[3][id]; if (o) S.picks[id].push(o[0][0]); });
     if (S.lvl >= 5) S.squad.forEach(id => S.picks[id].push('iron')); if (S.lvl >= 7) S.squad.forEach(id => S.picks[id].push('keen'));
     for (let k = 1; k < n; k++) Object.keys((CHAPTERS[k] && CHAPTERS[k].gear) || {}).forEach(g => gain(g));
@@ -108,7 +110,7 @@ const INIT = () => {
     const kill = t.immortal ? 0 : t.hp <= d ? p : t.hp <= d * 1.6 ? p * .4 : 0;
     return p * d * 2 + kill * 25 + (1 - pct(t)) * 12 - Math.min(t.hp, 60) * .15 - (t.immortal ? 20 : 0) - (t.stun ? 3 : 0); };
   const can = (u, k) => !B.acted && u.ab.includes(k) && abOk(u, k);
-  const strainOk = (u, cost) => u.strain + (u.id === 'tuft' && S.card === 'magi' ? cost - 1 : cost) <= STR_MAX;
+  const strainOk = (u, cost) => u.strain + (u.id === 'tuft' && S.card === 'magi' ? cost - 1 : cost) <= strMax();
   const reachOf = u => reachSafe(u.x, u.y, (x, y) => free(x, y, u), B.mvLeft ?? u.mv, (x, y) => leaveCost(u, x, y));
   const inReach = (u, from) => foes().filter(t => cheb(from, t) <= u.rng && canShoot(from, t));
 
@@ -182,7 +184,7 @@ const INIT = () => {
       // Ohl: a downed squadmate up, then Denul on the worst hurt
       if (can(u, 'argument') && strainOk(u, 3)) { const t = AB.argument.tiles(u)[0]; if (t) return tryAb('argument', t.x, t.y); }
       if (can(u, 'mend')) { const t = AB.mend.tiles(u).filter(p => !p.ally && pct(p) < .45).sort((a, b) => pct(a) - pct(b))[0];
-        if (t && (strainOk(u, 3) || (pct(t) < .25 && u.strain + 3 <= STR_MAX + 1 && u.hp > 8))) return tryAb('mend', t.x, t.y); }
+        if (t && (strainOk(u, 3) || (pct(t) < .25 && u.strain + 3 <= strMax() + 1 && u.hp > 8))) return tryAb('mend', t.x, t.y); }
       // Denul Wash when two or more close by are hurt; Stanch on someone about to drop with enemies on them
       if (can(u, 'wash') && strainOk(u, 3) && sq.filter(p => !p.ally && cheb(p, u) <= 3 && pct(p) < .65).length >= 2) return tryAb('wash', u.x, u.y);
       if (can(u, 'stanch') && strainOk(u, 2)) { const t = AB.stanch.tiles(u).filter(p => pct(p) < .25 && minD(p, opp) <= 1)[0]; if (t) return tryAb('stanch', t.x, t.y); }
@@ -209,6 +211,9 @@ const INIT = () => {
       }
       // munitions and the quorl
       for (const k of ['cusser', 'sharper', 'burner', 'quorl', 'smoker']) { const t = bestThrow(u, k, spec); if (t) return tryAb(k, t.x, t.y); }
+      // Vell: the hook on a shooter or a caster standing off, hauled in among the squad
+      if (can(u, 'grapple')) { const t = AB.grapple.tiles(u).filter(e => !e.boss && !e.immortal && e.maxhp < 45 && (e.rng > 1 || danger(e) >= 8)).sort((a, b) => danger(b) - danger(a))[0];
+        if (t) return tryAb('grapple', t.x, t.y); }
       // Ellis: the mark on something big the squad is about to hit
       if (can(u, 'mark')) { const t = AB.mark.tiles(u).filter(e => !e.immortal && e.hp >= 15 && sq.filter(p => p !== u && cheb(p, e) <= p.rng + p.mv).length >= 2).sort((a, b) => b.hp - a.hp)[0];
         if (t) return tryAb('mark', t.x, t.y); }
@@ -308,7 +313,7 @@ const jobs = [];
 for (const b of battles) {
   const base = { id: b.id, ch: b.ch, lvl: LVL, inv: satchel(b.id, b.ch), maxRounds: MAXR, wall: 90000, munCap: RICH ? 99 : 2, cusserCap: RICH ? 99 : 1, salveCap: RICH ? 99 : 1 };
   const E = ellisCan(b.id, b.ch);
-  for (let i = 0; i < RUNS; i++) jobs.push({ ...base, variant: 'smart', policy: 'smart', ellis: E });
+  for (let i = 0; i < RUNS; i++) jobs.push({ ...base, variant: 'smart', policy: 'smart', ellis: E, vell: VELL && base.ch >= 4 });
   if (E) for (let i = 0; i < NOE; i++) jobs.push({ ...base, variant: 'smartNoE', policy: 'smart', ellis: false });
   for (let i = 0; i < NAIVE; i++) jobs.push({ ...base, variant: 'naive', policy: 'naive', ellis: E });
 }

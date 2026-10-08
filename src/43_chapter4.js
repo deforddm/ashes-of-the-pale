@@ -789,7 +789,7 @@ A scrabble on the parapet. Hands. A body coming over the edge of your roof, fast
 He sees you. He sees the squad. His face does a thing you have seen faces do on battlefields, at the moment when the last door shuts.
 
 Two roofs behind him, coming over the ridge without hurry, tall, silver-haired: one of them. Closing.`,
-      ch:[{t:'—', go:'c4_vell'}]}),
+      ch:[{t:'The boy.', go:'c4_vell'}]}),
     c4_vell:()=>({sp:'The boy', scene:'roof_night', txt:
 `"I'm nobody," the boy says. He says it to you, because you're the one in front, and his voice cracks on it like a boy's does. "I'm nobody. I'm *nobody*. Please."
 
@@ -933,7 +933,7 @@ And then it *nods*.
 Once. Slow. The way one soldier nods to another across a field, after, when both of them are still standing and neither of them had to be. A courtesy. An acknowledgement. *I see you. I will know you.*
 
 And it's gone. Over the parapet, into the dark, without a sound.`,
-      ch:[{t:'—', go:'c4_aside_body'}]}),
+      ch:[{t:'The boy.', go:'c4_aside_body'}]}),
     c4_aside_body:()=>({sp:'Two roofs over', scene:'roof_night', fx:()=>{ gain('ropehook'); gain('andiicloak'); }, txt:
 `It left its cloak.
 
@@ -1159,14 +1159,68 @@ He puts it in your hand and closes your fingers over it with both of his, the wa
 
 ${S.f.c3_falseName ? `You give him the one off the headstone in Unta. It's the one this city has. He repeats it carefully, to get it right, and you feel something like shame and don't know what to do with it.` : `You tell him. He repeats it carefully, to get it right.`}
 
-"I'll remember," he says, and he will. That's the thing about debts in this city. The Guild keeps them longer than anyone.`,
+\"I'll remember," he says, and he will. That's the thing about debts in this city. The Guild keeps them longer than anyone.`,
+      ch:[{t:'"Come with us."', req:()=>!SQUAD().includes('ellis'), go:'c4_vell_join'},
+          {t:'"Come with us."', req:()=>SQUAD().includes('ellis'), go:'c4_vell_ellis'},
+          {t:'Leave him under the lamp.', go:'c4_corner'}]}),
+    /* ---- v3.17: Vell joins the Fourth. One recruit at a time: if Ellis is with the squad, she has to go first (to find Toc) ---- */
+    c4_vell_join:()=>({sp:'Vell', scene:'city_street', fx:()=>{ S.f.c4_vellJoined=1; recruit('vell'); loy('vell',1); }, txt:
+`He looks at you as if you'd said it in Malazan, which you did.
+
+"With *you*." He looks at the squad${SQUAD().includes('brisk') ? `, and at Brisk last, and longest` : ''}. "I'm Guild. You're the Empire. There's a contract on every one of you in this city, or there would be, if anybody could find you to write it on." He stops. "That's why. Isn't it. Nobody can find you."
+
+"They'll find me here," he says again, slower. "Tonight, or tomorrow. And the first thing they'll ask is why a Malazan squad held a roof for me, and I won't have an answer, and in the Guild that's the same as having the wrong one."
+
+He looks at the coil of line on his shoulder, and the hook on the end of it, and back at you.
+
+"I carry rope," he says. "That's all I do. I get people onto roofs and off them. That's not soldiering."
+
+${SQUAD().includes('kettle') ? `"It is in the Fourth," says Kettle. "Can it carry a sharper? How far? Asking for a friend. The friend is me."` : `"It is now," you tell him.`}
+
+Vell laughs, once, the way people do when they've been frightened for so long that the laugh gets out before they can stop it. Then he says his name, for the fourth time, to the whole squad this time, as if he were joining a clan: "Vell." And steps off the kerb, out of the lamp, and walks down the street with the Fourth.
+
+${SQUAD().includes('ohl') ? `Ohl falls in beside him without a word and takes his wrist, and counts. "You've been stitched by a cobbler," he says. "I'll do it properly at the crossing. It'll hurt more. That's how you'll know."` : ''}`,
+      ch:[{t:'Down to the crossing.', go:'c4_corner'}]}),
+    c4_vell_ellis:()=>({sp:'Ellis', scene:'city_street', txt:
+`Before he can answer, Ellis does.
+
+She's been standing a pace back, the way she always stands, at the edge of the lamp where she can see the street both ways. Now she comes into the light.
+
+"Six is what the Fourth carries," she says. "Whiskeyjack's counted it twice. It won't stretch to seven." She looks at the boy, and at the rope, and then east, over the roofs, toward the Gadrobi Hills, where the sky has gone from black to the grey that comes before black admits anything.
+
+"He's out there," she says. "Toc. With her, with the Adjunct, in the hills. I've known since the plain. I've been counting the days the way you count a debt." She pulls the glove tight at the wrist, finger by finger. "He told me the Claw was done with me. He never said *he* was. Somebody should go and see which."
+
+"He knows the roofs, Sergeant. I know the hills." She almost smiles. "That's a fair trade, in this city. Ask him."`,
+      ch:[{t:'"Go and find him, Ellis."', go:'c4_ellis_toc'},
+          {t:'"Not tonight, Vell. The Fourth\'s full."', go:'c4_vell_later'}]}),
+    c4_ellis_toc:()=>({sp:'Ellis', scene:'city_street', fx:()=>{ S.f.c4_ellisToc=1; S.f.c4_vellJoined=1; letGo('ellis', 'Ellis goes east, into the hills, to find her captain.'); recruit('vell'); loy('vell',1); }, txt:
+`"Toc's the one who'd say thank you," she says. "So I'll say it for him." She doesn't, quite. She nods to you instead, once, the scouts' nod, the one that means *seen*.
+
+${SQUAD().includes('brisk') ? `Brisk hands her the ration count for the hills without being asked: three days' worth, wrapped, and a stub of pencil. "We don't leave people," Brisk says. "You're not being left. You're being sent. It's different. I've decided."` : ''}
+
+${SQUAD().includes('kettle') ? `Kettle gives her two lengths of trip-cord. She doesn't say what for. Ellis doesn't ask. She ties them round her wrist.` : ''}
+
+${SQUAD().includes('ohl') ? `"Let me look at the hand," Ohl says. "Later," says Ellis, for the last time, and this time they both know it's a joke.` : ''}
+
+Then she turns to the boy. "Vell. The sergeant counts twice. Stand where the count's easy." And she goes east along the street, not fast, a scout's walk, and at the corner she lifts the gloved hand over her shoulder once, and is gone.
+
+Vell stands under the lamp with his mouth open. "Did she just—"
+
+"She did," you say. "Down to the crossing. Ohl will want to redo your stitches."`,
+      ch:[{t:'Down to the crossing.', go:'c4_corner'}]}),
+    c4_vell_later:()=>({sp:'Vell', scene:'city_street', fx:()=>{ S.f.c4_vellLater=1; if (SQUAD().includes('ellis')) loy('ellis',1); }, txt:
+`Vell nods as if he'd expected it. He probably had.
+
+"The debt keeps," he says. "The Guild's good at that, if nothing else." He touches the hook on his shoulder. "If you ever need a roof, Sergeant. Any roof. Ask for the rope boy in Ocelot's clan. They'll know who you mean."
+
+${SQUAD().includes('ellis') ? `Ellis goes back to the edge of the lamp, where she can see the street both ways. "Thank you," she says, very low, without turning round. "I'd have gone. I'd like it in the ledger that I'd have gone."` : ''}`,
       ch:[{t:'Leave him under the lamp.', go:'c4_corner'}]}),
     c4_corner:()=>({sp:'The street corner', scene:'city_street', txt:
 `You go down the street, toward the Gadrobi crossing, and at the corner, under the next lamp, there's a man.
 
 He's wearing a guardsman's coat, the city's grey and blue, with the brass buttons, and a guardsman's cap, and he's leaning on the wall with his arms folded the way the Watch lean on walls, and he isn't a guardsman. The coat fits. The cap is right. It's the way he's standing, which is not the way a man stands when he's waiting for his shift to end, but the way a man stands when he's waiting for something else to begin.
 
-He doesn't look at you. He's looking up the street, the way you've come, toward the lamp where you left Vell. He watches it with no expression at all. Then, as you pass him, very slightly, without turning his head, he moves his weight off the wall, and back.
+He doesn't look at you. He's looking up the street, the way you've come, toward the lamp ${SQUAD().includes('vell') ? 'where Vell stood a minute ago' : 'where you left Vell'}. He watches it with no expression at all. Then, as you pass him, very slightly, without turning his head, he moves his weight off the wall, and back.
 
 That's all.
 
@@ -1178,7 +1232,7 @@ ${SQUAD().includes('ellis') ? `Ellis, when you're round the corner, very low: "T
 
 He looks at you for the first time. Grey eyes, tired, in an ordinary face you'll never be able to describe. He looks at you for as long as it takes a lamp to hiss.
 
-Then he nods back. Not much. Barely. The nod of a man who has noticed that a Malazan sergeant walked a Guild journeyman down off the roofs tonight and left him where his own people would find him, and has put that somewhere, in a ledger you'll never see, in a hand you'll never read.
+Then he nods back. Not much. Barely. The nod of a man who has noticed that a Malazan sergeant walked a Guild journeyman down off the roofs tonight and ${SQUAD().includes('vell') ? `didn't leave him there` : `left him where his own people would find him`}, and has put that somewhere, in a ledger you'll never see, in a hand you'll never read.
 
 And he looks away up the street again, and you are no longer there, as far as he's concerned, and you never were.
 
@@ -1189,7 +1243,13 @@ ${SQUAD().includes('tuft') ? `Tuft, when you catch up with the squad: "Whoever t
     c4_dawn:()=>({sp:'The roof above the dig', scene:'roof', txt:
 `Whiskeyjack isn't on his bucket. He's on the chandler's roof, over the dig, where the Fourth slept the first night, and by the look of him he has been standing there a long time. The sky over the Gadrobi Hills has gone from black to the grey that comes before black admits anything.
 
-He doesn't say anything when you come up the ladder. He counts. ${SQUAD().length === 6 ? 'Six' : 'Five'}. Something in his shoulders lets go by the width of a hair.
+He doesn't say anything when you come up the ladder. He counts. ${numw(SQUAD().length, true)}. Something in his shoulders lets go by the width of a hair.${SQUAD().includes('vell') ? ` Then his eyes go back along the row to the boy with the rope on his shoulder${S.f.c4_ellisToc ? `, standing where Ellis stood` : ''}, and stop there.
+
+"Ocelot's," you say. "Vell. He carries rope." ${S.f.c4_ellisToc ? `And then, because it has to be said: "Ellis has gone east, sir. To the hills. To find Toc."
+
+He takes that the way he takes everything, all the way down, without blinking. "Good," he says, at last. "Somebody should." ` : ''}
+
+Whiskeyjack looks at Vell a long time. Vell looks back, because he doesn't know any better. "Can you get a man onto any roof in this city?" "Yes, sir." "Off it?" "That's harder, sir." "It always is." He looks at you. "Your count, Sergeant. Your call." That's all.` : ''}
 
 "Report."
 
@@ -1280,7 +1340,7 @@ ${S.f.c4_key === 'shield' ? `It isn't true. You both know it isn't true. He says
 
 The Fourth is in a row under the eaves. Nobody is asleep.
 
-${S.f.c4_key === 'shield' ? `A Guild debt, in horn, is in your pocket. A Tiste Andii's cloak is ${SQUAD().includes('tuft') ? `on Tuft's shoulders, and she hasn't taken it off` : `in the pack, weighing nothing`}. A boy called Vell is somewhere in the Daru District, being stitched by somebody who isn't Ohl, telling his clan-master how a Malazan squad held a roof. The Guild will hate you for it a little less than it hates everyone else. That will have to be enough.` : `A dead boy's rope-and-hook is coiled at your feet. A Tiste Andii's cloak is ${SQUAD().includes('tuft') ? `on Tuft's shoulders, and she hasn't taken it off` : `in the pack, weighing nothing`}. The Guild asked its question in an alley, and you answered it, and nobody liked the answer. And somewhere on that black mountain over the lake, something tall has your face.`}
+${S.f.c4_key === 'shield' ? `A Guild debt, in horn, is in your pocket. A Tiste Andii's cloak is ${SQUAD().includes('tuft') ? `on Tuft's shoulders, and she hasn't taken it off` : `in the pack, weighing nothing`}. ${SQUAD().includes('vell') ? `A boy called Vell is asleep under the eaves at the end of the row with the line coiled under his head, ${SQUAD().includes('ohl') ? `stitched properly now, by Ohl, who is still muttering about cobblers` : `stitched by a cobbler and not complaining`}. Somewhere in the Daru District his clan-master is hearing how a Malazan squad held a roof for him, and then took him. The Guild will make of that what it makes of things.${S.f.c4_ellisToc ? ` And east, somewhere in the Gadrobi Hills, a scout with a gloved hand is walking toward her captain.` : ''}` : `A boy called Vell is somewhere in the Daru District, being stitched by somebody who isn't Ohl, telling his clan-master how a Malazan squad held a roof. The Guild will hate you for it a little less than it hates everyone else. That will have to be enough.`}` : `A dead boy's rope-and-hook is coiled at your feet. A Tiste Andii's cloak is ${SQUAD().includes('tuft') ? `on Tuft's shoulders, and she hasn't taken it off` : `in the pack, weighing nothing`}. The Guild asked its question in an alley, and you answered it, and nobody liked the answer. And somewhere on that black mountain over the lake, something tall has your face.`}
 
 The squad is awake. You could talk to any of them. It's the hour for it.`,
       ch:[{t:'Tuft.', req:()=>SQUAD().includes('tuft') && !S.f.c4_closeTuft, fx:()=>{S.f.c4_closeTuft=1;}, go:'c4_close_tuft'},
@@ -1288,6 +1348,7 @@ The squad is awake. You could talk to any of them. It's the hour for it.`,
           {t:'Brisk.', req:()=>SQUAD().includes('brisk') && !S.f.c4_closeBrisk, fx:()=>{S.f.c4_closeBrisk=1;}, go:'c4_close_brisk'},
           {t:'Kettle.', req:()=>SQUAD().includes('kettle') && !S.f.c4_closeKettle, fx:()=>{S.f.c4_closeKettle=1;}, go:'c4_close_kettle'},
           {t:'Ellis.', req:()=>SQUAD().includes('ellis') && !S.f.c4_closeEllis, fx:()=>{S.f.c4_closeEllis=1;}, go:'c4_close_ellis'},
+          {t:'Vell.', req:()=>SQUAD().includes('vell') && !S.f.c4_closeVell, fx:()=>{S.f.c4_closeVell=1;}, go:'c4_close_vell'},
           {t:'Watch the last lamp go out.', go:'c4_close_end'}]}),
     c4_close_tuft:()=>({sp:'Tuft', scene:'roof', txt:
 `She's sitting at the end of the row with her knees drawn up, in the grey cloak, looking at the Spawn. The light doesn't touch it. It doesn't quite touch her either.
@@ -1338,6 +1399,19 @@ A long silence.
 She opens her eyes and looks at the city, going grey in the dawn, all those roofs, all those houses under them, all those kitchens with gas pipes coming up through the floor.
 
 "Hedge'd say I've gone soft." She thinks about it. "Fiddler'd say I've gone sapper. I'd rather Fiddler." She shuts her eyes again.` : ` She opens her eyes and looks at the city, going grey in the dawn, all those roofs, all those houses under them. Then she shuts them again.`}${preUsed('c4_clan') ? ` "And I set a roof on fire with a *sharper*. Do you know how hard that is? Away from the edge, and the gas found it anyway." She hugs the satchel. "Fiddler's going to stand there and not say anything. For a *week*."` : ''} "Sergeant. That thing on the roof. The tall one. ${S.f.c4_key === 'shield' ? `I put a quarrel in it and it didn't look round.${preUsed('andii_roof') ? ' I lit it up and looked it in the face and it didn\'t *mind*.' : ''}` : `It walked past me close enough to touch, and I had the crossbow in my hands, and I didn't lift it. I *couldn't*.`}" A long breath. "That's the first thing in six years I couldn't make stop being a thing. I don't like it. I want you to know I don't like it."`,
+      ch:[{t:'Back to the row.', go:'c4_close'}]}),
+    c4_close_vell:()=>({sp:'Vell', scene:'roof', txt:
+`He isn't asleep. He's lying on his back under the eaves with his eyes open and the line coiled under his head, looking at the underside of the Spawn the way you'd look at a ceiling you'd never noticed was there.
+
+"I've been on every roof in the Daru District," he says. "Some of the Gadrobi. Never this one. It's a good roof. Bad gutters." He turns his head. "In the Guild you get told where to put the line and you put it and you don't ask where the people crossing it are going. I never asked. Not once in four years."
+
+A long pause.
+
+"Where are we going, Sergeant?"
+
+You tell him what you can, which isn't much. He listens to all of it, nodding at the places a journeyman nods at a clan-master.
+
+"All right," he says, when you've finished. "That's more than Ocelot ever told me." He shuts his eyes. "I'll put the line wherever you want it. I'd just like to know, after. Where it went."`,
       ch:[{t:'Back to the row.', go:'c4_close'}]}),
     c4_close_ellis:()=>({sp:'Ellis', scene:'roof', txt:
 `She's at the parapet, sitting with her legs over the drop, where she can see the whole of the Gadrobi roofs going grey. She doesn't turn round.
