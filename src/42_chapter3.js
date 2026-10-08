@@ -180,7 +180,7 @@ Inside, steam, and a sour mineral stink, and vats sunk in the floor like wells, 
     if (preUsed('cutpurses')) x.push('The lamp-pipe in the lane by the Worry Gate burned blue for a day and a night before the warden found the cock. Pennick wrote two words in his margin beside it: not the gas.');
     if (preUsed('knives')) x.push('The Daru Watch blew whistles till dawn over a bang behind the Blue Hand, and wrote it up as a gas main. Madryn sent them two bolts of good grey that winter instead of one.');
     if (f.c3_blueFlash) x.push('The hole under the Gadrobi crossing breathed blue fire once, the height of a house. Whiskeyjack told the warden it was the gas.');
-    if (f.c3_lieDeep) x.push('Madryn underlined the word north. A hired knife spent the night on the lakefront, watching the Council\'s houses for two men who never came.');
+    if (f.c3_lieDeep) x.push('Madryn underlined the word north. A hired knife spent the night on the lakefront, watching the warehouses for two men who never came.');
     if (f.c3_cousins === 'paid') x.push('The big Gadrobi from the lane bought his cousins a round with the Fourth\'s ten silver, and tells it as a story in which he won.');
     else if (f.c3_cousins === 'faced') x.push('The big Gadrobi from the lane tells his cousins it was the gas. In the Gadrobi District, it is usually the gas.');
     else if (f.c3_cousins === 'fought') x.push('The big Gadrobi from the lane has stopped telling the story of the road crew. His cousins tell it for him, worse.');
@@ -213,7 +213,7 @@ Ohl, from the driver's board: "Do not."
 "You were going to be pleased about it."`,
       ch:[{t:'Walk the wagon up to the gate.', go:()=>startExplore()}]}),
     c3_start_ellis:()=>({sp:'Ellis', fx:()=>{S.f.c3_ellisGate=1;}, txt:
-`"Blue gas, bad wine, and nine hundred ways to be robbed. Three of them legal." She's walking at the wagon's off side, where the wall's shadow is, which is where she walks in any town. "That's the Gadrobi District on your left. Tanners, masons, the poor. Right, over the wall, is Daru, which is where the Gadrobi go to work and are not let stay after dark."
+`"Blue gas, bad wine, and nine hundred ways to be robbed. Three of them legal." She's walking at the wagon's off side, where the wall's shadow is, which is where she walks in any town. "The Gadrobi District's the far end of the city, the west end, down by the harbour. Tanners, masons, the poor. Between here and there is Daru, which is where the Gadrobi go to work and are not let stay after dark."
 
 She points, without meaning to, the way you'd point at a scar on your own hand. A street going up between two tall houses, narrow, a line of blue lamps up it like buttons.
 
@@ -227,7 +227,7 @@ Then she stops, and you watch her hear herself and wish she hadn't.
 
     /* ---- Pennick, gate-clerk ---- */
     c3_pallick:()=>({sp:'Pennick · gate-clerk', txt:
-`He has a stool, a desk the width of a book, a lamp, a ledger, and the expression of a man who has been standing between the city and the rest of the world for thirty years and has found the rest of the world wanting. Ink to the second knuckle. A brass plate on the front of the desk, rubbed thin by thirty years of other people's elbows, says *PALLICK*, and under it, smaller, *Clerk of the Gate*.
+`He has a stool, a desk the width of a book, a lamp, a ledger, and the expression of a man who has been standing between the city and the rest of the world for thirty years and has found the rest of the world wanting. Ink to the second knuckle. A brass plate on the front of the desk, rubbed thin by thirty years of other people's elbows, says *PENNICK*, and under it, smaller, *Clerk of the Gate*.
 
 "Name, trade, place of origin, number of wheels, number of legs, the legs including the mule's." He doesn't look up. "Gate toll is five silver for a laden wagon, and it's laden, I can see the axle from here. The name is for the ledger. The ledger is for the Council. The Council," he dips his pen, "does not read it. I am aware. I keep it anyway."
 
@@ -286,7 +286,7 @@ He waits. So does the ink. In the margin of the ledger, in very small letters, h
     c3_pallick_brisk:()=>({sp:'Brisk', fx:()=>{S.f.c3_gate=1; S.f.c3_briskVoice=1; loy('brisk',1);}, txt:
 `Brisk steps up to the desk. She doesn't lean on it. She stands at it, the way the heavy infantry stand at a thing they're about to go through, and uses a voice you have heard exactly once before, at Nathilog, on a quartermaster who had tried to short the company's rations and did not try again.
 
-"Paviors' Guild. Contracted. Gadrobi District, the east crossing, by order of the district warden. Charter exemption on the toll for guild work, section four. Wagon is guild property. Mule is guild property. *I* am guild property. You'll find the warden's seal on the crossing when we get there, and if you'd like to walk down and inspect it I will wait here, with the wagon, in your gate, until you come back."
+"Paviors' Guild. Contracted. Gadrobi District, the tannery crossing, by order of the district warden. Charter exemption on the toll for guild work, section four. Wagon is guild property. Mule is guild property. *I* am guild property. You'll find the warden's seal on the crossing when we get there, and if you'd like to walk down and inspect it I will wait here, with the wagon, in your gate, until you come back."
 
 Pennick regards her for a long moment. Something in him, something that has been thirty years at this desk, lights up very slightly, the way a lamp does.
 
@@ -322,8 +322,8 @@ ${S.f.c2_badge ? `She has the Ninth Regiment badge on a thong round her wrist no
 
     /* ---- exit: through the gate (the cutpurses) ---- */
     c3_to_cross:()=> S.f.c3_gateFought ? {sp:'The Worry Gate', txt:
-`Through the gate, the street drops toward the Gadrobi District and the blue lamps go down it like a spilled necklace. Somewhere down there, a crossing with a hole in it.`,
-      ch:[{t:'Down into the Gadrobi District.', go:()=>{ startExplore('gadrobi_cross'); talk('c3_cross_arrive'); }},
+`Through the gate, the city opens in front of you, and the blue lamps go down through it like a spilled necklace, street after street, all the long way west to the Gadrobi District and the harbour. Somewhere over there, a crossing with a hole in it.`,
+      ch:[{t:'Across the city to the Gadrobi District.', go:()=>{ startExplore('gadrobi_cross'); talk('c3_cross_arrive'); }},
           {t:'Not yet.'}]} : !S.f.c3_gate ? {sp:'The Worry Gate', txt:
 `The clerk at the desk by the gate has lifted his pen, and is holding it up, not at you, exactly, but at the space you are about to walk through. Nothing goes through the Worry Gate unwritten.`,
       ch:[{t:'Not yet.'}]} : {sp:'The Worry Gate', txt:
@@ -362,11 +362,13 @@ ${SQUAD().includes('kettle') ? `Kettle looks at the flame for a long moment. "I 
 "Don't," says Ohl.` : ''}
 
 ` : ''}At the gate, Pennick has not looked up from his ledger once. He is writing in the margin, very small. You'd hoped for *the gas*. It's two words, and the first of them is *not*.` : `At the gate, Pennick has not looked up from his ledger once. You get the feeling he has written *the gas* already.`}`,
-      ch:[{t:'Down into the Gadrobi District.', go:()=>{ startExplore('gadrobi_cross'); talk('c3_cross_arrive'); }}]}),
+      ch:[{t:'Across the city to the Gadrobi District.', go:()=>{ startExplore('gadrobi_cross'); talk('c3_cross_arrive'); }}]}),
 
     /* ---- the Gadrobi crossroads: arrival ---- */
     c3_cross_arrive:()=>({sp:'The Gadrobi crossroads', scene:'city_street', fx:()=>{S.f.c3_cross=1;}, txt:
-`Four streets meet here, badly, the way streets meet where two districts do and neither will admit it: a tannery on one corner, a shuttered chandler's on another, a cooper's yard on the third, and on the fourth nothing but a wall with a lamp on it, and beside the wall an alley going up between blind walls toward the Daru District. Noise comes down the alley from somewhere at the top of it: a tavern, by the sound, with the door open. In the middle of the crossing somebody has taken up the cobbles in a square and put a ring of sharpened stakes round the hole, and a sign on the stakes that says, in Daric, *By order of the District Warden: Works*.
+`It takes the rest of the dusk to cross the city: west, the long way round under the tiers, with the lamps coming on ahead of you, until the streets go down toward the harbour and the houses get poorer and closer together, and the wagon is in the Gadrobi District at last.
+
+Four streets meet here, badly, the way streets meet where two districts do and neither will admit it: a tannery on one corner, a shuttered chandler's on another, a cooper's yard on the third, and on the fourth nothing but a wall with a lamp on it, and beside the wall an alley going up between blind walls toward the Daru District. Noise comes down the alley from somewhere at the top of it: a tavern, by the sound, with the door open. In the middle of the crossing somebody has taken up the cobbles in a square and put a ring of sharpened stakes round the hole, and a sign on the stakes that says, in Daru, *By order of the District Warden: Works*.
 
 A lantern burns down inside the hole. Two men are crouched at the lip of it with their heads together, arguing down into it, in Malazan.
 
@@ -444,9 +446,9 @@ His eyes go past you, to Ellis, and the folded paper in her gloved hand, and com
     c3_fiddler:()=>({sp:'Fiddler · sapper', fx:()=>{S.f.c3_fid=1;}, txt:
 `He's sitting on the lip of the hole with his legs hanging into it and a fiddle case on his back that has never, as far as you can tell, had a fiddle in it.
 
-${S.f.c3_workDone ? `"Good hands, your lot. Your sapper stacks like a sapper; she's got the lean for it, never leans on anything that'd lean back." He spits into the hole, which is a sapper's blessing. "Tell her I said. Don't tell Hedge I said."` : `"You're the baggage." Friendly. "Good. We ran out of baggage a week ago and Hedge has been using his own coat. Everything goes down the ladder by hand. Nobody throws. Nobody drops. If you feel a sneeze coming, you tell me, and I'll tell you where to put it."${preUsed('cutpurses') && !S.f.c3_fid ? `
+${S.f.c3_workDone ? `"Good hands, your lot. Your sapper stacks like a sapper; she's got the lean for it, never leans on anything that'd lean back." He spits into the hole, which is a sapper's blessing. "Tell her I said. Don't tell Hedge I said."` : `${S.f.c1_bones ? `"The blanket at Pale." He's placed you, and he's pleased about it. "And now you're the baggage. Good. We ran out` : `"You're the baggage." Friendly. "Good. We ran out`} of baggage a week ago and Hedge has been using his own coat. Everything goes down the ladder by hand. Nobody throws. Nobody drops. If you feel a sneeze coming, you tell me, and I'll tell you where to put it."${preUsed('cutpurses') && !S.f.c3_fid ? `
 
-Then he stops smiling. "And the gate, at dusk. That was yours." Not a question; they've all been taking lessons from the same man. "There's a main under that lane the width of a barrel, Sergeant. Every lamp in the Gadrobi District drinks out of it. You cracked a lamp-pipe and got a pretty flame. Crack the main and you'd have done our job for us a week early, from the wrong end, with us down the hole."${SQUAD().includes('kettle') ? ` He looks past you at Kettle. "She's good. Tell her lucky's a thing a sapper gets to be once a city."` : ` He looks at the satchel on your belt. "Lucky's a thing a sapper gets to be once a city."`}` : ''}`}
+Then he stops smiling. "And the gate, at dusk. That was yours." Not a question; they've all been taking lessons from the same man. "There's a main under that lane the width of a barrel, Sergeant. Every lamp from the Worry Gate to the harbour drinks out of it. You cracked a lamp-pipe and got a pretty flame. Crack the main and you'd have done our job for us a week early, from the wrong end, with us down the hole."${SQUAD().includes('kettle') ? ` He looks past you at Kettle. "She's good. Tell her lucky's a thing a sapper gets to be once a city."` : ` He looks at the satchel on your belt. "Lucky's a thing a sapper gets to be once a city."`}` : ''}`}
 
 ${S.f.c3_fid ? `His eyes go past you, once, to the chandler's shutters, and the woman in the grey shawl, and come back fast. He's said his piece about her. He isn't going to say it twice.` : `His eyes go past you, once, to the chandler's shutters, and the woman in the grey shawl, and come back fast.
 
@@ -462,7 +464,7 @@ ${S.f.c3_sorry ? `"And Sergeant. Her." He doesn't point. He doesn't need to. "Yo
 
 "I always keep it honest," says Fiddler. "That's why you always lose."
 
-${S.f.c1_bones === 'won' ? `Hedge squints at you. "Wait. Pale. The blanket. You're the one took Fid's silver." He looks at Fiddler with dawning joy. "*You* sit out. I'll get it back for you."` : S.f.c1_bones === 'lost' ? `Hedge squints at you. "Pale. The blanket. You're the one Fid cleaned out." He beams. "Welcome back."` : ''}${S.silver < 1 ? `
+${S.f.c1_bones === 'won' ? `Hedge squints at you. "Pale. The blanket. You're the one took Fid's silver." He looks at Fiddler with dawning joy. "*You* sit out. I'll get it back for you."` : S.f.c1_bones === 'lost' ? `Hedge squints at you. "Pale. The blanket. You're the one Fid cleaned out." He beams. "Welcome back."` : ''}${S.silver < 1 ? `
 
 Hedge looks at your hands, and then at your purse, and then, meaningfully, at Fiddler. Fiddler sighs through his nose, counts five silver out of his own and puts them on the cobbles in front of you. "Take his money with mine," he says. "It'll mean more. I'll have my five back off the top, if there is a top."
 
@@ -489,7 +491,7 @@ He picks up a coil of trip-cord and starts to measure it, and that's the convers
       ch:[{t:'Leave him.'}]}),
     c3_hedge:()=>({sp:'Hedge · sapper', fx:()=>{ if (preUsed('cutpurses') && !S.f.c3_workDone) S.f.c3_hedgeGate=1; }, txt:
 `${S.f.c3_workDone ? `Hedge is sitting on a crate that you would not personally sit on, eating an onion like an apple. "Twelve cussers," he says, with his mouth full. "*Twelve.* And the dud. Your sapper counted them twice and the dud three times. Tell you something, Sergeant, I've known Moranth quartermasters wouldn't trust themselves with twelve. She's got the fever. I can see it. Keep her away from this hole after we light it; she'll want to watch."${S.f.c3_blueFlash ? ` He jerks his onion at the brazier, which has a fresh scorch up one side. "And *you* owe me a bladder${S.f.c3_blueFlash !== 'sgt' && SQUAD().includes(S.f.c3_blueFlash) ? `, or ${NAME(S.f.c3_blueFlash)} does` : ''}. Whiskeyjack's not said a word to me since. Not one. I've had floggings were friendlier."` : trickBy('bluefire') ? ` He winks, which on Hedge is a whole-face undertaking. "How's the bladder? Don't sit on it."` : ''}` :
-`He's sitting on the edge of the hole with his boots in it, a cap pushed back and dirt in every line of him, grinning at your wagon like a man greeting a woman he's been writing to.
+`He's sitting on the edge of the hole with his boots in it, a cap pushed back and dirt in every line of him, grinning at your wagon like a man greeting a woman he's been writing to.${S.f.c1_bones ? ` He spares you one look, and a nod that means the blanket at Pale, and goes back to the wagon.` : ''}
 
 "That's her, is it? That's the crate?" He sniffs. "Cussers. A full crate, twelve and the dud. Hood's teeth, I can *smell* them. You carried twelve cussers across the Rhivi Plain on a mule-cart. ${tripDays(1)} days." He looks at Kettle. "Did you open it?"
 
@@ -935,7 +937,7 @@ Coll nods, once, as if a debt had been entered in a ledger he keeps somewhere be
 
 Kruppe, delicately, to the ceiling: "Somebody *will*."`,
       ch:[{t:'Back to the table.', go:'c3_inn'}]}),
-    c3_coll_return:()=>({sp:'Coll', txt:
+    c3_coll_return:()=>({sp:'Coll', fx:()=>{S.f.c3_collBack=1;}, txt:
 `You put the coins on the bar and push the ring back across the table with one finger until it touches his hand.
 
 He looks at it. He looks at you. For a moment the soldier's shoulders are a soldier's shoulders again, and the face is the face somebody married, and then the jug comes up and it's gone.
@@ -1002,7 +1004,7 @@ Across the room, Kruppe sighs, very gently, as if a pastry had been taken off hi
 
 At the door he stops. He isn't looking at you. He's looking at Tuft, and his face has not changed, and his voice has.
 
-"Kruppe once heard it said, little mage, that on the plain to the north the grass took a thing out of a fire that was a woman when it went into the fire, and is a child now in a blanket, and will be a woman again sooner than any child should, and will *remember*, and that the Rhivi carry her very carefully, as one carries a thing that is heavier every day." A pause, delicate as a knife laid on a plate. "Kruppe merely repeats. Kruppe knows nothing of plains. Kruppe does not care for grass."
+"Kruppe once heard it said, little mage, that on the plain to the north the grass took a thing out of a fire that was a woman when it went into the fire, and is a child now, and will be a woman again sooner than any child should, and will *remember*, and that the Rhivi carry her very carefully, as one carries a thing that is heavier every day." A pause, delicate as a knife laid on a plate. "Kruppe merely repeats. Kruppe knows nothing of plains. Kruppe does not care for grass."
 
 Nobody else understands a word of it. Kettle frowns. Brisk looks at the fat man as if he'd spoken Rhivi.
 
@@ -1118,7 +1120,7 @@ ${SQUAD().includes('kettle') ? `Kettle, outraged, under her breath: "We could ha
       ch:[{t:'On up the alley.', go:()=>c3Arrive(S.f.c3_upTo)}]}),
     c3_cousins_faced:()=>({sp:'The dogleg in the alley', fx:()=>{ S.f.c3_cousins='faced'; const up = gainXP(40); note('+40 experience. Nobody had to.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
 `${by({
-  brisk:`Brisk walks up the alley until she is standing much too close to him, and sets her shield down on the cobbles between them, edge first, so that it rings off both walls, and leans on it. "Ninth Regiment," she says. "Heavy." It's the whole of what she says. He looks at the shield. He looks at the arm that goes with it.`,
+  brisk:`Brisk walks up the alley until she is standing much too close to him, and sets her shield down on the cobbles between them, edge first, so that it rings off both walls, and leans on it. "Third Army," she says. "Heavy." It's the whole of what she says. He looks at the shield. He looks at the arm that goes with it.`,
   kettle:S.inv.cusser > 0 ? `Kettle takes a cusser out of her satchel, clay-grey and round, and holds it up to his lantern so he can see it properly, and tells him, in the bright helpful voice of somebody explaining a recipe, exactly what it would do to the alley, and the walls, and the cousins, in order, by name if he'd like to give her the names. He doesn't give her the names.` : `Kettle opens her satchel and holds it out to him so he can look in. It's dark in there. She lets him look for a long time, smiling, and he finds he doesn't want to know.`,
   ohl:`Ohl walks up to him, looks at the rag round his head, tuts, unwinds it, looks at the cut under it, and winds it back on properly, tight, with a surgeon's knot. "That wants a stitch," he says. "Not tonight. Tonight you go home and lie down." The big man stands there and lets him, the way you'd let a priest.`,
   tuft:`Tuft doesn't walk up to him. She looks at him the way she looks at a card she has already turned, and says, very quietly, "Go *home*." His lantern chooses that moment to gutter, and burn blue, and go out. It's the gas. It's usually the gas. He doesn't know that.`,
@@ -1290,7 +1292,7 @@ ${S.f.marked ? `She turns over a paper on the table. You can't read it upside do
 
 "Pennick keeps a margin," she adds. "In thirty years he has written in it twice. Last night, beside a noise in the lane by his gate, he wrote *not the gas*." She sets the pot down. "He has written *the gas* a hundred times. He has never once written *not*. So I knew what a road crew carries before my well told me."` : ''}${S.f.c3_watchSaw ? `
 
-"And the Watch sent a boy up my back stair to say a road crew was coming with a shield." She sets the pot down. "I give them a bolt of good grey every winter. They're very reliable about small things."` : ''}
+"And the Watch sent a boy up my back stair to say a road crew was coming with a shield." She smiles. "I give them a bolt of good grey every winter. They're very reliable about small things."` : ''}
 
 ${SQUAD().includes('ellis') ? `Her eyes go past you, to the door, where Ellis is standing with her back to the frame.
 
@@ -1392,10 +1394,10 @@ ${SQUAD().includes('brisk') ? `Brisk is the last out. She stops in the doorway a
       ch:[{t:'Down the stair.', go:'c3_alley'}]}),
     c3_lie_ok:()=>({sp:'Madryn', fx:()=>{ S.f.c3_key='refuse'; S.f.c3_lied=1; S.f.c3_lieHeld=1; S.f.marked=1; if (SQUAD().includes('brisk')) loy('brisk',1); if (SQUAD().includes('ellis')) loy('ellis',2); }, txt:
 `${by({
-  sgt:`You give her a count that's half the true one and a map of the vault that puts the munitions under the wrong street. You give her the two men going *north*, to the lakefront, where the Council's houses are, which is the one direction you're certain they don't go.`,
-  kettle:`Kettle gives her the count. She's the sapper; of course she has the count. She gives it chin up and in total confidence, half the true one, and draws the vault on the back of Madryn's paper with the munitions under the wrong street, and sends the two men *north*, to the lakefront, where the Council's houses are, which is the one direction you're certain they don't go. It is the best lie you have ever heard her tell. It may be the only one that has ever worked.`,
-  tuft:`Tuft gives it. Quietly, exactly, as if she were reading it off a card: a count that's half the true one, a vault under the wrong street, two men going *north* to the lakefront, where the Council's houses are, which is the one direction you're certain they don't go. Her hands are flat on the table either side of her cup, not touching it.`,
-  ellis:`Ellis comes away from the door to give it. She gives it the way the Claw likes a report, numbered, in one breath: half the true count, the vault under the wrong street, the two men going *north*, to the lakefront, where the Council's houses are, which is the one direction you're certain they don't go. She has never lied to you. You watch her lie to them, and it is beautiful, and it costs her something you can see.`,
+  sgt:`You give her a count that's half the true one and a map of the vault that puts the munitions under the wrong street. You give her the two men going *north*, to the lakefront, among the warehouses, which is the one direction you're certain they don't go.`,
+  kettle:`Kettle gives her the count. She's the sapper; of course she has the count. She gives it chin up and in total confidence, half the true one, and draws the vault on the back of Madryn's paper with the munitions under the wrong street, and sends the two men *north*, to the lakefront, among the warehouses, which is the one direction you're certain they don't go. It is the best lie you have ever heard her tell. It may be the only one that has ever worked.`,
+  tuft:`Tuft gives it. Quietly, exactly, as if she were reading it off a card: a count that's half the true one, a vault under the wrong street, two men going *north* to the lakefront, among the warehouses, which is the one direction you're certain they don't go. Her hands are flat on the table either side of her cup, not touching it.`,
+  ellis:`Ellis comes away from the door to give it. She gives it the way the Claw likes a report, numbered, in one breath: half the true count, the vault under the wrong street, the two men going *north*, to the lakefront, among the warehouses, which is the one direction you're certain they don't go. She has never lied to you. You watch her lie to them, and it is beautiful, and it costs her something you can see.`,
   _:`{who} gives her a count that's half the true one and a map of the vault that puts the munitions under the wrong street, and the two men going *north*, to the lakefront, which is the one direction you're certain they don't go.`})}
 
 She writes it all down. She thanks you. She pushes the purse across.
