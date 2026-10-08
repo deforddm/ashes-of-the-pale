@@ -2,10 +2,11 @@
 """Build src/19c_artwork.js from the artwork canvas boards in docs/art/*.dc.html.
 
 The boards are the "Ashes of the Pale — Artwork" design canvas. Each picture on a board is an
-<svg role="img" aria-label="…">. This pulls every picture out as a standalone SVG the game can
+<svg role="img" aria-label="…">. This pulls out every picture the game shows as a standalone SVG it can
 inline (ids and classes namespaced per board so pictures never clash), gathers each board's
-animation CSS once (namespaced the same way), and keeps the three in-world papers as HTML. (v3.15.2: the whole-board gallery
-is gone from the game, so whole boards are no longer written out.)
+animation CSS once (namespaced the same way), and keeps the three in-world papers as HTML.
+Boards and pictures nothing in the game shows (the squad lineup, the motifs, three insignia, the loose
+stamp and seal, the acid phial) stay on the canvas but are not built.
 
 Re-run after the canvas changes:  python3 tools/art_build.py && python3 build.py
 """
@@ -15,7 +16,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART = os.path.join(ROOT, 'docs', 'art')
 OUT = os.path.join(ROOT, 'src', '19c_artwork.js')
 
-# board file -> (namespace, game key per aria-label; None = keep under a slug of the label)
 ITEM = {"Grey cloak's knife": 'clawknife', 'Rhivi horn bow': 'rhivibow', 'Daru duelling knife': 'daruknife', 'Guild blade': 'guildblade',
         'Barrow-flint blade': 'barrowflint', "House guard's halberd": 'simtalhalberd', 'Blacked Guild blade': 'blackedblade',
         'Second Army heater shield': 'heater', "Toc's spare cloak": 'toccloak', 'Gadrobi road-crew leather': 'roadleather',
@@ -24,27 +24,27 @@ ITEM = {"Grey cloak's knife": 'clawknife', 'Rhivi horn bow': 'rhivibow', 'Daru d
         'Blue-glass lamp-chip': 'lampchip', "Coll's old signet": 'collsignet', 'Guild token': 'guildtoken', "Journeyman's rope-and-hook": 'ropehook',
         'Rhivi bone charm': 'rhivicharm', 'Otataral-dusted glove': 'otatglove', 'Fete mask': 'fetemask', "Sapper's satchel strap": 'bbstrap',
         'Moranth chit': 'moranthchit', 'Key to a door that does not exist': 'phoenixkey', "A neat hand's pen": 'clawpen'}
-BOARDS = {
-  'Main':          ('k', 'Key art — title screen', 0, {}),
-  'Squad':         ('sq', 'The Fourth — squad lineup', 0, {'Portrait of the sergeant': 'sgt', 'Portrait of Brisk': 'brisk', 'Portrait of Kettle': 'kettle', 'Portrait of Tuft': 'tuft', 'Portrait of Ohl': 'ohl', 'Portrait of Ellis': 'ellis'}),
-  'Deck':          ('dk', 'Deck of Dragons — card faces', 1, {'Hounds of Shadow': 'hounds', 'The Great Raven': 'raven', 'Magi of High House Shadow': 'magi', 'Herald of High House Death': 'herald', 'Chains': 'chains', 'Crown': 'crown', 'The blank card': 'blank'}),
-  'Patrons':       ('pt', 'The gods answer — patron sigils', 0, {'Sigil of Hood': 'brisk', 'Sigil of Oponn': 'kettle', 'Sigil of Shadowthrone': 'tuft', 'Sigil of Soliel': 'ohl', 'Sigil of Cotillion': 'ellis', 'Sigil of Fener': 'sgt'}),
-  'Chapters':      ('cp', 'Chapter title plates', 0, {'Prologue': '0', 'Chapter One': '1', 'Chapter Two': '2', 'Chapter Three': '3', 'Chapter Four': '4', 'Chapter Five': '5', 'Chapter Six': '6', 'Chapter Seven': '7'}),
-  'Arms':          ('ar', 'Items — weapons and armour', 1, ITEM),
-  'Trinkets':      ('tk', 'Items — trinkets', 1, ITEM),
-  'Munitions':     ('mu', 'Items — munitions and keepsakes', 0, {'Sharper': 'sharper', 'Burner': 'burner', 'Cusser named Maud': 'cusser', 'Smoker': 'smoker', 'Phial of acid': 'acid', 'Salve': 'salve',
-                    'The pay ledger and the whistle': 'keep_sgt', "Tav's sealed letter": 'keep_brisk', 'A spoon': 'keep_kettle', "A grey ribbon and Tuft's deck": 'keep_tuft', "Ohl's list in oilcloth": 'keep_ohl', 'A Claw whistle with its cord cut': 'keep_ellis'}),
-  'Papers':        ('pp', 'In-world papers', 7, {'A clawed stamp': 'stamp', 'A wax seal': 'seal'}),
-  'Insignia':      ('in', 'Signs and insignia', 0, {"The Fourth's squad patch": 'patch', 'The Phoenix Inn sign': 'phoenix', 'Mark of the Guild of Paviors': 'paviors', 'A torn armband': 'armband'}),
-  'Vistas':        ('vs', 'Vistas — chapter backdrops', 5, {'The barrow on the ridge': 'barrow', 'A small boat with one lantern': 'lake', 'A Darujhistan canal': 'canal'}),
-  'MapGenabackis': ('mg', 'Map — Genabackis, the Fourth’s road', 7, {'Map of Genabackis': 'map'}),
-  'MapDaru':       ('md', 'Map — Darujhistan', 3, {'Map of Darujhistan': 'map'}),
-  'MapPale':       ('mp', 'Map — Pale under the Spawn', 0, {'A sapper’s field sketch': 'map', "A sapper's field sketch": 'map'}),
-  'MapGadrobi':    ('mh', 'Map — the Gadrobi Hills', 5, {'Field map of the Gadrobi Hills': 'map'}),
-  'Cast':          ('cc', 'Bible — the canon cast', 7, None),
-  'Originals':     ('oc', 'Bible — the original cast', 7, None),
-  'Motifs':        ('mo', 'Bible — motifs', 7, None),
-  'Roads':         ('rd', 'Bible — the four roads', 7, {'Quorls rising north': 'outlaw', 'A ship at sea': 'empire', 'The Lakefront at dawn': 'city', 'A lone figure on a brown hill': 'disband'}),
+BOARDS = {  # board file -> (namespace, game key per aria-label prefix; None = keep under a slug of the label)
+  'Main':          ('k',  {}),
+  'Deck':          ('dk', {'Hounds of Shadow': 'hounds', 'The Great Raven': 'raven', 'Magi of High House Shadow': 'magi', 'Herald of High House Death': 'herald', 'The Wain': 'chains', 'Crown': 'crown', 'The blank card': 'blank',
+                          'Oponn': 'oponn', 'Obelisk': 'obelisk', 'Knight of High House Dark': 'knight', 'Assassin of High House Shadow': 'assassin'}),
+  'Patrons':       ('pt', {'Sigil of Hood': 'brisk', 'Sigil of Oponn': 'kettle', 'Sigil of Shadowthrone': 'tuft', 'Sigil of Soliel': 'ohl', 'Sigil of Cotillion': 'ellis', 'Sigil of Fener': 'sgt'}),
+  'Chapters':      ('cp', {'Prologue': '0', 'Chapter One': '1', 'Chapter Two': '2', 'Chapter Three': '3', 'Chapter Four': '4', 'Chapter Five': '5', 'Chapter Six': '6', 'Chapter Seven': '7'}),
+  'Arms':          ('ar', ITEM),
+  'Trinkets':      ('tk', ITEM),
+  'Munitions':     ('mu', {'Sharper': 'sharper', 'Burner': 'burner', 'Cusser named Maud': 'cusser', 'Smoker': 'smoker', 'Phial of acid': None, 'Salve': 'salve',
+                          'The pay ledger and the whistle': 'keep_sgt', "Tav's sealed letter": 'keep_brisk', 'A spoon': 'keep_kettle', "A grey ribbon and Tuft's deck": 'keep_tuft', "Ohl's list in oilcloth": 'keep_ohl', 'A Claw whistle with its cord cut': 'keep_ellis'}),
+  'Papers':        ('pp', {'A clawed stamp': None, 'A wax seal': None}),  # the stamp and seal are drawn inside the papers themselves
+  'Insignia':      ('in', {"The Fourth's squad patch": 'patch', 'The Phoenix Inn sign': None, 'Mark of the Guild of Paviors': None, 'A torn armband': None}),
+  'Vistas':        ('vs', {'The barrow on the ridge': 'barrow', 'A small boat with one lantern': 'lake', 'A Darujhistan canal': 'canal',
+                          'Up out of the dark': 'prologue', 'The cadre row burning': 'pale', 'A rooftop under the moon': 'roof', 'Dawn in Lady Simtal': 'garden', 'Noon on a brown hill': 'hill'}),
+  'MapGenabackis': ('mg', {'Map of Genabackis': 'map'}),
+  'MapDaru':       ('md', {'Map of Darujhistan': 'map'}),
+  'MapPale':       ('mp', {'A sapper’s field sketch': 'map', "A sapper's field sketch": 'map'}),
+  'MapGadrobi':    ('mh', {'Field map of the Gadrobi Hills': 'map'}),
+  'Cast':          ('cc', None),
+  'Originals':     ('oc', None),
+  'Roads':         ('rd', {'Quorls rising north': 'outlaw', 'A ship at sea': 'empire', 'The Lakefront at dawn': 'city', 'A lone figure on a brown hill': 'disband'}),
 }
 FONTS = [("'Cormorant SC'", "'IM Fell English SC'"), ('Cormorant SC', 'IM Fell English SC'), ("'Cormorant Garamond'", "'IM Fell English'"), ('Cormorant Garamond', 'IM Fell English'), ("'Homemade Apple', cursive", "'IM Fell English', cursive")]
 
@@ -101,16 +101,13 @@ def root_tag(svg, extra_style=None):
     head = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vbv}"' + (f' preserveAspectRatio="{par.group(1)}"' if par else '') + (f' role="img" aria-label="{lab.group(1)}"' if lab else ' aria-hidden="true"') + '>'
     return head + svg[m.end():], [float(v) for v in vbv.split()]
 
-pieces, sizes, css_all, boards, meta = {}, {}, [], [], {}
-for name, (p, title, spoil, keymap) in BOARDS.items():
+pieces, sizes, css_all, meta = {}, {}, [], {}
+for name, (p, keymap) in BOARDS.items():
     src = open(os.path.join(ART, name + '.dc.html'), encoding='utf-8').read()
     body = re.search(r'<x-dc>(.*)</x-dc>', src, re.S).group(1)
     helm = re.search(r'<helmet>(.*?)</helmet>', body, re.S)
     hcss = re.search(r'<style>(.*?)</style>', helm.group(1), re.S).group(1) if helm else ''
     css_all.append(ns_css(hcss, p))
-    boards.append({'id': name, 'title': title, 'spoil': spoil,
-                   'w': int(re.search(r'width:\s*(\d+)px', body).group(1)), 'h': int(re.search(r'height:\s*(\d+)px', body).group(1)),
-                   'html': '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">' + (helm.group(1) if helm else '') + '<style>html,body{background:#0b0a09}</style></head><body>' + body.replace(helm.group(0), '') + '</body></html>'})
     content = body.replace(helm.group(0), '') if helm else body
     starts = [m.start() for m in re.finditer(r'<svg\b', content)]
     found = 0
@@ -124,8 +121,10 @@ for name, (p, title, spoil, keymap) in BOARDS.items():
         if is_main: key = 'key'
         elif keymap is None: key = slug(label)
         else:
-            key = next((v for k, v in keymap.items() if label.startswith(k)), None)
-            if key is None: raise SystemExit(f'no key for {name}: {label!r}')
+            hit = next((k for k in keymap if label.startswith(k)), None)
+            if hit is None: raise SystemExit(f'no key for {name}: {label!r}')
+            key = keymap[hit]
+            if key is None: continue  # on the canvas, not in the game
         # pull in definitions the picture uses from elsewhere on the board
         need = refs(svg) - ids(svg); extra = []
         while need:
@@ -140,7 +139,7 @@ for name, (p, title, spoil, keymap) in BOARDS.items():
         if name.startswith('Map'): full = 'map/' + name[3:].lower()
         if name == 'Main': full = 'title/key'
         pieces[full] = svg; sizes[full] = [vb[2], vb[3]]; found += 1
-        if name in ('Cast', 'Originals', 'Motifs'):  # the card's words: name, where, and what they say
+        if name in ('Cast', 'Originals'):  # the card's words: name, where, and what they say
             end = balanced(content, st, 'svg'); nxt = content.find('<svg', end); seg = content[end: nxt if nxt > 0 else len(content)]
             seg = seg[:seg.find('</div>\n\n')] if '</div>\n\n' in seg else seg
             lines = [re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', l)).strip() for l in re.split(r'</(?:div|p)>', seg)]
@@ -171,4 +170,4 @@ js = ['/* ============ the artwork canvas, in the game ============',
       'const ART = ' + json.dumps(pieces, ensure_ascii=False, indent=0, separators=(',', ':')) + ';',
       '']
 open(OUT, 'w', encoding='utf-8').write('\n'.join(js))
-print(len(pieces), 'pieces from', len(boards), 'boards ->', os.path.relpath(OUT, ROOT), os.path.getsize(OUT), 'bytes')
+print(len(pieces), 'pieces from', len(BOARDS), 'boards ->', os.path.relpath(OUT, ROOT), os.path.getsize(OUT), 'bytes')

@@ -16,10 +16,12 @@ function artCover(ctx, im, x, y, w, h){ const s = Math.max(w / im.naturalWidth, 
 function artWarm(){ Object.keys(ART).filter(k => k.startsWith('deck/')).forEach(artImg); }
 
 /* how far this player has read: a finished book (any sergeant on the title) unlocks everything */
-function artReach(){ if (S) return S.chapters && S.chapters[7] != null ? 8 : (S.chapter || 0);
-  return roster().list.reduce((m, e) => Math.max(m, e.done ? 8 : (e.ch || 0)), 0); }
-const ROMAN = ['Prologue', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
-const chWord = n => n === 0 ? 'the prologue' : `Chapter ${ROMAN[n] || n}`;
+function artReach(){ return !S ? 0 : S.chapters && S.chapters[7] != null ? 8 : (S.chapter || 0); }
+const CHWORDS = ['the prologue', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'];
+const chWord = n => n === 0 ? 'the prologue' : `Chapter ${CHWORDS[n] || n}`;
+/* a paper's lines that only some roads write: <span data-f="flag">, "flag=value" or "flag=a|b" */
+function paperFor(k){ return (ART['paper/' + k] || '').replace(/<span data-f="([^"]*)">[^<]*<\/span>\s*/g, (m, c) => { const [f, v] = c.split('='), x = S && S.f ? S.f[f] : null;
+  return (v ? v.split('|').includes(String(x)) : !!x) ? m : ''; }); }
 
 /* the full-screen viewer: one picture (a map), large, with Full size for a closer look */
 function avShell(){ let v = $('#artview'); if (!v) { v = document.createElement('div'); v.id = 'artview'; document.body.appendChild(v); } return v; }
@@ -42,9 +44,8 @@ function artView(what){
 const MUNI = {
   sharper:['Sharper', 'Moranth munition · thrown', 'A clay egg the size of a fist that breaks into a hundred knives. Kettle counts them the way priests count prayers.'],
   burner:['Burner', 'Moranth munition · thrown', 'Liquid fire in a waxed clay jar, and the ground goes on burning after. Strapped down whenever there is otataral about, and nobody stands downwind.'],
-  cusser:['Cusser', 'Moranth munition · the crossbow cradle', 'The big one. Fired from the cradle under Kettle\'s crossbow, never thrown by anyone who wants to keep the arm. Chub\'s is called Maud, and Kettle keeps her out of ordinary fights.'],
+  cusser:['Cusser', 'Moranth munition · the crossbow cradle', () => 'The big one. Fired from the cradle under Kettle\'s crossbow, never thrown by anyone who wants to keep the arm. ' + (S && S.f && S.f.c5_cusserUsed ? 'Chub\'s was called Maud. Kettle spent her at the barrow.' : S && S.f && S.f.c7_debt === 'paid' ? 'Chub\'s was called Maud. Kettle handed her back to the Moranth.' : 'Chub\'s is called Maud, and Kettle keeps her out of ordinary fights.')],
   smoker:['Smoker', 'Moranth munition · from Hedge\'s cellar', 'A grey jar that blooms into a wall. Nothing shoots into the smoke, and nothing shoots out of it.'],
-  acid:['Phial of acid', 'Sapper\'s timer', 'Stoppered, carried upright, with a tin of tallow for the wax plugs. The acid eats the wax, the wax lets go, the charge goes. No fuse-cord to smell.'],
   salve:['Healing salve', 'Field dressing · anyone can apply it', 'A tin of salve and a clean binding. One in the pack at the start, more from Quartermaster Pell, and one found each chapter from the Rhivi Plain on. Ellis rations her own, for the hand.'],
 };
 function itemInfo(key){
@@ -59,7 +60,7 @@ function itemInfo(key){
   if (kind === 'munitions' && id.startsWith('keep_')) { const w = id.slice(5), c = TPL[w]; if (!c) return null;
     const nm = w === 'sgt' ? (S && S.name ? `Sergeant ${S.name}` : 'The sergeant') : c.name;
     return {name: `What ${nm} carries`, kicker: 'Keepsakes · never sold, never traded', stat: '', text: c.gear.join('. ') + '.', who: c.quest || ''}; }
-  if (kind === 'munitions' && MUNI[id]) { const [name, kicker, text] = MUNI[id]; const n = S && S.inv && S.inv[id] != null ? S.inv[id] : null;
+  if (kind === 'munitions' && MUNI[id]) { const [name, kicker, tx] = MUNI[id], text = typeof tx === 'function' ? tx() : tx; const n = S && S.inv && S.inv[id] != null ? S.inv[id] : null;
     let mech = ''; try { const a = AB[id]; if (a && a.desc) mech = a.desc(); } catch(e) {}
     return {name, kicker, stat: n != null ? `In the pack: ${n}` : '', text, who: mech}; }
   return null;
@@ -81,23 +82,27 @@ function bindItemZoom(m){ m.querySelectorAll('[data-iz]').forEach(b => b.onclick
 const artViewOpen = () => { const v = $('#artview'); return !!(v && !v.hidden); };
 
 /* the journal's pictures: maps the Fourth has walked, the papers it has seen, and the faces it has met */
-const ART_MAPS = [['map/pale', 'Pale under the Spawn', 0, 'A sapper’s sketch of the ruins and the Host’s camp.'], ['map/genabackis', 'Genabackis', 2, 'The road from Pale to the city of blue fire.'],
-  ['map/daru', 'Darujhistan', 3, 'The city, pinned where the Fourth has been.'], ['map/gadrobi', 'The Gadrobi Hills', 5, 'The ridge, the barrow, and the Adjunct’s camp.']];
+/* Genabackis and Darujhistan are pinned with every place the Fourth goes, to the quorl hill at noon: they open when Chapter Seven is done */
+const ART_MAPS = [['map/pale', 'Pale under the Spawn', 0, 'A sapper’s sketch of the ruins and the Host’s camp.'], ['map/genabackis', 'Genabackis', 8, 'The road from Pale to the city of blue fire.'],
+  ['map/daru', 'Darujhistan', 8, 'The city, pinned where the Fourth has been.'], ['map/gadrobi', 'The Gadrobi Hills', 5, 'The ridge, the barrow, and the Adjunct’s camp.']];
 function artJournalHTML(){
   if (!ARTON() || !S) return '';
   const r = artReach(), maps = ART_MAPS.filter(m => m[2] <= r);
   const faces = Object.keys(ART_META).filter(k => (k.startsWith('cast/') || k.startsWith('originals/')) && ART_META[k].ch <= Math.min(r, 7) && (ART_META[k].ch < 7 || r >= 7));
   const papers = [r >= 3 ? 'file' : '', r >= 7 ? 'rations' : ''].filter(Boolean);
   return `${maps.length ? `<h4 class="jh">Maps</h4><div class="jmaps">${maps.map(([k, t, , d]) => `<button class="jmap" data-map="${k}">${art(k, 'thumb')}<b>${t}</b><small>${d}</small></button>`).join('')}</div>` : ''}
-    ${papers.length ? `<h4 class="jh">Papers</h4><div class="jpapers">${papers.map(k => `<div class="paper p-${k}">${ART['paper/' + k]}</div>`).join('')}</div>` : ''}
+    ${papers.length ? `<h4 class="jh">Papers</h4><div class="jpapers">${papers.map(k => `<div class="paper p-${k}">${paperFor(k)}</div>`).join('')}</div>` : ''}
     ${faces.length ? `<details class="gloss faces"><summary>Faces on the road <small>${faces.length}</small></summary><div class="jfaces">${faces.map(k => { const L = ART_META[k].lines;
       return `<div class="face">${art(k, 'med')}<b>${esc(L[0])}</b><small>${esc(L[1] || '')}</small><i>${esc(L[L.length - 1] || '')}</i></div>`; }).join('')}</div></details>` : ''}`;
 }
 function bindArtJournal(m){ m.querySelectorAll('[data-map]').forEach(b => b.onclick = () => { AUDIO.play('flip'); artView(b.dataset.map); }); }
 
 /* the chapter-end backdrop where the canvas has a vista for it */
-const ART_ENDVISTA = {2:'vistas/lake', 3:'vistas/canal', 5:'vistas/barrow'};
+const ART_ENDVISTA = {0:'vistas/prologue', 1:'vistas/pale', 2:'vistas/lake', 3:'vistas/canal', 4:'vistas/roof', 5:'vistas/barrow', 6:'vistas/garden', 7:'vistas/hill'};
 function artScene(key, cap){ return `<div class="scene artscene">${art(key, 'vista').replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" ')}${cap ? `<div class="cap">${cap}</div>` : ''}</div>`; }
+/* a chapter opening shows one picture: the painted plate, or with the Classic set the drawn scene */
+function artPlate(n, cap){ return ARTON() && ART['chapters/' + n] ? `<div class="scene artscene plate">${art('chapters/' + n, 'vista')}<div class="cap">${cap}</div></div>`
+  : `<div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>`; }
 /* the viewer owns the keyboard while it is open: Esc closes it, nothing else reaches the game */
 window.addEventListener('keydown', e => { if (!artViewOpen()) return; e.stopImmediatePropagation(); if (e.key === 'Escape') { e.preventDefault(); $('#avClose').click(); } }, true);
 artWarm();

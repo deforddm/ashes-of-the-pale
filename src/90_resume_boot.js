@@ -53,7 +53,7 @@ function start(){
 start();
 /* Android Back (and Escape). The game keeps one spare history entry (a "guard") above the page it loaded on, so the phone's
    Back never lands outside the game by accident. Each Back comes back to the game as a popstate: it closes whatever is open
-   on top (the board viewer, the squad sheets, settings, pack/journal/save/art, a table game), and the guard goes straight
+   on top (the picture viewer, the squad sheets, settings, pack/journal/save, a table game), and the guard goes straight
    back up. With nothing open, Back asks first: "Press Back again to leave", and only a second Back within a few seconds
    leaves. The level-up picks can't be backed out of. The guard is pushed from a tap or a key, since Chrome skips history
    entries a page adds without the player touching it. */
@@ -61,7 +61,7 @@ const OVERLAYS = ['#chars', '#settings', '#modal', '#mg'];
 const ovOpen = () => OVERLAYS.some(s => !$(s).hidden), picksOpen = () => !$('#modal').hidden && !!$('#modal .picks');
 let leaveArmed = 0, leaveT = 0, selfBack = false;
 const gLevel = () => (history.state && history.state.g) || 0;
-/* two guards deep, so two Backs in a row (the board viewer, then the journal under it) both stay in the game */
+/* two guards deep, so two Backs in a row (a map or an item in the picture viewer, then the journal or sheet under it) both stay in the game */
 function guardUp(){ try { if (gLevel() < 1) history.pushState({g:1}, ''); if (gLevel() < 2) history.pushState({g:2}, ''); } catch(e) {} }
 ['pointerdown', 'keydown', 'touchstart'].forEach(ev => window.addEventListener(ev, () => { if (leaveArmed) { leaveArmed = 0; clearTimeout(leaveT); leaveToast(false); } guardUp(); }, {capture:true, passive:true})); // touching the game again: stay
 /* close the top thing that is open; false when nothing was */

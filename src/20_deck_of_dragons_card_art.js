@@ -49,10 +49,10 @@ function drawCard(ctx, id, W, H, face, t = 0){
       ctx.strokeStyle = `rgba(150,140,210,${.45 + Math.sin(t/800)*.15})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(sx + pw*.006, sy + 3); ctx.lineTo(sx + pw*.034, gy + ph*.05); ctx.stroke();
       for (let i=0;i<7;i++){ const k = ((t/2400 + i/7) % 1); ell(ctx, sx + pw*.03 + Math.sin(t/600 + i)*pw*.04 - k*pw*.1, gy - k*ph*.35, pw*(.02 + k*.07), ph*(.01 + k*.02), `rgba(10,8,18,${.6*(1 - k)})`); } // and it smokes
       ctx.fillStyle = 'rgba(125,127,201,.06)'; ctx.fillRect(px, gy - ph*.06, pw, ph*.06); break; }
-    case 'hounds': { // two Hounds of Shadow on a ridge under a shadowed moon, eyes lit
+    case 'hounds': { // seven Hounds of Shadow running along a ridge under a shadowed moon, eyes lit
       ell(ctx, cx + pw*.22, py + ph*.22, pw*.13, pw*.13, '#14121c'); ctx.strokeStyle = 'rgba(154,134,224,.35)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx + pw*.22, py + ph*.22, pw*.13, 0, 7); ctx.stroke();
       poly(ctx, [[px, gy + 2],[px, gy - ph*.1],[px + pw*.3, gy - ph*.16],[px + pw*.6, gy - ph*.08],[px + pw, gy - ph*.15],[px + pw, gy + 2]], '#0d0b0a');
-      [[cx - pw*.2, gy - ph*.13, 1, .95],[cx + pw*.24, gy - ph*.07, -1, 1.15]].forEach(([hx, hy, d, sc], i) => { ctx.save(); ctx.translate(hx, hy); ctx.scale(d*pw/130*sc, pw/130*sc); drawHound(ctx, {body:'#0c0a09', rim:'#9a86e0', gait:i ? .5 : -.3, eyeA:.75 + Math.sin(t/300 + i*2)*.25}); ctx.restore(); });
+      [[.1, -.2, .5],[.42, -.24, .5],[.74, -.19, .5],[.03, -.06, .78],[.3, -.1, .78],[.58, -.04, .78],[.86, -.08, .78]].forEach(([fx, fy, sc], i) => { ctx.save(); ctx.translate(px + pw*fx + Math.sin(t/700 + i)*2, gy + ph*fy); ctx.scale(pw/130*sc, pw/130*sc); drawHound(ctx, {body:'#0c0a09', rim:'#9a86e0', gait:Math.sin(t/220 + i*1.3)*.8, eyeA:.75 + Math.sin(t/300 + i*2)*.25}); ctx.restore(); });
       for (let i=0;i<4;i++){ const a = t/900 + i*1.7; ell(ctx, cx + Math.cos(a)*pw*.3, py + ph*.5 + Math.sin(a*.6)*ph*.1, pw*.16, ph*.05, 'rgba(154,134,224,.06)'); } break; }
     case 'raven': { // the Great Raven: a shape the size of a cart over the plain, wings wide, one eye catching the moon
       ell(ctx, cx - pw*.2, py + ph*.2, pw*.1, pw*.1, '#b8bcc8'); glow(ctx, cx - pw*.2, py + ph*.2, pw*.3, '#c8ccd8', .2); ell(ctx, cx - pw*.17, py + ph*.19, pw*.1, pw*.1, 'rgba(7,6,10,.55)');
@@ -97,16 +97,24 @@ function drawCard(ctx, id, W, H, face, t = 0){
       const gl = .55 + Math.sin(t/500)*.25; ctx.strokeStyle = `rgba(232,192,115,${gl})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(cx - cw, y + chh*.35); ctx.bezierCurveTo(cx - cw*.3, y + chh*.1, cx + cw*.3, y + chh*.6, cx + cw, y + chh*.3); ctx.stroke(); // the thread of gold
       [[-.72,-1.9],[-.2,-2.4],[.2,-2.4],[.72,-1.9]].forEach(([a,b],i) => { ell(ctx, cx + a*cw, y + b*chh, 1.8, 1.8, `rgba(232,192,115,${.4 + Math.sin(t/400 + i*1.6)*.35})`); });
       glow(ctx, cx, y, pw*.35, '#e8c073', .1 + Math.sin(t/700)*.04); break; }
-    case 'chains': { // chains hanging out of the dark, bound at both ends; the shadow of a sword behind them
-      const dk = ctx.createLinearGradient(0, py, 0, py + ph*.45); dk.addColorStop(0, '#000'); dk.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = dk; ctx.fillRect(px, py, pw, ph*.45);
-      ctx.save(); ctx.translate(cx + pw*.06, py + ph*.5); ctx.rotate(-.5); ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(-pw*.035, -ph*.46, pw*.07, ph*.8); ctx.fillRect(-pw*.14, ph*.3, pw*.28, ph*.035); ctx.fillRect(-pw*.025, ph*.33, pw*.05, ph*.12); ctx.strokeStyle = 'rgba(154,154,166,.12)'; ctx.lineWidth = 1; ctx.strokeRect(-pw*.035, -ph*.46, pw*.07, ph*.8); ctx.restore();
-      for (let i=0;i<8;i++){ const k = ((t/2600 + i/8) % 1); ell(ctx, cx + Math.sin(i*2.3 + t/900)*pw*.3, py + ph*.8 - k*ph*.5, pw*(.08 + k*.1), ph*.02 + k*ph*.02, `rgba(20,18,26,${.35*(1-k)})`); } // smoke
-      [[-.3, .66, 0],[-.1, .78, 1],[.12, .6, 2],[.3, .72, 3]].forEach(([dx, len, j]) => { const sw = Math.sin(t/1100 + j*1.4)*.04, x0 = cx + dx*pw, n = Math.round(len*ph/(pw*.055));
-        for (let q=0;q<n;q++){ const yy = py + q*pw*.055, xx = x0 + Math.sin(sw*q*.6)*q*1.2 + sw*q*2, lit = yy > py + ph*.18, a = clamp((yy - py)/(ph*.3), 0, 1);
-          ctx.strokeStyle = q%2 ? `rgba(70,70,78,${a})` : `rgba(110,110,122,${a})`; ctx.lineWidth = pw*.014; ctx.beginPath(); if (q%2) ctx.ellipse(xx, yy, pw*.012, pw*.034, 0, 0, 7); else ctx.ellipse(xx, yy, pw*.028, pw*.034, 0, 0, 7); ctx.stroke();
-          if (lit && hash(q, j) > .55) { ctx.fillStyle = `rgba(230,228,240,${a*(.35 + Math.sin(t/300 + q + j)*.3)})`; ctx.fillRect(xx - pw*.02, yy - pw*.02, 1.6, 1.6); } }
-        const ey = py + n*pw*.055, ex = x0 + Math.sin(sw*n*.6)*n*1.2 + sw*n*2; ctx.strokeStyle = '#8a8a96'; ctx.lineWidth = pw*.02; ctx.beginPath(); ctx.arc(ex, ey + pw*.04, pw*.045, Math.PI*1.1, Math.PI*1.9 + Math.PI*.9); ctx.stroke(); }); // open shackles at the ends
-      glow(ctx, cx, py + ph*.62, pw*.4, '#9a9aa6', .08); break; }
+    case 'chains': { // the Wain: a great black wagon coming out of the dark, chains trailing from it to both edges, the shadow of a sword across its bed
+      const X = x => px + x/160*pw, Y = y => py + y/220*ph, P = pts => pts.map(([x, y]) => [X(x), Y(y)]), u = pw/160;
+      const links = (x0, y0, cx1, cy1, x1, y1, j, fade) => { for (let q=0;q<26;q++){ const k = q/25, sw = Math.sin(t/1300 + j*1.7)*2.2*k*(1 - k)*4, x = (1-k)*(1-k)*x0 + 2*k*(1-k)*cx1 + k*k*x1 + sw, y = (1-k)*(1-k)*y0 + 2*k*(1-k)*cy1 + k*k*y1, a = fade ? clamp((y - fade[0])/(fade[1] - fade[0]), 0, 1) : 1;
+          const dx = 2*(1-k)*(cx1 - x0) + 2*k*(x1 - cx1), dy = 2*(1-k)*(cy1 - y0) + 2*k*(y1 - cy1); if (a < .03) continue;
+          ctx.strokeStyle = q%2 ? `rgba(80,80,92,${a})` : `rgba(150,150,166,${a})`; ctx.lineWidth = 1.4*u; ctx.beginPath(); ctx.ellipse(X(x), Y(y), (q%2 ? 1.1 : 3.4)*u, (q%2 ? 3.4 : 2)*u, Math.atan2(dy, dx) + (q%2 ? Math.PI/2 : 0), 0, 7); ctx.stroke(); } };
+      links(132, 92, 150, 60, 146, 0, 0, [10, 80]); links(104, 82, 108, 40, 92, 0, 1, [10, 76]); links(138, 104, 152, 120, 160, 112, 2);
+      ell(ctx, X(70), Y(184), 66*u, 9*u, 'rgba(0,0,0,.6)');
+      const side = ctx.createLinearGradient(X(138), 0, X(58), 0); side.addColorStop(0, '#000'); side.addColorStop(1, '#15141a'); poly(ctx, P([[58,146],[138,92],[138,108],[58,166]]), side); // near side
+      poly(ctx, P([[24,132],[58,146],[58,166],[24,152]]), '#0e0d12'); // front
+      const bed = ctx.createLinearGradient(X(138), Y(80), X(24), Y(146)); bed.addColorStop(0, '#000'); bed.addColorStop(.5, '#1c1a22'); bed.addColorStop(1, '#3c3844'); poly(ctx, P([[24,132],[104,80],[138,92],[58,146]]), bed); // the bed
+      ctx.strokeStyle = 'rgba(154,152,168,.5)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(X(24), Y(132)); ctx.lineTo(X(58), Y(146)); ctx.lineTo(X(138), Y(92)); ctx.stroke();
+      ctx.fillStyle = 'rgba(0,0,0,.82)'; [[[36,133],[112,86],[116,89],[42,137]], [[106,82],[124,96],[121,98],[103,84]], [[117,89],[130,81],[132,84],[119,92]]].forEach(q => poly(ctx, P(q), 'rgba(0,0,0,.82)')); // the shadow of a sword
+      [[28,150,9,.92,.38,6],[122,112,15,.83,-.56,8],[72,158,19,.83,-.56,8]].forEach(([cx1, cy1, r, a, b, n]) => { ctx.save(); ctx.transform(a, b, 0, 1, X(cx1), Y(cy1)); ctx.scale(u, u);
+        ctx.fillStyle = '#08080b'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill(); ctx.strokeStyle = '#6a6878'; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1.2; for (let i=0;i<n;i++){ const g = i/n*Math.PI*2 + t/2600; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(g)*r*.9, Math.sin(g)*r*.9); ctx.stroke(); }
+        ctx.fillStyle = '#3a3a44'; ctx.beginPath(); ctx.arc(0, 0, r*.18, 0, 7); ctx.fill(); ctx.restore(); }); // the wheels, turning
+      links(26, 146, 10, 168, 0, 160, 3); links(44, 158, 30, 196, 0, 200, 4); links(56, 164, 90, 214, 160, 196, 5);
+      const dk = ctx.createLinearGradient(0, py, 0, Y(96)); dk.addColorStop(0, '#000'); dk.addColorStop(.55, 'rgba(0,0,0,.85)'); dk.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = dk; ctx.fillRect(px, py, pw, Y(96) - py); // a dark with no top to it
+      glow(ctx, X(70), Y(150), pw*.4, '#9a9aa6', .06 + Math.sin(t/900)*.03); break; }
     case 'blank': { // gesso and grain, nothing on it yet
       const g = ctx.createLinearGradient(px, py, px + pw, py + ph); g.addColorStop(0, '#e4ddcc'); g.addColorStop(.6, '#d8d0c0'); g.addColorStop(1, '#c2b8a4'); ctx.fillStyle = g; ctx.fillRect(px, py, pw, ph);
       ctx.strokeStyle = 'rgba(120,100,70,.10)'; ctx.lineWidth = 1; for (let i=0;i<26;i++){ const yy = py + i*ph/26 + hash(i,5)*4; ctx.beginPath(); ctx.moveTo(px, yy); ctx.bezierCurveTo(px + pw*.3, yy + (hash(i,6) - .5)*8, px + pw*.7, yy + (hash(i,7) - .5)*8, px + pw, yy + (hash(i,8) - .5)*5); ctx.stroke(); } // the grain of the wood through the gesso
