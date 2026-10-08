@@ -22,7 +22,7 @@ for (const mobile of [false, true]) {
   ok(n >= 5, `${tag}: squad sheet has ${n} tappable pictures`);
   await page.click('#chars [data-iz="item/barrowflint"]'); await page.waitForTimeout(300);
   const t = await page.evaluate("$('#artview').innerText");
-  ok(/Barrow-flint blade/.test(t) && /It still cuts/.test(t) && /found in Chapter V/.test(t) && /Can be used by/.test(t), `${tag}: gear opens with the full line, chapter and who can use it`);
+  ok(/Barrow-flint blade/.test(t) && /It still cuts/.test(t) && /found in Chapter Five/.test(t) && /Can be used by/.test(t), `${tag}: gear opens with the full line, chapter and who can use it`);
   if (shots) await page.screenshot({ path: `${shots}/${tag}-flint.png` });
   await page.click('#avClose'); await page.waitForTimeout(200);
   await page.click('#chars [data-iz="munitions/keep_sgt"]'); await page.waitForTimeout(300);

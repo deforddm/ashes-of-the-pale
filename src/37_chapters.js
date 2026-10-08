@@ -128,9 +128,9 @@ function showChapterIntro(){
   const CH = CHAPTERS[S.chapter]; if (!CH) return showTitle();
   view = 'intro'; $('#sheet').hidden = true; B = null; titleAnim = null; AUDIO.setScene('explore');
   const I = CH.intro;
-  toTop(); $('#app').innerHTML = `<div class="chcard">${art('chapters/' + S.chapter, 'chplate')}<div class="num">Chapter ${CH.number}</div><h1>${CH.title}</h1><div class="rule"></div></div>
+  toTop(); $('#app').innerHTML = `<div class="chcard"><div class="num">Chapter ${CH.number}</div><h1>${CH.title}</h1><div class="rule"></div></div>
   <header class="hud"><div><div class="loc">${I.loc}</div><div class="sub">${I.sub}</div></div><div class="hudr">${hudButtons()}</div></header>
-  <div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${I.cap}</div></div>
+  ${artPlate(S.chapter, I.cap)}
   <div class="narr">${I.paras.map(p => fmt(typeof p === 'function' ? p() : p)).join('')}</div>
   <div class="row"><button class="btn primary" id="bGo">${I.go}</button><button class="btn" id="bSq">The squad</button></div>`;
   const dec = CH.area.decor || '';

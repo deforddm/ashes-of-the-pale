@@ -14,14 +14,17 @@ body{margin:0}
 a{color:#c9a15a}a:hover{color:#e7c98a}
 @keyframes run{0%{transform:translateX(-6px)}50%{transform:translateX(6px)}100%{transform:translateX(-6px)}}
 @keyframes breathe{0%,100%{opacity:.35}50%{opacity:.75}}
+@keyframes spin{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.12)}}
 @keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
 .run{animation:run 2.4s ease-in-out infinite}
 .breathe{animation:breathe 5s ease-in-out infinite}
+.spin{animation:spin 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 .sway{animation:sway 6s ease-in-out infinite;transform-origin:80px 0}
-@media (prefers-reduced-motion: reduce){.run,.breathe,.sway{animation:none}}
+@media (prefers-reduced-motion: reduce){.run,.breathe,.spin{animation:spin 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.sway{animation:none}}
 </style>
 </helmet>
-<div style="position: relative; width: 1600px; height: 900px; box-sizing: border-box; padding: 52px 48px 40px; background: #0a0908; font-family: 'Cormorant Garamond', Georgia, serif; color: #e8dcc2; display: flex; flex-direction: column; gap: 30px">
+<div style="position: relative; width: 1600px; height: 1420px; box-sizing: border-box; padding: 52px 48px 40px; background: #0a0908; font-family: 'Cormorant Garamond', Georgia, serif; color: #e8dcc2; display: flex; flex-direction: column; gap: 30px">
 <svg width="0" height="0" style="position: absolute" aria-hidden="true"><defs>
 <filter id="dgrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="5" result="n"></feTurbulence><feColorMatrix in="n" type="matrix" values="0 0 0 0 0.85  0 0 0 0 0.78  0 0 0 0 0.6  0 0 0 0.16 0"></feColorMatrix></filter>
 </defs></svg>
@@ -29,25 +32,132 @@ a{color:#c9a15a}a:hover{color:#e7c98a}
 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
 <div style="font-family: 'Cormorant SC', Georgia, serif; font-weight: 600; font-size: 16px; letter-spacing: 0.32em; color: #c9a15a">Tuft's deck · wooden cards, the paint worn from the House of Shadow</div>
 <h1 style="margin: 0; font-family: 'Cormorant SC', Georgia, serif; font-weight: 600; font-size: 60px; line-height: 1; color: #efe4cb">The Deck of Dragons</h1>
-<p style="margin: 0; font-style: italic; font-size: 19px; color: #b5a888">The six cards the game deals, one a chapter, and the one she drew for herself.</p>
+<p style="margin: 0; font-style: italic; font-size: 19px; color: #b5a888">The four the prologue deals from, one card for each chapter after, and the one she drew for herself.</p>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 22px">
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 22px 22px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div style="width: 196px; height: 340px; box-sizing: border-box; border-radius: 10px; background: #1c1712; border: 1px solid #6e5a36; padding: 9px; display: flex; flex-direction: column">
+<div style="border: 1px solid #e8c073; border-radius: 6px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 7px 6px; gap: 5px">
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 12px; letter-spacing: 0.2em; color: #e8c073">Unaligned</div>
+<svg width="160" height="222" viewBox="0 0 160 220" role="img" aria-label="Oponn, the Twins: two jesters back to back, and a coin in the air between them">
+<defs><linearGradient id="dop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1208"></stop><stop offset="0.6" stop-color="#4a3416"></stop><stop offset="1" stop-color="#20160a"></stop></linearGradient><radialGradient id="dopg"><stop offset="0" stop-color="#ffe2a0" stop-opacity="0.6"></stop><stop offset="1" stop-color="#e8c073" stop-opacity="0"></stop></radialGradient></defs>
+<rect width="160" height="220" rx="4" fill="url(#dop)"></rect>
+<circle cx="80" cy="42" r="36" fill="url(#dopg)" class="breathe"></circle>
+<g transform="translate(84 140)"><path d="M0 -40 Q16 -46 26 -34 Q30 -28 30 -22 L38 -14 L31 -11 L33 -6 Q30 -3 31 0 Q28 8 18 10 L4 12 Q-2 6 0 -6 Z" fill="#d9b860"></path><path d="M0 -40 Q-2 -20 0 -6 Q-2 6 4 12 L-4 12 Q-6 -10 -4 -36 Z" fill="#a8863a"></path><path d="M24 -24 Q27 -26 30 -24" stroke="#1a1208" stroke-width="1.6" fill="none"></path><path d="M-6 -36 Q4 -56 22 -44 Q34 -66 52 -60 Q40 -56 34 -40 Q30 -38 26 -36 Q12 -46 -2 -34 Z" fill="#7a1e1a"></path><path d="M-6 -36 Q-16 -62 -32 -58 Q-20 -50 -16 -36 Z" fill="#1a1410"></path><circle cx="52" cy="-60" r="3" fill="#e8c073"></circle><circle cx="-32" cy="-58" r="3" fill="#e8c073"></circle><path d="M-8 12 L32 12 L28 22 L-4 22 Z" fill="#1a1410"></path><path d="M-4 22 L4 30 L12 22 L20 30 L28 22" fill="#7a1e1a"></path></g>
+<g transform="translate(76 140) scale(-1 1)"><path d="M0 -40 Q16 -46 26 -34 Q30 -28 30 -22 L38 -14 L31 -11 L33 -6 Q30 -3 31 0 Q28 8 18 10 L4 12 Q-2 6 0 -6 Z" fill="#b4b4c0"></path><path d="M0 -40 Q-2 -20 0 -6 Q-2 6 4 12 L-4 12 Q-6 -10 -4 -36 Z" fill="#7c7c8a"></path><path d="M24 -24 Q27 -26 30 -24" stroke="#1a1208" stroke-width="1.6" fill="none"></path><path d="M-6 -36 Q4 -56 22 -44 Q34 -66 52 -60 Q40 -56 34 -40 Q30 -38 26 -36 Q12 -46 -2 -34 Z" fill="#1a1410"></path><path d="M-6 -36 Q-16 -62 -32 -58 Q-20 -50 -16 -36 Z" fill="#2a3a5a"></path><circle cx="52" cy="-60" r="3" fill="#e8c073"></circle><circle cx="-32" cy="-58" r="3" fill="#e8c073"></circle><path d="M-8 12 L32 12 L28 22 L-4 22 Z" fill="#2a3a5a"></path><path d="M-4 22 L4 30 L12 22 L20 30 L28 22" fill="#1a1410"></path></g>
+<path d="M0 220 L0 176 L160 176 L160 220 Z" fill="#120c06"></path>
+<path d="M0 176 L160 176" stroke="#e8c073" stroke-opacity="0.25"></path>
+<g fill="#c9a050"><ellipse cx="26" cy="190" rx="6" ry="2"></ellipse><ellipse cx="132" cy="196" rx="6" ry="2"></ellipse><ellipse cx="112" cy="186" rx="5" ry="1.6" fill="#9a9aa6"></ellipse></g>
+<g class="spin"><circle cx="80" cy="42" r="11" fill="#e8c073" stroke="#8a6020" stroke-width="1.5"></circle><circle cx="80" cy="42" r="6.5" fill="none" stroke="#8a6020" stroke-width="1"></circle></g>
+</svg>
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-weight: 600; font-size: 19px; line-height: 1.05; color: #efe4cb; text-align: center">Oponn, the Twins</div>
+</div>
+</div>
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 14px; letter-spacing: 0.2em; color: #c9a15a">The prologue · and after</div>
+<div style="font-style: italic; font-size: 16px; line-height: 1.3; color: #b5a888; text-align: center">“The Lady's pulling. For now.”</div>
+<div style="font-size: 14px; line-height: 1.3; color: #8a9a7a; text-align: center">+1 to attacks, throws and checks</div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div style="width: 196px; height: 340px; box-sizing: border-box; border-radius: 10px; background: #1c1712; border: 1px solid #6e5a36; padding: 9px; display: flex; flex-direction: column">
+<div style="border: 1px solid #bdb3a3; border-radius: 6px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 7px 6px; gap: 5px">
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 12px; letter-spacing: 0.2em; color: #c8c0b0">Unaligned</div>
+<svg width="160" height="222" viewBox="0 0 160 220" role="img" aria-label="Obelisk: a standing stone on an open plain, older than anyone's gods">
+<defs><linearGradient id="dob" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16141a"></stop><stop offset="0.55" stop-color="#4a4038"></stop><stop offset="0.8" stop-color="#9a8462"></stop><stop offset="1" stop-color="#3a3026"></stop></linearGradient><linearGradient id="dobs" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a8a094"></stop><stop offset="0.55" stop-color="#6a645a"></stop><stop offset="1" stop-color="#2a2622"></stop></linearGradient></defs>
+<rect width="160" height="220" rx="4" fill="url(#dob)"></rect>
+<ellipse cx="112" cy="168" rx="50" ry="14" fill="#e8c890" opacity="0.25" class="breathe"></ellipse>
+<path d="M0 220 L0 170 Q60 162 160 168 L160 220 Z" fill="#1e1a14"></path>
+<path d="M0 220 L0 190 Q80 182 160 194 L160 220 Z" fill="#141210"></path>
+<path d="M60 190 L66 50 L80 30 L92 48 L100 190 Z" fill="url(#dobs)"></path>
+<path d="M80 30 L92 48 L100 190 L84 190 L82 46 Z" fill="#000" opacity="0.32"></path>
+<g fill="none" stroke="#1a1814" stroke-width="1" stroke-opacity="0.8"><path d="M70 80 L76 92 L72 104"></path><path d="M88 120 L84 136 L90 150"></path><path d="M66 150 L72 160"></path></g>
+<g fill="#6a7a4a" opacity="0.55"><circle cx="64" cy="176" r="3"></circle><circle cx="70" cy="182" r="2.4"></circle><circle cx="96" cy="170" r="2"></circle><circle cx="68" cy="140" r="1.6"></circle><circle cx="92" cy="184" r="3"></circle></g>
+<g fill="#08070a"><rect x="128" y="182" width="2.4" height="7"></rect><circle cx="129.2" cy="180.6" r="1.4"></circle></g>
+<g stroke="#3a3226" stroke-width="1"><path d="M14 202 L16 194 M30 206 L31 198 M120 204 L122 196 M142 200 L143 192 M46 196 L47 190"></path></g>
+</svg>
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-weight: 600; font-size: 19px; line-height: 1.05; color: #efe4cb; text-align: center">Obelisk</div>
+</div>
+</div>
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 14px; letter-spacing: 0.2em; color: #c9a15a">The prologue · and after</div>
+<div style="font-style: italic; font-size: 16px; line-height: 1.3; color: #b5a888; text-align: center">“Something endures.”</div>
+<div style="font-size: 14px; line-height: 1.3; color: #8a9a7a; text-align: center">+4 maximum health for every squadmate</div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div style="width: 196px; height: 340px; box-sizing: border-box; border-radius: 10px; background: #1c1712; border: 1px solid #6e5a36; padding: 9px; display: flex; flex-direction: column">
+<div style="border: 1px solid #7d7fc9; border-radius: 6px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 7px 6px; gap: 5px">
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 12px; letter-spacing: 0.2em; color: #a0a2e0">High House Dark</div>
+<svg width="160" height="222" viewBox="0 0 160 220" role="img" aria-label="Knight of High House Dark: a tall figure turned away, white hair and a black sword, watching a city of blue lamps">
+<defs><linearGradient id="dkn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05050c"></stop><stop offset="0.7" stop-color="#1a1c3a"></stop><stop offset="1" stop-color="#2a3460"></stop></linearGradient><radialGradient id="dkng"><stop offset="0" stop-color="#8fd0ff" stop-opacity="0.8"></stop><stop offset="1" stop-color="#3a7ad6" stop-opacity="0"></stop></radialGradient></defs>
+<rect width="160" height="220" rx="4" fill="url(#dkn)"></rect>
+<g fill="#c8d4f0"><circle cx="20" cy="22" r="0.8"></circle><circle cx="52" cy="14" r="0.7"></circle><circle cx="130" cy="30" r="0.9"></circle><circle cx="104" cy="60" r="0.6"></circle><circle cx="140" cy="80" r="0.7"></circle></g>
+<path d="M0 168 L0 150 L12 150 L12 140 L20 132 L28 140 L28 150 L44 150 L44 128 L48 118 L52 128 L52 148 L70 148 L70 138 Q80 126 90 138 L90 150 L110 150 L110 136 L122 136 L122 150 L140 150 L140 142 L160 142 L160 168 Z" fill="#070814"></path>
+<g class="breathe"><circle cx="20" cy="146" r="8" fill="url(#dkng)"></circle><circle cx="80" cy="144" r="10" fill="url(#dkng)"></circle><circle cx="116" cy="146" r="7" fill="url(#dkng)"></circle><circle cx="148" cy="150" r="7" fill="url(#dkng)"></circle><circle cx="48" cy="140" r="6" fill="url(#dkng)"></circle></g>
+<g fill="#cfeaff"><circle cx="20" cy="146" r="1"></circle><circle cx="80" cy="144" r="1.2"></circle><circle cx="116" cy="146" r="1"></circle><circle cx="148" cy="150" r="1"></circle><circle cx="48" cy="140" r="0.9"></circle></g>
+<path d="M0 220 L0 176 Q60 166 160 172 L160 220 Z" fill="#06060c"></path>
+<path d="M38 210 L44 96 Q46 80 58 74 L64 70 L76 70 L82 74 Q94 80 96 96 L102 210 Z" fill="#06050a"></path>
+<path d="M44 96 Q46 80 58 74 L64 70 L76 70 L82 74 Q94 80 96 96" fill="none" stroke="#7d7fc9" stroke-opacity="0.5" stroke-width="1"></path>
+<ellipse cx="70" cy="60" rx="9" ry="10" fill="#0a0910"></ellipse>
+<path d="M61 56 Q70 46 79 56 L80 72 Q78 108 72 118 Q70 112 68 118 Q62 108 60 72 Z" fill="#cfcdda"></path>
+<g stroke="#8a88a0" stroke-width="0.6" fill="none"><path d="M66 58 Q65 90 67 112"></path><path d="M70 56 Q70 92 70 116"></path><path d="M74 58 Q75 90 73 112"></path></g>
+<path d="M112 92 L118 92 L117 196 L115 204 L113 196 Z" fill="#020203"></path><path d="M104 92 L126 90 L126 94 L104 96 Z" fill="#020203"></path><path d="M113 92 L117 92 L116 76 L114 76 Z" fill="#14121a"></path>
+<path d="M115.8 96 L115.4 196" stroke="#9a96d0" stroke-opacity="0.45" stroke-width="0.7"></path>
+<g class="sway" fill="#0c0a16" opacity="0.7"><ellipse cx="120" cy="170" rx="8" ry="3"></ellipse><ellipse cx="126" cy="150" rx="10" ry="3.5" opacity="0.7"></ellipse><ellipse cx="132" cy="128" rx="12" ry="4" opacity="0.5"></ellipse><ellipse cx="138" cy="104" rx="14" ry="4" opacity="0.3"></ellipse></g>
+</svg>
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-weight: 600; font-size: 19px; line-height: 1.05; color: #efe4cb; text-align: center">Knight of High House Dark</div>
+</div>
+</div>
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 14px; letter-spacing: 0.2em; color: #c9a15a">The prologue · and after</div>
+<div style="font-style: italic; font-size: 16px; line-height: 1.3; color: #b5a888; text-align: center">“He's watching the city. Not us. Probably.”</div>
+<div style="font-size: 14px; line-height: 1.3; color: #8a9a7a; text-align: center">Enemies take −1 to hit</div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+<div style="width: 196px; height: 340px; box-sizing: border-box; border-radius: 10px; background: #1c1712; border: 1px solid #6e5a36; padding: 9px; display: flex; flex-direction: column">
+<div style="border: 1px solid #9a86e0; border-radius: 6px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 7px 6px; gap: 5px">
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 12px; letter-spacing: 0.2em; color: #b8a8f0">High House Shadow</div>
+<svg width="160" height="222" viewBox="0 0 160 220" role="img" aria-label="Assassin of High House Shadow: a figure crouched on a roof, half of it gone into shadow, a rope and two knives">
+<defs><linearGradient id="das" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c0a18"></stop><stop offset="1" stop-color="#3a2e5a"></stop></linearGradient><linearGradient id="dash" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0c0a14" stop-opacity="0"></stop><stop offset="0.5" stop-color="#0c0a14" stop-opacity="0.9"></stop><stop offset="1" stop-color="#0c0a14" stop-opacity="0.98"></stop></linearGradient></defs>
+<rect width="160" height="220" rx="4" fill="url(#das)"></rect>
+<circle cx="40" cy="44" r="16" fill="#d8d0e8" opacity="0.75"></circle><circle cx="46" cy="40" r="15" fill="#0c0a18" opacity="0.9"></circle>
+<path d="M150 0 Q132 60 92 96" stroke="#8a7a62" stroke-width="1.6" fill="none"></path>
+<path d="M0 220 L0 158 L76 132 L160 150 L160 220 Z" fill="#0a0910"></path>
+<path d="M0 158 L76 132 L160 150" fill="none" stroke="#9a86e0" stroke-opacity="0.3"></path>
+<g stroke="#000" stroke-opacity="0.5"><path d="M10 170 L80 146 M20 186 L86 160 M30 202 L92 176 M96 150 L150 166 M100 166 L150 182"></path></g>
+<path d="M50 140 L54 116 Q60 98 74 92 Q88 90 94 104 L100 120 L112 128 L108 140 Z" fill="#08070c" stroke="#b8a8f0" stroke-opacity="0.55" stroke-width="0.9"></path>
+<path d="M68 92 Q78 80 90 92 Q92 104 84 108 Q74 110 68 102 Z" fill="#050408"></path>
+<g fill="#e0d8ca"><rect x="78" y="97" width="3" height="1.2"></rect><rect x="84" y="97" width="3" height="1.2"></rect></g>
+<g stroke="#d8d0c0" stroke-width="1.6" stroke-linecap="round"><path d="M56 128 L42 118"></path><path d="M106 124 L120 112"></path></g>
+<g fill="#f0ecf8" class="breathe"><circle cx="41" cy="117" r="1.2"></circle><circle cx="121" cy="111" r="1.2"></circle></g>
+<rect x="88" y="0" width="72" height="220" fill="url(#dash)"></rect>
+<g class="sway" fill="#9a86e0" opacity="0.08"><ellipse cx="96" cy="110" rx="40" ry="12"></ellipse><ellipse cx="110" cy="80" rx="30" ry="9"></ellipse></g>
+</svg>
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-weight: 600; font-size: 19px; line-height: 1.05; color: #efe4cb; text-align: center">Assassin of High House Shadow</div>
+</div>
+</div>
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 14px; letter-spacing: 0.2em; color: #c9a15a">The prologue · and after</div>
+<div style="font-style: italic; font-size: 16px; line-height: 1.3; color: #b5a888; text-align: center">Tuft grins for the first time in days.</div>
+<div style="font-size: 14px; line-height: 1.3; color: #8a9a7a; text-align: center">Critical hits on 19–20</div>
+</div>
 
 <div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
 <div style="width: 196px; height: 340px; box-sizing: border-box; border-radius: 10px; background: #1c1712; border: 1px solid #6e5a36; padding: 9px; display: flex; flex-direction: column">
 <div style="border: 1px solid #7a6a9a; border-radius: 6px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 7px 6px; gap: 5px">
 <div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 12px; letter-spacing: 0.2em; color: #a89ac8">High House Shadow</div>
 <svg width="160" height="222" viewBox="0 0 160 220" role="img" aria-label="Hounds of Shadow: seven shapes running under a moon that is not there">
-<defs><linearGradient id="dh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14101e"></stop><stop offset="1" stop-color="#4a3e66"></stop></linearGradient></defs>
+<defs><linearGradient id="dh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14101e"></stop><stop offset="1" stop-color="#4a3e66"></stop></linearGradient><g id="dhh"><path d="M31 12 L35 16 L39 20 L37 20.6 L33 17 L29 13.4 Z M15 12 L10 16 L5 20.4 L6.6 21 L12 16.6 L17 13 Z" fill="#020104"></path><path d="M0 6 Q4 8 8 9 L10 8 Q20 6.5 30 6 L33 3 L34 0 L36 2.6 L38 2 L44 5 L42.5 7 L37 7.6 L34 9 L33 12 L37 15 L42 19 L44.5 21 L41 21.2 L36 17.4 L31 14.2 L24 13.2 Q18 13 14 13.4 L8 17 L2 21 L0.8 19.4 L7 15 L9.6 12 L8 10.6 Q4 9 0 7 Z"></path><circle cx="39.6" cy="4.3" r="0.9" fill="#c9d4ff" class="breathe"></circle></g></defs>
 <rect width="160" height="220" rx="4" fill="url(#dh)"></rect>
 <circle cx="80" cy="60" r="30" fill="none" stroke="#c9c0e8" stroke-opacity="0.35" stroke-dasharray="3 5"></circle>
-<path d="M0 220 L0 170 Q80 156 160 170 L160 220 Z" fill="#0c0a12"></path>
-<g class="run" fill="#06050a">
-<path d="M10 164 q8 -10 20 -8 l6 -6 l3 6 l-6 8 q-10 6 -23 0 Z"></path><path d="M30 150 q8 -10 20 -8 l6 -6 l3 6 l-6 8 q-10 6 -23 0 Z"></path><path d="M52 160 q8 -10 20 -8 l6 -6 l3 6 l-6 8 q-10 6 -23 0 Z"></path>
-<path d="M72 146 q8 -10 20 -8 l6 -6 l3 6 l-6 8 q-10 6 -23 0 Z"></path><path d="M94 158 q8 -10 20 -8 l6 -6 l3 6 l-6 8 q-10 6 -23 0 Z"></path><path d="M112 144 q8 -10 20 -8 l6 -6 l3 6 l-6 8 q-10 6 -23 0 Z"></path><path d="M128 162 q8 -10 20 -8 l6 -6 l3 6 l-6 8 q-10 6 -23 0 Z"></path>
+<path d="M0 220 L0 150 Q50 138 100 146 Q130 150 160 142 L160 220 Z" fill="#100c18"></path>
+<path d="M0 220 L0 178 Q80 164 160 176 L160 220 Z" fill="#0a0810"></path>
+<g class="run" fill="#06050a" stroke="#9a86e0" stroke-opacity="0.6" stroke-width="0.6">
+<use href="#dhh" transform="translate(6 118) scale(0.78)"></use>
+<use href="#dhh" transform="translate(56 112) scale(0.78)"></use>
+<use href="#dhh" transform="translate(104 120) scale(0.78)"></use>
+<use href="#dhh" transform="translate(-4 150) scale(1.05)"></use>
+<use href="#dhh" transform="translate(34 142) scale(1.05)"></use>
+<use href="#dhh" transform="translate(74 154) scale(1.05)"></use>
+<use href="#dhh" transform="translate(110 146) scale(1.05)"></use>
 </g>
-<g fill="#c9d4ff" class="breathe"><circle cx="33" cy="150" r="1"></circle><circle cx="95" cy="138" r="1"></circle><circle cx="135" cy="136" r="1"></circle></g>
+<g fill="#9a86e0" opacity="0.08"><ellipse cx="80" cy="150" rx="70" ry="10"></ellipse></g>
 </svg>
 <div style="font-family: 'Cormorant SC', Georgia, serif; font-weight: 600; font-size: 19px; line-height: 1.05; color: #efe4cb; text-align: center">Hounds of Shadow</div>
 </div>
@@ -126,20 +236,35 @@ a{color:#c9a15a}a:hover{color:#e7c98a}
 <div style="width: 196px; height: 340px; box-sizing: border-box; border-radius: 10px; background: #1c1712; border: 1px solid #6e5a36; padding: 9px; display: flex; flex-direction: column">
 <div style="border: 1px solid #9a9aa6; border-radius: 6px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 7px 6px; gap: 5px">
 <div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 12px; letter-spacing: 0.2em; color: #b0b0bc">Unaligned</div>
-<svg width="160" height="222" viewBox="0 0 160 220" role="img" aria-label="Chains: a chain out of a dark with no top, the shadow of something long and straight below">
-<defs><linearGradient id="dc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000"></stop><stop offset="0.5" stop-color="#18181e"></stop><stop offset="1" stop-color="#3a3a46"></stop></linearGradient></defs>
+<svg width="160" height="222" viewBox="0 0 160 220" role="img" aria-label="The Wain: a great black wagon coming out of the dark, chains trailing from it to both edges, the shadow of a sword across its bed">
+<defs><linearGradient id="dc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000"></stop><stop offset="0.45" stop-color="#121218"></stop><stop offset="1" stop-color="#34343f"></stop></linearGradient><linearGradient id="dcbed" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000"></stop><stop offset="0.5" stop-color="#1c1a22"></stop><stop offset="1" stop-color="#3c3844"></stop></linearGradient><linearGradient id="dcside" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#000"></stop><stop offset="1" stop-color="#15141a"></stop></linearGradient><linearGradient id="dctop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000"></stop><stop offset="0.55" stop-color="#000" stop-opacity="0.85"></stop><stop offset="1" stop-color="#000" stop-opacity="0"></stop></linearGradient></defs>
 <rect width="160" height="220" rx="4" fill="url(#dc)"></rect>
-<g class="sway" fill="none" stroke-width="5">
-<ellipse cx="80" cy="20" rx="8" ry="14" stroke="#4a4a56"></ellipse><ellipse cx="80" cy="44" rx="14" ry="8" stroke="#6a6a76"></ellipse><ellipse cx="80" cy="68" rx="8" ry="14" stroke="#8a8a96"></ellipse><ellipse cx="80" cy="92" rx="14" ry="8" stroke="#9a9aa6"></ellipse><ellipse cx="80" cy="116" rx="8" ry="14" stroke="#b0b0bc"></ellipse><ellipse cx="80" cy="140" rx="14" ry="8" stroke="#9a9aa6"></ellipse>
-</g>
-<path d="M40 196 L130 176 L134 182 L44 202 Z" fill="#000" opacity="0.55"></path>
-<path d="M118 178 L118 194 M112 180 L124 192" stroke="#000" stroke-opacity="0.55" stroke-width="3"></path>
+<path d="M0 220 L0 176 Q70 164 160 170 L160 220 Z" fill="#0b0b10"></path>
+<ellipse cx="70" cy="184" rx="66" ry="9" fill="#000" opacity="0.6"></ellipse>
+<g><ellipse cx="133.3" cy="89.6" rx="3.4" ry="2" transform="rotate(-61.7 133.3 89.6)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="1"></ellipse><path d="M134 88.3 L136.5 82.8" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.8"></path><ellipse cx="137.1" cy="81.4" rx="3.4" ry="2" transform="rotate(-67.7 137.1 81.4)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="1"></ellipse><path d="M137.7 80 L139.6 74.3" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.8"></path><ellipse cx="140" cy="72.9" rx="3.4" ry="2" transform="rotate(-73.1 140 72.9)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.9"></ellipse><path d="M140.5 71.5 L142.1 65.6" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.7"></path><ellipse cx="142.4" cy="64.2" rx="3.4" ry="2" transform="rotate(-76.3 142.4 64.2)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.8"></ellipse><path d="M142.8 62.7 L143.9 56.8" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.6"></path><ellipse cx="144.1" cy="55.3" rx="3.4" ry="2" transform="rotate(-80.7 144.1 55.3)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.6"></ellipse><path d="M144.4 53.9 L145.2 47.9" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.5"></path><ellipse cx="145.4" cy="46.4" rx="3.4" ry="2" transform="rotate(-83.3 145.4 46.4)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.5"></ellipse><path d="M145.5 44.9 L146.1 38.9" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.4"></path><ellipse cx="146.2" cy="37.4" rx="3.4" ry="2" transform="rotate(-85.7 146.2 37.4)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.4"></ellipse><path d="M146.3 35.9 L146.6 29.9" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.3"></path><ellipse cx="146.6" cy="28.4" rx="3.4" ry="2" transform="rotate(-87.9 146.6 28.4)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.3"></ellipse><path d="M146.7 26.9 L146.8 20.9" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.2"></path><ellipse cx="146.7" cy="19.4" rx="3.4" ry="2" transform="rotate(-89.9 146.7 19.4)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.1"></ellipse><path d="M146.7 17.9 L146.6 11.8" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.1"></path></g>
+<g><ellipse cx="104.2" cy="79.3" rx="3.4" ry="2" transform="rotate(-85.1 104.2 79.3)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="1"></ellipse><path d="M104.4 77.8 L104.7 71.7" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.8"></path><ellipse cx="104.7" cy="70.3" rx="3.4" ry="2" transform="rotate(-88.5 104.7 70.3)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.9"></ellipse><path d="M104.8 68.8 L104.8 62.7" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.7"></path><ellipse cx="104.8" cy="61.2" rx="3.4" ry="2" transform="rotate(-90.8 104.8 61.2)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.8"></ellipse><path d="M104.7 59.7 L104.4 53.7" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.6"></path><ellipse cx="104.3" cy="52.2" rx="3.4" ry="2" transform="rotate(-94.3 104.3 52.2)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.6"></ellipse><path d="M104.2 50.7 L103.6 44.7" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.5"></path><ellipse cx="103.4" cy="43.3" rx="3.4" ry="2" transform="rotate(-97.7 103.4 43.3)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.5"></ellipse><path d="M103.2 41.8 L102.3 35.8" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.4"></path><ellipse cx="102" cy="34.3" rx="3.4" ry="2" transform="rotate(-100.1 102 34.3)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.4"></ellipse><path d="M101.8 32.9 L100.5 27" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.3"></path><ellipse cx="100.1" cy="25.5" rx="3.4" ry="2" transform="rotate(-103.5 100.1 25.5)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.2"></ellipse><path d="M99.8 24.1 L98.3 18.2" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0.1"></path><ellipse cx="97.8" cy="16.8" rx="3.4" ry="2" transform="rotate(-105.8 97.8 16.8)" fill="none" stroke="#7a7a86" stroke-width="1.4" opacity="0.1"></ellipse><path d="M97.4 15.4 L95.6 9.6" stroke="#7a7a86" stroke-width="2.1" stroke-linecap="round" opacity="0"></path></g>
+<g><ellipse cx="139.9" cy="106" rx="3.4" ry="2" transform="rotate(46.8 139.9 106)" fill="none" stroke="#8a8a96" stroke-width="1.4" opacity="1"></ellipse><path d="M140.8 107.2 L145.3 111.2" stroke="#8a8a96" stroke-width="2.1" stroke-linecap="round" opacity="0.8"></path><ellipse cx="146.6" cy="112" rx="3.4" ry="2" transform="rotate(35 146.6 112)" fill="none" stroke="#8a8a96" stroke-width="1.4" opacity="1"></ellipse><path d="M147.7 113.1 L153.5 115" stroke="#8a8a96" stroke-width="2.1" stroke-linecap="round" opacity="0.8"></path><ellipse cx="155" cy="114.6" rx="3.4" ry="2" transform="rotate(-8.9 155 114.6)" fill="none" stroke="#8a8a96" stroke-width="1.4" opacity="1"></ellipse><path d="M156.7 114.6 L161.5 110.9" stroke="#8a8a96" stroke-width="2.1" stroke-linecap="round" opacity="0.8"></path></g>
+<path d="M58 146 L138 92 L138 108 L58 166 Z" fill="url(#dcside)"></path>
+<path d="M24 132 L58 146 L58 166 L24 152 Z" fill="#0e0d12"></path>
+<path d="M24 132 L104 80 L138 92 L58 146 Z" fill="url(#dcbed)"></path>
+<g stroke="#000" stroke-opacity="0.5" stroke-width="0.8"><path d="M32 135 L111 83"></path><path d="M41 139 L119 86"></path><path d="M49 142 L128 89"></path></g>
+<path d="M24 132 L104 80 L138 92 L58 146 Z M24 132 L58 146" fill="none" stroke="#6a6878" stroke-opacity="0.55" stroke-width="1.2" stroke-linejoin="round"></path>
+<path d="M58 146 L138 92" stroke="#9a98a8" stroke-opacity="0.5" stroke-width="1.4"></path>
+<g fill="#000" opacity="0.82"><path d="M36 133 L112 86 L116 89 L42 137 Z"></path><path d="M106 82 L124 96 L121 98 L103 84 Z"></path><path d="M117 89 L130 81 L132 84 L119 92 Z"></path></g>
+<g transform="matrix(0.92 0.38 0 1 28 150)"><circle r="9" fill="#08080b" stroke="#000" stroke-width="3"></circle><circle r="9" fill="none" stroke="#3a3a44" stroke-width="2"></circle><circle r="7.4" fill="none" stroke="#1a1a20" stroke-width="1"></circle><path d="M0 0 L8.1 0" stroke="#3a3a44" stroke-width="1.4"></path><path d="M0 0 L4.1 7" stroke="#3a3a44" stroke-width="1.4"></path><path d="M0 0 L-4 7" stroke="#3a3a44" stroke-width="1.4"></path><path d="M0 0 L-8.1 0" stroke="#3a3a44" stroke-width="1.4"></path><path d="M0 0 L-4.1 -7" stroke="#3a3a44" stroke-width="1.4"></path><path d="M0 0 L4.1 -7" stroke="#3a3a44" stroke-width="1.4"></path><circle r="1.6" fill="#3a3a44" stroke="#3a3a44"></circle></g>
+<g transform="matrix(0.83 -0.56 0 1 122 112)"><circle r="15" fill="#08080b" stroke="#000" stroke-width="3"></circle><circle r="15" fill="none" stroke="#4a4856" stroke-width="2"></circle><circle r="12.3" fill="none" stroke="#1a1a20" stroke-width="1"></circle><path d="M0 0 L13.5 0" stroke="#4a4856" stroke-width="1.4"></path><path d="M0 0 L9.5 9.5" stroke="#4a4856" stroke-width="1.4"></path><path d="M0 0 L0 13.5" stroke="#4a4856" stroke-width="1.4"></path><path d="M0 0 L-9.5 9.5" stroke="#4a4856" stroke-width="1.4"></path><path d="M0 0 L-13.5 0" stroke="#4a4856" stroke-width="1.4"></path><path d="M0 0 L-9.5 -9.5" stroke="#4a4856" stroke-width="1.4"></path><path d="M0 0 L-0 -13.5" stroke="#4a4856" stroke-width="1.4"></path><path d="M0 0 L9.5 -9.5" stroke="#4a4856" stroke-width="1.4"></path><circle r="2.7" fill="#3a3a44" stroke="#4a4856"></circle></g>
+<g transform="matrix(0.83 -0.56 0 1 72 158)"><circle r="19" fill="#08080b" stroke="#000" stroke-width="3"></circle><circle r="19" fill="none" stroke="#6a6878" stroke-width="2"></circle><circle r="15.6" fill="none" stroke="#1a1a20" stroke-width="1"></circle><path d="M0 0 L17.1 0" stroke="#6a6878" stroke-width="1.4"></path><path d="M0 0 L12.1 12.1" stroke="#6a6878" stroke-width="1.4"></path><path d="M0 0 L0 17.1" stroke="#6a6878" stroke-width="1.4"></path><path d="M0 0 L-12.1 12.1" stroke="#6a6878" stroke-width="1.4"></path><path d="M0 0 L-17.1 0" stroke="#6a6878" stroke-width="1.4"></path><path d="M0 0 L-12.1 -12.1" stroke="#6a6878" stroke-width="1.4"></path><path d="M0 0 L-0 -17.1" stroke="#6a6878" stroke-width="1.4"></path><path d="M0 0 L12.1 -12.1" stroke="#6a6878" stroke-width="1.4"></path><circle r="3.4" fill="#3a3a44" stroke="#6a6878"></circle></g>
+<g><ellipse cx="24.4" cy="148.2" rx="3.4" ry="2" transform="rotate(127.8 24.4 148.2)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M23.5 149.4 L19.5 154" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="18.5" cy="155" rx="3.4" ry="2" transform="rotate(134 18.5 155)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M17.5 156.1 L12.8 160" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="11.4" cy="160.6" rx="3.4" ry="2" transform="rotate(153.7 11.4 160.6)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M10.1 161.7 L4.1 162.4" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="2.7" cy="161.6" rx="3.4" ry="2" transform="rotate(-161.6 2.7 161.6)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse></g>
+<g><ellipse cx="43" cy="160.6" rx="3.4" ry="2" transform="rotate(111 43 160.6)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M42.5 162 L40 167.5" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="39.3" cy="168.8" rx="3.4" ry="2" transform="rotate(116.3 39.3 168.8)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M38.8 170.2 L35.7 175.4" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="34.9" cy="176.6" rx="3.4" ry="2" transform="rotate(122.5 34.9 176.6)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M34.1 177.9 L30.5 182.7" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="29.5" cy="183.8" rx="3.4" ry="2" transform="rotate(132.2 29.5 183.8)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M28.5 185 L24.2 189.3" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="23" cy="190.1" rx="3.4" ry="2" transform="rotate(140.6 23 190.1)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M21.9 191.1 L16.9 194.5" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="15.5" cy="195.1" rx="3.4" ry="2" transform="rotate(152.8 15.5 195.1)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M14.2 195.9 L8.6 198.1" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="7.2" cy="198.5" rx="3.4" ry="2" transform="rotate(165.1 7.2 198.5)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M5.7 198.9 L-0.2 200.2" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path></g>
+<g><ellipse cx="57.6" cy="166.2" rx="3.4" ry="2" transform="rotate(54.4 57.6 166.2)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M58.4 167.5 L62.2 172.2" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="63.2" cy="173.3" rx="3.4" ry="2" transform="rotate(48.7 63.2 173.3)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M64.1 174.5 L68.4 178.8" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="69.4" cy="179.8" rx="3.4" ry="2" transform="rotate(42.4 69.4 179.8)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M70.5 180.9 L75.2 184.7" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="76.4" cy="185.6" rx="3.4" ry="2" transform="rotate(35.8 76.4 185.6)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M77.5 186.5 L82.6 189.8" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="83.9" cy="190.5" rx="3.4" ry="2" transform="rotate(29 83.9 190.5)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M85.2 191.3 L90.6 193.9" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="92" cy="194.4" rx="3.4" ry="2" transform="rotate(22.1 92 194.4)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M93.4 195.1 L99.1 197" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="100.5" cy="197.4" rx="3.4" ry="2" transform="rotate(15.5 100.5 197.4)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M101.9 197.9 L107.9 199.2" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="109.3" cy="199.4" rx="3.4" ry="2" transform="rotate(9.1 109.3 199.4)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M110.8 199.7 L116.8 200.4" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="118.3" cy="200.5" rx="3.4" ry="2" transform="rotate(3.2 118.3 200.5)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M119.7 200.7 L125.8 200.7" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="127.3" cy="200.7" rx="3.4" ry="2" transform="rotate(-2.2 127.3 200.7)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M128.8 200.7 L134.8 200.5" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="136.3" cy="200.2" rx="3.4" ry="2" transform="rotate(-4.7 136.3 200.2)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M137.8 200.1 L143.8 199.3" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="145.2" cy="199.1" rx="3.4" ry="2" transform="rotate(-9.4 145.2 199.1)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M146.7 198.9 L152.6 197.7" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path><ellipse cx="154.1" cy="197.4" rx="3.4" ry="2" transform="rotate(-11.5 154.1 197.4)" fill="none" stroke="#9a9aa6" stroke-width="1.6" opacity="1"></ellipse><path d="M155.5 197.1 L161.4 195.7" stroke="#9a9aa6" stroke-width="2.4" stroke-linecap="round" opacity="0.8"></path></g>
+<g class="breathe" fill="#e6e4f0"><circle cx="18" cy="160" r="0.9"></circle><circle cx="34" cy="196" r="0.9"></circle><circle cx="108" cy="204" r="0.9"></circle><circle cx="138" cy="100" r="0.8"></circle></g>
+<rect width="160" height="96" fill="url(#dctop)"></rect>
 </svg>
-<div style="font-family: 'Cormorant SC', Georgia, serif; font-weight: 600; font-size: 19px; line-height: 1.05; color: #efe4cb; text-align: center">Chains</div>
+<div style="font-family: 'Cormorant SC', Georgia, serif; font-weight: 600; font-size: 19px; line-height: 1.05; color: #efe4cb; text-align: center">The Wain</div>
 </div>
 </div>
 <div style="font-family: 'Cormorant SC', Georgia, serif; font-size: 14px; letter-spacing: 0.2em; color: #c9a15a">Chapter VI</div>
-<div style="font-style: italic; font-size: 16px; line-height: 1.3; color: #b5a888; text-align: center">“Bound. At both ends.”</div>
+<div style="font-style: italic; font-size: 16px; line-height: 1.3; color: #b5a888; text-align: center">“Bound. At both ends. Whatever holds this doesn't let go of what it takes.”</div>
 <div style="font-size: 14px; line-height: 1.3; color: #8a9a7a; text-align: center">A foe who hits a squadmate takes 2 back</div>
 </div>
 
@@ -185,10 +310,10 @@ a{color:#c9a15a}a:hover{color:#e7c98a}
 </div>
 
 <p style="margin: auto 0 0; text-align: center; font-style: italic; font-size: 22px; color: #c9a15a">Two cards refuse her. The third does not.</p>
-<svg width="1600" height="900" style="position: absolute; left: 0; top: 0; pointer-events: none" aria-hidden="true"><rect width="1600" height="900" filter="url(#dgrain)"></rect></svg>
+<svg width="1600" height="1420" style="position: absolute; left: 0; top: 0; pointer-events: none" aria-hidden="true"><rect width="1600" height="1420" filter="url(#dgrain)"></rect></svg>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1420}}'>
 class Component extends DCLogic {
 renderVals() {
 return {};
