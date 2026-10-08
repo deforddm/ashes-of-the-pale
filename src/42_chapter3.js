@@ -36,7 +36,7 @@ const CH3 = {
             "#.L.....,.....L#",
             "################" ],
       walk:'.,DH><', triggers:{W:'c3_wagon', '<':'c3_to_cross'}, start:{x:12,y:5},
-      npcs:[ {id:'pallick', name:'Pallick', kind:'guard', x:2, y:7, node:()=>S.f.c3_gate?'c3_pallick_again':'c3_pallick', fresh:()=>!S.f.c3_gate} ] },
+      npcs:[ {id:'pallick', name:'Pennick', kind:'guard', x:2, y:7, node:()=>S.f.c3_gate?'c3_pallick_again':'c3_pallick', fresh:()=>!S.f.c3_gate} ] },
 
     /* . cobbles  , gutter  # wall  H the dig  x stakes  W the crew's wagon  F brazier  B barrels  L lamp  > the alley up into Daru (the Phoenix at the top of it) */
     { id:'gadrobi_cross', title:'Darujhistan · the Gadrobi crossroads', sub:'Night', hint:'Tap ground to move · tap a figure to talk · the hole is in the middle', decor:'city_night',
@@ -107,7 +107,7 @@ const CH3 = {
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['cutpurse',1,1],['cutpurse',6,1],['cutpurse',4,3],['bruiser',3,1],['bruiser',5,0]], xp:160, after:'c3_after_cutpurses',
       waves:[{round:2, foes:[['cutpurse',1,0],['cutpurse',6,0]], text:'Two more drop off the wall at the far end of the lane.'}],
-      /* v3.13 Kettle's sharper in the lane: it cracks the lamp-pipe in the wall. A gas jet splits the lane and blinds the nearest thin one; the bang carries (one more from the gate end now, and Pallick, Whiskeyjack, Hedge, Fiddler and Madryn all hear of it later) */
+      /* v3.13 Kettle's sharper in the lane: it cracks the lamp-pipe in the wall. A gas jet splits the lane and blinds the nearest thin one; the bang carries (one more from the gate end now, and Pennick, Whiskeyjack, Hedge, Fiddler and Madryn all hear of it later) */
       preText:'The sharper goes off against the lane wall and cracks the lamp-pipe in it. The gas finds the flash: a sheet of blue fire stands up across the middle of the lane, roaring, between the thin ones and the big ones, and the nearest thin one takes it full in the eyes. Up at the gate, a bell starts.',
       preFx:B => { preFire(3, 2, 4, 'the gas jet'); preFire(4, 2, 4, 'the gas jet');
         const near = foes().filter(f => f.kind === 'cutpurse').sort((a, b) => cheb(a, {x:3, y:2}) - cheb(b, {x:3, y:2}))[0];
@@ -172,12 +172,12 @@ Inside, steam, and a sour mineral stink, and vats sunk in the floor like wells, 
 
   /* the end screen: what the checks left behind (after the engine's own lines) */
   extras:()=>{ const f = S.f, x = [];
-    if (f.c3_pallickDoubt) x.push('Pallick wrote one word in the margin of his ledger, beside the Fourth\'s wagon. The word was goat. Madryn read it.');
+    if (f.c3_pallickDoubt) x.push('Pennick wrote one word in the margin of his ledger, beside the Fourth\'s wagon. The word was goat. Madryn read it.');
     if (f.c3_collNamed) x.push('Coll said a name over his ring: Simtal. She keeps his house now, and gives a fete in its garden every spring.');
     else if (f.c3_collSore) x.push('The Fourth asked Coll what he paid, and asked it wrong. He tells it to walls now, when nobody is asking.');
     if (f.c3_watchSaw) x.push('The Daru Watch sent a boy up the Blue Hand\'s back stair to say a road crew was coming with a shield. Madryn pays them in good grey cloth.');
     else if (f.c3_watchYoung) x.push('A young Watchman in the Daru District counted the road crew on his fingers, twice, and got the same number both times.');
-    if (preUsed('cutpurses')) x.push('The lamp-pipe in the lane by the Worry Gate burned blue for a day and a night before the warden found the cock. Pallick wrote two words in his margin beside it: not the gas.');
+    if (preUsed('cutpurses')) x.push('The lamp-pipe in the lane by the Worry Gate burned blue for a day and a night before the warden found the cock. Pennick wrote two words in his margin beside it: not the gas.');
     if (preUsed('knives')) x.push('The Daru Watch blew whistles till dawn over a bang behind the Blue Hand, and wrote it up as a gas main. Madryn sent them two bolts of good grey that winter instead of one.');
     if (f.c3_blueFlash) x.push('The hole under the Gadrobi crossing breathed blue fire once, the height of a house. Whiskeyjack told the warden it was the gas.');
     if (f.c3_lieDeep) x.push('Madryn underlined the word north. A hired knife spent the night on the lakefront, watching the Council\'s houses for two men who never came.');
@@ -225,8 +225,8 @@ Then she stops, and you watch her hear herself and wish she hadn't.
       ch:[{t:'"Forgotten."', fx:()=>{loy('ellis',1);}, go:()=>startExplore()},
           {t:'"No. I want to know where it is."', go:()=>startExplore()}]}),
 
-    /* ---- Pallick, gate-clerk ---- */
-    c3_pallick:()=>({sp:'Pallick · gate-clerk', txt:
+    /* ---- Pennick, gate-clerk ---- */
+    c3_pallick:()=>({sp:'Pennick · gate-clerk', txt:
 `He has a stool, a desk the width of a book, a lamp, a ledger, and the expression of a man who has been standing between the city and the rest of the world for thirty years and has found the rest of the world wanting. Ink to the second knuckle. A brass plate on the front of the desk, rubbed thin by thirty years of other people's elbows, says *PALLICK*, and under it, smaller, *Clerk of the Gate*.
 
 "Name, trade, place of origin, number of wheels, number of legs, the legs including the mule's." He doesn't look up. "Gate toll is five silver for a laden wagon, and it's laden, I can see the axle from here. The name is for the ledger. The ledger is for the Council. The Council," he dips his pen, "does not read it. I am aware. I keep it anyway."
@@ -236,13 +236,13 @@ He looks up. He takes in Brisk's hauberk, Kettle's soot, the shape of the thing 
 "Road crew," he says. "Of course you are. The whole Gadrobi District has become road crew this month. I've never seen a city so devoted to its intersections. Name."`,
       ch:[{t:'Give him a name. Not yours.', check:['guile',12],
             edges:id => [id === 'sgt' && S.f.clawFooled && ['you lied to a Claw at the Pale, and it held', 1], id === 'kettle' && ['Kettle lies badly', -1]],
-            near:{t:'Pallick blots the page twice. He will remember the goat.', fx:()=>{ S.f.c3_pallickDoubt = 1; }},
-            clean:{t:'Pallick likes a lie told properly. He says so, to the ledger.', fx:()=>{ S.f.c3_pallickTip = 1; }},
+            near:{t:'Pennick blots the page twice. He will remember the goat.', fx:()=>{ S.f.c3_pallickDoubt = 1; }},
+            clean:{t:'Pennick likes a lie told properly. He says so, to the ledger.', fx:()=>{ S.f.c3_pallickTip = 1; }},
             go:'c3_pallick_lie', fail:'c3_pallick_caught'},
           {t:'Pay the toll. Five silver, and no name.', tag:'5 silver', req:()=>S.silver>=5, fx:()=>{S.silver-=5; S.f.c3_paid=1; AUDIO.play('coin');}, go:'c3_pallick_paid'},
           {t:'Let Brisk talk to him.', req:()=>SQUAD().includes('brisk'), go:'c3_pallick_brisk'},
           {t:'Give him your own name.', fx:()=>{S.f.c3_trueName=1;}, go:'c3_pallick_true'}]}),
-    c3_pallick_lie:()=>({sp:'Pallick', fx:()=>{S.f.c3_gate=1; S.f.c3_falseName=1;}, txt:
+    c3_pallick_lie:()=>({sp:'Pennick', fx:()=>{S.f.c3_gate=1; S.f.c3_falseName=1;}, txt:
 `${by({
   sgt:`You give him a name you had off a headstone in Unta, and a trade, and a village in the Gadrobi Hills that you passed through and that has, as far as you could tell, one goat.`,
   tuft:`Tuft answers before you can open your mouth. A name for you, not yours: one off a headstone in Unta that she walked past every morning for a season, on the staff. A trade. A village in the Gadrobi Hills that you all came through, and that has, as far as anyone could tell, one goat. She spells the name for him without being asked.`,
@@ -262,7 +262,7 @@ ${SQUAD().includes('brisk') ? `"He knew," says Brisk. "He wrote it down anyway. 
 
 ${SQUAD().includes('brisk') ? `"He knew," Brisk agrees. "He wrote it down anyway. That's a clerk."` : ''}`}`,
       ch:[{t:'On to the gate.', go:()=>startExplore()}]}),
-    c3_pallick_caught:()=>({sp:'Pallick', fx:()=>{S.f.c3_pallickDoubt=1;}, txt:
+    c3_pallick_caught:()=>({sp:'Pennick', fx:()=>{S.f.c3_pallickDoubt=1;}, txt:
 `${by({
   sgt:`You give him a name, and a trade, and a village in the hills.`,
   tuft:`Tuft gives him a name for you, quietly and exactly, and a trade, and a village in the hills, and the village is wrong.`,
@@ -278,7 +278,7 @@ He waits. So does the ink. In the margin of the ledger, in very small letters, h
       ch:[{t:'Pay the toll.', tag:'5 silver', req:()=>S.silver>=5, fx:()=>{S.silver-=5; S.f.c3_paid=1; AUDIO.play('coin');}, go:'c3_pallick_paid'},
           {t:'Let Brisk talk to him.', req:()=>SQUAD().includes('brisk'), go:'c3_pallick_brisk'},
           {t:'Give him your own name.', fx:()=>{S.f.c3_trueName=1;}, go:'c3_pallick_true'}]}),
-    c3_pallick_paid:()=>({sp:'Pallick', fx:()=>{S.f.c3_gate=1;}, txt:
+    c3_pallick_paid:()=>({sp:'Pennick', fx:()=>{S.f.c3_gate=1;}, txt:
 `He counts the coins without touching them, with his eyes, and then touches them, once each, as if confirming they exist. They go into a box. The box goes under the desk. His pen writes *road crew, one wagon, paid* and nothing else.
 
 "No name," he says. "The Council will be bereft. I'd keep the purse inside the coat, Sergeant. Silver makes a noise in this city. People with no silver have very good ears."`,
@@ -288,13 +288,13 @@ He waits. So does the ink. In the margin of the ledger, in very small letters, h
 
 "Paviors' Guild. Contracted. Gadrobi District, the east crossing, by order of the district warden. Charter exemption on the toll for guild work, section four. Wagon is guild property. Mule is guild property. *I* am guild property. You'll find the warden's seal on the crossing when we get there, and if you'd like to walk down and inspect it I will wait here, with the wagon, in your gate, until you come back."
 
-Pallick regards her for a long moment. Something in him, something that has been thirty years at this desk, lights up very slightly, the way a lamp does.
+Pennick regards her for a long moment. Something in him, something that has been thirty years at this desk, lights up very slightly, the way a lamp does.
 
 "Section four," he says. "Nobody has cited section four in my lifetime." He writes: *Paviors, exempt.* He underlines it. "Go on, then. Go on."
 
 Brisk steps back. "Ledgers," she says to you, low. "Every clerk alive wants somebody to have read the ledger. That's all it is. Nobody reads the ledger."`,
       ch:[{t:'On to the gate.', go:()=>startExplore()}]}),
-    c3_pallick_true:()=>({sp:'Pallick', fx:()=>{S.f.c3_gate=1; S.f.c3_trueName=1; if (SQUAD().includes('brisk')) loy('brisk',-1);}, txt:
+    c3_pallick_true:()=>({sp:'Pennick', fx:()=>{S.f.c3_gate=1; S.f.c3_trueName=1; if (SQUAD().includes('brisk')) loy('brisk',-1);}, txt:
 `"Sergeant {sgt}." He writes it. He says it back to you as he does, to get the spelling, and then again to himself, as a man tries a wine. "Unta, I'd say, from the vowels. Road crew." He lets that sit on the page. "Toll is waived for guild crews. It's in the charter."
 
 Brisk waits until you're ten paces past the desk.
@@ -305,7 +305,7 @@ Brisk waits until you're ten paces past the desk.
 
 "Maybe. Now it's in *ink*." She hitches her shield up on her back. "Ledgers are where names go to be found, Sergeant. I keep ours honest so nobody else has to keep them at all."`,
       ch:[{t:'On to the gate.', go:()=>startExplore()}]}),
-    c3_pallick_again:()=>({sp:'Pallick', txt:
+    c3_pallick_again:()=>({sp:'Pennick', txt:
 `${S.f.c3_gateFought ? `He has not moved from the desk. He did not move during the noise in the lane, either. "The Watch will want to know about the lane," he says, writing. "I will tell them it was the gas. It is usually the gas."` : `"You're entered, Sergeant." He doesn't look up. "Go and be entered somewhere else."`}`,
       ch:[{t:'Leave him.'}]}),
 
@@ -329,7 +329,7 @@ ${S.f.c2_badge ? `She has the Ninth Regiment badge on a thong round her wrist no
       ch:[{t:'Not yet.'}]} : {sp:'The Worry Gate', txt:
 `You walk the wagon into the gate's arch. It is long, the arch, twenty paces of dark with the blue at the far end, and there's a lane opening off it on the left where the lamps have not come on.
 
-${S.f.c3_pallickTip ? `You keep to the right-hand side of the arch, as the clerk said, and so you are already looking at the lane on the left when something moves in it.` : S.f.c3_paid ? `Something moves in the lane. Pallick said it: silver makes a noise.` : S.f.c3_briskVoice ? `Something moves in the lane. Brisk's voice carried; a guild wagon is a wagon somebody has paid for, and someone in that lane knows the arithmetic.` : `Something moves in the lane. A wagon that didn't pay the toll is a wagon with something on it worth not paying for, and someone in that lane can count.`}`,
+${S.f.c3_pallickTip ? `You keep to the right-hand side of the arch, as the clerk said, and so you are already looking at the lane on the left when something moves in it.` : S.f.c3_paid ? `Something moves in the lane. Pennick said it: silver makes a noise.` : S.f.c3_briskVoice ? `Something moves in the lane. Brisk's voice carried; a guild wagon is a wagon somebody has paid for, and someone in that lane knows the arithmetic.` : `Something moves in the lane. A wagon that didn't pay the toll is a wagon with something on it worth not paying for, and someone in that lane can count.`}`,
       ch:[{t:'Keep walking.', go:'c3_ambush'},
           {t:'Not yet.'}]},
     c3_ambush:()=>({sp:'The lane by the Worry Gate', scene:'city_street', txt:
@@ -361,7 +361,7 @@ ${SQUAD().includes('kettle') ? `Kettle looks at the flame for a long moment. "I 
 
 "Don't," says Ohl.` : ''}
 
-` : ''}At the gate, Pallick has not looked up from his ledger once. He is writing in the margin, very small. You'd hoped for *the gas*. It's two words, and the first of them is *not*.` : `At the gate, Pallick has not looked up from his ledger once. You get the feeling he has written *the gas* already.`}`,
+` : ''}At the gate, Pennick has not looked up from his ledger once. He is writing in the margin, very small. You'd hoped for *the gas*. It's two words, and the first of them is *not*.` : `At the gate, Pennick has not looked up from his ledger once. You get the feeling he has written *the gas* already.`}`,
       ch:[{t:'Down into the Gadrobi District.', go:()=>{ startExplore('gadrobi_cross'); talk('c3_cross_arrive'); }}]}),
 
     /* ---- the Gadrobi crossroads: arrival ---- */
@@ -1073,7 +1073,7 @@ No signature. At the bottom, pressed into the paper with a thumb, a small print 
 
 ${SQUAD().includes('brisk') ? `Brisk reads it over your shoulder, which she has never done. "Claw," she says. Just that. Then: "They don't ask, Sergeant. When the Claw asks, it's so there's a record you said yes."` : ''}
 
-${S.f.marked ? `Your name, spelled correctly. You think of a man at the Pale with clean boots, writing in a very neat hand.` : S.f.c3_trueName ? `Your name, spelled correctly. You think of Pallick at his desk, saying it back to you to get the vowels.` : `Your name, spelled correctly. You haven't said your name to anyone in this city. You go through it twice to be sure.`}
+${S.f.marked ? `Your name, spelled correctly. You think of a man at the Pale with clean boots, writing in a very neat hand.` : S.f.c3_trueName ? `Your name, spelled correctly. You think of Pennick at his desk, saying it back to you to get the vowels.` : `Your name, spelled correctly. You haven't said your name to anyone in this city. You go through it twice to be sure.`}
 
 The alley at the east end of the crossing runs up into the Daru District. It's the only way that isn't back.`,
       ch:[{t:'The crossing.', go:()=>startExplore()}]}),
@@ -1250,7 +1250,7 @@ He goes. The young one doesn't go with him. He goes the other way, up the street
 "Evening, road crew," he says, as if you'd only just arrived. "Mind the gutters. They're blue." He walks off round the corner with his pike on his shoulder. The young one hesitates, and then follows, and looks back once, and you can see him learning something he'll wish he hadn't.`,
       ch:[{t:'Up the street.'}]}),
     c3_guard_brisk:()=>({sp:'Brisk', fx:()=>{ S.f.c3_guards=1; loy('brisk',1); }, txt:
-`Brisk walks up to the older one until she is standing much too close, and uses ${S.f.c3_briskVoice ? 'the voice she used on Pallick, the regiment voice' : 'the regiment voice, the one you last heard at Nathilog'}, the one that comes out of the chest like a drum.
+`Brisk walks up to the older one until she is standing much too close, and uses ${S.f.c3_briskVoice ? 'the voice she used on Pennick, the regiment voice' : 'the regiment voice, the one you last heard at Nathilog'}, the one that comes out of the chest like a drum.
 
 "Sergeant. Paviors' Guild, contracted, Gadrobi crossing. District warden's seal on the works. We've been sent up to inspect the Blue Hand's outflow, which is running into the Gadrobi mains and has been since spring, and which the Watch has been told about, in writing, eleven times. I have a list of the dates. Would you like me to read you the list of the dates, Sergeant?"
 
@@ -1284,11 +1284,11 @@ She's sitting at the table, and she doesn't get up. Grey hair pinned up plainly.
 
 "Sergeant {sgt}." A gentle voice. A voice for telling children a story they'll remember. "Sit, please. All of you. The tea's hot; I made it when you turned into the street. My name is Madryn. I have kept this shop for eleven years, and in eleven years I have never once had to raise my voice in it, and I don't expect to start tonight."
 
-${S.f.marked ? `She turns over a paper on the table. You can't read it upside down. You don't need to; you know the hand. Neat. "You'll have met our friend at the Pale," she says. "He writes a lovely report. He was very taken with your squad. He said you had a way of *carrying* things."` : S.f.c3_trueName ? `"Pallick sends his regards," she says. "He doesn't know he does. He keeps such a careful ledger, and he leaves it open on the desk at night, and the Worry Gate has a very small window." A smile. "Unta, from the vowels. He was right."` : S.f.c3_falseName ? `"You gave the gate a name that isn't yours. Off a headstone, I'd think; it had that sort of spelling." She pours. "That was well done, Sergeant. I'd like you to know that it was noticed, and that it didn't matter."` : `"You didn't give your name at the gate. Or in the crossing. Or at the Phoenix." She pours. "That was well done, Sergeant. I'd like you to know that it was noticed, and that it didn't matter."`}${S.f.c3_pallickDoubt ? `
+${S.f.marked ? `She turns over a paper on the table. You can't read it upside down. You don't need to; you know the hand. Neat. "You'll have met our friend at the Pale," she says. "He writes a lovely report. He was very taken with your squad. He said you had a way of *carrying* things."` : S.f.c3_trueName ? `"Pennick sends his regards," she says. "He doesn't know he does. He keeps such a careful ledger, and he leaves it open on the desk at night, and the Worry Gate has a very small window." A smile. "Unta, from the vowels. He was right."` : S.f.c3_falseName ? `"You gave the gate a name that isn't yours. Off a headstone, I'd think; it had that sort of spelling." She pours. "That was well done, Sergeant. I'd like you to know that it was noticed, and that it didn't matter."` : `"You didn't give your name at the gate. Or in the crossing. Or at the Phoenix." She pours. "That was well done, Sergeant. I'd like you to know that it was noticed, and that it didn't matter."`}${S.f.c3_pallickDoubt ? `
 
-"Pallick keeps a margin," she adds. "In thirty years he has written in it twice. Last night, beside your wagon, he wrote *goat*." The smallest smile. "I don't know what it means. I'd like to."${preUsed('cutpurses') ? ` She sets the pot down. "And an hour after that he wrote in it again, beside a noise in the lane by his gate: *not the gas*. He has written *the gas* a hundred times. He has never once written *not*. So I knew what a road crew carries before my well told me."` : ''}` : preUsed('cutpurses') ? `
+"Pennick keeps a margin," she adds. "In thirty years he has written in it twice. Last night, beside your wagon, he wrote *goat*." The smallest smile. "I don't know what it means. I'd like to."${preUsed('cutpurses') ? ` She sets the pot down. "And an hour after that he wrote in it again, beside a noise in the lane by his gate: *not the gas*. He has written *the gas* a hundred times. He has never once written *not*. So I knew what a road crew carries before my well told me."` : ''}` : preUsed('cutpurses') ? `
 
-"Pallick keeps a margin," she adds. "In thirty years he has written in it twice. Last night, beside a noise in the lane by his gate, he wrote *not the gas*." She sets the pot down. "He has written *the gas* a hundred times. He has never once written *not*. So I knew what a road crew carries before my well told me."` : ''}${S.f.c3_watchSaw ? `
+"Pennick keeps a margin," she adds. "In thirty years he has written in it twice. Last night, beside a noise in the lane by his gate, he wrote *not the gas*." She sets the pot down. "He has written *the gas* a hundred times. He has never once written *not*. So I knew what a road crew carries before my well told me."` : ''}${S.f.c3_watchSaw ? `
 
 "And the Watch sent a boy up my back stair to say a road crew was coming with a shield." She sets the pot down. "I give them a bolt of good grey every winter. They're very reliable about small things."` : ''}
 
@@ -1327,7 +1327,7 @@ ${SQUAD().includes('ellis') ? `At the door, Ellis has gone completely still. Not
           {t:'Tell her some of it. The mains. Not Quick Ben and Kalam.', go:'c3_report_some'},
           {t:S.f.c3_tea ? '"No." Stand up. Walk out.' : '"No." Walk out.', go:'c3_refuse'},
           {t:'Lie to her. Give her a count that\'s wrong and a direction that\'s nowhere.', check:['guile',14],
-            edges:id => [(S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved') && ['you laid the charges yourself', 1], S.f.c3_watchSaw && ['the Watch sent word ahead', -1], S.f.c3_pallickDoubt && ['she read the goat in Pallick\'s margin', -1],
+            edges:id => [(S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved') && ['you laid the charges yourself', 1], S.f.c3_watchSaw && ['the Watch sent word ahead', -1], S.f.c3_pallickDoubt && ['she read the goat in Pennick\'s margin', -1],
               id === 'ellis' && ['Madryn has her file', -1], id === 'kettle' && ['Kettle is lying about cussers', -1]],
             near:{t:'She believes enough of it. Not all of it.', fx:()=>{ S.f.c3_lieThin = 1; }},
             clean:{t:'She underlines the word north.', fx:()=>{ S.f.c3_lieDeep = 1; }},
@@ -1357,7 +1357,7 @@ She writes it down. When you stop, she waits, pen lifted, for exactly as long as
 "My people will leave the Fourth alone. Whiskeyjack won't hear of this from me. He'll hear of it one day; everyone does." She holds the door for you herself. "Good night, Sergeant. Mind the stair. It's steeper going down."`,
       ch:[{t:'Down the stair.', go:'c3_report_walk'}]}),
     c3_report_walk:()=>({sp:'The Daru District', scene:'city_street', txt:
-`Nobody says anything on the stair. Nobody says anything in the street. The purse is heavy on your belt and makes a noise when you walk, and ${S.f.c3_paid ? 'Pallick was right: silver makes a noise in this city' : 'silver makes a noise in this city'}, and every one of the squad can hear it.${S.f.c3_watchYoung ? ` So can the young Watchman at the corner, who has been waiting for you to come down, and watches the purse go past, and doesn't count you this time. He doesn't need to.` : ''}
+`Nobody says anything on the stair. Nobody says anything in the street. The purse is heavy on your belt and makes a noise when you walk, and ${S.f.c3_paid ? 'Pennick was right: silver makes a noise in this city' : 'silver makes a noise in this city'}, and every one of the squad can hear it.${S.f.c3_watchYoung ? ` So can the young Watchman at the corner, who has been waiting for you to come down, and watches the purse go past, and doesn't count you this time. He doesn't need to.` : ''}
 
 ${SQUAD().includes('brisk') ? `Brisk walks beside you for a whole street before she speaks, and when she speaks she doesn't look at you.
 

@@ -225,14 +225,14 @@ ${preUsed('last_accounting') ? `Behind you the eel-crates are still burning on t
       foes:[['c7_gatebow',2,0],['cutpurse',5,1],['bruiser',3,3],['bruiser',4,3],['knife',7,5],['cutpurse',6,6]], xp:260, after:'c7_after_worry',
       /* v3.13 Kettle's sharper, rolled up the arch: twenty paces of stone ring like a bell and the two with cudgels go down on their
          knees; but it's a city gate, the morning after the city nearly went up on Moranth munitions, and the Watch comes out of the
-         gatehouse behind the Fourth at the bang. Pallick can't write that one down as the gas (c7_after_worry, extras, the city road) */
-      preText:'Twenty paces of stone throw the bang back and forth until it\'s a bell. The two with cudgels go down on their knees with their hands over their ears, Pallick\'s lamp goes out, and behind you the gatehouse door bangs open on the City Watch.',
+         gatehouse behind the Fourth at the bang. Pennick can't write that one down as the gas (c7_after_worry, extras, the city road) */
+      preText:'Twenty paces of stone throw the bang back and forth until it\'s a bell. The two with cudgels go down on their knees with their hands over their ears, Pennick\'s lamp goes out, and behind you the gatehouse door bangs open on the City Watch.',
       preFx:B => { foes().filter(f => f.id === 'bruiser').forEach(f => { f.stun = true; }); preFoe('c7_watch', 0, 9); preFoe('c7_watch', 7, 9); },
       waves:[{round:2, foes:[['cutpurse',7,5],['knife',6,5]], text:'Two more come out of the lane, low and fast, knives held the Daru way.'}],
       stage2:{ title:'The tanners\' yard', warrenText:'Worrytown · tanning pits and drying frames · warrens steady',
         text:()=>`They break at the far mouth of the arch the way a lane breaks, all at once and in every direction, and you'd let them go. The big one doesn't let you. He walks back through Worrytown with his friends round him and a cart-axle on his shoulder, past the goat-pens and into the tanners' yard, and stops in the middle of it, and turns round; and you understand that the yard is where he meant this to happen all along.
 
-${preUsed('c7_worrygate') ? `Behind you, back through the arch, the two from the Watch are sitting against the wall holding their heads, and Pallick is relighting his lamp. Nobody is following you into Worrytown to help. Nobody in Worrytown expected them to.
+${preUsed('c7_worrygate') ? `Behind you, back through the arch, the two from the Watch are sitting against the wall holding their heads, and Pennick is relighting his lamp. Nobody is following you into Worrytown to help. Nobody in Worrytown expected them to.
 
 ` : ''}Pits in rows, full of things nobody should name, with planks between them a man can stand on if he's careful. Hides on drying frames like the flags of a very ugly country. ${C7H.has('kettle') ? `"Oh, that *smell*," says Kettle, with something like respect. "That's not a smell. That's a *position*."` : `The smell comes out of the pits and stands in front of you like one more Gadrobi with a cudgel.`}`,
         map:["#..,...#",".##..##.","........",".#.##.#.","........","#..##..#","........",".#.##.#.","........","........"],
@@ -284,8 +284,8 @@ ${preUsed('c7_worrygate') ? `Behind you, back through the arch, the two from the
     else if (f.c7_ellisWalked) x.push('Ellis read her name at the green door and walked east along the quay alone.');
     if (f.c7_clawPage) x.push(`The grey cloak closed his book on the Lakefront, but tore one page out of it first and kept it. It has ${C7H.nm(f.c7_clawPage, 'the sergeant')}'s name on it.`);
     if (f.c7_ledgerRead) { if (f.c7_ledgerOther) x.push('To save Ellis\'s line, somebody else\'s from the river quarter went on the Claw\'s fire. She carries that too.'); if (f.c7_ohlHand) x.push('Ohl looked at Ellis\'s hand on the step of the green door. She said no. He looked anyway.'); }
-    if (f.c7_worryFought) x.push(preUsed('c7_worrygate') ? 'The lane by the Worry Gate tried the Fourth one last time, on the way out, and ended up in a tanning pit. Kettle\'s sharper went off under the arch first, and the Watch came out of the gatehouse at the bang. Pallick did not write it down as the gas.' : 'The lane by the Worry Gate tried the Fourth one last time, on the way out, and ended up in a tanning pit. Pallick wrote it down as the gas.');
-    else if (f.c7_worryPaid) x.push('Twenty silver went up the arch of the Worry Gate in a rag, on the way out. Pallick keeps a column for it.');
+    if (f.c7_worryFought) x.push(preUsed('c7_worrygate') ? 'The lane by the Worry Gate tried the Fourth one last time, on the way out, and ended up in a tanning pit. Kettle\'s sharper went off under the arch first, and the Watch came out of the gatehouse at the bang. Pennick did not write it down as the gas.' : 'The lane by the Worry Gate tried the Fourth one last time, on the way out, and ended up in a tanning pit. Pennick wrote it down as the gas.');
+    else if (f.c7_worryPaid) x.push('Twenty silver went up the arch of the Worry Gate in a rag, on the way out. Pennick keeps a column for it.');
     else if (f.c7_worryFaced) x.push('The lane by the Worry Gate looked at the Fourth on the way out, counted, and stepped back into the dark.');
     if (f.c7_tav) x.push(f.c7_letter === 'brisk' ? 'Tav is on the Host\'s rolls of the living. Brisk opened the letter.' : f.c7_letter === 'sgt' ? 'Tav is on the Host\'s rolls of the living. His letter to Brisk is in the sergeant\'s hands.' : 'Tav is on the Host\'s rolls of the living.');
     x.push({paid:'Kettle handed a cusser back to a Black Moranth. Square.', spent:'Kettle told a Black Moranth what Chub\'s cusser was spent on, and he called it square.', owed:'Kettle still owes the Moranth. She kept the cusser, and the spoon, and knows whose they are.', closed:'The Moranth closed Kettle\'s debt. The dead do not owe.'}[f.c7_debt] || '');
@@ -426,14 +426,14 @@ You give him ${d.length > 1 ? 'the names' : 'the name'}. ${C7H.names(d)}.
     c7_sending_tav:()=>({sp:C7H.has('brisk') ? 'Brisk' : 'Dujek Onearm', scene:'fete_garden', fx:()=>{ S.f.c7_askedTav=1; }, txt: C7H.has('brisk') ?
 `Brisk steps forward. You've never seen her speak to anyone above a sergeant without being told to, and nobody tells her to. She comes to attention over the bone in the grass, which is ridiculous, and nobody laughs.
 
-"Sir. Brisk, sir. Corporal, Fourth Squad." A breath. "My brother's Second. Fourth Regiment. Tavore, called Tav. Of Cawn." Another breath. "Sir."
+"Sir. Brisk, sir. Corporal, Fourth Squad." A breath. "My brother's Second. Fourth Regiment. Tavrin, called Tav. Of Cawn." Another breath. "Sir."
 
 The voice is quiet a moment. "Corporal, I've a whole Host to count and one arm to count it on. I don't carry the rolls in my head." Not unkind. Tired. "The Moranth carry them. Living, and the other kind. They never lose a thing; it's a religious matter with them. Ask the Moranth." A pause. "I stopped reading the other kind after Pale. Ask for the living first."
 
 "Sir." Brisk steps back into her place. Her face does nothing at all. Her hand has gone to her gorget, where the letter is.` :
 `You ask it yourself. Somebody has to.
 
-"Sir. A soldier of the Second. Fourth Regiment. Tavore, called Tav, of Cawn." You hear yourself say the rest. "His sister was mine."
+"Sir. A soldier of the Second. Fourth Regiment. Tavrin, called Tav, of Cawn." You hear yourself say the rest. "His sister was mine."
 
 "Was," says the voice. It isn't a question. The wind comes and goes. "I don't carry the rolls in my head, {sgt}. The Moranth carry them. Living and the other kind. Ask the Moranth." A pause. "Ask for the living first. I've made that a rule. I'm told old men are allowed to."
 
@@ -1379,10 +1379,10 @@ Then the gate you came in by, and the road. The hill is an hour on. The quorls l
       ch:[{t:'East, to the hill.', go:'c7_worry'},
           {t:'Not yet.'}]},
 
-    /* ---- the Worry Gate (v3.12): Pallick writes the Fourth out, and the lane that tried the wagon in the spring tries the satchel ---- */
+    /* ---- the Worry Gate (v3.12): Pennick writes the Fourth out, and the lane that tried the wagon in the spring tries the satchel ---- */
     c7_worry:()=>{ const f = S.f, d = C7H.dead(), b = C7H.has('brisk'), k = C7H.has('kettle');
       if (f.c7_worryDone) return {sp:'The Worry Gate', scene:'city_street', txt:
-`Pallick doesn't look up. "You're written out, Sergeant," he tells the ledger. "Go and be written somewhere else."`,
+`Pennick doesn't look up. "You're written out, Sergeant," he tells the ledger. "Go and be written somewhere else."`,
         ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }}]};
       const name = f.c3_trueName ? `"Sergeant {sgt}." He finds the page without looking for it; he has had it open since dawn, you think. "Unta, from the vowels. In, the spring. Out, this morning." He writes it.`
         : f.c3_falseName ? `He says the name off the headstone in Unta, carefully, to get it right, the way he said it in the spring. "It held," he says. "This city knows you by it. I'd keep it." He writes it.`
@@ -1392,7 +1392,7 @@ Then the gate you came in by, and the road. The hill is an hour on. The quorls l
       return {sp:'The Worry Gate', scene:'city_street', txt:
 `Up through the Gadrobi District in the full light, where last night's smoke is still lying in the streets like a dog that won't move, past doorways with shutters propped in them and people on the steps with nothing to say, to the Worry Gate.
 
-The arch is twenty paces of dark with the morning at the far end of it. Carts are going out through it one behind another, slow, a man at each mule's head and a sheet over what's in the back: out to the pits past the tanneries, where the city puts what it can't keep. At the desk under the arch, with his lamp lit against the dark and ink to the second knuckle, Pallick is writing them out. One line each. He doesn't look up for the carts.
+The arch is twenty paces of dark with the morning at the far end of it. Carts are going out through it one behind another, slow, a man at each mule's head and a sheet over what's in the back: out to the pits past the tanneries, where the city puts what it can't keep. At the desk under the arch, with his lamp lit against the dark and ink to the second knuckle, Pennick is writing them out. One line each. He doesn't look up for the carts.
 
 He looks up for you.
 
@@ -1429,7 +1429,7 @@ The big one looks at ${C7H.rw(w)} for as long as it takes a cart of the dead to 
 
 ${near ? `They let you by. The crossbow on the water-butt watches you all the way out through Worrytown to the tanneries, and you feel it between your shoulders every step, and the Fourth walks a little faster than a squad should.` : `Nobody watches you out through Worrytown. Nobody in Worrytown watches anything this morning that might watch them back.`}
 
-Behind you at the desk Pallick writes something, and blots it. "He says that to everyone," he remarks to the ledger, and turns the page.`,
+Behind you at the desk Pennick writes something, and blots it. "He says that to everyone," he remarks to the ledger, and turns the page.`,
       ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }}]}; },
     c7_worry_fail:()=>({sp:'The Worry Gate', scene:'city_street', txt:
 `${by({sgt:`He counts you. He takes his time about it, and enjoys it.`, brisk:`He hears her out. He even nods, the way a man nods at a good point well made.`, kettle:`He looks at the thing in her hand, and then at the hand, which is shaking, and smiles.`, ohl:`He looks at the old man's open bag, and the old man's hands, and laughs, not unkindly.`, _:`He hears {who} out, and nods, and smiles.`})}
@@ -1445,7 +1445,7 @@ He doesn't give a signal. He doesn't need one. The lane comes out of the lane, a
 
 ${C7H.has('brisk') ? `Brisk watches the rag go and says nothing at all, which from Brisk is a ledger entry.` : ''} ${C7H.has('kettle') ? `Kettle takes her hand off the satchel flap one finger at a time.` : ''}
 
-Behind you Pallick writes something, and blots it. "Toll," he says to the ledger. "Unofficial. Outbound." He turns the page. "I keep a column."`,
+Behind you Pennick writes something, and blots it. "Toll," he says to the ledger. "Unofficial. Outbound." He turns the page. "I keep a column."`,
       ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }}]}),
     c7_after_worry:()=>({sp:'The tanners\' yard', scene:'city_street', fx:()=>{ S.f.c7_worryFought=1; S.f.c7_worryDone=1; }, txt:
 `It takes longer than the lane did in the spring. They've had all summer to think about it, and a tanners' yard has more corners than a lane. But they're Worrytown, and you're the Fourth, and the Fourth has had a year. In the end the big one is sitting in a tanning pit up to his chest in something nobody should be up to the chest in, with his cart-axle floating beside him, and his friends are in Worrytown's many doorways, and the doorways are shut.
@@ -1456,13 +1456,13 @@ ${C7H.has('kettle') ? `"No," says Kettle kindly, and goes on scraping her boot o
 
 ${C7H.has('brisk') ? `Brisk wipes her spear on a hide on a drying frame, and looks at it, and wipes it again. "Last time through this gate we had ${S.f.c2_wagon ? 'Pell' : 'a mule'}," she says. "I miss the mule."` : ''}
 
-${preUsed('c7_worrygate') ? `Back under the arch Pallick has his lamp lit again. It's the only thing about him that has moved. There's ink across his page in a long black fan where the bang knocked the pot over, and he's writing round it. Against the wall of the arch two of the Watch are sitting with their helmets in their laps, the way men sit after being put down by people who could have done a great deal worse, and one of them is still holding his end of the shutter.
+${preUsed('c7_worrygate') ? `Back under the arch Pennick has his lamp lit again. It's the only thing about him that has moved. There's ink across his page in a long black fan where the bang knocked the pot over, and he's writing round it. Against the wall of the arch two of the Watch are sitting with their helmets in their laps, the way men sit after being put down by people who could have done a great deal worse, and one of them is still holding his end of the shutter.
 
-"The Watch will want to know about the lane," Pallick says, writing. "I was going to tell them it was the gas." He looks at the two against the wall. "They were here." He blots the line, and then he turns the ledger round on the desk so you can read it, which in thirty years he has never done for anybody: *Outbound. Fourth Squad, Malazan marines. One Moranth munition, discharged under the Worry Gate, the morning after.* He has underlined *the morning after*.
+"The Watch will want to know about the lane," Pennick says, writing. "I was going to tell them it was the gas." He looks at the two against the wall. "They were here." He blots the line, and then he turns the ledger round on the desk so you can read it, which in thirty years he has never done for anybody: *Outbound. Fourth Squad, Malazan marines. One Moranth munition, discharged under the Worry Gate, the morning after.* He has underlined *the morning after*.
 
 ${C7H.has('kettle') ? `"It was *one sharper*," says Kettle, wounded. "If it had been the gas you wouldn't *have* an arch."
 
-` : ''}"I'll put that in too." He does. Then he turns the ledger back round. "Don't come back in by this gate, Sergeant. Not because I'd stop you." He turns the page. "Because I'd have to write it down."` : `Back under the arch Pallick hasn't moved from his desk. He didn't move for the noise, either. "The Watch will want to know about the lane," he says, writing. "I'll tell them it was the gas." He blots it. "It is usually the gas."`}`,
+` : ''}"I'll put that in too." He does. Then he turns the ledger back round. "Don't come back in by this gate, Sergeant. Not because I'd stop you." He turns the page. "Because I'd have to write it down."` : `Back under the arch Pennick hasn't moved from his desk. He didn't move for the noise, either. "The Watch will want to know about the lane," he says, writing. "I'll tell them it was the gas." He blots it. "It is usually the gas."`}`,
       ch:[{t:'East, to the hill.', go:()=>{ startExplore('quorl_hill'); talk('c7_hill_arrive'); }}]}),
 
     /* ---- the quorl hill ---- */
@@ -2179,7 +2179,7 @@ C7H.ending = key => {
 took && f.c7_pardonEmpty ? `There's a pardon in your coat, in a neat hand. It says the Fourth were loyal. It doesn't say to what. ${C7H.Rw(f.c7_emptyBy)} paid for it on the Lakefront with a report in order, without anything in it that wasn't so, and nothing in it anybody could use; and somewhere in a grey ledger there's a page of ${f.c7_emptyBy === 'brisk' ? 'rations' : f.c7_emptyBy === 'kettle' ? 'munitions' : f.c7_emptyBy === 'ohl' ? 'the dead' : f.c7_emptyBy === 'ellis' ? 'horses' : f.c7_emptyBy === 'tuft' ? 'cards that say nothing' : 'pay owed'} where the Fourth's names should be. You carry the paper across the sea like a joke you're saving for the right company.` : took ? `There's a pardon in your coat, in a neat hand. It says the Fourth were loyal. It doesn't say to what. The grey cloak wrote your people down in his book one by one, with a line after each name, and you gave him every line, in order, without anything in it that wasn't so; and you carry that across the sea like ballast.` : `No pardon. Nobody asked the Fourth to be loyal and nobody thanks you for it. At the Genabaris garrison a captain you've never met looks at you across a table and tries to decide what a loyal squad of an outlawed army is. There isn't a column for it. You watch him rule one.`,
 `The Host goes north without you. ${C7H.has('brisk') ? (C7H.follows('brisk','empire') ? `Brisk's brother is in it, and Brisk is on the ship, and neither of those things has stopped being true since the hill.` : `Brisk's brother is in it, and so, now, is Brisk.`) : `Tav of Cawn is in it, alive, on the Moranth's rolls.`} ${took ? `The Claw keeps its ledger, and the Fourth's page stays open, because the Claw never closes a page on anyone useful.` : (f.c7_clawFought || f.c7_clawBought || f.c7_clawTalked) ? `The grey cloak's page on the Fourth is closed, or drowned. The Claw has other clerks. It always has.` : `The Claw keeps its ledger. Somewhere in it the Fourth's entry is still open.`} ${n === 1 ? `You count on the deck at dawn, out of habit, and get one.` : `You count on the deck at dawn: ${intact ? `all ${C7H.num(n)}` : C7H.num(n)}.`} Home is a word with some give in it. You're going to find out how much.`];
     else if (key === 'city') P = [
-`You stay. The quorls go up without you and dwindle north over the Gadrobi Hills, and you walk back into Darujhistan${preUsed('c7_worrygate') ? `, though not by the gate you went out of: the Worry Gate has a new crack in its arch and Pallick under it with a column for the Fourth. You go round the walls to the next gate, and the gate-watch there` : ` by the gate you went out of, and the gate-watch`} looks at the Fourth and doesn't write anything down, which in Darujhistan is a kind of welcome.`,
+`You stay. The quorls go up without you and dwindle north over the Gadrobi Hills, and you walk back into Darujhistan${preUsed('c7_worrygate') ? `, though not by the gate you went out of: the Worry Gate has a new crack in its arch and Pennick under it with a column for the Fourth. You go round the walls to the next gate, and the gate-watch there` : ` by the gate you went out of, and the gate-watch`} looks at the Fourth and doesn't write anything down, which in Darujhistan is a kind of welcome.`,
 `The Empire's ledger will call the Fourth deserters. Darujhistan does not read the Empire's ledger. Coll has a house with a young Azath in the garden and a gate that needs a soldier on it; the Phoenix has a door that needs standing in; the High Alchemist has more doors this morning than people he trusts; and Kruppe arranged all of it before anybody asked, and will never admit to having arranged any of it.`,
 `It's warm, and it's uneasy, and it's both at once, like a room you've been told you can stay in by somebody who hasn't said for how long. The Empire never conquers a city, ${f.c3_innColl ? 'Coll said' : 'they say in Darujhistan'}; it waits. When it comes back, the Fourth will be on the other side of the gate. ${n === 1 ? `There's only you on this side of it.` : `There are ${C7H.num(n)} of you on this side of it.`}`];
     else {

@@ -244,8 +244,8 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
     bbstrap:{name:'Sapper\'s satchel strap', slot:'trinket', who:null, hp:2, line:'A Bridgeburner\'s spare strap, double-stitched, oiled, with a buckle filed smooth so it will not strike a spark. Hedge wore it through Mott Wood and Pale. For carrying something close to the ribs where it cannot swing. He did not say what. He did not need to.'},
     blackedblade:{name:'Blacked Guild blade', slot:'weapon', who:['sgt','ellis','kettle'], atk:1, stat:{guile:1}, line:'Longer than the roof knives, soot-black from point to pommel so that not even the edge catches a lantern. A Guild blade made for a party: for walking into lamplight and out of it again without anyone remembering you were there.'} },
 
-  card:{ id:'chains', name:'Chains', house:'Unaligned', hue:'#9a9aa6',
-    txt:`Chain, hanging out of a dark that has no top to it, every link catching a light that isn't there. At the bottom of the card, where the chain runs out of the picture, the shadow of something long and straight. Tuft turns it twice. "Bound," she says. "At both ends. Whatever holds this doesn't let go of what it takes." She doesn't like it. She doesn't put it back.`,
+  card:{ id:'chains', name:'The Wain', house:'Unaligned', hue:'#9a9aa6',
+    txt:`A wagon, huge and black, coming out of a dark that has no top to it, and chains running back from it into the dark, every link catching a light that isn't there. Across its bed, where the chains run out of the picture, the shadow of something long and straight. Tuft turns it twice. "Bound," she says. "At both ends. Whatever holds this doesn't let go of what it takes." She doesn't like it. She doesn't put it back.`,
     fx:'An enemy that lands a blow on a squadmate takes 2 damage back.' },
 
   scenes:{
@@ -746,7 +746,7 @@ ${S.f.c5_noCard || S.f.c4_noCard ? `She doesn't mention the other times. She's p
     c6_card:()=>{ const c = CARDS[S.card] || CARDS.oponn; return {sp:'The Deck of Dragons', scene:'fete_street', txt:
 `Tuft lays the reading out on the flat top of a mounting-block by the gate, in the light of a paper lantern shaped like a moon, with the Fete going past on every side and not one mask turning to look. Two cards refuse her. The third does not.`,
       html:`<div class="cardinline"><canvas id="icard" width="240" height="360"></canvas></div><div class="note">${esc(c.name)}${c.fx ? ` · ${esc(c.fx)}` : ''}</div>`, oncard:[S.card || 'oponn',false],
-      after:`${S.card === 'chains' ? `Chains. Black links hanging out of a dark with no top to it, and at the bottom, where the chain runs out of the picture, the shadow of something long and straight.
+      after:`${S.card === 'chains' ? `The Wain. A black wagon coming out of a dark with no top to it, chains trailing back from it into the dark, and across its bed the shadow of something long and straight.
 
 Tuft looks at it for a long time. "I don't know this one," she says. "I've never drawn it. I didn't know it was *in* here." She turns it over and back. "Bound at both ends. It takes, and it doesn't let go of what it takes, and it's close. It's *tonight*." She puts it away very carefully, as if it might catch on something.` : S.card === 'hounds' ? `${c.txt}
 

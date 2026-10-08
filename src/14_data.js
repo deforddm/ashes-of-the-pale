@@ -12,7 +12,7 @@ const TPL = {
     epithet:'"Shields, rations, and very little else."',origin:'Cawn, Quon Tali',age:29,service:'Nine years, six of them heavy infantry',height:'Tall. Wider than the doorway she is standing in.',
     weapon:'Short spear, iron-shod, and a rimmed shield that has stopped more than spears',armour:'Chain hauberk, scale gorget, greaves. Everything is scratched. Nothing is dented',
     bio:`Heavy infantry turned marine, which she considers a demotion in everything but pay. Believes in shields, rations, and very little else. Says fewer words in a week than Kettle does before breakfast.`,
-    bio2:`Grew up loading barges on the Cawn docks with her brother Tavore-by-no-relation, called Tav, who joined the Second the year she joined the Third. She has not seen him since the Cawn wharf. She has not stopped looking. Her loyalty is slow to give and does not come back once spent.`,
+    bio2:`Grew up loading barges on the Cawn docks with her brother Tavrin, called Tav, who joined the Second the year she joined the Third. She has not seen him since the Cawn wharf. She has not stopped looking. Her loyalty is slow to give and does not come back once spent.`,
     traits:['Sleeps standing, or looks like it','Will not throw a munition. Will not stand near Kettle when she does','Counts rations aloud','Prays to no one, salutes Hood anyway'],
     gear:['A letter from Tav, three years old, sealed','Whetstone','Hardtack, an unreasonable quantity'],
     get quest(){ return squadQuest('brisk', `Her brother marched with the Second Army. He isn't on any list yet, living or dead. Brisk checks the pits when nobody is watching.`); },
@@ -105,7 +105,7 @@ const CARDS = {
   /* the Sceptre and the Orb only ever turn up as the cards that refuse her */
   sceptre:{name:'Sceptre',house:'Unaligned',hue:'#bdb3a3',txt:'A rod of office, tilted, with nobody\'s hand on it.',fx:'None. It refuses her.'},
   orb:{name:'Orb',house:'Unaligned',hue:'#bdb3a3',txt:'A grey sphere hanging in the dark, with a point of light in it that isn\'t the lamp\'s.',fx:'None. It refuses her.'},
-  chains:{name:'Chains',house:'Unaligned',hue:'#9a9aa6',txt:'Chains hanging out of the dark, bound at both ends, and the shadow of a sword across them.',fx:'An enemy that lands a blow on a squadmate takes 2 damage back.'},
+  chains:{name:'The Wain',house:'Unaligned',hue:'#9a9aa6',txt:'A great wagon coming out of the dark, chains trailing from it to both edges of the card, and the shadow of a sword across its bed.',fx:'An enemy that lands a blow on a squadmate takes 2 damage back.'},
   blank:{name:'The unpainted card',house:'—',hue:'#d8d0c0',txt:'No house. No figure. Gesso and grain, and nothing on it yet.',fx:'None. It isn\'t anyone\'s yet.'},
 };
 const LEVELS = [0,100,250,450,700,1000,1400,1900]; // levels 1..8
