@@ -16,7 +16,7 @@ const C6H = {
   /* a stored roller id as a name, or the fallback ("you", "The sergeant") for the sergeant or anything that isn't an id */
   nm:(id, you) => id !== 'sgt' && typeof id === 'string' && typeof TPL !== 'undefined' && TPL[id] ? NAME(id) : you,
   /* Tuft's moment with the tall guest is still to come (the pillar offers it before anything else) */
-  rakeTuft:() => SQUAD().includes('tuft') && !!S.f.c4_tuftDark && !S.f.c6_badgeCold && !S.f.c6_rakeStep && !S.f.c6_rakeTuft,
+  rakeTuft:() => SQUAD().includes('tuft') && !!S.f.c4_tuftDark && !S.f.c6_badgeCold && !S.f.c6_rakeStep && !S.f.c6_rakeTuft && !S.f.c6_tuft,
   /* ✦ A Courtesy of Darkness: meet the tall guest's eyes and bow the way the Andii do. One try, at the pillar or after Tuft's moment.
      Tuft can't, once he has done her the one courtesy (the getter keeps that right after c6_rake_cold's fx). */
   dark:req => ({t:'Meet his eyes, and bow the way the Andii do.', check:['guile',17], trick:'dark', req,
@@ -190,7 +190,7 @@ ${SQUAD().includes('brisk') ? `Brisk looks at the arch. Two paces wide, and seve
 
 He went backwards while you were busy, into the east gallery, where the mains run on under the Gadrobi District: lantern hooded, the phial held out from his body like a cup filled to the brim. The joints go on that way, and so do Hedge's munitions, and there are lights down there already. More grey cloaks, at more niches, with more small knives.
 
-${SQUAD().includes('kettle') ? `Kettle is in the gallery mouth before you are. "Eleven of Hedge's down there," she says. "And four cussers. I *counted* them in." Her voice doesn't shake at all, which is how you know.` : `The frost is thicker on the pipes this way. You can hear the clay tick.`}`,
+${SQUAD().includes('kettle') ? `Kettle is in the gallery mouth before you are. "Forty of Hedge's down there," she says. "And twelve cussers. I *counted* them in." Her voice doesn't shake at all, which is how you know.` : `The frost is thicker on the pipes this way. You can hear the clay tick.`}`,
         map:["##.##.##","#..##..#","#......#","#..##..#",".#.##.#.","#..##..#","#......#","#..##..#","#......#","##....##"],
         party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
         foes:[['c6_clawhand',2,0],['clawmage',5,0],['assassin',6,1],['assassin',1,3]] }},
@@ -268,8 +268,8 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
     bridgeburners:['The garden held','The Tyrant came up out of an old priest in Lady Simtal\'s garden, and the Fourth stood on a lawn gone white with frost beside the Bridgeburners, four rounds, while Quick Ben opened seven warrens and Whiskeyjack\'s leg broke and a sapling became a house and took the Tyrant in. Then a black dragon drew a sword over the city that chains what it kills, and the Fourth was close enough to hear the chains.'],
     cellars:['Under the crossing','While the Tyrant stood in Lady Simtal\'s garden, the Fourth ran for the vault under the Gadrobi crossing and found grey cloaks setting acid to the wax of forty munitions and twelve cussers in the city\'s gas, on a standing order older than the night. Kettle stopped every drop. Nobody in Darujhistan will ever know how close it came, and the order, in a very neat hand, is in the sergeant\'s coat.'],
     get alley(){ const s = typeof S !== 'undefined' && S && S.f && S.f.c6_steppedIn;
-      return ['The alley', s ? 'The Adjunct walked out of the garden as the Tyrant showed his face, and the Fourth followed her to an alley where a Daru boy with a coin was against a wall, and she told them to hold him. They stood between her and the boy instead, three rounds, in a place where no warren works and whoever falls stays down. A man in a faded crimson cloak finished it. Two women from the Phoenix Inn finished her. Paran carried her away.'
-        : 'The Adjunct walked out of the garden as the Tyrant showed his face, and the Fourth followed her to an alley where a Daru boy with a coin was against a wall, and she told them to hold him. They stood aside. A man in a faded crimson cloak stepped out of a doorway and did what they did not. Two women from the Phoenix Inn finished her. Paran carried her away.']; } },
+      return ['The alley', s ? 'The Adjunct walked out of the garden as the Tyrant showed his face, and the Fourth followed her to an alley where a Daru boy with a coin was against a wall, and she told them to hold him. They stood between her and the boy instead, three rounds, in a place where no warren works and whoever falls stays down. A man in a faded crimson cloak, with a sword in each hand, finished it. Two women from the Phoenix Inn finished her. Paran carried her away.'
+        : 'The Adjunct walked out of the garden as the Tyrant showed his face, and the Fourth followed her to an alley where a Daru boy with a coin was against a wall, and she told them to hold him. They stood aside. A man in a faded crimson cloak, with a sword in each hand, stepped out of a doorway and did what they did not. Two women from the Phoenix Inn finished her. Paran carried her away.']; } },
   endCap:()=>{ const dead = C6H.dead(), w = C6H.words(SQUAD().length);
     return dead.length ? `Dawn in a garden with a house in it. The Fourth counts, and gets ${w}, and counts again, and it stays ${w}.` : S.f.c6_key === 'cellars' ? 'Dawn over a city that does not know how close it came, and a house in a garden that was not there last night.' : 'Dawn in a garden with a house in it, and the Moon\'s Spawn, for the first time since Pale, moving.'; },
   extras:()=>{ const x = []; const dead = C6H.dead(), tA = SQUAD().includes('tuft'), oA = SQUAD().includes('ohl');
@@ -315,7 +315,7 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
   dlg:{
     /* ---- the vault under the crossing: noon on the day of the Fete ---- */
     c6_start:()=>({sp:'Whiskeyjack · Bridgeburners', scene:'cellar', fx:()=>{ S.f.c6_started=1; }, txt:
-`The vault under the Gadrobi crossing, at noon on the day of the Fete. Down the ladder-hole comes the city: drums three streets off, a crowd laughing at something, a man selling masks in a voice like a gull. Down here the pipes hiss on every side the way they always have, and the lantern is on its crate, and forty Moranth munitions sleep in the walls with twelve cussers beside them, and none of them is going to the Fete.
+`The vault under the Gadrobi crossing, at noon on the day of the Fete. Down the ladder-hole comes the city: drums three streets off, a crowd laughing at something, a man selling masks in a voice like a gull. Down here the pipes hiss on every side the way they always have, and the lantern is on its crate, and Hedge's forty munitions sleep in the walls with the Moranth's twelve cussers beside them, and none of them is going to the Fete.
 
 Whiskeyjack is sitting on the crate with the broken seal. He looks up when you come down the ladder, and counts. ${SQUAD().length === 6 ? 'Six' : 'Five'}. ${S.f.c5_ellisThrough ? `You watch him arrive at it, and check it, and find the place where the sixth isn't. He doesn't ask. He knows he's about to be told.` : `You watch him arrive at it, and check it, and let it be right.`}
 
@@ -517,7 +517,7 @@ Hedge looks at her for a long moment. "Was it good?"
 
 Kettle's face does a thing you have only seen it do once, in a crater. "It was *beautiful*."
 
-Hedge puts his hand flat on his chest. "I'm so proud," he says, and means it, and Fiddler turns away so nobody sees his face. ${S.inv.cusser > 0 ? `"And mine? You've still got mine?" "Yes." "*Good.* Keep it. Tonight's not the night. Tonight's a garden with a city under it."` : `"And mine?" "Gone," says Kettle. "Something needed it." Hedge nods, satisfied. "Something always does."`}` : S.inv.cusser > 0 ? `Hedge has found Kettle. "You've still got it? Mine?"
+Hedge puts his hand flat on his chest. "I'm so proud," he says, and means it, and Fiddler turns away so nobody sees his face. ${S.inv.cusser > (maudKept() ? 1 : 0) ? `"And mine? You've still got mine?" "Yes." "*Good.* Keep it. Tonight's not the night. Tonight's a garden with a city under it."` : `"And mine?" "Gone," says Kettle. "Something needed it." Hedge nods, satisfied. "Something always does."`}` : S.inv.cusser > (maudKept() ? 1 : 0) ? `Hedge has found Kettle. "You've still got it? Mine?"
 
 "Yes." Kettle has her hand on the satchel. "I carried it to the hills and back. Whiskeyjack said throw it at anything I liked, and I *didn't*."
 
@@ -525,7 +525,7 @@ Hedge regards her with enormous pity and respect. "Hood's teeth. You've gone Fid
 
 "I heard that," says Fiddler.` : `Hedge has found Kettle. "Where's mine?"
 
-"Gone," says Kettle. "Something needed it."
+"Gone," says Kettle. "Something needed it."${S.inv.cusser > 0 ? ` A hand on the satchel. "I've still got Maud. Maud's Chub's."` : ''}
 
 Hedge nods, satisfied. "Something always does."`) : ''}
 
@@ -646,7 +646,7 @@ Tuft doesn't answer him. Her hand is at her collar, and she doesn't take it away
 `He's where he was, against the wall, with his arms folded, looking at the house. ${S.f.c6_collRing ? `Every so often he turns the ring on his finger, as if checking it's still there.` : `He doesn't look round.`}` :
 `A very big man in plain brown clothes is standing across the street from Lady Simtal's gate with his back to a wall and his arms folded, looking at the house the way you'd look at a dog that used to be yours and has since been taught to bite you.
 
-${S.f.c3_innColl ? `You know him, and then you don't. The Phoenix. The jug. The ruined soldier's shoulders. The shoulders are still a soldier's; the rest has been put back. He's sober. He's been sober, you'd guess, for days, and every one of them hard, and it shows in how still he stands: like a man standing on something that might not hold.` : `He's sober, and it looks new on him, and hard.`}${S.f.c5_collDown ? ` He stands a little crooked, favouring his left side, the way a man stands round a wound that has closed and hasn't yet agreed to it. The last time you saw a man that size, he was going sideways into the grass of a hillside with the Adjunct's sword in him.` : ''}
+${S.f.c3_innColl ? `You know him, and then you don't. The Phoenix. The jug. The ruined soldier's shoulders. The shoulders are still a soldier's; the rest has been put back. He's sober. He's been sober, you'd guess, for days, and every one of them hard, and it shows in how still he stands: like a man standing on something that might not hold.` : `He's sober, and it looks new on him, and hard.`}${S.f.c5_collDown ? ` He stands a little crooked, favouring his left side, the way a man stands round a wound that has closed and hasn't yet agreed to it. The last time you saw a man that size, he was going sideways into the grass of a hillside with the Adjunct's sword in him.${S.f.c5_collTended ? ` His eyes rest on the squad a moment longer than a stranger's would, the way a man looks at a face he last saw in the dark, bent over him.` : S.f.c5_collRefused ? ` His eyes go over the squad, and his jaw sets, the way it set on a dark hillside when he pushed somebody's hands away.` : ''}` : ''}
 
 "Malazans," he says. ${S.f.c3_innColl ? `"Kruppe's road-menders. In Simtal's blue." He doesn't smile. "Of course you are. Kruppe arranges everything, and never where anybody can see him do it."` : `"In Simtal's blue. Hood's breath." He doesn't smile.`}
 
@@ -692,11 +692,11 @@ ${SQUAD().includes('tuft') ? `Tuft is watching the place where the coin was. "Th
 
     c6_rallick:()=>({sp: S.f.c4_rallick ? 'The man from the ridge' : 'A man in a doorway', fx:()=>{ S.f.c6_rallick=1; }, txt: S.f.c6_rallick ?
 `He's still in the doorway, still watching the gate. He hasn't moved. You get the feeling he could stand there a year.` :
-`He's in the doorway of a shuttered house on the south side of the street, in a dark plain coat, with no mask, as if the Fete were weather he'd decided not to be out in. You didn't see him until you were next to him. ${S.f.c4_rallick ? `You know him. The ridge on the Gadrobi roofs; the window three streets north. He knows you too.` : ''}
+`He's in the doorway of a shuttered house on the south side of the street, in a dark plain coat, with a cheap tiger mask hanging from his belt and not on his face, as if the Fete were weather he'd decided not to be out in until he had to. You didn't see him until you were next to him. ${S.f.c4_rallick ? `You know him. The ridge on the Gadrobi roofs; the window three streets north. He knows you too.` : ''}
 
 ${S.f.c4_rallick ? `He looks at you. He doesn't say *go home* this time. He said it on a roof, and you didn't listen then either.` : `"Go home, Malazan," he says, without looking at you. "This isn't your war."`}
 
-He's looking at Lady Simtal's gate. Not the way the big man across the street looks at it. The way a man looks at the place where a thing he has waited five years for is going to happen, and has stopped being able to want it, and is going to do it anyway.
+He's looking at Lady Simtal's gate. Not the way the big man across the street looks at it. The way a man looks at the place where a thing he has waited two years for is going to happen, and has stopped being able to want it, and is going to do it anyway.
 
 ${SQUAD().includes('tuft') ? `Tuft has stopped a pace behind you, staring at him. "Sergeant," she breathes. "He's got it *on* him. Like the Adjunct. Not a sword. Dust. In his clothes, in his hair, on his hands." She takes a step back. "It's like standing next to a very small hole."` : `Kettle, a pace behind you, sniffs. "He smells like a forge that's gone out," she says. "Why does he smell like that?"`}`,
       ch:[{t:'Leave him to his doorway.'}]}),
@@ -924,10 +924,10 @@ ${S.f.c5_croneRake ? `And then he speaks. The voice is low and courteous and ver
 ${SQUAD().includes('tuft') ? `Tuft has come up at your shoulder, and shouldn't have. She's looking at him the way she looked at the Andii on the roof, with her lips parted and her breath smoking. "It's the *house*," she whispers. "Sergeant. The whole house. Standing on a terrace in a mask."${S.f.c4_tuftDark ? `
 
 And the dragon mask turns, a fraction, from you to her.` : ''}` : ''}`,
-      ch:[{t:'Stand still. Let him look at her.', req:()=>SQUAD().includes('tuft') && !!S.f.c4_tuftDark && !S.f.c6_badgeCold && !S.f.c6_rakeStep && !S.f.c6_rakeTuft, fx:()=>{ S.f.c6_rakeTuft=1; }, go:'c6_rake_cold'},
-          {t:'Step between him and Tuft.', req:()=>SQUAD().includes('tuft') && !!S.f.c4_tuftDark && !S.f.c6_badgeCold && !S.f.c6_rakeStep && !S.f.c6_rakeTuft, fx:()=>{ S.f.c6_rakeTuft=1; }, go:'c6_rake_step'},
+      ch:[{t:'Stand still. Let him look at her.', req:()=>C6H.rakeTuft(), fx:()=>{ S.f.c6_rakeTuft=1; }, go:'c6_rake_cold'},
+          {t:'Step between him and Tuft.', req:()=>C6H.rakeTuft(), fx:()=>{ S.f.c6_rakeTuft=1; }, go:'c6_rake_step'},
           C6H.dark(()=>!S.f.c6_darkTried && !C6H.rakeTuft()),
-          {t:'Move on.', req:()=>!(SQUAD().includes('tuft') && !!S.f.c4_tuftDark && !S.f.c6_badgeCold && !S.f.c6_rakeStep && !S.f.c6_rakeTuft)}]}),
+          {t:'Move on.', req:()=>!C6H.rakeTuft()}]}),
     c6_rake_cold:()=>({sp:'The tall guest', fx:()=>{ S.f.c6_badgeCold=1; S.f.c6_rakeLooked=1; }, txt:
 `You don't move. Neither does Tuft.
 
@@ -1097,9 +1097,9 @@ You didn't learn anything. It did.`,
 `The woman in black feathers is smoking on the statue's plinth. "Guard something," she says, without taking the pipe out of the mask.` :
 `A woman in a mask of black feathers is sitting on the plinth of a statue at the west end of the terrace, with her back against somebody's marble aunt, smoking a long clay pipe through the mouth of the mask, which should be impossible, and which she is doing anyway. Her hands are old and dark and her rings are bone. She's watching ${SQUAD().includes('tuft') ? 'Tuft' : 'the squad'}.
 
-${SQUAD().includes('tuft') ? `"Little Meanas," she says, as Tuft goes by, and Tuft stops as if she'd been called by her name. "Come here. No, don't. Stay there; I can see well enough." Smoke. "Somebody's using your ${S.f.c2_key === 'light' ? 'collar' : 'pack'} for a window, girl.${S.f.c5_tuftMarked ? ` And somebody else has put a thumb in your hair.` : ''}${S.f.c4_tuftDark ? ` And *that* one,` : ''}" ${S.f.c4_tuftDark ? `a nod of the feathers toward the tall guest, "knows your face." ` : ''}She taps the pipe on the stone. "Busy. Very busy, for somebody so small."
+${SQUAD().includes('tuft') ? `"Little Meanas," she says, as Tuft goes by, and Tuft stops as if she'd been called by her name. "Come here. No, don't. Stay there; I can see well enough." Smoke. "${S.f.c6_badgeCold || ['glove','shadow','dark'].includes(S.f.c6_tuft) ? `Somebody had you for a window, girl. Not any more, I see.` : `Somebody's using your ${S.f.c2_key === 'light' ? 'collar' : 'pack'} for a window, girl.`}${S.f.c5_tuftMarked ? ` And somebody else has put a thumb in your hair.` : ''}${S.f.c4_tuftDark ? ` And *that* one,` : ''}" ${S.f.c4_tuftDark ? `a nod of the feathers toward the tall guest, "knows your face." ` : ''}She taps the pipe on the stone. "Busy. Very busy, for somebody so small."
 
-"A witch's advice, and free, because it's the Fete. Windows open both ways. Remember that, when you decide what to do about it."
+"A witch's advice, and free, because it's the Fete. Windows open both ways. ${S.f.c6_badgeCold || ['glove','shadow','dark'].includes(S.f.c6_tuft) ? `Remember that, the next time somebody offers you one.` : `Remember that, when you decide what to do about it.`}"
 
 Tuft stares at her. "Who are you?"` : `"Malazans," she says, to nobody. "In blue. Guarding. Oh, that's lovely." Smoke. "Who do you think you're guarding, soldiers?"`}
 
@@ -1116,9 +1116,9 @@ They come over the balustrade from the lake side the way water comes over a weir
 
 ${S.f.c4_key === 'aside' ? `The one in front is older than the rest, grey at the temples. You've seen him before: on Kalam's roof among the dead, looking at the space by your feet where you stood aside; and in an alley under the roofs, sitting against a wall with a hand to his ribs, telling you the Guild wasn't buying.
 
-He smiles. It's the first time you've seen him do it. "Ocelot said you'd be here," he says, in Malazan, with the Daru bend on the vowels. "Ocelot said, if the ones who stand aside are on the terrace tonight, bring a friend." A fifth shape comes over the balustrade behind him, bigger than the rest, and straightens up. "I brought a friend."` : S.f.c4_key === 'shield' && S.kit.includes('guildtoken') ? `The one in front is older than the rest. He looks at your armband, and then at your face, and something in his own face changes, as if checking what he sees against something he's been told.
+He smiles. It's the first time you've seen him do it. "Ocelot's standing word was that you'd turn up again," he says, in Malazan, with the Daru bend on the vowels. "Ocelot's standing word was, if the ones who stand aside are ever in the way again, bring a friend." A fifth shape comes over the balustrade behind him, bigger than the rest, and straightens up. "I brought a friend."` : S.f.c4_key === 'shield' && S.kit.includes('guildtoken') ? `The one in front is older than the rest. He looks at your armband, and then at your face, and something in his own face changes, as if checking what he sees against something he's been told.
 
-"Vell's Malazans," he says. Quietly, in Malazan, with the Daru bend. "Ocelot's clan owes you a boy." His blade doesn't come up. It doesn't go down either. "We've business at the far end of the house tonight. Not with you."` : `The one in front is older than the rest. "Guards," he says, in Daric, and then, looking harder, in Malazan: "Not guards."${preUsed('house_guards') ? ` His eyes go to Kettle's satchel. "The stable yard. The whole hill heard you."` : ''} His blade comes up. "Doesn't matter. Tonight you're in the way."`}
+"Vell's Malazans," he says. Quietly, in Malazan, with the Daru bend. "Ocelot's clan owes you a boy." His blade doesn't come up. It doesn't go down either. "We've business at the far end of the house tonight. Not with you."` : `The one in front is older than the rest. "Guards," he says, in Daru, and then, looking harder, in Malazan: "Not guards."${preUsed('house_guards') ? ` His eyes go to Kettle's satchel. "The stable yard. The whole hill heard you."` : ''} His blade comes up. "Doesn't matter. Tonight you're in the way."`}
 
 ${SQUAD().includes('kettle') ? `Kettle has her hand on the satchel. "There's a whole house under us," she says, very fast. "And a hall full of candles, and gas in the walls. Sharpers only, Sergeant. Small ones. *Small.*"` : ''}`,
       ch:[{t:'Hold up Vell\'s token.', req:()=>S.f.c4_key === 'shield' && S.kit.includes('guildtoken'), go:'c6_knives_pass'},
@@ -1168,7 +1168,7 @@ Down on the lower terrace the music is playing as if it had never stopped. Every
 
     /* ---- the duel ---- */
     c6_duel:()=>({sp:'The terrace', scene:'fete_hall', txt:
-`He's come in. The man from the doorway, in the same plain dark coat, with no mask, moving through the Fete the way a knife moves through a loaf: not fast, not slow, and everything parting.
+`He's come in. The man from the doorway, in the same plain dark coat, with the cheap tiger mask on his face now, moving through the Fete the way a knife moves through a loaf: not fast, not slow, and everything parting.
 
 You're three paces from him when you see where he's going.
 
@@ -1184,7 +1184,7 @@ It isn't an accident. Nothing about him is an accident. His shoulder takes Orr's
 
 The terrace goes silent. The music doesn't; nobody's told the gallery. It goes on, bright and silly, over a hundred people who have all stopped moving at once.
 
-Orr looks at him. He looks at the plain coat, and the plain face, and the empty hands. Then he laughs, a short, delighted, contemptuous sound. "A duel? With *you*?" He wipes the wine off his chest with two fingers. "At once. Here. Who seconds you?"
+Orr looks at him. He looks at the plain coat, and the cheap tiger mask, and the empty hands. Then he laughs, a short, delighted, contemptuous sound. "A duel? With *you*?" He wipes the wine off his chest with two fingers. "At once. Here. Who seconds you?"
 
 The man in the plain coat looks round the terrace. Nobody moves. Nobody on the whole terrace is going to second a man with no name against Turban Orr, in Turban Orr's own city.
 
@@ -1523,7 +1523,7 @@ ${[SQUAD().includes('ellis') ? `At the end of the line, Ellis has gone still in 
           {t:'"Tuft. It\'s your call."', req:()=>S.loy.tuft <= -2, go:'c6_tuft_cold'},
           {t:'"She\'s a marine. She stands where I put her."', req:()=>S.loy.tuft > -2, fx:()=>{ S.f.c6_defied=1; }, go:'c6_tuft_ask'},
           {t:'"She\'s a marine. She stands where I put her."', req:()=>S.loy.tuft <= -2, fx:()=>{ S.f.c6_defied=1; }, go:'c6_tuft_cold'},
-          {t:'"Do what he says, Tuft."', fx:()=>{ S.f.c6_keptHow='handed'; }, go:'c6_tuft_kept'}]}),
+          {t:'"Do what he says, Tuft."', req:()=>!S.f.c6_badgeCold, fx:()=>{ S.f.c6_keptHow='handed'; }, go:'c6_tuft_kept'}]}),
     c6_tuft_ask:()=>({sp:'Tuft', scene:'fete_garden', txt:
 `${S.f.c6_defied ? `The grey cloak inclines his head. "Of course," he says. "Where would you put her, Sergeant?" And you find you don't know, and he watches you not know, and waits.
 
@@ -1545,7 +1545,7 @@ ${S.f.c6_noCard ? `You told her no at the gate. She isn't asking you for a readi
 
 The grey cloak waits. He's good at waiting. He's been waiting, you think, since the plain.`,
       ch:[{t:'Stand next to her.', fx:()=>{ S.f.c6_selfDrawn=1; }, go:()=>cardSequence(()=>talk('c6_tuft_card'), {card:'blank', self:true})},
-          {t:'"Not now, Tuft. Do what he says."', fx:()=>{ S.f.c6_keptHow='refused'; }, go:'c6_tuft_kept'}]}),
+          {t:'"Not now, Tuft. Do what he says."', req:()=>!S.f.c6_badgeCold, fx:()=>{ S.f.c6_keptHow='refused'; }, go:'c6_tuft_kept'}]}),
     c6_tuft_cold:()=>({sp:'Tuft', scene:'fete_garden', txt:
 `She doesn't look at you.
 
@@ -1555,8 +1555,10 @@ She hasn't looked at you properly for a long while. You've spent her the way ser
 
 ${S.f.c2_key === 'light' ? `Her hand goes to the badge on her collar and stays there, the way you'd keep a hand on a door so it won't swing.` : `She shrugs off her pack and kneels on the wet grass and opens it, and begins to feel in the bottom of it for something wrapped in a stocking.`}
 
-The grey cloak smiles at her. It's a kind smile. That's the worst of it.`,
-      ch:[{t:'"Tuft. Stop. Look at me."', check:['might',12,'sgt'], fx:()=>{ S.f.c6_keptHow='cold'; S.f.c6_coldTried=1; }, // the sergeant's own voice, the one for "hold" on a line
+The grey cloak smiles at her. It's a kind smile. That's the worst of it.${S.f.c6_badgeCold ? `
+
+Then her hand stops. ${S.f.c2_key === 'light' ? `She unpins the badge and looks down at it on her palm.` : `She has the stocking out, and the badge out of it, silver and enamel, a hand on a flame, and she looks down at it on her palm.`} There's frost on the silver. The grey cloak's smile stays where it is a moment too long.` : ''}`,
+      ch: S.f.c6_badgeCold ? [{t:'Let her tell him.', go:'c6_tuft_dark'}] : [{t:'"Tuft. Stop. Look at me."', check:['might',12,'sgt'], fx:()=>{ S.f.c6_keptHow='cold'; S.f.c6_coldTried=1; }, // the sergeant's own voice, the one for "hold" on a line
            edges:()=>[S.f.c1_plantMarine && ['Tattersail told you to stand next to her', 1], S.f.c6_rakeStep && ['you stepped between her and the tall guest', 1], S.f.c6_defied && ['you told him she stands where you put her', 1],
              S.f.c6_noCard && ['you told her no at the gate', -1], S.f.c5_tuftHeld && ['you held her back on the hillside', -1]],
            near:{t:'She stops. But the grey cloak watched you make her, and he has a very good memory for sergeants.', fx:()=>{ S.f.c6_clawNoted=1; }},
@@ -1573,7 +1575,7 @@ Then she looks at you. Properly. It's been a while.
 
 ${S.f.c1_plantMarine ? `*When she does*, a cadre mage told you once, in the cold outside a tent, *be standing next to her.*` : ''}`,
       ch:[{t:'Stand next to her.', fx:()=>{ S.f.c6_selfDrawn=1; }, go:()=>cardSequence(()=>talk('c6_tuft_card'), {card:'blank', self:true})},
-          {t:'"No. Do what he says."', fx:()=>{ S.f.c6_keptHow='refused'; }, go:'c6_tuft_kept'}]}),
+          {t:'"No. Do what he says."', req:()=>!S.f.c6_badgeCold, fx:()=>{ S.f.c6_keptHow='refused'; }, go:'c6_tuft_kept'}]}),
     c6_tuft_card:()=>{ const c = CARDS.blank || {name:'The unpainted card', fx:''}; const gw = (SQUAD().includes('brisk') && S.gear.brisk && S.gear.brisk.trinket === 'otatglove') ? 'brisk' : 'sgt';
       return {sp:'The unpainted card', scene:'fete_garden', txt:
 `She draws it standing up, in the dark by the fountain where the lantern went out, with you at her shoulder close enough to feel her shaking, and the grey cloak three paces off with his hands folded, and the Fete going on over all your heads like weather.
@@ -1753,10 +1755,12 @@ She hasn't left the squad. She'll walk back to the crossing with you in the morn
 
     /* ---- the Tyrant ---- */
     c6_tyrant:()=>{ const kn = S.f.c6_mammotKnown, eye = C6H.here(S.f.c6_mammotEye) ? S.f.c6_mammotEye : null, nm = id => C6H.nm(id, 'you');
-      return {sp:'The old priest', scene:'garden_storm', fx:()=>{ if (!S.f.c6_tuft) S.f.c6_tuft='kept'; S.f.c6_tyrantUp=1; }, txt:
+      return {sp:'The old priest', scene:'garden_storm', fx:()=>{ if (!S.f.c6_tuft) S.f.c6_tuft = S.f.c6_badgeCold ? 'dark' : 'kept'; S.f.c6_tyrantUp=1; }, txt:
 `${kn ? `You're watching the white steps when it starts, because of what ${nm(kn)} saw on the terrace; which is why you see the rest.` : `You're looking at the sky when it starts, which is why you miss the rest.`}
 
-Over the lake, the Moon's Spawn lets something fall. A shape drops off its black underside, opens, and catches itself on the air; then another, and another. Five. Winged, long-necked, bigger than any bird has a right to be, and the first of them is red where the lanterns catch it. They go east over the city, low and fast and without a sound, toward the Gadrobi Hills and the barrow. ${kn ? `You see them only at the edge of your eye. You don't look up.` : `Nobody in the garden sees them but you.`}
+Out of the east, over the city, five shapes are coming back toward the Moon's Spawn. Winged, long-necked, bigger than any bird has a right to be, and the first of them is red where the lanterns catch it. They fly low and slow and without a sound, the way hurt things fly: the red one with a wing that won't open all the way, the last of them dropping behind and labouring to catch up. Wherever they went tonight, it cost them. ${kn ? `You see them only at the edge of your eye. You don't look up.` : `Nobody in the garden sees them but you.`}
+
+Up at the terrace balustrade there's a glass of wine on the rail, untouched, and nobody beside it. The tall guest has gone from the Fete. Nobody saw him go.
 
 ${kn ? `The old priest in the Jaghut mask comes down the white steps. You see him come. Nobody else does.` : `The old priest in the Jaghut mask has come down the white steps. You didn't see him come. Nobody did.`} He walks across the lawn slowly, an old man's walk, with his hands folded in his sleeves, and the couples on the gravel step out of his way without looking at him, the way you'd step out of a draught.
 
@@ -1897,7 +1901,7 @@ He's gone somewhere. You can see it. His body is here, standing, and he is not. 
     c6_bb_hedge:()=>({sp:'Hedge', scene:'garden_storm', fx:()=>{ S.f.c6_azath=1; if (SQUAD().includes('kettle') && S.inv.cusser > (maudKept() ? 1 : 0) && !S.f.c6_hedgeCusser) { S.f.c6_hedgeCusser=1; S.inv.cusser -= 1; loy('kettle',1); } }, txt:
 `It isn't you who shouts it. It's Hedge.
 
-${SQUAD().includes('kettle') && S.inv.cusser > 0 && !S.f.c6_hedgeCusser ? `He's beside Kettle, with his hand out, open. ${preUsed('tyrant_garden') ? `"You threw at *that*," he says, wondering. "With a *sharper*. Hood's teeth, girl." Then: ` : ''}"Mine," he says. "Falari. Give it back."
+${SQUAD().includes('kettle') && S.inv.cusser > (maudKept() ? 1 : 0) && !S.f.c6_hedgeCusser ? `He's beside Kettle, with his hand out, open. ${preUsed('tyrant_garden') ? `"You threw at *that*," he says, wondering. "With a *sharper*. Hood's teeth, girl." Then: ` : ''}"Mine," he says. "Falari. Give it back."
 
 And she does. She takes Hedge's cusser out of the satchel, the one he put into her arms in the vault like a baby not ten days ago, the one she's carried to the hills and back and never thrown, and she puts it in his hand. He grins at her, all his missing teeth.
 
@@ -1949,17 +1953,15 @@ Mallet looks at the leg for a long time. He doesn't say what he sees. He looks a
 
 Over the roofs down the hill, over the Daru District, where the Adjunct went, something is going up into the sky. Pale. Enormous. Wrong. It unfolds as it rises the way a sheet unfolds when you shake it out of a window: too many joints, too many edges, wings that aren't the shape of wings, a long pale neck and a head at the end of it that is almost a dragon's and isn't. It's the size of a ship. It's bigger than a ship.
 
-And at the terrace balustrade above you, where the tall guest stood with his untouched wine: the glass, on the rail. Nobody beside it.
+And up the hill, beyond Lady Simtal's roofs, where an old bell-tower stands dark against the lanterns, something black unfolds off the top of it.
 
-Above the house, blotting out the Moon's Spawn, something black unfolds.
-
-You'll never be able to describe it. You'll try, for years. Black, and huge, and the shape a child draws when you say *dragon*, only the child was right; and it goes up over Lady Simtal's roof and out over the city toward the pale thing with two strokes of its wings, and every lamp in Darujhistan gutters in the wind of it.
+You'll never be able to describe it. You'll try, for years. Black, and huge, and the shape a child draws when you say *dragon*, only the child was right; and it comes off the tower and out over the city toward the pale thing with two strokes of its wings, and every lamp in Darujhistan gutters in the wind of it.
 
 They meet over the city.
 
 The whole of Darujhistan is in the street with its face turned up. You can hear it: not screaming. Silence. A hundred thousand people not making a sound.
 
-The black one drives the pale one down. Onto the roofs. You see it go, over the Daru District, and the black one goes down after it, and for a moment there's nothing, and then there's *darkness*: a darkness coming off something on a roof, off a sword, you'd swear, a sword you can't see, only what comes off it. Smoke. Black smoke, trailing, in long heavy loops like chain.
+The black one drives the pale one back up the hill, over the garden, so low the dead lanterns swing in the trees, and down behind a wall a little way up the hill, in among the great houses. The black one goes down after it, and for a moment there's nothing, and then there's *darkness*: a darkness coming up from behind that wall, off something in the street there, off a sword, you'd swear, a sword you can't see, only what comes off it. Smoke. Black smoke, trailing, in long heavy loops like chain.
 
 The sound comes a heartbeat later, faint, over the whole city at once. Chains. The sound of chains being dragged over stone a long way down, by a great many hands.
 
@@ -2079,9 +2081,9 @@ You feel it before you see it. The air in the ladder-shaft goes heavy and strang
 
 Then you're out in the crossing, and the whole of the Gadrobi District is in the street with its face turned up.
 
-Over the Daru roofs there are two shapes in the sky the size of ships. One is pale and wrong, all joints and edges, almost a dragon and not. The other is black, the shape a child draws when you say *dragon*, only the child was right. They're fighting over the city, and every lamp in the Gadrobi District gutters in the wind of their wings.
+Over the Daru roofs there are two shapes in the sky the size of ships. One is pale and wrong, all joints and edges, almost a dragon and not. The other is black, the shape a child draws when you say *dragon*, only the child was right, and it came up off an old bell-tower on the hill. They're fighting over the city, and every lamp in the Gadrobi District gutters in the wind of their wings.
 
-The black one drives the pale one down, onto the roofs. It goes down after it. For a moment there's nothing. Then there's a darkness on a roof over the Daru District, coming off something you can't see, a sword, you'd swear: black smoke, trailing, in long heavy loops like chain.
+The black one drives the pale one back up the hill, toward the great houses of the Estate District, and down behind the walls up there. It goes down after it. For a moment there's nothing. Then there's a darkness rising up there among the great houses, coming off something you can't see, a sword, you'd swear: black smoke, trailing, in long heavy loops like chain.
 
 The sound comes a heartbeat later, faint, over the whole city at once. Chains, dragged over stone, a long way down, by a great many hands.
 
@@ -2154,7 +2156,7 @@ ${SQUAD().includes('brisk') ? `Brisk is looking at you. She's always looking at 
 
 ${S.f.c4_key === 'aside' ? `On the roof you stepped aside, and a boy called Vell looked at you over his shoulder, and you've carried the look all week. You're not carrying another.` : `On the roof you stood. You find, in an alley, with the Empress's own hand on the other side of the gap, that you're going to stand again, and that you'd known it since the gate.`}
 
-${SQUAD().includes('brisk') ? `Brisk is on your left before your foot is down. Her shield comes up beside yours, the rims overlapping a hand's width, the way they did at Nathilog, the way they did on the roof.` : `The squad closes up round you before your foot is down, without being told.`}
+${SQUAD().includes('brisk') ? `Brisk is on your left before your foot is down. Her shield comes up beside yours, the rims overlapping a hand's width, the way they did at Nathilog${S.f.c4_key === 'shield' ? `, the way they did on the roof` : ''}.` : `The squad closes up round you before your foot is down, without being told.`}
 
 The Adjunct looks at you over the shields. Her face does nothing. It does nothing for a long moment, very completely. Then she takes her hand off the boy's chest.
 
@@ -2180,11 +2182,11 @@ And once, she went down on one knee in the wet. ${pre ? `Not from the sharper; t
 ` : ''}
 And in the third round, a man steps out of the doorway.
 
-A man in a faded crimson cloak, with a plain sword. You'd swear the doorway was empty. You'd swear it on anything. He doesn't say a word. He simply comes out of the dark at the Adjunct's flank, between one of her cuts and the next, and his sword goes in under her guard, once, and out.
+A squat, dark man in a faded crimson cloak, with a plain sword in each hand. You'd swear the doorway was empty. You'd swear it on anything. He doesn't say a word. He simply comes out of the dark at the Adjunct's flank, between one of her cuts and the next, and she turns to meet him, and she gives ground: two blades against her one, and no sorcery in any of it for the otataral to eat. One of his swords opens her shoulder.
 
 She breaks off.
 
-She steps back, with one hand pressed flat to her side, and looks at the man in crimson for a long moment, and then at the Fourth; and then she goes, up the alley past the blue lamp, fast, not running, and around the corner.
+She steps back, with one hand pressed to the shoulder, and looks at the man in crimson for a long moment, and then at the Fourth; and then she goes, up the alley past the blue lamp, fast, very nearly running, and around the corner.
 
 The man in crimson looks at you. He doesn't speak. He goes back into the doorway, and the doorway is empty.
 
@@ -2250,9 +2252,9 @@ The Adjunct doesn't look at you again. You've done what she'd have expected of a
 
 The boy looks at you, though. Over her shoulder, with his back against the brick and the coin in his fist.${S.f.c3_innCrokus ? ` It's the look from the Phoenix, when you told him about Pale: *and you lived*.` : ''} He's still looking at you when a man steps out of the doorway.
 
-A man in a faded crimson cloak, with a plain sword. You'd swear the doorway was empty. He doesn't say a word. He comes out of the dark at her flank, and his sword goes in under her guard, once, and out.
+A squat, dark man in a faded crimson cloak, with a plain sword in each hand. You'd swear the doorway was empty. He doesn't say a word. He comes out of the dark at her flank, and she turns to meet him, and it's two blades against her one, and no sorcery in any of it, and she gives ground. One of his swords opens her shoulder.
 
-She breaks off. She steps back with a hand pressed to her side, and looks at him, and goes: up the alley past the blue lamp, fast, and round the corner.
+She breaks off. She steps back with a hand pressed to the shoulder, and looks at him, and goes: up the alley past the blue lamp, fast, very nearly running, and round the corner.
 
 The boy is gone. You didn't see him go.
 
@@ -2273,11 +2275,11 @@ You know it was the safe thing. Everybody in the alley knows it was the safe thi
     c6_alley_sky:()=>({sp:'The sky over Darujhistan', scene:'dragon_sky', fx:()=>{ S.f.c6_azath=1; }, txt:
 `The alley lets out into a lane, and the lane into a little square with a well in it, and everybody in the square is standing still with their faces turned up.
 
-Over the Daru roofs, the pale thing that went up out of the alley mouth is fighting something black.
+Over the Daru roofs, the pale thing that went up out of the alley mouth is fighting something black, that came up off an old bell-tower on the hill.
 
 You'll never be able to describe the black one. You'll try. It's the shape a child draws when you say *dragon*, only the child was right, and it's the size of the Spawn's shadow, and every lamp in the square gutters in the wind of its wings. The two of them go round each other over the city like hawks over a field, and nobody in the square makes a sound. A hundred thousand people in the streets of Darujhistan, and not one of them making a sound.
 
-The black one drives the pale one down. Onto the roofs, three streets off. It goes down after it. For a moment there's nothing. Then there's *darkness* on a roof over the Daru District, coming off something you can't see, off a sword, you'd swear: black smoke, trailing, in long heavy loops like chain.
+The black one drives the pale one back up the hill, toward the great houses of the Estate District, and down behind the walls up there. It goes down after it. For a moment there's nothing. Then there's *darkness* rising up there among the great houses, coming off something you can't see, off a sword, you'd swear: black smoke, trailing, in long heavy loops like chain.
 
 The sound comes a heartbeat later, faint, over the whole city at once. Chains, dragged over stone a long way down, by a great many hands.
 
@@ -2308,7 +2310,7 @@ You wait. You don't know why you wait. It isn't your alley, and it isn't your bu
 
 After a while there are footsteps from the other way. A man in a dust-coloured captain's cloak, walking fast, following the blood. There's a scabbard at his hip with nothing in it, slapping his thigh at every step.
 
-Paran. The last time you saw him he was standing on a frozen lawn, and then he wasn't. Wherever he's been since, it's in his face.`,
+Paran. The last time you saw him he was by the pond in Lady Simtal's garden, with his hand on the pommel of a sword. Wherever he's been since, it's in his face.`,
       ch:[{t:'Follow him.', go:'c6_alley_paran'}]}),
     c6_alley_paran:()=>({sp:'The Adjunct', scene:'alley_night', fx:()=>{ S.f.c6_lornEnd=1; }, txt:
 `She's lying at the end of the alley by a rain-barrel, on her back on the wet cobbles, with her sword beside her hand where it fell.${S.f.c6_lornKnelt ? ` One knee of her breeches is torn through and grey with cobble-grit. You put that there. It's the only mark on her that's yours.` : ''}
@@ -2355,7 +2357,7 @@ Nobody in the Fourth says who's under it. Nobody knows. The man in the plain coa
 
 An old man in dark red robes is standing at the edge of the yard with his hands folded, looking at the mounds the way you'd look at a grave you had come a long way to stand at.${C6H.here(S.f.c6_darkMissed) ? ` When the Fourth comes level with him he turns his head, and finds ${S.f.c6_darkMissed === 'sgt' ? 'you' : NAME(S.f.c6_darkMissed)}, and inclines his own: once, slow, with the eyes kept up. The right way. Then he goes back to his mounds, a man who has corrected a sum and does not need to be thanked for it.` : ''}
 
-Whiskeyjack is on a bench by the fountain with his leg out in front of him, splinted to a halberd shaft from hip to heel. Mallet is sitting beside him with his bag between his feet, and says, to nobody in particular, "It's not going to be right."
+Whiskeyjack is on a bench by the fountain with his leg out in front of him, splinted to a halberd shaft from hip to heel. Mallet is sitting beside him with his bag between his feet, and says, to nobody in particular, "It's not right. It wants days he won't give me."
 
 "No," says Whiskeyjack.
 
@@ -2436,7 +2438,7 @@ She puts her hand flat on her gorget, over the place where the letter is. Still 
 
 "I'm not even sad," she says. "Is that bad? I'm not sad at all. I carried it to the hills and back and I gave it to the man who made it and he killed a *god* with it. Or nearly. Or whatever that was." She turns her head. "Put it in the ledger, Sergeant. *Returned to owner.*"` : `She's lying on her back on the wet lawn with the satchel on her chest.
 
-"Hedge ran at a tyrant with a cusser," she says, to the sky. "Laughing. I watched him do it." A pause. "I didn't have one to give him. I've never wanted to have one so much in my life. Not to throw. To *give*."`) : S.f.c6_key === 'cellars' ? `${SQUAD().includes('ohl') ? `Ohl has bandaged her hand. She's holding it up in front of her face, turning it over, looking at it as if it belonged to somebody else.` : `She's wrapped her burned hand in a strip of Simtal's blue armband. She's holding it up in front of her face, turning it over.`}
+"Hedge ran at a tyrant with a cusser," she says, to the sky. "Laughing. I watched him do it." A pause. "I didn't have one to give him.${S.inv.cusser > 0 ? ` Only Maud, and Maud's Chub's. She isn't mine to give.` : ''} I've never wanted to have one so much in my life. Not to throw. To *give*."`) : S.f.c6_key === 'cellars' ? `${SQUAD().includes('ohl') ? `Ohl has bandaged her hand. She's holding it up in front of her face, turning it over, looking at it as if it belonged to somebody else.` : `She's wrapped her burned hand in a strip of Simtal's blue armband. She's holding it up in front of her face, turning it over.`}
 
 "It's going to scar," she says. "Chub lost three fingers. I've got a scar." She almost smiles. "I'm catching him up."
 
@@ -2485,7 +2487,7 @@ ${dead.length ? `"I keep reading the last ${dead.length === 1 ? 'one' : 'ones'},
 
 ` : ''}${S.f.c6_ohlLorn ? `"I wrote her too," he says. "The Adjunct. *Lorn. The Empress's hand.* I never had my hands in her. I couldn't have; there was nothing in that alley for my hands to find." He looks at the name. "The list is the ones I would have tried for. I'd have tried for her. I've been sitting here an hour, and that's the most frightening thing I know about myself."
 
-` : S.f.c6_key === 'bridgeburners' ? `"I don't write legs," he says, of Whiskeyjack. "Mallet's right, though. It won't be right." He looks at the house at the end of the lawn. "And the old priest. I didn't write him. He went into *that*. I don't know where that goes." He folds the oilcloth along its creases. "Nobody's dead until I know where they went."
+` : S.f.c6_key === 'bridgeburners' ? `"I don't write legs," he says, of Whiskeyjack. "Mallet's right, though. It'd knit, if he'd lie still for it. He won't." He looks at the house at the end of the lawn. "And the old priest. I didn't write him. He went into *that*. I don't know where that goes." He folds the oilcloth along its creases. "Nobody's dead until I know where they went."
 
 ` : S.f.c6_key === 'cellars' ? `"Eight of them under the crossing," he says. "Grey cloaks. I didn't write them." He turns the charcoal over. "I've decided they're not mine. I'm allowed one of those a year. I've used it."
 
@@ -2513,7 +2515,7 @@ ${SQUAD().includes('tuft') ? `Tuft, beside you: "It's a *house*," she says. "Ser
 
 ${SQUAD().includes('kettle') ? `Kettle, on the step below: "Is it going to stay there?" "Yes." "In a *garden*?" "Yes." She considers this. "The Daru are going to have to build round it." She sounds, for the first time since the hills, almost cheerful.` : ''}
 
-Over the lake the Moon's Spawn is a long way west now, low, going, with the sun coming up behind it and the light going round it the way water goes round a stone. Nobody in the city is looking at it. For once it's because they don't need to.
+Over the lake the Moon's Spawn is a long way west now, low, going, with the sun coming up over the hills at your back and lying gold along its flank. Nobody in the city is looking at it. For once it's because they don't need to.
 
 Below the hill, the city wakes up, the way it always does, as if nothing had happened, and begins, all at once, to shout about fish.`,
       ch:[{t:'Sleep. Or pretend.', fx:()=>{ S.f.c6_done=1; }, go:()=>chapterEnd(6, S.f.c6_key || 'bridgeburners')}]}),
