@@ -1,7 +1,8 @@
 /* ============ tricks: what a hard check teaches ============
    Ten of them, one or two a chapter from the Prologue to the Fete, each behind an optional hard check (DC 15–17, a ✦ on the choice).
    Whoever makes the roll carries the trick (S.tricks[k] = {who, ch, left}). 'fight' tricks work once a fight; 'chapter' tricks have
-   charges that come back at the start of every chapter. The battle half of each lives in 31b. */
+   charges that come back at the start of every chapter. The battle half of each lives in 31b. 'elder' tricks draw on an Elder warren
+   (Kurald Galain, Omtose Phellack), which otataral does not quell, so they still work in a nomagic fight. */
 const TRICKS = {
   fold:{name:'Tattersail\'s Fold', ch:0, use:'chapter', n:1, where:'Tattersail\'s tent',
     lore:'A cadre mage\'s trick with the Deck: fold the turned card back into the spread and let another come up. Tattersail does it without looking. The Deck lets her, mostly.',
@@ -26,14 +27,14 @@ const TRICKS = {
     fx:'Once a fight, and it does not use the bearer\'s action: swap places with any squadmate within 5. Nobody gets a free swing.'},
   otataral:{name:'Otataral Dust', ch:5, use:'chapter', n:2, ab:'t_otataral', not:['tuft','ohl'], where:'the ward-stone the Adjunct\'s sword cut',
     notWhy:{tuft:'won\'t touch it. Meanas goes quiet near it', ohl:'won\'t touch it. Denul goes thin near it'},
-    lore:'Red dust out of Seven Cities, where nothing magical has lived since the old wars. The Adjunct\'s sword is made of it. The cut she left in the ward-stone was still shedding it.',
+    lore:'Red dust mined at the edge of the Otataral Desert, in Seven Cities. The Adjunct\'s sword is made of it. The cut she left in the ward-stone was still shedding it.',
     fx:'Twice a chapter: a pinch thrown at an enemy within 3. For the rest of the fight its sorcery fails: no lances, no slams, no shadow-bolts, one blow a turn. Tuft and Ohl will not carry it.'},
-  dark:{name:'A Courtesy of Darkness', ch:6, use:'fight', ab:'t_dark', sorcery:true, where:'the terrace at Lady Simtal\'s',
+  dark:{name:'A Courtesy of Darkness', ch:6, use:'fight', ab:'t_dark', sorcery:true, elder:true, where:'the terrace at Lady Simtal\'s',
     lore:'A tall guest in a black dragon mask inclined his head, once, the way the Tiste Andii do to someone whose face they know. Something of Kurald Galain came with the nod and has not left.',
-    fx:'Once a fight: a 3×3 of Andii dark within 5, for 2 rounds. Nothing shoots into it or out of it, and enemies standing in it are −2 to hit. Dead in otataral.'},
-  rime:{name:'Omtose Rime', ch:6, use:'fight', ab:'t_rime', sorcery:true, where:'the Tyrant\'s frost on the garden lawn',
+    fx:'Once a fight: a 3×3 of Andii dark within 5, for 2 rounds. Nothing shoots into it or out of it, and enemies standing in it are −2 to hit. Elder sorcery: otataral does not touch it.'},
+  rime:{name:'Omtose Rime', ch:6, use:'fight', ab:'t_rime', sorcery:true, elder:true, where:'the Tyrant\'s frost on the garden lawn',
     lore:'Jaghut ice, Omtose Phellack, the warren of the old cold. A ring of it went across the lawn and stopped at the bearer\'s boots, and a little of it stayed.',
-    fx:'Once a fight: an enemy within 4 is rimed. It loses its next turn (a boss shakes that off on 12+), and every hit on it does +2 through the next round. Dead in otataral.'},
+    fx:'Once a fight: an enemy within 4 is rimed. It loses its next turn (a boss shakes that off on 12+), and every hit on it does +2 through the next round. Elder sorcery: otataral does not touch it.'},
 };
 /* who carries trick k, if they are still with the squad */
 const trickBy = k => { const t = S && S.tricks && S.tricks[k]; return t && SQUAD().includes(t.who) ? t.who : null; };

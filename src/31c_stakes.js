@@ -56,8 +56,6 @@ const FOE_SK = {
   houseguard:['reach'], housecaptain:['reach','rally'],
   clawmage:['daze'], andiihunter:['darkness'],
 };
-const SKN = {pin:'pins', drain:'drains', bleed:'bleeds', pounce:'pounces', howl:'howls', shadowstep:'shadow-steps', parry:'parries', mark:'marks a target',
-  chill:'chills', root:'holds', hitrun:'hits and runs', shove:'shoves', reach:'reach 2', rally:'rallies', daze:'dazes', darkness:'darkness'};
 const SORC = ['drain','shadowstep','howl','daze','darkness','mark']; // what otataral takes away
 function foeSkills(k, f){ if (DIFF() === DIFFS.story) return []; return (f.sk || FOE_SK[k] || []).slice(); }
 const hasSk = (u, k) => !!(u && u.sk && u.sk.includes(k) && !(u.otat && SORC.includes(k)));
@@ -145,7 +143,7 @@ const PATRONS = {
   brisk:{god:'Hood', title:'Hood, Lord of Death', txt:id => `Somewhere there is a gate the size of the world, and a grey hand resting on it.\n\nBrisk, on her back in the dirt, lifts two fingers to her brow the way she always has, to no one in particular. She has never prayed. She has always saluted. The gate does not close. It only does not open any wider.\n\n*Not her. Not yet. Not the ones she is lying across.*`},
   kettle:{god:'Oponn', title:'Oponn, the Twins', txt:id => `A coin rolls out of Kettle's satchel. Nobody put a coin in Kettle's satchel. It spins on its edge in the dirt for much longer than a coin should, and everyone who is still awake watches it, and it falls the right way.\n\nThe Lady pulls. Somewhere, back to back with her, her brother is already counting what it will cost.`},
   tuft:{god:'Shadowthrone', title:'Shadowthrone, King of High House Shadow', txt:id => `The dark at the edge of the field takes the shape of a Hound and lies down across Tuft's legs, heavy and warm as a dog by a fire. The cards in her sleeve go cold all at once.\n\nHigh House Shadow does not do favours. It keeps accounts. Tuft, when she can talk again, says it was polite.`},
-  ohl:{god:'Soliel', title:'Soliel, Lady of Health', txt:id => `Ohl, face down, says something in Ehrlii, and for once it is not an argument with Hood. It is a prayer, and it is to a woman.\n\nThe air smells of temple oil from a city two thousand leagues away, and the bleeding stops. Soliel, Lady of Health, does not often answer soldiers. Ohl has been asking for twenty-two years.`},
+  ohl:{god:'Soliel', title:'Soliel, Mistress of Healing', txt:id => `Ohl, face down, says something in Ehrlii, and for once it is not an argument with Hood. It is a prayer, and it is to a woman.\n\nThe air smells of temple oil from a city two thousand leagues away, and the bleeding stops. Soliel, Mistress of Healing, does not often answer soldiers. Ohl has been asking for twenty-two years.`},
   ellis:{god:'Cotillion', title:'Cotillion, the Rope', txt:id => `Ellis's gloved hand closes on a cord that is not there, and it holds her weight. And the next one's. And the next.\n\nThe Patron of Assassins has a fondness for people who know how to fall, and Ellis has been falling the right way since a dock in Genabaris.`},
   sgt:{god:'Fener', title:'Fener, the Boar of Summer', txt:id => `Something huge and hot goes past in the dark, smelling of summer and blood, and the ground shakes the way it shakes under a charge.\n\nFener, the Boar of Summer, is the god soldiers swear by when they are too tired to swear by anything else. He likes a fight that is not finished. This one is not finished.`},
 };
@@ -197,7 +195,7 @@ const heldDowns = id => (S && S.f && S.f.holdDowns && S.f.holdDowns[id]) || 0;
 
 /* ============ v3.13 gear: the best hands for each piece ============ */
 const avgDmg = d => d ? d[0] * (d[1] + 1) / 2 + (d[2] || 0) : 0;
-/* how much a piece of gear is worth on this squadmate: armour for the front, reach for the ranged, a stat trinket on whoever rolls that stat */
+/* how much a piece of gear is worth on this squadmate: armour for the front, range for the ranged, a stat trinket on whoever rolls that stat */
 function gearValue(id, g){
   const it = ITEMS[g], t = TPL[id]; if (!it || !t || (it.who && !it.who.includes(id))) return -1;
   const ranged = t.rng > 1, front = id === 'brisk' || id === 'sgt';

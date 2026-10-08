@@ -2,7 +2,7 @@
 function resume(){
   $('#sheet').hidden = true; $('#modal').hidden = true; notes = []; titleAnim = null;
   migrate(S);
-  if (S.scene === 'end' || S.scene === 'chend') return showChapterEnd();
+  if (S.scene === 'chend') return showChapterEnd();
   if (S.scene === 'finale') return showFinale(S.finPage || 0);
   if (S.scene === 'chintro') return showChapterIntro();
   if (S.scene === 'intro') { showIntro(); if (S.node) talk(S.node); return; }
@@ -38,7 +38,7 @@ function loop(t){
   padPoll();
   requestAnimationFrame(loop);
 }
-function start(data){
+function start(){
   applySet();
   if (typeof CH1 !== 'undefined') registerChapter(1, CH1);
   if (typeof CH2 !== 'undefined') registerChapter(2, CH2);
@@ -47,11 +47,10 @@ function start(data){
   if (typeof CH5 !== 'undefined') registerChapter(5, CH5);
   if (typeof CH6 !== 'undefined') registerChapter(6, CH6);
   if (typeof CH7 !== 'undefined') registerChapter(7, CH7);
-  if (data && data.S) { S = migrate(data.S); resume(); } else showTitle();
+  showTitle();
   requestAnimationFrame(loop);
 }
-window.claude?.hot?.snapshot?.(() => (S ? {S: JSON.parse(JSON.stringify(S))} : {}));
-window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+start();
 /* Android Back (and Escape). The game keeps one spare history entry (a "guard") above the page it loaded on, so the phone's
    Back never lands outside the game by accident. Each Back comes back to the game as a popstate: it closes whatever is open
    on top (the board viewer, the squad sheets, settings, pack/journal/save/art, a table game), and the guard goes straight
@@ -130,4 +129,22 @@ window.addEventListener('keydown', e => {
   if (k === 'Escape') { e.preventDefault(); AUDIO.play('click'); openSettings(); return; }
   if (go && !onBtn && view !== 'explore' && view !== 'battle') press($('#app .btn.primary:not([disabled])'));
 });
+/* the overlays are dialogs: when one opens, focus moves into it (Tab stays inside the top one); when it closes, focus goes back to
+   what opened it, if that was reached by keyboard. The board viewer (#artview) is made on demand, so it is wired up when it appears. */
+const DLGS = ['#artview', '#mg', '#settings', '#chars', '#modal'], dlgFrom = {};
+const dlgTop = () => DLGS.map(s => $(s)).find(el => el && !el.hidden) || null;
+function dlgWire(el){ if (!el || el.dataset.dlg) return; el.dataset.dlg = 1;
+  if (!el.getAttribute('role')) { el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); if (el.id === 'artview') el.setAttribute('aria-label', 'Picture'); }
+  if (!el.hasAttribute('tabindex')) el.tabIndex = -1;
+  const seen = () => { const a = document.activeElement;
+    if (!el.hidden) { dlgFrom[el.id] = a && a !== document.body && !el.contains(a) && a.matches(':focus-visible') ? a : null; if (!el.contains(a)) el.focus({preventScroll:true}); }
+    else { const f = dlgFrom[el.id]; dlgFrom[el.id] = null; if (f && f.isConnected && !f.closest('[hidden]') && !dlgTop()) f.focus({preventScroll:true}); } };
+  new MutationObserver(seen).observe(el, {attributes:true, attributeFilter:['hidden']}); }
+DLGS.forEach(s => dlgWire($(s)));
+new MutationObserver(() => dlgWire($('#artview'))).observe(document.body, {childList:true});
+window.addEventListener('keydown', e => { if (e.key !== 'Tab') return; const d = dlgTop(); if (!d) return;
+  const fs = [...d.querySelectorAll('button:not([disabled]), [href], input, textarea, select, summary, [tabindex]:not([tabindex="-1"])')].filter(x => x.offsetParent);
+  if (!fs.length) { e.preventDefault(); d.focus({preventScroll:true}); return; }
+  const i = fs.indexOf(document.activeElement);
+  if (e.shiftKey && i <= 0) { e.preventDefault(); fs[fs.length - 1].focus(); } else if (!e.shiftKey && (i < 0 || i === fs.length - 1)) { e.preventDefault(); fs[0].focus(); } });
 if (history.state && history.state.ov) history.replaceState({g:1}, ''); // a save from before 3.15.1 reloaded on an overlay's entry: it serves as the guard now

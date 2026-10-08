@@ -97,9 +97,25 @@ function rollDice(r, done, spun){
   el.onclick = () => { if (!fin) settle(); else leave(); }; tick();
 }
 /* IM Fell draws a straight " as a closing curly quote, so the story gets real ones: opening at the start of a run or after a space or
-   bracket, or after a dash or asterisk when a word follows; closing everywhere else. Markup is left alone. Empty paragraphs (a conditional that came out blank) are dropped. */
-const smartq = t => String(t).split(/(<[^>]*>)/).map((x, i) => i % 2 ? x : x.replace(/(^|[\s(\[])"(?=\S)/g, '$1“').replace(/([—–*])"(?=[\w*'‘])/g, '$1“').replace(/"/g, '”').replace(/“'/g, '“‘')).join('');
-const fmt = t => t.replace(/\{sgt\}/g, esc(S.name)).replace(/\{who\}/g, () => esc(NAME(ROLL().who && (SQUAD().includes(ROLL().who) || ROLL().who === 'sgt') ? ROLL().who : 'sgt'))).split(/\n\n/).filter(p => p.trim()).map(p => `<p>${smartq(p).replace(/\*(.+?)\*/g,'<em>$1</em>')}</p>`).join('');
+   bracket, or after a dash or asterisk when a word follows; closing everywhere else. Apostrophes and single quotes too: after a letter
+   or digit (it's, the quorls' wings, <em>Hood</em>'s) a closing ’; at the start of a word an opening ‘, unless it is a dropped letter
+   ('em, 'cause); anything else ’. Only the text between tags is touched, never a tag or its attributes, and the letter before a quote is
+   carried across inline tags (em, b, i, span) but not across a block (p, li, div, br…). Empty paragraphs are dropped (in fmt). */
+const SQ_ELIDE = /^(em|cause|tis|twas|til|n)\b/i, SQ_BLOCK = /^<\/?(p|div|li|ul|ol|h\d|br|dt|dd|dl|td|tr|th|table|button|label|summary|details|section|header|footer|textarea|canvas)\b/i;
+const smartq = t => { let prev = '';
+  return String(t).split(/(<[^>]*>)/).map((x, i) => {
+    if (i % 2) { if (SQ_BLOCK.test(x)) prev = ''; return x; }
+    if (!x) return x;
+    let y = x.replace(/(^|[\s(\[])"(?=\S)/g, '$1“').replace(/([—–*])"(?=[\w*'‘])/g, '$1“').replace(/"/g, '”');
+    y = y.replace(/'/g, (q, at, str) => { const p = at ? str[at - 1] : prev, n = str[at + 1] || '';
+      if (/[\p{L}\p{N}]/u.test(p)) return '’';
+      if (/\d/.test(n)) return '’'; // '90s
+      if (/[\p{L}\p{N}]/u.test(n) && !SQ_ELIDE.test(str.slice(at + 1))) return '‘';
+      return /[\p{L}\p{N}]/u.test(n) ? '’' : (p === '' || /[\s(\[—–“]/.test(p)) && /[*‘]/.test(n) ? '‘' : '’'; });
+    prev = y.slice(-1); return y; }).join(''); };
+/* the house dash is closed (word—word, "Tell him—"); a few chapters type it spaced. Story text only (fmt): the spaces go. */
+const closeDash = p => p.replace(/(\S) —(?: (?=\S)|(?=["”’']|$))/g, '$1—');
+const fmt = t => t.replace(/\{sgt\}/g, esc(S.name)).replace(/\{who\}/g, () => esc(NAME(ROLL().who && (SQUAD().includes(ROLL().who) || ROLL().who === 'sgt') ? ROLL().who : 'sgt'))).split(/\n\n/).filter(p => p.trim()).map(p => `<p>${smartq(closeDash(p)).replace(/\*(.+?)\*/g,'<em>$1</em>')}</p>`).join('');
 
 /* the tag on a check: ✦ for a hard one with a trick in it, the stat, the likeliest hand, and the odds (as a number with the roll
    numbers on, as a word without) */

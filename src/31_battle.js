@@ -14,7 +14,7 @@ const unitAt = (x,y) => B.units.find(u => u.hp > 0 && u.x === x && u.y === y);
 const inB = (x,y) => x>=0 && y>=0 && x<8 && y<10;
 const wall = (x,y) => !inB(x,y) || B.def.map[y][x] === '#';
 const free = (x,y,self) => !wall(x,y) && !B.units.some(u => u !== self && u.hp > 0 && u.x === x && u.y === y);
-const veilPen = () => Math.round(5 * B.warren.meanas);
+const veilPen = () => Math.round(5 * (B && B.warren ? B.warren.meanas : 1)); // 1 outside a fight, for the squad sheet
 const pace = ms => ms * SET.speed; // combat pace setting (Slow / Normal / Fast)
 /* a timer that belongs to this battle: it does nothing if the battle was won, left, restarted or replaced meanwhile */
 function later(fn, ms){ const b0 = B; return setTimeout(() => { if (B && B === b0) fn(); }, ms); }
@@ -89,7 +89,7 @@ function startBattle(id, opt={}){
   fitBattle();
   if (opt.pre) { AUDIO.play('boom', .8); B.fx.push({kind:'boom', x:3.5, y:1, r:1, col:'#f2c46b', t:performance.now()}); sparks(3.5, 1, 30, '#f2c46b'); shakeMap(); foes().forEach(f => hurt(f, roll(1,10))); blog(typeof opt.pre === 'string' ? opt.pre : `Kettle's sharper skips across the ground and goes off in the middle of them. The whole ${placeWord(def)} hears it.`); }
   if (opt.pre) { S.f.pre ??= {}; S.f.pre[id] = 1; if (def.preText) blog(`<em>${typeof def.preText === 'function' ? def.preText() : def.preText}</em>`); if (def.preFx) { try { def.preFx(B); } catch(e) { console.warn('preFx', e); } } } // what Kettle's opening sharper changed here (31c)
-  if (def.nomagic) { blog(`<em>Otataral. The warrens are dead here.</em>`); if (SQUAD().includes('kettle') && S.inv.burner > 0) blog(`Kettle straps her burners down tight. "Not near that stuff. Burners and otataral don't argue, they just go."`); }
+  if (def.nomagic) { blog(`<em>Otataral. The warrens are dead here.</em>${SQUAD().some(id => trickAbs(id).some(k => AB[k] && AB[k].elder)) ? ' Not the older ones: the dark and the cold the squad carries still answer.' : ''}`); if (SQUAD().includes('kettle') && S.inv.burner > 0) blog(`Kettle straps her burners down tight. "Not near that stuff. Burners and otataral don't argue, they just go."`); }
   if (def.nothrow) blog(`<em>Gas in the pipes. Nobody throws anything in here.</em>`);
   if (def.mortal) blog(`<em>Whoever falls here stays down.</em>`);
   if (def.isStage2) blog(`<em>${def.title}. The second ground.</em>`);
@@ -161,7 +161,7 @@ function win(){
 function lose(){
   AUDIO.play('lose'); tally('retries');
   const who = patronNext(), P = who && PATRONS[who], sh = $('#sheet'); sh.hidden = false;
-  if (P) { S.gods.used.push(who); tally('godsAnswered'); }
+  if (P) { S.gods.used.push(who); S.godsMet ??= []; if (!S.godsMet.includes(who)) S.godsMet.push(who); tally('godsAnswered'); } // godsMet: the glossary's record of who has answered
   save();
   const story = DIFF() === DIFFS.story, left = story ? null : (() => { const ch = S.gods; const n = [...SQUAD().filter(id => id !== 'sgt' && PATRONS[id] && (S.loy[id] || 0) > 0), 'sgt'].filter(id => !ch.used.includes(id)).length; return n; })();
   if (P) sh.innerHTML = `${art('patrons/' + who, 'godsig')}<div class="sp godsp">${esc(P.title)}</div><div class="txt god">${fmt(P.txt(who))}</div>
@@ -171,14 +171,14 @@ function lose(){
     <div class="choices"><button class="choice" id="bRetry">Begin the chapter again</button></div>`;
   sh.scrollTop = 0;
   const snap = B.snap; // the save as it stood when the fight (or its second area) began: items, health, the lot
-  $('#bRetry').onclick = () => { AUDIO.play('click'); sh.hidden = true; const st = S.stats, gods = S.gods;
+  $('#bRetry').onclick = () => { AUDIO.play('click'); sh.hidden = true; const st = S.stats, gods = S.gods, met = S.godsMet;
     if (!P) return chapterAgain();
-    S = migrate(JSON.parse(snap)); if (st) S.stats = st; S.gods = gods; startBattle(S.battle, S.bopt || {}); }; // the count and the gods remember the lost fight
+    S = migrate(JSON.parse(snap)); if (st) S.stats = st; S.gods = gods; if (met) S.godsMet = met; startBattle(S.battle, S.bopt || {}); }; // the count and the gods remember the lost fight
 }
 
 /* abilities */
 const AB = {
-  rally:{name:'Rally', self:true, desc:()=>'Squadmates within 3 heal 4 and get +2 to hit through next round. Once per fight.', ok:()=>!B.used.rally,
+  rally:{name:'Rally', self:true, desc:()=>'Squadmates within 3 heal 4 and get +2 to hit through next round. Once a fight.', ok:()=>!B.used.rally,
     run(u){ B.used.rally = 1; AUDIO.play('heal'); party().forEach(p => { if (cheb(u,p) <= 3) { heal(p,4); p.rallyUntil = B.round + 1; } }); blog(`${u.name}: "On me, you sorry lot!" The squad steadies.`); }},
   bash:{name:'Shield bash', desc:()=>'Adjacent enemy: 1d6+3 damage, and it loses its next turn on a hit. Recharges after 2 rounds.', ok:u=>!(u.cdBash >= B.round),
     tiles:u=>foes().filter(f => cheb(u,f) === 1),
@@ -204,14 +204,14 @@ const AB = {
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#9a86e0', t:performance.now(), dur:400, wob:true});
       t.blindTurns = 2; float(t,'blinded','#9a86e0'); sparks(t.x, t.y, 14, '#6a58b0', .45);
       blog(`${u.name} pulls Meanas down over ${t.name}'s eyes. For its next two turns it will be fighting phantoms.`); }},
-  mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${has('ohl','triage') ? 6 : 3}${B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
+  mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${has('ohl','triage') ? 6 : 3}${B && B.warren && B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
     tiles:u=>party().filter(p => cheb(u,p) <= (has(u.id,'triage') ? 4 : 3)),
     run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,has(u.id,'triage') ? 6 : 3) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
   salve:{name:'Salve', item:'salve', desc:()=>'Heal 8, yourself or an adjacent squadmate.', tiles:u=>party().filter(p => cheb(u,p) <= 1),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, 8); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
   mark:{name:'Tracker\'s Mark', desc:()=>'An enemy within 5 is marked: every hit on it does +2 damage for two rounds.', tiles:u=>foes().filter(f => cheb(u,f) <= 5 && canShoot(u,f) && !(f.markedUntil >= B.round)),
     run(u,x,y){ const t = unitAt(x,y); t.markedUntil = B.round + 2; AUDIO.play('click'); float(t,'marked','#f2c46b'); blog(`${u.name} marks ${t.name}: a nick of chalk on the ground, a word to the squad, and it is a target.`); }},
-  quickshot:{name:'Quick Shot', desc:()=>'Once a fight: two arrows at one target within reach.', ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng && canShoot(u,f)),
+  quickshot:{name:'Quick Shot', desc:()=>'Once a fight: two arrows at one target within range.', ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng && canShoot(u,f)),
     run(u,x,y){ const t = unitAt(x,y); B.used.quickshot = 1; attack(u, t); later(() => { if (t.hp > 0) attack(u, t, {verb:'puts a second arrow into'}); }, pace(320)); }},
   /* talents (level 3 picks) */
   quorl:{name:'Quorl Signal', boom:true, aoe:1, range:5, desc:()=>'Once a fight: a Moranth drop. A sharper from the sky, range 5, not from the satchel.', ok:()=>!B.used.quorl,
@@ -233,7 +233,7 @@ const AB = {
 /* Chub's cusser, Maud: Kettle carries her "for the one that matters" and won't fire her in an ordinary fight. The story spends her (the barrow in Chapter 5, or Ch'kess in Chapter 7). */
 const maudKept = () => !!(S && S.f && !S.f.c5_cusserUsed && S.f.c7_debt !== 'paid');
 const itemLeft = k => Math.max(0, (S.inv[k] || 0) - (k === 'cusser' && maudKept() ? 1 : 0));
-function abOk(u, k){ const a = AB[k]; if (!a) return false; if (a.trick && !trickOk(u, a)) return false; if (a.sorcery && B && B.def.nomagic) return false; if (a.strain && B && B.def.nomagic) return false; if (a.boom && B && B.def.nothrow) return false; if (a.item === 'cusser' && B && B.def.style === 'roof') return false; /* Fiddler's order: no cussers on the roofs */ if (a.item === 'burner' && B && B.def.nomagic) return false; /* burners and otataral: Kettle won't */ if (a.item && !(itemLeft(a.item) > 0)) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
+function abOk(u, k){ const a = AB[k]; if (!a) return false; if (a.trick && !trickOk(u, a)) return false; if (a.sorcery && !a.elder && B && B.def.nomagic) return false; /* Elder warrens shrug off otataral */ if (a.strain && B && B.def.nomagic) return false; if (a.boom && B && B.def.nothrow) return false; if (a.item === 'cusser' && B && B.def.style === 'roof') return false; /* Fiddler's order: no cussers on the roofs */ if (a.item === 'burner' && B && B.def.nomagic) return false; /* burners and otataral: Kettle won't */ if (a.item && !(itemLeft(a.item) > 0)) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
 function scatter(u, x, y, failOn, dist){
   const nat = d20() + (S.card === 'oponn' ? 1 : 0);
   if (nat <= failOn && !has(u.id,'longfuse')) { const [dx,dy] = DIRS[R(8)]; let nx = x, ny = y;
@@ -323,7 +323,7 @@ function battleTap(x, y){
     B.mode = 'act'; return updBattleUI();
   }
   if (t && t.side === 'e' && !B.acted && cheb(u,t) <= u.rng && canShoot(u,t)) { B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.busy = true; attack(u, t); later(() => { B.busy = false; afterAct(); }, pace(380)); updBattleUI(); return; }
-  if (t) { B.ping = {u:t, t:performance.now()}; blog(`${t.name}: ${t.hp}/${t.maxhp} health, armour ${t.ac}${t.rng > 1 ? `, range ${t.rng}` : ''}${t.side === 'e' && !B.acted ? (cheb(u,t) > u.rng ? ' · out of reach' : !canShoot(u,t) ? ' · smoke in the way' : '') : ''}.`); return; }
+  if (t) { B.ping = {u:t, t:performance.now()}; blog(`${t.name}: ${t.hp}/${t.maxhp} health, armour ${t.ac}${t.rng > 1 ? `, range ${t.rng}` : ''}${t.side === 'e' && !B.acted ? (cheb(u,t) > u.rng ? ' · out of range' : !canShoot(u,t) ? ' · smoke in the way' : '') : ''}.`); return; }
   if (!B.moved && B.reach && B.reach.has(K(x,y)) && !(x === u.x && y === u.y)) moveCur(x, y);
 }
 async function moveCur(x, y){
@@ -460,11 +460,11 @@ function battleStyle(){
 #order .chip.rnd{border-style:dashed;background:none;color:var(--dim);cursor:default}
 .cvwrap canvas{margin:0 auto}
 .ubar .uhead{align-items:center}
-.ubar .tag{font-family:var(--label);font-size:.72rem;letter-spacing:.08em;padding:1px 7px;border:1px solid var(--line2);color:var(--mute);border-radius:2px}
+.ubar .tag{font-family:var(--label);font-size:.78rem;letter-spacing:.08em;padding:1px 7px;border:1px solid var(--line2);color:var(--mute);border-radius:2px}
 .ubar .tag.you{color:#1a1208;background:var(--brass2);border-color:var(--brass2)}
 .ubar .tag.foe{color:#f7b9ad;border-color:#6a2e28;background:rgba(224,87,74,.12)}
 .ubar .tag.ally{color:#cfdcf5;border-color:#2a3a56}
-.abil .btn small{opacity:.7;margin-left:4px;font-size:.78em}
+.abil .btn small{opacity:.85;margin-left:4px;font-size:.92em}
 .abil #bEnd{margin-left:auto;transition:opacity .25s}
 .abil #bEnd.arming{opacity:.45;pointer-events:none}`;
   document.head.appendChild(st);
@@ -547,8 +547,8 @@ function updBattleUI(){
   if (B.reach) B.reach.forEach(n => { if (n.d && n.c) B.hl.aoo.add(K(n.x,n.y)); });
   const inReach = B.hl.atk.size > 0, canMove = !!B.reach && B.reach.size > 1;
   let hint;
-  if (!B.acted && !B.moved) hint = mvLeft < u.mv ? `${mvLeft} move left. Attacking now ends your movement.` : inReach ? 'Tap a gold tile to move, or a ringed enemy to attack.' : 'Tap a gold tile to move. Nothing is in reach yet.';
-  else if (!B.acted) hint = inReach ? 'Out of moves. Tap a ringed enemy, use an ability, or end the turn.' : 'Out of moves, and nothing in reach. Use an ability or end the turn.';
+  if (!B.acted && !B.moved) hint = mvLeft < u.mv ? `${mvLeft} move left. Attacking now ends your movement.` : inReach ? 'Tap a gold tile to move, or a ringed enemy to attack.' : 'Tap a gold tile to move. Nothing is in range yet.';
+  else if (!B.acted) hint = inReach ? 'Out of moves. Tap a ringed enemy, use an ability, or end the turn.' : 'Out of moves, and nothing in range. Use an ability or end the turn.';
   else hint = canMove ? `You can still move (${mvLeft}), or end the turn.` : 'Done.';
   if (B.hl.aoo.size && canMove) hint += ' <span class="warn">A red corner means a free swing on the way.</span>';
   if (B.mode && B.mode !== 'act') { const a = AB[B.mode];

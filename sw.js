@@ -1,6 +1,7 @@
 const CACHE = 'ashes-v3.15.4';
 const FONTS = 'ashes-fonts'; // Google Fonts, kept across versions so the typography survives offline play
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
+const PAGE = './index.html'; // the 2.5 MB game. Precached once; './' and every navigation are answered from it.
+const ASSETS = [PAGE, './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 /* A new version installs and then WAITS. The page shows "Update ready"; tapping it posts 'skip', and only then
    does the new version take over (the page reloads itself on controllerchange). Never skipWaiting on install. */
 /* the typography, fetched at install so the first offline launch already has it: the stylesheet the page asks for (same URL,
@@ -30,11 +31,12 @@ self.addEventListener('fetch', e => {
     return;
   }
   if (url.origin !== location.origin) return; // nothing else leaves the origin; let the browser handle it
-  // the game itself: cache first (it starts offline and instantly), refreshed in the background
-  e.respondWith(caches.match(e.request, {ignoreSearch:true}).then(r => {
-    const net = fetch(e.request).then(res => { if (res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(e.request, cp)).catch(() => {}); } return res; });
-    if (r) { e.waitUntil(net.catch(() => {})); return r; }
-    const miss = () => new Response('', {status:504});
-    return net.catch(() => e.request.mode === 'navigate' ? caches.match('./index.html').then(x => x || miss()) : miss());
-  }));
+  /* the game itself: cache only. The page and its files never change under a version; a new version is a new sw.js, which the
+     browser notices on its own, installs (precaching the new page past the HTTP cache) and leaves waiting for "Update ready".
+     So a launch downloads nothing. './' and './index.html' (with any query) get the cached page. Anything not precached goes to the
+     network, and is kept for offline play if it loads. */
+  const home = new URL('./', location).pathname, nav = url.pathname === home || url.pathname === home + 'index.html'; // the game's own page, not other pages under the scope
+  e.respondWith(caches.open(CACHE).then(c => c.match(nav ? PAGE : e.request, {ignoreSearch:true}).then(hit => hit ||
+    fetch(e.request).then(res => { if (res.ok && !nav) c.put(e.request, res.clone()).catch(() => {}); return res; })
+      .catch(() => nav ? c.match(PAGE).then(x => x || new Response('', {status:504})) : new Response('', {status:504})))));
 });

@@ -10,7 +10,7 @@ function openSettings(){
       ${seg('blood', 'Blood', [[true,'On'],[false,'Off']], 'Wounds leave marks on the ground where they fall.')}
       ${seg('motion', 'Motion', [['auto','System'],['on','Full'],['off','Reduced']], 'Reduced motion shortens animations and the card reading.')}
       ${seg('map', 'Map', [['close','Close'],['whole','Whole']], WIDE() ? 'On a screen this wide the whole map always fits, as big as the window allows. On a phone, Close has bigger tiles that follow the sergeant; Whole has the entire area on screen at once.' : 'Close: bigger tiles that follow the sergeant; drag the map to look around. Whole: the entire area on screen at once.')}
-      ${seg('art', 'Artwork', [[true,'Painted set'],[false,'Classic']], 'Painted set: the artwork canvas on the title, the Deck, the gods, chapter openings, gear, maps and papers. Classic: the game\'s original drawings.')}
+      ${seg('art', 'Artwork', [[true,'Painted set'],[false,'Classic']], 'Painted set: the artwork canvas on the title, the Deck, the gods, chapter openings, gear, maps and papers. Classic: the game\'s original drawings. Classic also hides the item pictures and the full-screen item viewer, and the journal\'s Maps, Papers and Faces.')}
       ${seg('speed', 'Combat pace', [[1.4,'Slow'],[1,'Normal'],[.6,'Fast']])}
       ${seg('fs', 'Text size', [[.9,'Small'],[1,'Normal'],[1.15,'Large']])}
       ${fullOK() ? seg('full', 'Full screen', [[true,'On'],[false,'Off']], 'No browser bars and no taskbar, just the game. <kbd>F</kbd> or the corner button turns it on and off any time; <kbd>Esc</kbd> leaves it. On: every visit goes full screen at your first click.') : ''}
@@ -19,11 +19,12 @@ function openSettings(){
       ${PAD.on ? `<div class="opt keyhelp"><label>Controller</label><small><b>Stick or D-pad</b> walk; move the target square in a fight; move between buttons elsewhere<br><b>A</b> press, talk, or strike the target square · <b>B</b> back · <b>X</b> end the turn · <b>Y</b> the squad<br><b>LB / RB</b> the choices, or the abilities in a fight · <b>Start</b> settings · <b>View</b> the journal</small></div>` : ''}
       ${FINE() ? `<div class="opt keyhelp"><label>Keyboard</label><small><b>Talking</b> <kbd>1</kbd>–<kbd>9</kbd> pick a choice · <kbd>Space</kbd> takes the only one, or hurries the die<br>
         <b>The map</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> or <kbd>E</kbd> talk to whoever is beside you<br>
-        <b>A fight</b> <kbd>1</kbd>–<kbd>9</kbd> abilities · <kbd>Space</kbd> or <kbd>E</kbd> end the turn · <kbd>Esc</kbd> drop an aimed ability<br>
+        <b>A fight</b> <kbd>1</kbd>–<kbd>9</kbd> abilities · <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> move the target square · <kbd>Enter</kbd> act on it · <kbd>Space</kbd> or <kbd>E</kbd> end the turn · <kbd>Esc</kbd> drop an aimed ability<br>
         <b>Anywhere</b> <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>F</kbd> full screen · <kbd>Esc</kbd> settings, or close what's open · <kbd>Enter</kbd> the page's main button</small></div>` : ''}
       ${installWay() === 'prompt' ? `<div class="opt"><label>${FINE() ? 'Desktop app' : 'Install'}</label><button class="btn" id="sInst">Install as an app</button><small>${FINE() ? 'Its own window with no browser bars, and a shortcut on your desktop and taskbar. Your sergeants come with it.' : 'On your home screen, full screen, and it works offline.'}</small></div>`
         : installWay() === 'dock' ? `<div class="opt"><label>Mac app</label><small>In Safari's menu bar: File \u203a Add to Dock. The Dock app keeps its own saves: copy your sergeant's save code first (Squad \u203a Save) and load it there.</small></div>` : ''}
-      ${S || roster().list.length ? `<div class="opt"><label>This device</label><button class="btn" id="sReset">${S ? `Erase Sergeant ${esc(S.name)}` : 'Erase every sergeant'}</button><small>${S ? 'Only this sergeant\'s save. Anyone else on this device keeps theirs.' : 'Every sergeant saved on this device.'} Settings are kept separately and survive this. v${VERSION}</small></div>` : `<div class="opt"><small>v${VERSION}</small></div>`}
+      ${S || roster().list.length ? `<div class="opt"><label>This device</label><button class="btn" id="sReset">${S ? `Erase Sergeant ${esc(S.name)}` : 'Erase every sergeant'}</button><small>${S ? 'Only this sergeant\'s save. Anyone else on this device keeps theirs.' : 'Every sergeant saved on this device.'} Settings are kept separately and survive this.</small></div>` : ''}
+      <div class="opt"><label>Version ${VERSION}</label><button class="btn" id="sNotes">What's new</button><small>Every change, newest first.</small></div>
     </div></div>`;
   ['master','music','sfx','amb'].forEach(k => { const el = $('#s_' + k); el.oninput = () => { SET[k] = +el.value; $('#v_' + k).textContent = Math.round(SET[k]*100) + '%'; saveSet(); }; el.onchange = () => AUDIO.play(k === 'music' ? 'heal' : 'click'); });
   m.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k, v = b.dataset.v; SET[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSet(); AUDIO.play('click'); if (k === 'full') { fullTried = true; toggleFull(SET.full); } openSettings(); if (k === 'art' && view === 'title') { showTitle(); openSettings(); } if (view === 'explore' && (k === 'map' || k === 'fs')) { fitCanvas(ACOLS(), AROWS()); mapBtn(); } });
@@ -32,6 +33,7 @@ function openSettings(){
   if ($('#sReset')) $('#sReset').onclick = () => { const b = $('#sReset'); AUDIO.play('click');
     if (b.dataset.arm) { if (S) dropSlot(S.sid); else roster().list.forEach(e => dropSlot(e.id)); S = null; m.hidden = true; m.innerHTML = ''; showTitle(); }
     else { b.textContent = tapWord('Tap again to erase'); b.classList.add('warn'); b.dataset.arm = 1; } };
+  $('#sNotes').onclick = () => { AUDIO.play('click'); m.hidden = true; m.innerHTML = ''; openNotes(null); };
   $('#sClose').onclick = () => { AUDIO.play('click'); m.hidden = true; m.innerHTML = ''; };
   m.onclick = e => { if (e.target === m) { m.hidden = true; m.innerHTML = ''; } };
 }

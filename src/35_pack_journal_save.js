@@ -9,23 +9,7 @@ function openModal(tab){
       ${S.wounds ? `<h4 class="jh">Wounds carried (Bridgeburner)</h4><div class="kv wounds">${SQUAD().map(id => woundOf(id) == null ? '' : `<span>${esc(NAME(id))}</span><span>${woundOf(id)} / ${S.wounds[id + '_max'] || '?'} health ${S.inv.salve > 0 && woundOf(id) < (S.wounds[id + '_max'] || 0) ? `<button class="btn sm" data-salve="${id}">Salve +8</button>` : ''}</span>`).join('')}</div><p class="fine">Wounds close when the squad rests: at the start of a chapter, or where the story lets them sleep.</p>` : ''}
       <p class="fine" style="margin-top:10px">Moranth munitions hit everything in the blast, your own squad included. Warren magic builds strain; past ${STR_MAX}, the caster pays in blood.</p>`,
     deeds:()=>deedsHTML(),
-    journal:()=>`${journalHead()}<div class="route sm"><canvas id="jRoute"></canvas></div><h4 class="jh">Notes</h4><ul class="jl">${[
-      ...[7,6,5,4,3,2].filter(n => n <= S.chapter && CHAPTERS[n] && CHAPTERS[n].journal).map(n => { try { return CHAPTERS[n].journal() || []; } catch(e) { return []; } }), // optional: a chapter module may add journal:()=>[lines]; newest chapter first
-      S.chapter >= 1 ? [
-        S.f.c1_reported ? `Whiskeyjack: the Fourth rides south overland with the baggage. Darujhistan.` : `Report to Whiskeyjack at the Bridgeburners' fire.`,
-        S.f.c1_paran ? `Captain Paran walked the lines. Noble-born. Trying.` : '',
-        S.f.c1_sawHairlock ? `Tattersail's puppet turned its head.` : '',
-        S.f.c1_plant ? `Tattersail knows about Tuft's badge. So, now, do you.` : '',
-        S.f.c1_hounds ? `The Hounds of Shadow came through the tent lines. ${S.f.c1_key === 'claw' ? 'You held the crate.' : 'You held the line.'}` : '',
-        S.f.c1_accounting ? `The Claw came to settle accounts at the picket line.` : '',
-      ] : [],
-      S.f.quest ? `Recover Varrow's satchel from the north sapper tunnels and bring it to Tattersail. ${S.ending ? '(Done.)' : ''}` : `Answer the cadre's summons.`,
-      S.f.knowStakes ? `Tattersail says the journal records who ordered what the night the Second Army died.` : '',
-      S.f.knowDeserters ? `Garrow: Moreau's section deserted into the north tunnels. "The Fist is still counting heads."` : '',
-      S.f.clawMet ? (S.f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak is paying attention to your squad.`) : '',
-      S.f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
-      S.f.c3_kruppeRumour ? `Kruppe, caught palming a coin at the Phoenix: the Guild's roof watchers sweep on a count of eight, and never look straight down.` : '',
-      S.f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : `Brisk's brother, Second Army: not yet found.`, S.f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : `Tuft and the High Mage: unasked.`].flat().filter(Boolean).map(l => `<li>${l}</li>`).join('')}</ul>${artJournalHTML()}${typeof visionsHTML === 'function' ? visionsHTML() : ''}${glossHTML()}`,
+    journal:()=>`${journalHead()}<div class="route sm"><canvas id="jRoute"></canvas></div><h4 class="jh">Notes</h4><ul class="jl">${journalNotes().map(l => `<li>${l}</li>`).join('')}</ul>${artJournalHTML()}${typeof visionsHTML === 'function' ? visionsHTML() : ''}${glossHTML()}`,
     save:()=>`${S ? `<p class="fine">Playing as <b class="who">Sergeant ${esc(S.name)}</b>. The game saves itself on this device as you play, under your sergeant's name. Anyone else can start their own sergeant from the title, and each keeps a save of their own.</p>
       <div class="row" style="margin:8px 0 16px"><button class="btn" id="bSwitch">Switch sergeant</button></div>
       <label class="fine" for="exp">Sergeant ${esc(S.name)}'s save code. Copy it somewhere safe to move them to another device, or to keep them from a cleared browser.</label>
@@ -63,6 +47,64 @@ function openModal(tab){
   }
   m.onclick = e => { if (e.target === m) m.hidden = true; };
 }
+/* the journal's notes, newest chapter first. Each line waits on the flag that means the player has seen it happen, so nothing spoils. */
+function journalNotes(){
+  const f = S.f, ch = S.chapter || 0, done = n => !!(S.chapters && S.chapters[n] != null) || ch > n, here = id => SQUAD().includes(id);
+  const dead = Object.keys(S.dead || {}).filter(id => TPL[id]);
+  const c7 = ch >= 7 ? [
+    f.c7_ellisBack ? `Ellis came back out of the dark on the Lakefront. Four days, by the Fourth's count. Longer, by hers.` : f.c7_ellisLeft ? `Ellis came back out of the dark, and went her own way from the Lakefront with Kettle's cord on her wrist.` : '',
+    f.c7_ellisJoined ? `Ellis was waiting on a cask at the green door, and went in with the Fourth.` : f.c7_ellisWalked ? `Ellis was waiting at the green door. She walked east alone.` : '',
+    f.c7_ellisSpoke ? `Ellis has said her piece about the hillside.` : '',
+    f.c7_clawTalked || f.c7_clawBought || f.c7_clawFought ? `The grey cloak's page on the Fourth: closed.` : f.c7_clawDeal === 'took' ? `The grey cloak wrote the Fourth a pardon, and a line after every name.${f.c7_pardonEmpty ? ' The lines say nothing.' : ''}` : f.c7_clawAvoided ? `The grey cloak's page on the Fourth stays open. Entries keep.` : f.c7_clawDeal === 'refused' ? `The grey cloak offered the Fourth a pardon. You said no.` : '',
+  ] : [];
+  const c6 = ch >= 6 ? [
+    f.c6_key === 'bridgeburners' ? `The Fete: the Fourth held Lady Simtal's garden beside the Bridgeburners while the Tyrant came up out of the ground.` : f.c6_key === 'cellars' ? `The Fete: the Fourth went under the Gadrobi crossing and stopped the Claw firing the mines.` : f.c6_key === 'alley' ? `The Fete: the Fourth followed the Adjunct into an alley. ${f.c6_steppedIn ? '"Hold him," she said, and you stepped in.' : '"Hold him," she said, and you stood aside.'}` : '',
+    f.c6_orders ? `In the pack: an unsigned order, in a neat hand, to fire the charges under the crossing.` : '',
+    f.c6_lornEnd ? `The Adjunct is dead. Paran has her sword.` : '',
+    f.c6_wjLeg ? `Whiskeyjack's leg is splinted to a halberd shaft.` : '',
+    done(6) ? `A small wrong house of living wood has grown out of Lady Simtal's lawn overnight.` : '',
+    ...dead.map(id => `${TPL[id].name} ${S.dead[id].ch === 6 ? 'fell the night of the Fete' : 'is dead'}.${here('ohl') ? ' Ohl has written the name on his list.' : ''}`),
+  ] : [];
+  const c5 = ch >= 5 ? [
+    f.c5_key ? `On the hills a puppet opened the world, and Toc the Younger went through it.` : '',
+    f.c5_ellisThrough ? `Ellis went into the grey after him. Nobody has said the word <em>dead</em>.` : f.c5_ellisHeld && !f.c7_ellisSpoke ? `Ellis would have gone after him. The Fourth held on to her, and she hasn't said a word to you since.` : '',
+    f.c5_tuftMarked ? `Tuft put her arm into the rent up to the elbow. She came back with grey in her hair.` : '',
+    f.c5_collDown ? `The Adjunct rode a big man down on the hill road, and did not stop.` : '',
+    done(5) ? `The Adjunct has gone on to the city. Paran is following her. Under the barrow, something has started to knock.` : '',
+  ] : [];
+  const c4 = ch >= 4 ? [
+    f.c4_key === 'shield' ? `On the roofs the Fourth stood between a Guild boy and the Tiste Andii hunting him, and held. The boy's name is Vell.` : f.c4_key === 'aside' ? `On the roofs you let the Tiste Andii through. It killed the Guild boy in one motion, looked at the sergeant, and nodded.` : '',
+    f.c4_reprisalFought ? `The Guild came for the Fourth after. Fewer of them walked home than went out.` : '',
+  ] : [];
+  const c3 = ch >= 3 ? [
+    f.c3_key === 'report' ? `You told the grey-haired woman at the dye-shop what the Bridgeburners are doing under the city, for forty silver.${f.c7_wjKnows ? ' Whiskeyjack knows now.' : ' Whiskeyjack does not know.'}` : f.c3_key === 'refuse' ? `You told the grey-haired woman at the dye-shop nothing, and paid for it in an alley. The Claw has the sergeant's name now.` : '',
+    f.c3_wjTold ? `Whiskeyjack heard about the dye-shop from you. "Good," he said.` : '',
+    f.c3_kruppeRumour ? `Kruppe, caught palming a coin at the Phoenix: the Guild's roof watchers sweep on a count of eight, and never look straight down.` : '',
+  ] : [];
+  const c2 = ch >= 2 ? [
+    f.c2_key === 'light' ? `You rode to the light on the plain, against orders and against the clock. Black glass, and the Rhivi carried something away.` : f.c2_key === 'road' ? `You kept the road. Before dawn three tall strangers with silver hair walked into camp to ask if you had gone to the light.` : '',
+    f.c2_ellisJoined ? `Ellis, Toc the Younger's scout, rides with the Fourth: six years a Claw scout, and a burned hand she doesn't explain.` : f.c2_ellisRefused ? `Ellis, Toc's scout, asked to ride with the Fourth. You kept the squad at five, and she rode on with Toc.` : '',
+    f.c2_crone ? `A Great Raven called Crone landed by the fire and laughed at the Fourth.` : '',
+  ] : [];
+  const c1 = ch >= 1 ? [
+    f.c1_reported ? `Whiskeyjack: the Fourth rides south overland with the baggage. Darujhistan.` : `Report to Whiskeyjack at the Bridgeburners' fire.`,
+    f.c1_paran ? `Captain Paran walked the lines. Noble-born. Trying.` : '',
+    f.c1_sawHairlock ? `Tattersail's puppet turned its head.` : '',
+    f.c1_plant ? `Tattersail knows about Tuft's badge. So, now, do you.` : '',
+    f.c1_hounds ? `The Hounds of Shadow came through the tent lines. ${f.c1_key === 'claw' ? 'You held the crate.' : 'You held the line.'}` : '',
+    f.c1_accounting ? `The Claw came to settle accounts at the picket line.` : '',
+  ] : [];
+  const extra = [7, 6, 5, 4, 3, 2].filter(n => n <= ch && CHAPTERS[n] && CHAPTERS[n].journal).map(n => { try { return CHAPTERS[n].journal() || []; } catch(e) { return []; } }); // optional: a chapter module may still add journal:()=>[lines]
+  const tuft = ['glove', 'shadow', 'dark'].includes(f.c6_tuft) ? `Tuft and the High Mage: cut, at the Fete.` : f.c7_tuftCut ? `Tuft and the High Mage: cut, at the last.` : f.c6_tuft === 'kept' ? `Tuft and the High Mage: the badge is still on her collar.` : f.c1_qbTuft ? `Tuft and the High Mage: asked, not answered.` : f.c1_plant ? `Tuft and the High Mage: unasked.` : '';
+  const tav = f.c7_tav ? `Brisk's brother, Second Army: alive, on the Host's rolls.` : f.c1_pits || f.c2_badge ? `Brisk's brother, Second Army: not yet found.` : '';
+  return [...extra, ...c7, ...c6, ...c5, ...c4, ...c3, ...c2, ...c1,
+    f.quest ? `Recover Varrow's satchel from the north sapper tunnels and bring it to Tattersail. ${S.ending ? '(Done.)' : ''}` : `Answer the cadre's summons.`,
+    f.knowStakes ? `Tattersail says the journal records who ordered what the night the Second Army died.` : '',
+    f.knowDeserters ? `Garrow: Moreau's section deserted into the north tunnels. "The Fist is still counting heads."` : '',
+    f.clawMet ? (f.clawFooled ? `A grey cloak at the crater believed the grave-detail story.` : `A grey cloak is paying attention to your squad.`) : '',
+    f.knowTruth ? `Varrow's journal: the cadre was moved forward <em>before</em> the Spawn attacked.` : '',
+    tav, tuft].flat().filter(Boolean);
+}
 function saveCode(){ return btoa(unescape(encodeURIComponent(JSON.stringify(S)))); }
 
 /* the journal's head: where the chapter stands now, and the road so far (the ending each chapter took) */
@@ -76,19 +118,27 @@ function journalHead(){
 /* the glossary at the foot of the journal: the words the book throws at you, unlocked as the story reaches them */
 const GLOSS = [
   [0, 'The Malazan Empire', 'The Empire the Fourth serves: an Empress on the throne in Unta, armies on three continents, and a habit of taking cities.'],
-  [0, "Onearm's Host", "The Second Army on Genabackis, under High Fist Dujek Onearm. The Fourth are marines in it."],
+  [0, "Onearm's Host", "What is left of the Second, Fifth and Sixth Armies on Genabackis, under High Fist Dujek Onearm. The Fourth are marines in it."],
   [0, 'Marines', 'Small squads with their own sapper, mage and healer, sent where a regiment would be noticed.'],
   [0, 'The Bridgeburners', "Whiskeyjack's company: veterans and sappers, the Empire's best, and the Empress's least trusted."],
   [0, 'The cadre', "The army's battle-mages. After the Pale, there are very few of them left."],
   [0, 'The Claw', "The Empress's assassins and spies. Grey cloaks. They keep lists."],
   [0, 'Warrens', 'The paths sorcery is drawn from. Tuft draws on Meanas, shadow and illusion; Ohl on Denul, healing. Draw too hard and it costs strain, and then blood.'],
+  [0, 'Meanas', 'The warren of shadow and illusion: Tuft\'s. Quiet, and good for hiding things in.'],
+  [0, 'Denul', 'The warren of healing: Ohl\'s. It closes wounds; it does not argue with Hood for free.'],
   [0, 'Moranth munitions', 'Clay grenados from the Moranth alchemists: sharpers throw iron, burners throw fire, smokers throw cover, and cussers take down walls. Thirteen to a crate: twelve and a dud.'],
   [0, "The Moon's Spawn", 'A mountain of black stone that floats, and hangs over whatever it chooses.'],
   [0, 'The Deck of Dragons', 'A deck of cards whose Houses are the powers of the world. A reading shows who is watching you.'],
   [0, 'Hood', 'The Lord of Death. Soldiers swear by his breath, his teeth and his gate.'],
   [0, 'Pale', 'The city the Second Army took, at the price of most of itself.'],
   [1, 'The Moranth', 'A people in chitin armour who sort themselves by colour and ride quorls, flying things like enormous dragonflies. The Black Moranth fly for Onearm.'],
-  [1, 'The Hounds of Shadow', "Shadowthrone's hunting beasts, the size of horses, with eyes like lamps seen through smoke."],
+  [1, 'The Hounds of Shadow', "The hunting beasts of High House Shadow, the size of horses, with eyes like lamps seen through smoke."],
+  [1, 'Kurald Galain', 'The Warren of Darkness: an Elder warren, older than any the human mages draw on. Otataral does not quell it.'],
+  [1, 'Mockra', 'The warren of the mind: what a person thinks they heard, and who they think said it.', () => S.lvl >= 3],
+  [1, 'Shadowthrone', 'King of High House Shadow, on a throne in Shadowkeep. Nobody agrees on what he wants. Everybody agrees he is laughing.', () => godMet('tuft') || seenVis('v3_qb')],
+  [1, 'Soliel, Mistress of Healing', 'A goddess of healing, with temples across the Empire. Healers pray to her. She does not often answer soldiers.', () => godMet('ohl')],
+  [1, 'Fener', 'The Boar of Summer, the god of war: the soldiers\' god, for when Hood is standing too close.', () => godMet('sgt')],
+  [1, () => godMet('ellis') ? 'Cotillion, the Rope' : 'The Rope', 'The Patron of Assassins, of High House Shadow. The Guild calls on him on the rooftops; anyone with a long drop under them might.', () => godMet('ellis') || (S.chapter || 0) >= 4],
   [2, 'The Rhivi', 'Herders and riders of the central plains, who fight beside the Empire\'s enemies and carry their dead a long way.'],
   [2, 'Great Ravens', 'Ravens as big as a man, who remember everything and serve a lord they talk about far too much. Crone is the eldest.'],
   [3, 'Darujhistan', 'The City of Blue Fire: the last free city on Genabackis, lit by gas drawn up from the caverns beneath it.'],
@@ -97,32 +147,39 @@ const GLOSS = [
   [4, 'The Tiste Andii', "An old, long-lived people, tall and dark-skinned, who keep to the night. The Moon's Spawn is theirs."],
   [4, 'The Guild', "Darujhistan's assassins. They work the rooftops, and they do not like company up there."],
   [5, 'The Jaghut', 'An ancient race of solitary sorcerers, masters of ice. A few of them made themselves tyrants, and were buried for it.'],
-  [5, "T'lan Imass", 'Undying warriors of bone and flint, bound to hunt the Jaghut for ever. They fight beside the Empire.'],
-  [5, 'Otataral', 'A red ore that kills sorcery near it. Nobody with a warren wants to stand close to it.'],
+  [5, 'Raest', 'The Jaghut Tyrant in the barrow on the Gadrobi Hills, buried by his own people a very long time ago.', () => S.f.c5_rise || (S.chapter || 0) >= 6],
+  [5, "T'lan Imass", 'Undying warriors of bone and flint, bound to hunt the Jaghut for ever. They fought beside the old Emperor.'],
+  [5, 'Otataral', 'A red ore that kills sorcery near it. Nobody with a warren wants to stand close to it. The Elder warrens shrug it off.'],
   [5, 'The Adjunct', "The Empress's own hand, answerable to nobody below the throne."],
   [6, "Gedderone's Fete", "Darujhistan's spring festival: masks, paper lanterns, and winter chased out of the doorways at dawn."],
   [6, 'Omtose Phellack', 'The Jaghut warren: ice, and the cold that keeps.'],
   [6, 'The Azath', 'Houses that grow out of the ground where they are needed, and keep what is put in them.'],
+  [6, 'The Finnest', 'Where a Jaghut keeps their power: set outside the body, in some object, and hidden. A Tyrant without it is less than he was.', () => S.chapters && S.chapters[6] != null],
+  [6, 'Dragnipur', 'A sword that keeps what it kills. They go on, in chains, dragging a wagon through the dark inside it.', () => seenVis('v6_rake')],
 ];
+const godMet = id => !!(S && ((S.godsMet || []).includes(id) || (S.gods && (S.gods.used || []).includes(id))));
+const seenVis = id => !!(S && (S.seenVisions || []).includes(id));
+/* a row shows from its chapter on, and only once its met() test (if it has one) is true: the player has heard the word */
 function glossHTML(){
-  const ch = S ? S.chapter || 0 : 0, rows = GLOSS.filter(g => g[0] <= ch);
-  return `<details class="gloss"><summary>Words you'll hear</summary><dl>${rows.map(([, t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl>${ch < 7 ? `<p class="fine">More as the story reaches them.</p>` : ''}</details>`;
+  const ch = S ? S.chapter || 0 : 0, val = x => typeof x === 'function' ? x() : x;
+  const rows = GLOSS.filter(g => { try { return g[0] <= ch && (!g[3] || (S && g[3]())); } catch(e) { return false; } });
+  return `<details class="gloss"><summary>Words you'll hear</summary><dl>${rows.map(([, t, d]) => `<dt>${val(t)}</dt><dd>${d}</dd>`).join('')}</dl>${ch < 7 ? `<p class="fine">More as the story reaches them.</p>` : ''}</details>`;
 }
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
   ['3.15.3', ['On a phone, the Proclamation at the end of the book now fits the screen and sits centred, and the page no longer slides sideways, so the count above it is centred too.']],
-  ['3.15.2', ['Tap any picture of gear, a munition or a keepsake (on the squad sheets and in the pack) and it opens full screen, large, with everything known about it: what it does, who can use it, where it was found, and its story.', 'The Art tab and the Artwork button on the title are gone. The pictures stay where they belong: on the title, the Deck, the chapters, the gear, and the journal\'s Maps, Papers and Faces.']],
+  ['3.15.2', ['Tap any picture of gear, a munition or a keepsake (on the squad sheets and in the pack) and it opens full screen, large, with everything known about it: what it does, who can use it, where it was found, and its story.', 'The pictures now live only where they belong in the game: on the title, the Deck, the chapters, the gear, and the journal\'s Maps, Papers and Faces. The separate gallery that came with the painted set is gone.']],
   ['3.15.1', ['The phone\'s Back button no longer drops you out of the game. In a menu it closes the menu, one layer at a time. With nothing open it asks first: "Press Back again to leave the game", and only a second Back right after leaves.']],
   ['3.15.0', ['The painted set. The artwork canvas is in the game: key art behind the title, painted faces on Tuft\'s Deck, a sigil for each god who answers, a plate at every chapter opening, vistas at the ends of Chapters Two, Three and Five, and the four roads and the Proclamation in the epilogue.',
              'Every piece of gear and every munition has its picture on the squad sheets and in the pack, and each squadmate\'s keepsake sits beside what they carry.',
              'The journal has Maps (tap one to see it full screen), the Papers the Fourth has seen, and Faces on the road: everyone met so far, canon and not.',
-             'A new Art tab, and an Artwork button on the title, open every board from the canvas. Boards that give away what is still ahead wait until you get there.',
+             'Pictures that would give away what is still ahead wait until the story gets there.',
              'Prefer the old drawings? Settings › Artwork › Classic brings them back.']],
   ['3.14.2', ['On a phone held upright, the story text now starts under the picture instead of sliding up over it, so you see the whole painting while you read. Scroll the text inside its own panel.']],
   ['3.14.1', ['✦ Through the Deck. When Tuft reads the Deck for you and a card turns, a new button appears beside "Put the cards away": Look into the card. It shows a short vision through the eyes of someone from the book, happening somewhere else that same night: Paran at Hood\'s Gate, Crone over the pillar of fire, Quick Ben in Shadowkeep, Paran inside the sword, Rake on the belfry, Lorn\'s last walk. In Chapter Four the card Tuft turns decides whose eyes you see through, out of four.',
              'Already past Tuft\'s reading this chapter? Open the journal: a new Visions list holds every vision for the chapters you have reached, seen or not, ready to watch.',
-             'After the Fete, Paran no longer carries his own sword. He gave it back, he says. He carries the Adjunct\'s.']],
+             'After the Fete, Paran no longer carries his own sword. He gave it away, he says. He carries the Adjunct\'s.']],
   ['3.13.7', ['Tuft\'s Phantom is a blinding shadow now: an enemy within 5 has Meanas over its eyes for its next two turns, and half the blows that would have landed go into the dark. Strain 2.', 'Mockra Whisper (an enemy turns on its own side) costs strain 3, so the bigger trick costs more.']],
   ['3.13.6', ['Broke at the bones? Hedge (Chapter One) or Fiddler (Chapter Three) will spot you five silver to sit in. Win, and they take their five back off the top; lose, and it goes on the Bridgeburners\' slate.']],
   ['3.13.5', ['Tuft\'s Mockra Whisper is no longer a second Phantom. Phantom (Meanas, an illusion) still costs an enemy its turn; Mockra Whisper (the mind) turns an enemy on its own side for a turn, and it goes for the nearest of them instead of you. Bosses may still shake it off.']],
@@ -194,13 +251,18 @@ const NOTES = [
   ['3.7.2', ['Maps and book beats: the Worry Gate, Rake and the Hounds in the hills, Coll on the slope, five dragons at the Fete, the Pannion Seer.']],
 ];
 const SEENKEY = 'ashes-of-the-pale-seen';
+/* since = the version this player last saw: every note after it, newest first. From the title's version number or Settings
+   (since null): the newest note, with every earlier one behind "Earlier versions". */
 function openNotes(since){
   const vn = v => v.split('.').map(Number).reduce((a, n) => a * 1000 + n, 0);
-  const list = NOTES.filter(([v]) => !since || vn(v) > vn(since)).slice(0, 3);
+  const fresh = since ? NOTES.filter(([v]) => vn(v) > vn(since)) : [], list = fresh.length ? fresh : NOTES.slice(0, 1), rest = NOTES.slice(list.length);
+  const one = ([v, ls]) => `<h4 class="jh">v${v}</h4><ul class="jl">${ls.map(l => `<li>${l}</li>`).join('')}</ul>`;
   const m = $('#modal'); m.hidden = false;
-  m.innerHTML = smartq(`<div class="mbox notes"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m">What's new</h2><button class="btn icon" id="bClose" aria-label="Close">×</button></div>
-    ${(list.length ? list : NOTES.slice(0, 1)).map(([v, ls]) => `<h4 class="jh">v${v}</h4><ul class="jl">${ls.map(l => `<li>${l}</li>`).join('')}</ul>`).join('')}
+  m.innerHTML = smartq(`<div class="mbox notes"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px"><h2 class="m" id="notesH">What's new</h2><button class="btn icon" id="bClose" aria-label="Close">×</button></div>
+    ${list.map(one).join('')}
+    ${rest.length ? `<details class="gloss earlier"><summary>Earlier versions</summary>${rest.map(one).join('')}</details>` : ''}
     <div class="row" style="margin-top:14px"><button class="btn primary" id="bNotesOk">Carry on</button></div></div>`);
+  m.scrollTop = 0;
   const close = () => { AUDIO.play('click'); m.hidden = true; };
   $('#bClose').onclick = close; $('#bNotesOk').onclick = close; m.onclick = e => { if (e.target === m) m.hidden = true; };
 }

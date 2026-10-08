@@ -15,6 +15,7 @@ function newState(name){
 }
 /* fill in fields added after v1 saves, so old saves keep working */
 function migrate(s){
+  if (s.scene === 'end') s.scene = 'chend'; // the oldest saves called the chapter-end page 'end'
   s.chapter ??= 0; s.area ??= 'pale'; s.squad ??= [...PORDER]; s.kit ??= []; s.picksDue ??= []; s.chapters ??= {};
   s.gear ??= {}; s.picks ??= {}; Object.keys(TPL).forEach(id => { s.gear[id] ??= {}; s.picks[id] ??= []; }); s.squad.forEach(id => { s.loy[id] ??= 0; });
   if (s.ending && !(0 in s.chapters)) s.chapters[0] = s.ending;
@@ -33,7 +34,7 @@ function migrate(s){
 }
 /* difficulty, per sergeant: Story (gentler foes, easier checks), Soldier (as written), Bridgeburner (harder). Changeable any time. */
 const DIFFS = {story:{name:'Story', hp:.75, dmg:.7, atk:-1, dc:-2, blurb:'Softer fights, easier checks, enemies without tricks, and the gods always answer. For the story.'},
-  soldier:{name:'Soldier', hp:1, dmg:1, atk:0, dc:0, blurb:'The book as written. Enemies have their tricks; a god answers once a chapter.'},
+  soldier:{name:'Soldier', hp:1, dmg:1, atk:0, dc:0, blurb:'The book as written. Enemies have their tricks; each god answers once a chapter.'},
   bridgeburner:{name:'Bridgeburner', hp:1.25, dmg:1.2, atk:1, dc:1, carry:true, blurb:'Tougher foes that hit harder, less forgiving checks, and wounds that carry from fight to fight until the squad rests.'}};
 const DIFF = () => DIFFS[(S && S.diff) || 'soldier'] || DIFFS.soldier;
 /* the count, kept on the save: the finale and the Deeds page read it */
@@ -87,9 +88,9 @@ function updSilver(){ const el = typeof document !== 'undefined' && document.get
   el.textContent = t; if (silverShown != null && silverShown !== S.silver) { el.classList.remove('sup', 'sdown'); void el.offsetWidth; el.classList.add(S.silver > silverShown ? 'sup' : 'sdown'); }
   silverShown = S.silver; }
 function loadSlot(id){ try { const s = localStorage.getItem(slotKey(id)); if (!s) return null; const o = JSON.parse(s); o.sid = id; return o; } catch(e) { return null; } }
-function loadSave(){ const e = roster().list[0]; return e ? loadSlot(e.id) : null; }
 function dropSlot(id){ try { localStorage.removeItem(slotKey(id)); const r = roster(); r.list = r.list.filter(e => e.id !== id); localStorage.setItem(RKEY, JSON.stringify(r)); } catch(e) {} }
 function elog(m){ S.log.unshift(m); S.log = S.log.slice(0, 6); if (view === 'explore') updExplore(); }
+const loyLabel = n => (['Resentful','Wary','Uneasy','Steady','Warm','Loyal','Devoted'][n+3]); // how a squadmate stands with the sergeant, for the sheets and the finale
 function loy(id, n){ S.loy[id] = Math.max(-3, Math.min(3, S.loy[id] + n)); notes.push({t:`${NAME(id)} ${n > 0 ? 'approves' : 'disapproves'}.`, c:n > 0 ? 'good' : 'bad'}); }
 function note(t, c=''){ notes.push({t, c}); }
 function gainXP(n){

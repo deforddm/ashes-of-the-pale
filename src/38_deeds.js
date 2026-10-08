@@ -6,7 +6,8 @@ function statsRows(s){
   return [['Fights won', n('won')], ['Fights retried', n('retries')], ['Foes put down', n('kills')], ['Critical hits', n('crits')],
     ['Damage dealt', n('dealt')], ['Damage taken', n('taken')], ['Health mended', n('healed')],
     ['Checks passed', `${n('checksOk')} of ${n('checksOk') + n('checksFail')}`], ['Silver earned', n('silverIn')], ['Silver spent', n('silverOut')],
-    ['Munitions thrown', thrown.length ? thrown.map(([k, v]) => `${v} ${k}${v === 1 ? '' : 's'}`).join(', ') : 'none'], ['Paces walked', n('steps')]];
+    ['Munitions thrown', thrown.length ? thrown.map(([k, v]) => `${v} ${k}${v === 1 ? '' : 's'}`).join(', ') : 'none'], ['Salves used', n('thrown_salve')],
+    ['Tricks learned', Math.max(n('tricks'), Object.keys((s && s.tricks) || {}).length)], ['Tricks used', n('tricksUsed')], ["The gods' answers", n('godsAnswered')], ['Visions seen', ((s && s.seenVisions) || []).length], ['Paces walked', n('steps')]];
 }
 const statsHTML = s => `<div class="kv stats">${statsRows(s).map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join('')}</div>`;
 

@@ -95,17 +95,14 @@ const FOES = {
   stone:{name:'The Stonebound',sig:'Ω',hp:48,ac:14,atk:5,dmg:[2,6,2],rng:1,mv:3,init:0,boss:true,verb:'hammers'},
   shade:{name:'Shade',sig:'s',hp:7,ac:13,atk:3,dmg:[1,6,0],rng:1,mv:5,init:3,verb:'claws at'},
 };
-const CARDS = {
+const CARDS = { // the Herald, the Crown and the Wain are added by Chapters 5, 7 and 6 (registerChapter, at start)
   oponn:{name:'Oponn, the Twins',house:'Unaligned',hue:'#e8c073',txt:`The jesters of chance, back to back. "The Lady's pulling," Tuft says. "For now."`,fx:'+1 to your squad\'s attacks, throws and skill checks this chapter.'},
   obelisk:{name:'Obelisk',house:'Unaligned',hue:'#bdb3a3',txt:`A standing stone, unaligned and older than anyone's gods. "Something endures," Tuft says, as if that were good news.`,fx:'+4 maximum health for every squadmate this chapter.'},
   knight:{name:'Knight of High House Dark',house:'High House Dark',hue:'#7d7fc9',txt:`A tall figure with a black sword, turned away. Tuft puts the card back fast. "He's watching the city. Not us. Probably."`,fx:'Enemies take −1 to hit this chapter.'},
   assassin:{name:'Assassin of High House Shadow',house:'High House Shadow',hue:'#9a86e0',txt:`A figure half in shadow, rope and knives. Tuft grins for the first time in days.`,fx:'Your squad lands critical hits on 19–20.'},
-  herald:{name:'Herald of High House Death',house:'High House Death',hue:'#8fa38a',txt:'A grey figure in a doorway, holding the door open for somebody you can\'t see.',fx:'Once a fight this chapter, the first blow that would drop a squadmate leaves them standing at 1 health.'},
-  crown:{name:'Crown',house:'Unaligned',hue:'#e8c073',txt:'An iron crown with a thread of gold in it, and an empty dark behind it where a throne should be.',fx:'Every skill check this chapter rolls twice and keeps the better.'},
   /* the Sceptre and the Orb only ever turn up as the cards that refuse her */
   sceptre:{name:'Sceptre',house:'Unaligned',hue:'#bdb3a3',txt:'A rod of office, tilted, with nobody\'s hand on it.',fx:'None. It refuses her.'},
   orb:{name:'Orb',house:'Unaligned',hue:'#bdb3a3',txt:'A grey sphere hanging in the dark, with a point of light in it that isn\'t the lamp\'s.',fx:'None. It refuses her.'},
-  chains:{name:'The Wain',house:'Unaligned',hue:'#9a9aa6',txt:'A great wagon coming out of the dark, chains trailing from it to both edges of the card, and the shadow of a sword across its bed.',fx:'An enemy that lands a blow on a squadmate takes 2 damage back.'},
   blank:{name:'The unpainted card',house:'—',hue:'#d8d0c0',txt:'No house. No figure. Gesso and grain, and nothing on it yet.',fx:'None. It isn\'t anyone\'s yet.'},
 };
 const LEVELS = [0,100,250,450,700,1000,1400,1900]; // levels 1..8
