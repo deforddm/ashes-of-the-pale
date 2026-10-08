@@ -758,7 +758,7 @@ ${SQUAD().includes('tuft') ? `Tuft, behind you, has gone completely still.` : ''
 
 He says it flat. Toc told you he would, and he does, and it's the flat that gets you.
 
-"At Pale. After the Hounds. A knife, in the night, from someone I'll probably never be allowed to name." He touches his chest, low, on the left, the same place Toc touched, as if they'd rehearsed it. "I went through a gate. There was a gate, Sergeant. They tell you there isn't, and there is. Somebody was standing at it. And then a coin came down on the wrong side, and I was on my back in the mud with a surgeon swearing at me." He lets go of the pommel. "Since then I've been under the plain with the Hounds of Shadow, which I don't remember, and somewhere else, which I do, and I'd rather not."
+"At Pale. Before the Hounds. A knife, in the night, from someone I'll probably never be allowed to name." He touches his chest, low, on the left, the same place Toc touched, as if they'd rehearsed it. "I went through a gate. There was a gate, Sergeant. They tell you there isn't, and there is. Somebody was standing at it. And then a coin came down on the wrong side, and I was on my back in the mud with a surgeon swearing at me." He lets go of the pommel. "Since then I've been under the plain with the Hounds of Shadow, which I don't remember, and somewhere else, which I do, and I'd rather not."
 
 He turns back to the barrow.
 
