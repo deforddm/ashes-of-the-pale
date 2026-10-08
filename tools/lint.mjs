@@ -12,15 +12,21 @@ const src = fs.readdirSync(path.join(root, 'src')).filter(f => f.endsWith('.js')
 const all = src.map(s => s[1]).join('\n');
 
 // flags: names read and written anywhere in the source
-const flags = [...new Set([...all.matchAll(/S\.f\.([A-Za-z0-9_]+)/g)].map(m => m[1]))];
+const flags = [...new Set([...all.matchAll(/S\.f\.([A-Za-z0-9_]+)(?![A-Za-z0-9_*])/g)].map(m => m[1]))]; // "S.f.v*_" in a comment is a pattern, not a flag
 const setRe = n => new RegExp(`S\\.f\\.${n}\\s*(=(?!=)|\\+\\+|--|\\+=|-=|\\?\\?=|\\|\\|=)|\\+\\+S\\.f\\.${n}\\b|--S\\.f\\.${n}\\b`);
-const written = flags.filter(n => setRe(n).test(all));
+// dynamic writes count too: S.f[x + '_suffix'] = …, S.f['prefix' + x] = …, and the visions' choices, set:['flag', value] (36b runs S.f[c.set[0]] = c.set[1])
+const dynSuffix = [...all.matchAll(/S\.f\[[^\]]*?\+\s*'([A-Za-z0-9_]+)'\s*\]\s*=(?!=)/g)].map(m => m[1]);
+const dynPrefix = [...all.matchAll(/S\.f\[\s*'([A-Za-z0-9_]+)'\s*\+[^\]]*\]\s*=(?!=)/g)].map(m => m[1]);
+const setPairs = [...all.matchAll(/\bset:\s*\[\s*'([A-Za-z0-9_]+)'\s*,\s*'([^']*)'\s*\]/g)];
+const dynWritten = n => dynSuffix.some(x => n.endsWith(x) && n !== x) || dynPrefix.some(x => n.startsWith(x) && n !== x) || setPairs.some(m => m[1] === n);
+const written = flags.filter(n => setRe(n).test(all) || dynWritten(n));
 const readOnly = flags.filter(n => !written.includes(n));
 const objFlags = flags.filter(n => new RegExp(`S\\.f\\.${n}\\s*(=|\\?\\?=)\\s*[\\[{]|S\\.f\\.${n}\\s*\\[|S\\.f\\.${n}\\.(filter|map|includes|length|push|some|forEach)|in S\\.f\\.${n}\\b|= S\\.f\\.${n};`).test(all));
 // values assigned to string-valued flags (e.g. c2_key = 'light')
 const flagVals = {};
 for (const m of all.matchAll(/S\.f\.([A-Za-z0-9_]+)\s*=\s*'([^']+)'/g)) (flagVals[m[1]] ||= new Set()).add(m[2]);
 for (const m of all.matchAll(/S\.f\.([A-Za-z0-9_]+)\s*===?\s*'([^']+)'/g)) (flagVals[m[1]] ||= new Set()).add(m[2]);
+for (const m of setPairs) (flagVals[m[1]] ||= new Set()).add(m[2]);
 const flagValsObj = Object.fromEntries(Object.entries(flagVals).map(([k, v]) => [k, [...v]]));
 const spriteKinds = [...new Set([...fs.readFileSync(path.join(root, 'src/18_figure_sprites.js'), 'utf8').matchAll(/case '([a-z_0-9]+)'/g)].map(m => m[1]))];
 const portraitSrc = fs.readFileSync(path.join(root, 'src/19_portraits.js'), 'utf8');

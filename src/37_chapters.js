@@ -116,7 +116,6 @@ function showChapterEnd(){
   $('#bSet2').onclick = () => { AUDIO.play('click'); openSettings(); };
   $('#bAgain').onclick = () => { AUDIO.play('click'); showTitle(); };
 }
-const showEnd = showChapterEnd;
 function startChapter(n){
   const CH = CHAPTERS[n]; if (!CH) return showTitle();
   S.chapter = n; S.card = null; S.cardPool = null; refillTricks(); S.wounds = null; S.gods = {ch:n, used:[]}; S.scene = 'chintro'; S.node = null; S.bg = null; S.battle = null; S.bopt = null;
@@ -192,18 +191,12 @@ function showFinale(i = 0){
 }
 function finGo(d){ const i = (S.finPage || 0) + d, n = finPages().length; if (i < 0) { S.scene = 'chend'; save(); return showChapterEnd(); } if (i < n) showFinale(i); }
 window.addEventListener('keydown', e => { if (view !== 'finale' || !$('#chars').hidden || !$('#settings').hidden || !$('#modal').hidden) return; if (e.key === 'ArrowRight') finGo(1); else if (e.key === 'ArrowLeft') finGo(-1); });
-/* quest lines per area (chapter content sets flags; the engine reads them) */
+/* quest lines per area (chapter content sets flags; the engine reads them). An area's own quest() and a chapter's quests:{} win over these. */
 /* the road from Pale to the Worry Gate: eleven days, or twelve if the Fourth turned west for the light (c2_late) */
 const tripDays = cap => { const w = S && S.f && S.f.c2_late ? 'twelve' : 'eleven'; return cap ? w[0].toUpperCase() + w.slice(1) : w; };
 const QUESTS = {
-  plain_road:()=> S.f.c2_barrowFought ? 'East, to the wagon road\'s end' : S.f.c2_seth ? 'East. Sethand says do not go into the barrow.' : 'Talk to the guide, Sethand',
-  hound_site:()=> S.f.c2_tocGone ? 'East, to the fourth camp' : 'Dead horses, and two people who are not dead',
-  ridge:()=> S.f.c2_lightDone ? 'Dawn. East, to the hills' : S.f.c2_light ? 'The light in the west' : 'The fourth camp. Talk to Sethand.',
-  hills_edge:()=> 'The Gadrobi Hills. Darujhistan beyond.',
   worry_gate:()=> S.f.c3_gateFought ? 'Into the city, down to the Gadrobi District' : S.f.c3_gate ? 'The wagon through the gate.' : 'The Worry Gate. Talk to the gate-clerk.',
   gadrobi_cross:()=> S.f.c3_key ? 'Dawn. The roof above the dig.' : S.f.c3_msg ? 'Up the alley to the Daru District. A dye-shop.' : S.f.c3_workDone ? (SQUAD().includes('ellis') ? 'The second night. Ellis has a letter. Ask her at the dig.' : 'The second night. A Gadrobi child is looking for you.') : S.f.c3_reported ? 'Crates down the hole. Whiskeyjack\'s orders.' : 'Report to Whiskeyjack at the barrier',
-  hills_ridge:()=> S.f.c5_seth ? 'East, to the barrow. Don\'t be seen.' : 'Talk to the Rhivi on the ridge',
-  barrow_vale:()=> S.f.c5_key ? 'Dawn. Paran rides for the city.' : S.f.c5_night ? 'Night. Something on the next hill. East.' : S.f.c5_wardsFought ? 'Two riders coming up the vale' : 'The Adjunct and the Imass. Watch.',
   roofs_gadrobi:()=> S.f.c4_key ? 'Down. The dig, and Whiskeyjack.' : S.f.c4_roofsFought ? 'East across the planks, to Kalam\'s roof' : 'Two roofs over. Watch. Do not help.',
   roofs_daru:()=> S.f.c4_key ? 'Down, west. The street.' : S.f.c4_meet ? 'The parapet' : 'Kalam\'s roof. Watch.',
   daru_lane:()=> S.f.c3_inn ? 'Back down the alley, to the crossing' : 'The Phoenix. The door with the painted bird.',
@@ -213,7 +206,7 @@ const QUESTS = {
 /* ability picks: shown before the next conversation after a level 3/5/7 */
 function openPicks(done){
   const lvl = S.picksDue[0]; if (!lvl) return done && done();
-  const m = $('#modal'); m.hidden = false;
+  const m = $('#modal'); m.hidden = false; m.scrollTop = 0;
   const chosen = {};
   const optsFor = id => lvl === 3 ? ((PICKS[3][id] || []).some(o => has(id, o[0])) ? [] : PICKS[3][id] || []) : PICKS.vet.filter(v => !has(id, v[0]));
   m.innerHTML = `<div class="mbox"><h2 class="m">Level ${lvl}</h2><p class="fine">${lvl === 3 ? 'The squad has been through enough to have habits. Pick one per soldier.' : 'Veterans. One pick each; the rest stays as it was.'}</p>

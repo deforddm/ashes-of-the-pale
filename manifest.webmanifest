@@ -1,11 +1,12 @@
 {
+  "id": "./",
   "name": "Ashes of the Pale",
   "short_name": "Ashes",
   "description": "A Malazan fan RPG: the Fourth Squad in the aftermath of the Pale.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#0d0b0a",
   "theme_color": "#0d0b0a",
   "categories": ["games"],
