@@ -408,7 +408,7 @@ ${SQUAD().includes('brisk') ? `Brisk sets her shield. "Nobody dies," she says, t
 
 The man in the apron takes his foot off the planks. He looks down between them for a long moment at the lantern-light coming up, and you can see him think about gas, and holidays, and his mother's street.
 
-Then he laughs, a big wet Gadrobi laugh, and says something to the others, and they put the sign back. Crooked. They take two stakes anyway, for honour, and go off down the Gadrobi road singing about Gedderone. On the way past Trotts the smallest of them stops, and takes a garland of paper flowers off his own neck, and hangs it on the Barghast.
+Then he laughs, a big wet Gadrobi laugh, and says something to the others, and they put the sign back. Crooked. They take two stakes anyway, for honour, and go off down toward the harbour singing about Gedderone. On the way past Trotts the smallest of them stops, and takes a garland of paper flowers off his own neck, and hangs it on the Barghast.
 
 Trotts allows it.
 
@@ -430,7 +430,7 @@ It takes longer than a fight that kills people. It's knees, and shield-rims, and
 
 The foreman sits on the chandler's step afterwards with a split lip and a hand pressed to his ribs, and laughs, and says something in Gadrobi that makes the chandler laugh too. ${SQUAD().includes('ellis') ? `Ellis, not to you, near you: "He says Malazans fight like Gadrobi grandmothers." A beat. "It's a compliment. Gadrobi grandmothers are terrible."` : ''}
 
-They go off down the Gadrobi road carrying each other. On the way past Trotts the smallest of them stops, with one eye shut, and takes a garland of paper flowers off his own neck and hangs it on the Barghast.
+They go off down toward the harbour carrying each other. On the way past Trotts the smallest of them stops, with one eye shut, and takes a garland of paper flowers off his own neck and hangs it on the Barghast.
 
 Trotts allows it.
 

@@ -291,7 +291,7 @@ You give it to him. He ties it round your wrist, and pulls the knot tight with h
 
 "The grass knows whose that is now," he says, to the east. "It will not help you. It will know, if something happens to you on it, whose you were. That is all the Rhivi can do for a Malazan in these hills." A pause. "It is not nothing."
 
-${(S.f.c2_sethTrust || 0) >= 2 && S.f.c2_hillsDust ? `"You said my name at the Mhybe's fires?" he asks, and then, before you can answer: "No. You did not come by the fires. You came by *me*. That will do."` : `He doesn't say anything else. He has said, by his count, a great deal.`}`,
+${(S.f.c2_sethTrust || 0) >= 2 && S.f.c2_hillsDust ? `"You said my name at the clan-mother's fires?" he asks, and then, before you can answer: "No. You did not come by the fires. You came by *me*. That will do."` : `He doesn't say anything else. He has said, by his count, a great deal.`}`,
       ch:[{t:'"The dust-line."', req:()=>!S.f.c5_sethDust, go:'c5_seth_dust'},
           {t:'"What are the Rhivi doing here?"', req:()=>!S.f.c5_sethBundle, go:'c5_seth_bundle'},
           {t:'Get up.', go:()=>startExplore()}]}),
