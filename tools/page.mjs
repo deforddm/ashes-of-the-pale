@@ -8,7 +8,39 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 export const { chromium } = createRequire(import.meta.url)(execSync('npm root -g').toString().trim() + '/playwright');
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FONTS = '/home/claude/fonts/files';
+/* The web fonts, served locally (the sandbox can't reach Google Fonts). A folder holding fonts.css
+   (Google-style @font-face rules whose urls end in a file name) plus the .woff2 files it names:
+   1. $ASHES_FONTS if set;  2. tools/.fonts/ (gitignored), built on first run from the npm @fontsource
+   packages (installed into a cache outside the repo, ~/.cache/ashes-fonts);  3. none: one warning, and
+   the browser falls back to its own fonts (fit measurements may shift). */
+const FONT_SET = { // the families and weights src/00_head.html asks Google for
+  'im-fell-english': ['400', '400-italic'], 'im-fell-english-sc': ['400'],
+  'alegreya-sans': ['400', '500', '700', '400-italic'], 'alegreya-sans-sc': ['500', '700'] };
+function findFonts() {
+  if (process.env.ASHES_FONTS) return fs.existsSync(path.join(process.env.ASHES_FONTS, 'fonts.css')) ? process.env.ASHES_FONTS : null;
+  const dir = path.join(root, 'tools', '.fonts');
+  if (fs.existsSync(path.join(dir, 'fonts.css'))) return dir;
+  try {
+    const cache = path.join(process.env.HOME || '/tmp', '.cache', 'ashes-fonts');
+    fs.mkdirSync(cache, { recursive: true });
+    const pkgs = Object.keys(FONT_SET).map(f => '@fontsource/' + f + '@5');
+    if (!Object.keys(FONT_SET).every(f => fs.existsSync(path.join(cache, 'node_modules/@fontsource', f))))
+      execSync('npm install --no-save --no-audit --no-fund --silent --prefix ' + JSON.stringify(cache) + ' ' + pkgs.join(' '), { stdio: 'ignore', timeout: 120000 });
+    const tmp = dir + '.tmp'; fs.rmSync(tmp, { recursive: true, force: true }); fs.mkdirSync(tmp, { recursive: true });
+    let css = '';
+    for (const [fam, ws] of Object.entries(FONT_SET)) {
+      const pd = path.join(cache, 'node_modules/@fontsource', fam);
+      for (const w of ws) css += fs.readFileSync(path.join(pd, w + '.css'), 'utf8')
+        .replace(/url\(\.\/files\/([^)]+\.woff2)\) format\('woff2'\)(, url\([^)]+\.woff\) format\('woff'\))?/g, (m, f) => {
+          fs.copyFileSync(path.join(pd, 'files', f), path.join(tmp, f)); return `url(https://fonts.gstatic.com/s/ashes/${f}) format('woff2')`; }) + '\n';
+    }
+    fs.writeFileSync(path.join(tmp, 'fonts.css'), css);
+    fs.rmSync(dir, { recursive: true, force: true }); fs.renameSync(tmp, dir);
+    return dir;
+  } catch (e) { return null; }
+}
+const FONTS = findFonts();
+if (!FONTS) console.warn('WARNING: web fonts not found (set ASHES_FONTS, or let tools/.fonts be built from npm @fontsource); using fallback fonts, so fit measurements may differ.');
 
 export async function server() {
   const port = 8000 + Math.floor(Math.random() * 900);
@@ -43,9 +75,9 @@ export async function browser() {
 /* opts: {width, height, dpr, fast (speed/motion/mute), settings:{...}, save: S object to preload} */
 export async function openGame(br, url, opts = {}) {
   const ctx = await br.newContext({ viewport: { width: opts.width || 390, height: opts.height || 844 }, deviceScaleFactor: opts.dpr || 1, serviceWorkers: 'block', hasTouch: !!opts.touch, isMobile: !!opts.mobile });
-  if (fs.existsSync(FONTS)) {
+  if (FONTS) {
     await ctx.route('https://fonts.googleapis.com/**', r => r.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(FONTS, 'fonts.css'), 'utf8') }));
-    await ctx.route('https://fonts.gstatic.com/**', r => { const f = path.join(FONTS, path.basename(new URL(r.request().url()).pathname)); return fs.existsSync(f) ? r.fulfill({ contentType: 'font/woff2', body: fs.readFileSync(f) }) : r.fulfill({ status: 404, body: '' }); });
+    await ctx.route('https://fonts.gstatic.com/**', r => { const f = path.join(FONTS, path.basename(new URL(r.request().url()).pathname)); return fs.existsSync(f) ? r.fulfill({ contentType: f.endsWith('.woff') ? 'font/woff' : 'font/woff2', body: fs.readFileSync(f) }) : r.fulfill({ status: 404, body: '' }); });
   }
   const page = await ctx.newPage();
   const errors = [];
