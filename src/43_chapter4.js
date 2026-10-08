@@ -199,7 +199,7 @@ ${S.f.c4_kalamLook ? `He looks at you a beat too long. Not at your face; at the 
 
 He knows. Not what, and not who. Only that somebody in this squad has sat at a table with the Claw and come away lighter by something, and that the Claw now knows a little more about a hole in the Gadrobi crossing than it did a week ago. He was Claw himself. He can smell it on a squad the way Ohl smells rot in a wound.
 
-He says nothing about it. He never will. That's the worst thing he could have done, and he does it perfectly.` : `He looks at you, briefly, the way he looks at everything: as if measuring the distance to it and the time it would take to cross.`}
+He says nothing about it. Not tonight, and not for a long while. That's the worst thing he could have done, and he does it perfectly.` : `He looks at you, briefly, the way he looks at everything: as if measuring the distance to it and the time it would take to cross.`}
 
 "Two roofs over," he says. "West of me. There's a chimney with a cracked pot on it. Sit behind it. When the people I'm meeting come, they'll come from every direction but that one, because that roof's got a skylight on the next one and nobody likes a skylight at their back." A pause you could fit a knife in. "Don't sit on the skylight."
 
@@ -353,7 +353,7 @@ ${SQUAD().includes('brisk') ? `Brisk looks at the good plank for a long time. Th
     c4_rallick:()=>({sp:'A man on the ridge', fx:()=>{S.f.c4_rallick=1;}, txt:
 `He is sitting on the ridge of the far roof with his back against a chimney and his knees drawn up, and you did not see him until you were close enough to spit on him, which is the first thing you notice about him and the last thing you'll forget.
 
-A lean man. Not tall. A dark plain coat, and a plain face under a plain cap, and a pair of hands resting on his knees, open, where you can see them, in a way that tells you he has thought about where you can see them. He isn't watching you. He's watching a house, three streets north, on the hill where the lamps are brass: one window with a light in it, high up.
+A lean man, long in the leg. A dark plain coat, and a plain face under a plain cap, and a pair of hands resting on his knees, open, where you can see them, in a way that tells you he has thought about where you can see them. He isn't watching you. He's watching a house up the hill to the east, where the lamps are brass: one window with a light in it, high up.
 
 "Go home, Malazan," he says, without looking round. "This isn't your war."
 
@@ -368,7 +368,7 @@ His voice is very tired and very level, the voice of a man who has been saying t
     c4_rallick_ok:()=>({sp:'A man on the ridge', fx:()=>{S.f.c4_rallickOk=1;}, txt:
 `${by({
   tuft:`Tuft asks it. Not loudly: she sits down on the slates a little way off from him, the way you'd sit near a cat, and asks it of the window rather than of him. "Whose war is it, then?"`,
-  ellis:`Ellis asks it, in Daric, quietly, with the Claw's flat vowels sanded off it. "Whose war, then? Not Ocelot's. Or you'd be watching the roofs, not the window."`,
+  ellis:`Ellis asks it, in Daru, quietly, with the Claw's flat vowels sanded off it. "Whose war, then? Not Ocelot's. Or you'd be watching the roofs, not the window."`,
   kettle:`Kettle asks it, straight out, with total conviction, as if she has a right to know and has been waiting all night to be told. "Whose war is it, then? Because everyone keeps saying it's ours, and *nobody asked us*."`,
   sgt:`"Whose war is it?" you ask.`,
   _:`{who} asks it, plainly. "Whose war is it, then?"`})}
@@ -379,7 +379,7 @@ He turns his head, then. Not far. Enough to look at ${by({sgt:'you', _:'{who}'})
 
 A long breath.
 
-"My own clan-master sent me up tonight to find out whose it is. I'm not looking. I've got my own business." The window, three streets north. "I've had my own business for five years. I'm not going to put it down now for a war that isn't mine either."
+"My own clan-master sent me up tonight to find out whose it is. I'm not looking. I've got my own business." The window, up on the hill. "I've had my own business for two years. I'm not going to put it down now for a war that isn't mine either."
 
 He turns his face away. That's the end of it. You have the strong sense that you have been told more than he's said to anyone in a year, and that he'll kill you if you ever repeat it, and that he'd be sorry about it, and do it anyway.${nearMiss() ? `
 
@@ -390,7 +390,7 @@ ${SQUAD().includes('ellis') ? `Ellis, when you're three roofs away: "Rallick Nom
     c4_rallick_miss:()=>({sp:'A man on the ridge', fx:()=>{ S.f.c4_rallickTail=1; }, txt:
 `${by({
   tuft:`Tuft asks it, quietly, of the window rather than of him. It's a good question. It's the wrong voice: a cadre voice, a little too exact, the voice of someone who reads people for a living and doesn't mind if they know.`,
-  ellis:`Ellis asks it, in Daric, and the Claw comes through it like a stain through paint: the flat vowels, the patience, the question that already knows half its answer.`,
+  ellis:`Ellis asks it, in Daru, and the Claw comes through it like a stain through paint: the flat vowels, the patience, the question that already knows half its answer.`,
   kettle:`Kettle asks it with total confidence, and then, because he doesn't answer, asks it again, and then explains why she's asking, at length, with her hands.`,
   sgt:`"Whose war is it?" you ask. It comes out like a sergeant's question, the kind with a right answer.`,
   _:`{who} asks it. It comes out like a question with a right answer.`})}
@@ -415,7 +415,7 @@ ${SQUAD().includes('ellis') ? (ROLL().who === 'ellis' ? `Ellis, when you're thre
 ${SQUAD().includes('kettle') ? `Kettle, very quietly, as you move off: "I like him." Brisk: "You like anyone who'd kill you politely." Kettle considers this. "Yes."` : ''}`,
       ch:[{t:'Leave him.'}]}),
     c4_rallick_again:()=>({sp:'A man on the ridge', txt:
-`${S.f.c4_rallickTail ? `${S.f.c4_roofsFought ? 'He watched the knives on the planks, all of it, without moving. ' : ''}He isn't watching the window any more. He's watching you. He doesn't say anything. He's said all he means to.` : S.f.c4_roofsFought ? `He hasn't moved through any of it. Not the knives, ${S.f.c4_fewer || S.f.c4_shoutFailed ? 'not the shouting, ' : ''}${preUsed('guild_roofs') || preUsed('guild_roofs_2') ? 'not a Moranth sharper going off two roofs from him, ' : ''}not the bodies going off the edge. He's still watching the window three streets north. A Guild man died forty paces from him and he didn't turn his head, and you understand, looking at him, that whatever he's waiting for is worth more to him than the whole of his Guild.` : `He's still watching the window. He doesn't look round. You have the feeling that you've used up your share of him, and that there wasn't much share to begin with.`}`,
+`${S.f.c4_rallickTail ? `${S.f.c4_roofsFought ? 'He watched the knives on the planks, all of it, without moving. ' : ''}He isn't watching the window any more. He's watching you. He doesn't say anything. He's said all he means to.` : S.f.c4_roofsFought ? `He hasn't moved through any of it. Not the knives, ${S.f.c4_fewer || S.f.c4_shoutFailed ? 'not the shouting, ' : ''}${preUsed('guild_roofs') || preUsed('guild_roofs_2') ? 'not a Moranth sharper going off two roofs from him, ' : ''}not the bodies going off the edge. He's still watching the window up on the hill. A Guild man died forty paces from him and he didn't turn his head, and you understand, looking at him, that whatever he's waiting for is worth more to him than the whole of his Guild.` : `He's still watching the window. He doesn't look round. You have the feeling that you've used up your share of him, and that there wasn't much share to begin with.`}`,
       ch:[{t:'Leave him.'}]}),
 
     /* ---- Crokus, running ---- */
@@ -519,7 +519,7 @@ Something moves on the far roof.`,
 
 For a moment nobody moves. You can see what they see: a squad of armed strangers on a Gadrobi roof, the night after a Guild clan-master was found on the temple dome with his throat opened. A shield. A crossbow. A woman with a Deck. Somebody's *helpers*.
 
-The one in front says something in Daric, low and fast, and the others spread out along the ridge, and all four start across the planks toward you. Not hurrying. Knives down along the forearm, the Daru way. They've decided.
+The one in front says something in Daru, low and fast, and the others spread out along the ridge, and all four start across the planks toward you. Not hurrying. Knives down along the forearm, the Daru way. They've decided.
 
 ${SQUAD().includes('kettle') && S.inv.cusser > 0 ? `Kettle's hand has gone into her satchel. It comes out with a cusser in it, round and clay-grey, the Moranth seal black on the top. She looks at it. She looks at the roof under her feet. She looks at the house under the roof. And she puts it back.` : ''}`,
       ch:[C4H.shout('Shout it across the planks: "Malazan, you idiots! We\'re not who you\'re looking for!"'),
@@ -592,7 +592,7 @@ Then the tannery ridge, two boots wide, and the crossbow at the end of it. ${S.f
 
 And there's a hole in the roof. Where the sharper went off on the ridge, away from the edge the way Fiddler said, a run of slates has gone through into somebody's attic, and in the attic, in the blue that comes up through the hole, an old woman is sitting up in a bed under the eaves in her nightcap, looking up at you. She doesn't scream. She looks at the squad, and at the Moon's Spawn behind it, as if deciding which of the two to complain about first.
 
-${SQUAD().includes('kettle') ? `"Paviors' Guild," Kettle tells her, down the hole, with total conviction. "We'll be back about the roof." The old woman looks at the crossbow. Kettle looks at the crossbow. "Tuesday," Kettle says.
+${SQUAD().includes('kettle') ? `"Paviors' Guild," Kettle tells her, down the hole, with total conviction. "We'll be back about the roof." The old woman looks at the crossbow. Kettle looks at the crossbow. "Market day," Kettle says.
 
 Then, on the way back across the slates, low, to you and nobody else: "Away from the edge. Like Fiddler said. Didn't matter. Every roof from here to the lake heard that, Sergeant." She swallows. "So did the people Kalam's waiting for. And there's only one army in this city that carries Moranth clay."` : `Every roof from here to the lake heard that sharper. Somewhere east, on a leaded roof, a man with his hands empty heard it too, and so did everyone he was waiting for, and there is only one army in this city that carries Moranth clay.`}` : ''}
 
@@ -742,11 +742,11 @@ Nine. Ten. You stop counting at twelve.
 
 None on your roof. Kalam was right about the skylight.
 
-One of them stands, on the roof north of Kalam's. A lean figure. Older, by the way it holds itself. It says something, low, in Daric, that you're too far off to catch. Kalam answers, in Daric, and holds up both hands, empty, and turns them over, slowly, so that the candlelight goes over the palms and the backs.
+One of them stands, on the roof north of Kalam's. A lean figure. Older, by the way it holds itself. It says something, low, in Daru, that you're too far off to catch. Kalam answers, in Daru, and holds up both hands, empty, and turns them over, slowly, so that the candlelight goes over the palms and the backs.
 
 ${S.f.c4_fewer ? (S.f.c4_cantFar ? `The one on the north roof says something else. From a roof further back than Kalam first put you, you can't catch a word of it, and you don't need to: he points, back the way you came, toward the Gadrobi roofs, and then opens and shuts his hand in the air, like a mouth. *Shouting.* ${S.f.c4_shouter === 'kettle' ? `Kettle, next to you, breathes out through her nose. "He's telling Kalam about *me*." She sounds pleased.` : `Kettle, next to you, breathes out through her nose. "He's telling Kalam about us."`}` : `The one on the north roof says something else, and you catch one word of it, because it's a word ${S.f.c4_shouter && S.f.c4_shouter !== 'sgt' && SQUAD().includes(S.f.c4_shouter) ? NAME(S.f.c4_shouter) : 'you'} shouted two roofs ago: *Malazan*. And then, after it, a word you don't know, said with a kind of weary disgust.${SQUAD().includes('ellis') ? ' Ellis would know it.' : ''} ${S.f.c4_shouter === 'kettle' ? `Kettle, next to you, guesses: "*Idiots*," she breathes. "He's telling Kalam about *me*." She sounds pleased.` : `Kettle, next to you, guesses: "*Idiots*," she breathes. "He's telling Kalam about us."`}`) : `The one on the north roof says something else, and gestures, sharp, back the way you came, toward the Gadrobi roofs. Toward the dead on the Gadrobi roofs.${S.f.c4_shoutFailed && !S.f.c4_cantFar ? ` And one word, flat, set down on the parapet between them like a knife on a table: *Malazan*. You know where he got it. He got it off a plank, shouted.` : ''} Kalam doesn't turn his head to follow the gesture. He keeps his hands up.`}${preUsed('guild_roofs') || preUsed('guild_roofs_2') ? `
 
-Then the one on the north roof does a thing with both hands that needs no Daric at all: closes them, and flings them open. A burst. He points at the Gadrobi roofs${S.f.c4_cantFar ? `. From where Kalam's hand put you, you can't hear what he calls it. You don't need to.` : ` and says one word more, and it's a word every soldier in the Host knows in every tongue they've marched through. *Moranth.*`} Kalam keeps his hands up. You watch his shoulders not move, and you know to the ounce what it is costing them.` : ''}
+Then the one on the north roof does a thing with both hands that needs no Daru at all: closes them, and flings them open. A burst. He points at the Gadrobi roofs${S.f.c4_cantFar ? `. From where Kalam's hand put you, you can't hear what he calls it. You don't need to.` : ` and says one word more, and it's a word every soldier in the Host knows in every tongue they've marched through. *Moranth.*`} Kalam keeps his hands up. You watch his shoulders not move, and you know to the ounce what it is costing them.` : ''}
 
 For a moment, you think it's going to work.
 
@@ -999,7 +999,7 @@ The sack, in his lap, is quite still.
 
 "The second one stopped," he says, more quietly, almost to himself. "I didn't expect it to stop."` : `He doesn't look at you. He looks at the place on the leads where the boy fell, and then${SQUAD().includes('tuft') ? ` at Tuft, in the grey cloak, for rather longer, and then` : ''} back at the east.
 
-"Stepped aside," he says. It isn't a question. "That was the smart thing. That's what I'd have done. That's what Whiskeyjack told you to do." A pause. "It *nodded* at you. I saw it from the ridge. They don't nod, Sergeant. I've watched them for a month and I have never seen one of them acknowledge that a human being was on the same roof."
+"Stepped aside," he says. It isn't a question. "That was the smart thing. That's what I'd have done. That's what Whiskeyjack told you to do." A pause. "It *nodded* at you. I saw it from the ridge. They don't nod, Sergeant. I've watched them every night since we came, and I have never seen one of them acknowledge that a human being was on the same roof."
 
 "Somebody on that mountain has your face now. I'd think about that. I'd think about it for a long time."`}
 
@@ -1216,20 +1216,20 @@ He's furious. That's the second, and it's worse. Not loud. Kalam doesn't get lou
 
 ${S.f.c4_kalamLook ? `He does look up, once, when you come near. At you. The same beat too long as in the vault. Then back down to the knives.` : ''}
 
-"Rake's people," he says.
+"Moon's Spawn," he says.
 
 Nothing else. Not to you. Not to anyone. He picks up the next knife and starts to clean it.${trickBy('cant') ? `
 
 Only, as ${trickBy('cant') === 'sgt' ? 'you pass' : `${NAME(trickBy('cant'))} passes`} him, his free hand moves on the tiles beside the knives: a flat palm, wiped once across the slate, left to right. Nobody needs the cant for that one. *Nothing. I showed you nothing.*` : ''}`,
       ch:[{t:'Whiskeyjack.', go:'c4_dawn_wj'}]}),
     c4_dawn_wj:()=>({sp:'Whiskeyjack', scene:'roof', txt:
-`Whiskeyjack has turned back to the lake. The Moon's Spawn hangs over it, black against the grey, and the light is coming up behind it and not touching it.
+`Whiskeyjack has turned back to the lake. The Moon's Spawn hangs over it, black against the grey, and the light is coming up over the hills to the east and not touching it.
 
 "The Guild won't deal," he says. "Not with us. Not tonight, not this month. Kalam went up to buy them and found somebody'd already bought the roof out from under him, with the Guild still on it." He doesn't sound angry. He sounds like a man reading a distance. "That's that, then. We do this the other way."${preUsed('c4_clan') ? `
 
 "There was a fire on the Daru ridge in the third bell," he says, to the lake. "A chimney. Blue at the root. The Watch had it out with sand before it found the next house, and they're saying *the gas*."${SQUAD().includes('kettle') ? ` He doesn't look at Kettle. "Everybody in this city says the gas. Fiddler will want a word, Sergeant. He'll want it with you, and then he'll want it with her, and it'll be the same word."` : ` A pause. "Everybody in this city says the gas. Fiddler will want a word, Sergeant."`}` : ''}${preUsed('reprisal') ? `
 
-"And somebody put Moranth clay in a lane off the Gadrobi road in the small hours. The Watch were up and down the lanes with rattles till the fourth bell, asking road crews where they'd been." A pause. "Nobody's asked ours. Yet."` : ''}
+"And somebody put Moranth clay in a lane above the Gadrobi crossing in the small hours. The Watch were up and down the lanes with rattles till the fourth bell, asking road crews where they'd been." A pause. "Nobody's asked ours. Yet."` : ''}
 
 ${S.f.c4_key === 'shield' ? `A long pause.
 
@@ -1351,7 +1351,7 @@ ${S.f.c4_key === 'shield' ? `She's quiet for a long time. "You didn't ask anyone
     c4_close_end:()=>({sp:'The chandler\'s roof', scene:'roof', txt:
 `The last lamp on the lakefront goes out.
 
-In the grey that's left, you look for them, the way you looked for them from this roof two dawns ago, the crouched shapes along the ridges, facing all the same way like crows in a field. They aren't there. The roofs of Darujhistan are empty, from the Gadrobi temples to the palaces on the hill, empty and wet and ordinary, with smoke starting to go up from the chimneys where somebody has lit a kitchen fire.${preUsed('c4_clan') ? ' On the Daru ridge one chimney has no pot on it any more, only a black stump and a long stain down the slates, and nobody is going to light that one again.' : ''}${preUsed('guild_roofs') || preUsed('guild_roofs_2') ? ' On the Gadrobi side, an old woman is standing on a stool in her attic with her head out of a hole in her roof, looking at the mountain over the lake, and waiting for ' + (SQUAD().includes('kettle') ? 'Tuesday.' : 'somebody to come about it.') : ''}
+In the grey that's left, you look for them, the way you looked for them from this roof two dawns ago, the crouched shapes along the ridges, facing all the same way like crows in a field. They aren't there. The roofs of Darujhistan are empty, from the Gadrobi temples to the palaces on the hill, empty and wet and ordinary, with smoke starting to go up from the chimneys where somebody has lit a kitchen fire.${preUsed('c4_clan') ? ' On the Daru ridge one chimney has no pot on it any more, only a black stump and a long stain down the slates, and nobody is going to light that one again.' : ''}${preUsed('guild_roofs') || preUsed('guild_roofs_2') ? ' On the Gadrobi side, an old woman is standing on a stool in her attic with her head out of a hole in her roof, looking at the mountain over the lake, and waiting for ' + (SQUAD().includes('kettle') ? 'market day.' : 'somebody to come about it.') : ''}
 
 The Guild is not on the roofs this morning. The Guild is under them, counting.
 
