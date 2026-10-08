@@ -39,3 +39,5 @@ const out = await page.evaluate(async () => {
 console.log(out.join('\n'));
 console.log('ERRORS:', errors.length ? errors.join('\n') : 'none');
 await br.close(); srv.kill();
+// exit 1 on a page error or a caught exception (an ERR line)
+process.exit(errors.length || out.some(l => /^ERR /.test(l)) ? 1 : 0);

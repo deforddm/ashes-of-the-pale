@@ -1,5 +1,7 @@
 // v3.13 quick test: through the squad, Steady, Post up, hold-out takedowns, gear allocation and the sheet.
 import { server, browser as launch, openGame } from './page.mjs';
+import fs from 'fs';
+fs.mkdirSync('/tmp/claude-0/shots', { recursive: true });
 const srv = await server(); const br = await launch();
 const { page, errors } = await openGame(br, srv.url, { fast: true });
 const out = await page.evaluate(async () => {
@@ -34,3 +36,5 @@ await page.evaluate(() => { const k = $('#chars').querySelector('.sec.kit'); k &
 await page.waitForTimeout(300); await page.screenshot({ path: '/tmp/claude-0/shots/r_sheet_kit.png' });
 console.log('ERRORS:', errors.length ? errors.join('\n') : 'none');
 await br.close(); srv.kill();
+// exit 1 on a page error or a caught exception (an ERR line)
+process.exit(errors.length || out.some(l => /^ERR /.test(l)) ? 1 : 0);

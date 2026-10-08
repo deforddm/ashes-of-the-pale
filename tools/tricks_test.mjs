@@ -1,5 +1,7 @@
 // Quick test: every trick in a real battle, the picker, the dice outcomes, the fold, replay unlock.
 import { server, browser as launch, openGame } from './page.mjs';
+import fs from 'fs';
+fs.mkdirSync('/tmp/claude-0/shots', { recursive: true });
 const srv = await server(); const br = await launch();
 const { page, errors } = await openGame(br, srv.url, { fast: true });
 const out = await page.evaluate(async () => {
@@ -64,3 +66,5 @@ console.log(out3.join('\n'));
 await page.screenshot({ path: '/tmp/claude-0/shots/after_roll.png' });
 console.log('ERRORS:', errors.length ? errors.join('\n') : 'none');
 await br.close(); srv.kill();
+// exit 1 on a page error or a caught exception (an ERR line)
+process.exit(errors.length || [...out, ...out2, ...out3].some(l => /^ERR /.test(l)) ? 1 : 0);
