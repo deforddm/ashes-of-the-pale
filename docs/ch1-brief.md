@@ -1,5 +1,7 @@
 # Chapter 1 — "Pale" — content brief (v3.0)
 
+*Historical: a past work order (v3.0); the game has moved on — see docs/story-bible.md.*
+
 You are writing the content module `src/40_chapter1.js` for *Ashes of the Pale*, a Malazan Book of the Fallen fan RPG (Gardens of the Moon). Read these first, in this order — they are the voice and the schema:
 
 1. `src/14_data.js` — TPL (the five squadmates: bios, banter, traits, rel), FOES, CARDS, PALE map + NPCS, BATTLES (the two prologue fights).

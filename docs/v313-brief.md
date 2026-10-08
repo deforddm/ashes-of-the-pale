@@ -1,5 +1,7 @@
 # v3.13 — sapper consequences, hold-out takedowns, and a continuity pass — writers' brief
 
+*Historical: a past work order (v3.13); the game has moved on — see docs/story-bible.md.*
+
 David is playing the game closely and loving it. This pass is three jobs in your chapter file(s). Read this brief, then `docs/story-bible.md` §5 (voice) and your `docs/chN-brief.md` (canon rules), then your file (large files: grep and targeted ranges, but job 3 needs you to actually read the chapter's dialogue through).
 
 ## 1. Every sharper opening has a consequence

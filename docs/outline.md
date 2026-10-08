@@ -1,5 +1,7 @@
 # Ashes of the Pale — GOTM Campaign Outline (copy of the shared doc, Sep 20 2026)
 
+*Historical: a past work order (v3.0); the game has moved on — see docs/story-bible.md. The difficulty line at the foot is superseded: since v3.10.0 there are three difficulties (Story, Soldier, Bridgeburner).*
+
 The deal: the world's story ends the way the book ends; the squad's story is decided by the player. Canon spine never moves (Rake over Pale, Paran stabbed, Bridgeburners under Darujhistan, Lorn frees the Tyrant, the Fete, Raest into the Finnest, Bridgeburners defect to Dujek). Player choices decide who in the margins lives, what the Fourth knows, how the Bridgeburners regard them, and which of four squad endings they reach. Prologue ending (journal: given/told/burned/claw) carries forward. Canon characters are met, not played.
 
 Chapter 1 — Pale (Book I). Maps: Pale camp at night; Tattersail's tent; the Second's burial field. Fights: Hounds of Shadow in the tent lines (survive, don't win); a Claw ambush if marked. Canon: Paran, Tattersail, Hairlock, Whiskeyjack, Quick Ben, Kalam. Choice: whose orders you follow when the tent burns — Tattersail's or the Claw's. Sets Tuft's road (which runs to the Fete).

@@ -1,5 +1,7 @@
 # v3.12 — higher-stakes combat — writers' brief
 
+*Historical: a past work order (v3.12); the game has moved on — see docs/story-bible.md.*
+
 David asked for combat with real stakes. The balance tester (`tools/balance.mjs`) shows why: with sensible play the squad wins all 23 fights 100% of the time, losing 4–27% of its health. The engine work is done (`src/31c_stakes.js`, `src/31_battle.js`); your job is the **content** in your chapter file(s):
 
 1. **A second area on most fights** in your chapter.

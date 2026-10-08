@@ -1,10 +1,28 @@
 # Ashes of the Pale
 
-A non-commercial Malazan Book of the Fallen fan RPG for personal play: an original marine squad in the aftermath of the Pale. Turn-based tactical combat, dialogue skill checks, warren strain, Moranth munitions and a Deck of Dragons reading.
+A non-commercial Malazan Book of the Fallen fan RPG for personal play: an original marine squad, the Fourth, walking beside the events of *Gardens of the Moon* in the aftermath of the Pale. Turn-based tactical combat, dialogue skill checks, warren strain, Moranth munitions and a Deck of Dragons reading.
 
 Play: https://deforddm.github.io/ashes-of-the-pale/ (installable as an app).
 
-The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. This is fan work and is not affiliated with the authors or publisher.
+## Credits
+
+The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. This is fan work and is not affiliated with the authors or publisher. The Fourth and the other original characters are the game's own.
+
+## What's in the game
+
+- A prologue and seven chapters, from the tunnels under Pale to a brown hill east of Darujhistan the morning after the Fete, and an epilogue with four roads and a page for every squadmate.
+- Three difficulties (Story, Soldier, Bridgeburner), set for each sergeant and changeable in Settings.
+- Skill checks where you choose who rolls, with the odds shown, and ten tricks to win on the hard ones and carry into battle.
+- When the whole squad goes down, the most loyal squadmate's god may answer, and the fight goes on.
+- Table games: bones at the fire, Kruppe's cups, laying the charges, the roof run and the masks at the Fete.
+- Through the Deck: when Tuft turns a card, look into it for a short vision through the eyes of someone from the book. Watch them again from the journal.
+- Tap any picture of gear, a munition or a keepsake to see it full screen with everything known about it.
+- The painted set by default, or the game's original drawings with Settings › Artwork › Classic.
+- Deeds across every sergeant on the device, and chapter replay for a sergeant who has finished the book.
+- A save for every sergeant, so more than one person can play on one device.
+- Keyboard, mouse and game controller on a PC, and full screen.
+- Install it as an app; it plays offline.
+- The phone's Back button closes what is open, one layer at a time, and asks before it leaves the game.
 
 ## Building
 
@@ -12,23 +30,37 @@ The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and
 
     python3 build.py
 
-The artwork canvas lives in `docs/art/` (the design canvas's boards, `*.dc.html`). `python3 tools/art_build.py` turns them into `src/19c_artwork.js` (every picture as a standalone SVG, ids and animations namespaced per board, plus the papers and whole boards for the gallery); `src/19d_art.js` puts them on screen. Re-run it, then `build.py`, whenever the canvas changes.
+The artwork canvas lives in `docs/art/` (the design canvas's boards, `*.dc.html`). `python3 tools/art_build.py` turns them into `src/19c_artwork.js` (every picture the game shows as a standalone SVG, ids and animations namespaced per board, plus the three in-world papers as HTML); `src/19d_art.js` puts them on screen and runs the item viewer. Never edit `src/19c_artwork.js` by hand: change the board, re-run `art_build.py`, then `build.py`.
 
-`tools/` holds the checks used for the polish pass (Node + Playwright): `lint.mjs` evaluates every dialogue node under randomised states, `play.mjs` is a bot that plays the whole game from the title to the finale, and `shoot.mjs` screenshots any state.
+`tools/` holds the checks (Node and Playwright with headless Chromium). `run_all.mjs` runs everything in one go: the build, `node --check` on every source file, the lint and every `*_test.mjs`, and with `--play=N` the bot N times; it exits 1 on any failure. `lint.mjs` evaluates every dialogue node under randomised states. `play.mjs` is a bot that plays the whole game from the title to the finale, and `balance.mjs` plays every battle many times to measure the difficulty. `shoot.mjs` screenshots any game state. The tests: `back_test` (the phone's Back button), `item_view_test` (the item viewer), `fit_test` (nothing wider than a phone), `stakes_test` (enemy tricks, second areas, the gods), `tactics_test` (movement, Steady, Post up, gear), `tricks_test` (all ten tricks), `visions_test` (every Deck vision), `oldsave_test` (saves from v3.15.3 still load), `classic_test` (the Classic art setting) and `motion_test` (reduced motion). `page.mjs` is their shared helper: a local server, a browser and a game page with the real web fonts served locally, from `$ASHES_FONTS` if set, otherwise `tools/.fonts/` (not in git), built on the first run from the npm `@fontsource` packages and cached in `~/.cache/ashes-fonts`; without them it warns once and fit measurements may differ.
 
-Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; each defines its area, battles, foes, gear, a Deck card and its dialogue tree. `docs/` holds the campaign outline and the per-chapter content briefs.
+Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; each defines its area, battles, foes, gear, a Deck card and its dialogue tree.
+
+`docs/` holds:
+- `story-bible.md`: the writers' bible for the whole game (every squadmate's arc, the canon characters, chapter keys, objects, voice, open threads, engine facts, known slips, the canon anchors, the visions and the art module). Start here.
+- `canon-chronology.md`: the book-order chronology of *Gardens of the Moon* that the bible's beat IDs cite. `series-canon.md`: what the later books make false and what must stay open.
+- `audit-v3.15.3.md` and `forward-canon-v3.15.3.md`: the two worklists for v3.16.0. `v3.16-notes.md`: what v3.16.0 changed, what was left and why, and the open questions.
+- `art/`: the artwork canvas boards.
+- Past work orders, kept for history and marked so: `outline.md`, `ch1-brief.md` to `ch7-brief.md`, `checks-brief.md`, `combat-brief.md`, `polish-brief.md`, `v313-brief.md`, `engine-v36-brief.md`. The game has moved on from them; the story bible is current.
 
 ## Versions
 
-- v1.0.0 — vertical slice (the prologue: Varrow's journal under the Pale).
-- v2.0.x — art pass, Deck sequence, audio, settings, character sheets; flanking, attacks of opportunity, movement carry-over, range indicator.
-- v3.0.x — Chapter One: Pale. Chapter system, levels to 8 with talent picks at 3/5/7, gear slots, survive-objectives and reinforcements, allied units; skill-check die; rule tweaks.
-- v3.1.0 — Chapter Two: The Rhivi Plain. Multi-area chapters with travel, open-plain maps with day/dusk/night, Ellis the tracker (sixth squadmate, Tracker's Mark), the Great Raven card.
-- v3.2.0 — Chapter Three: Blue Fire. Darujhistan: city streets, the Phoenix Inn, the dig under the Gadrobi crossing, the Claw's dye-shop.
-- v3.3.0 — Chapter Four: Assassins. The rooftops at night, Kalam's meet, the Tiste Andii, the Guild and the roof choice.
-- v3.4.0 — Chapter Five: The Gadrobi Hills. Lorn and Tool, the barrow, Hairlock's rent, Toc, the Hounds, the Herald card.
-- v3.6.0 — Chapters Six and Seven: The Fete, Outlaws — the end of the book. Estate and lakefront maps, the Tyrant, the Adjunct, otataral and mortal fights, the finale and a page per squadmate.
-- v3.7.0 — The polish pass. Every chapter proofread and checked for continuity, including every combination of the dead after the alley. Painted portraits, reworked sprites, tiles, backdrops and cards. A rebuilt procedural score and place-by-place ambience. Sturdier battles with hit chances, clearer turns and no clipped sprites. A close-up explore map that follows the sergeant. Proper curly quotes. Updates now wait for a tap instead of reloading mid-fight, and the fonts work offline.
+Newest first.
+
+- v3.16.0 — The canon check and full polish pass. The whole story was checked against *Gardens of the Moon*, and against the later books wherever they would make a line false.
+  - New names where the old ones clashed with the books: the gate clerk is Pennick, Brisk's brother is Tavrin, and the Chains card is the Wain, Dragnipur's wagon.
+  - The reborn Tattersail grows as she should, carried by the Mhybe; Whiskeyjack's leg could mend if he would give it the time; the High Mage himself is never placed, only his staff.
+  - The Fete as the book has it: the tall guest leaves before the Tyrant, the dragon rises off a bell-tower, the kill falls in the Estate District; Rallick in a tiger mask; Blues with two blades.
+  - The maps follow the official ones: the Gadrobi District by the harbour in the west, Jammit's Worry east from the Worry Gate, Darujhistan south of Pale.
+  - Tool and Ellis go south, and Moon's Spawn goes west at first light, then south.
+  - Continuity: Tuft can be kept only while her badge is live; Hedge's forty and twelve agree everywhere; Ohl's count never drops; Chapter Five's ending fits the Tuft path; Hairlock's end is one account.
+  - The seven Deck visions checked against the novel, and Tuft remembers what she has seen in them.
+  - The painted set finished: the prologue's four cards, a vista at every chapter end, one picture per chapter opening, seven Hounds, the Wain.
+  - The Elder tricks (A Courtesy of Darkness, Omtose Rime) work beside otataral. Soliel is Mistress of Healing.
+  - What's new shows every note since your last version; the journal's notes run to Chapter Seven and its glossary grows as you meet things; Deeds count tricks, the gods' answers and visions.
+  - Bigger tap targets, better contrast, curly apostrophes; the offline copy downloads once.
+  - Docs and tests: the canon chronology and series reference, the story bible brought up to date, four new tests and one command that runs them all.
+- v3.15.4 — End Turn has a short grace at the start of the squad's turn, so one tap ends one turn.
 - v3.15.3 — The finale's Proclamation scales to the phone column (`.p-proclamation` in `src/01_style.css`): its board-sized inline type no longer pushes the page wider than the screen, which had also shoved the count panel off centre.
 - v3.15.2 — Tap a picture of gear, a munition or a keepsake (squad sheets, the pack) and it opens full screen with its full description, stats, who can use it and where it was found (`itemView`/`zoomArt` in `src/19d_art.js`). The Art tab, the title's Artwork button and the whole-board gallery are gone; tools/art_build.py no longer writes ART_BOARDS, which takes about 330 KB off the page.
 - v3.15.1 — Android Back never leaves by accident: two guard history entries pushed on a touch (Chrome skips entries pushed without one), Back closes the top layer (board viewer, sheets, settings, pack/journal/art, a table game), and with nothing open it asks "Press Back again to leave". tools/back_test.mjs checks it.
@@ -60,5 +92,14 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 - v3.7.5 — Chapters 3 to 5 bite harder, tuned with tools/balance.mjs to sit with Chapter 1 and Chapter 6 (about 10% of the squad's health a fight for a careful player, with the odd squadmate down): bigger fights at the Worry Gate and behind the dye-shop, a Guild veteran on the roofs and in the reprisal, Tiste Andii who strike twice, a tougher Jaghut ward and a second wave of barrow dead, and more warren-spawn at the rent.
 - v3.7.4 — Chapters 1 and 2 read through for continuity (the city lies south-west beyond the hills, the quorls leave before the wagon rolls, and two dozen smaller fixes). Kettle keeps Chub's cusser, Maud, out of ordinary fights. The Worry Gate map faces west, and the street outside the Phoenix has people on it. The fight at the rent is harder. A glossary at the foot of the journal, and a what's-new note after every update (tap the version number on the title to see it again). tools/balance.mjs plays every fight with a smarter squad.
 - v3.7.3 — Continuity. The road from Pale is eleven days everywhere (twelve with the detour), and Whiskeyjack, Brisk, Kettle and Hedge now agree on it. The sealed Moranth crate holds a full crate: twelve cussers and the dud, all the way through to the Chapter 6 vault. The Phoenix's door has moved up the alley into the Daru District, with its own lane. Plus a sweep of smaller slips: eight Bridgeburners, a leftover Gadrobi gate, Tuft's badge months, time spans, directions, and the mule's name before anyone names it.
-- v3.7.2 — Maps and book beats. Darujhistan's geography follows the maps: the east road runs through the Worry Gate, and the Phoenix stands on the Daru side of the crossing. Whiskeyjack's squad of nine flies to Lake Azur and crosses by boat. New in the Gadrobi Hills: the Adjunct rides down a small party on the slope while the Fourth watches, and in the night Anomander Rake kills two Hounds that turn on Paran. At the Fete, five dragons leave the Moon's Spawn, and at dawn the priestesses of Gedderone run the streets with wolf fur. Dujek names the Pannion Seer. Tuft is clear of Garrow in the camp scene, and the sergeant and Brisk lead every marching column.
+- v3.7.2 — Maps and book beats. Darujhistan's geography follows the maps: the east road runs through the Worry Gate, and the Phoenix stands on the Daru side of the crossing. Whiskeyjack's squad flies to Lake Azur and crosses by boat. New in the Gadrobi Hills: the Adjunct rides down a small party on the slope while the Fourth watches, and in the night Anomander Rake kills two Hounds that turn on Paran. At the Fete, five dragons leave the Moon's Spawn, and at dawn the priestesses of Gedderone run the streets with wolf fur. Dujek names the Pannion Seer. Tuft is clear of Garrow in the camp scene, and the sergeant and Brisk lead every marching column.
 - v3.7.1 — Moranth munitions, closer to canon. Smokers join Kettle's satchel from Hedge's cellar in Chapter 3; smoke blocks every shot into or out of it. Cussers are fired from the crossbow's cradle (the Crossbow Cradle talent, formerly Long Fuse), burners stay strapped down near otataral, and the Chapter 6 vault runs on acid and wax instead of fuse-cord.
+- v3.7.0 — The polish pass. Every chapter proofread and checked for continuity, including every combination of the dead after the alley. Painted portraits, reworked sprites, tiles, backdrops and cards. A rebuilt procedural score and place-by-place ambience. Sturdier battles with hit chances, clearer turns and no clipped sprites. A close-up explore map that follows the sergeant. Proper curly quotes. Updates now wait for a tap instead of reloading mid-fight, and the fonts work offline.
+- v3.6.0 — Chapters Six and Seven: The Fete, Outlaws — the end of the book. Estate and lakefront maps, the Tyrant, the Adjunct, otataral and mortal fights, the finale and a page per squadmate.
+- v3.4.0 — Chapter Five: The Gadrobi Hills. Lorn and Tool, the barrow, Hairlock's rent, Toc, the Hounds, the Herald card.
+- v3.3.0 — Chapter Four: Assassins. The rooftops at night, Kalam's meet, the Tiste Andii, the Guild and the roof choice.
+- v3.2.0 — Chapter Three: Blue Fire. Darujhistan: city streets, the Phoenix Inn, the dig under the Gadrobi crossing, the Claw's dye-shop.
+- v3.1.0 — Chapter Two: The Rhivi Plain. Multi-area chapters with travel, open-plain maps with day/dusk/night, Ellis the tracker (sixth squadmate, Tracker's Mark), the Great Raven card.
+- v3.0.x — Chapter One: Pale. Chapter system, levels to 8 with talent picks at 3/5/7, gear slots, survive-objectives and reinforcements, allied units; skill-check die; rule tweaks.
+- v2.0.x — art pass, Deck sequence, audio, settings, character sheets; flanking, attacks of opportunity, movement carry-over, range indicator.
+- v1.0.0 — vertical slice (the prologue: Varrow's journal under the Pale).

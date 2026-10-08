@@ -1,5 +1,7 @@
 # Chapter 6 — "The Fete" — content brief (v3.5)
 
+*Historical: a past work order (v3.5); the game has moved on — see docs/story-bible.md.*
+
 You are writing the content module `src/45_chapter6.js` for *Ashes of the Pale*, a Malazan Book of the Fallen fan RPG following an original marine squad (the Fourth) through Gardens of the Moon. The player plays the Sergeant. Chapters 1–5 are done. This is the second-to-last chapter; Chapter 7 (Outlaws, the finale) is being written **at the same time by another writer from `docs/ch7-brief.md`** and reads the flags you set — the **flag contract** below is binding.
 
 Read these first, in this order:

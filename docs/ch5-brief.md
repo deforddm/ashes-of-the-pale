@@ -1,5 +1,7 @@
 # Chapter 5 — "The Gadrobi Hills" — content brief (v3.4)
 
+*Historical: a past work order (v3.4); the game has moved on — see docs/story-bible.md.*
+
 You are writing the content module `src/44_chapter5.js` for *Ashes of the Pale*, a Malazan Book of the Fallen fan RPG (Gardens of the Moon). Read these first, in this order:
 
 1. `src/14_data.js` — TPL, FOES, CARDS, ITEMS/gear shape, BATTLES, AREAS, PICKS.

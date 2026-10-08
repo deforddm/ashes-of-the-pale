@@ -1,5 +1,7 @@
 # Polish pass (v3.7.0): the shared brief
 
+*Historical: a past work order (v3.7.0); the game has moved on — see docs/story-bible.md.*
+
 **Ashes of the Pale** is David's personal Malazan fan RPG (Baldur's Gate 2-style), played on his phone as an installable PWA from GitHub Pages. It covers the whole of *Gardens of the Moon* from the ranks: a prologue plus seven chapters. His squad is the Fourth: the sergeant (the player, default name Hask), Brisk, Kettle, Tuft and Ohl, with Ellis as the one optional recruit (Chapter 2). The game is complete and stable. The lint is clean and bot playthroughs finish. This pass is **polish**: make everything that exists better, tighter, more consistent and more robust. It is not a pass for new chapters or new systems.
 
 David asked for "the entire game some polishing". Treat it like a senior studio polish sprint: fix every bug you find, smooth every rough edge, and make the thing feel finished and loved.

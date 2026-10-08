@@ -1,5 +1,7 @@
 # v3.11 — skill checks that matter, and tricks — writers' brief
 
+*Historical: a past work order (v3.11); the game has moved on — see docs/story-bible.md.*
+
 David (the player) asked to make skill checks feel meaningful. The engine work is done (`src/16_skill_checks.js`, `src/16b_tricks.js`, `src/31b_tricks_in_battle.js`). Your job is the **content**: every check in your chapter file, plus the new hard checks assigned to you. Read this whole brief, then `docs/story-bible.md` §5 (voice) and your chapter's `docs/chN-brief.md` for canon rules, then your chapter file.
 
 ## What changed in the engine (what the player now sees)

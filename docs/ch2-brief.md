@@ -1,5 +1,7 @@
 # Chapter 2 — "The Rhivi Plain" — content brief (v3.1)
 
+*Historical: a past work order (v3.1); the game has moved on — see docs/story-bible.md.*
+
 You are writing the content module `src/41_chapter2.js` for *Ashes of the Pale*, a Malazan Book of the Fallen fan RPG (Gardens of the Moon). Read these first, in this order:
 
 1. `src/14_data.js` — TPL (the five squadmates), FOES, CARDS, the prologue map and NPCS, BATTLES, AREAS, PICKS.

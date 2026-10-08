@@ -1,5 +1,7 @@
 # Engine work for v3.5/v3.6 — Chapters 6 (The Fete) and 7 (Outlaws, the finale)
 
+*Historical: a past work order (v3.5/v3.6); the game has moved on — see docs/story-bible.md.*
+
 You are extending the engine of *Ashes of the Pale*, a Malazan fan RPG (mobile PWA, one HTML file built from `src/`). Repo: `/home/claude/ashes-of-the-pale`. `python3 build.py` concatenates `src/00_head.html`, `01_style.css`, `02_body.html`, every `src/1x–9x_*.js` in filename order, and `99_boot2.js` into `index.html`.
 
 **Two other writers are working at the same time** on `src/45_chapter6.js` (from `docs/ch6-brief.md`) and `src/46_chapter7.js` (from `docs/ch7-brief.md`). **Do not create, edit or delete those two files or any file in `docs/`.** They may appear half-written while you work, so **do not run `build.py`** — for your tests build a page in your scratch space with a copy of the build logic that skips `45_*.js` and `46_*.js`, and inject small stub chapters of your own there.
