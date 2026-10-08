@@ -265,7 +265,7 @@ Behind you, Tuft says nothing, very clearly. Kettle, hopeful: "Opinions."`,
     c2_seth_dust:()=>({sp:'Sethand', fx:()=>{S.f.c2_sethDust=1;}, txt:
 `This he does look at. For a long time, with his hand flat over his eyes, though the sun is behind him.
 
-"Two. A woman on a horse, riding badly and fast. And a thing that is not a man, walking, and keeping up."
+"Two. A woman on a horse, riding hard. And a thing that is not a man, walking, and keeping up."
 
 "A Rhivi?"
 
@@ -429,7 +429,7 @@ Sethand is off his horse. You have not seen him off his horse in four days. He i
 
 ${SQUAD().includes('kettle') ? `Kettle, behind you, still smelling of it: "It's not *fire*. A burner's fire. A sharper's more of a—" Brisk puts a hand on her shoulder. "—I'm saying it for the ledger."
 
-` : ''}"The dead in there are not ours. They are older than the Rhivi; they will not mind fire; they have seen worse than you." He stands and wipes the hand down his leg. "It is the clans who will mind. They will say *the Malazans with the wagon*. And then they will say *Sethand's Malazans*, because I am the one who brought you, and I will be hearing it at the Mhybe's fires until I am old, which I already am. I am telling you so you will know what they will call you. What I call you, I have not decided."
+` : ''}"The dead in there are not ours. They are older than the Rhivi; they will not mind fire; they have seen worse than you." He stands and wipes the hand down his leg. "It is the clans who will mind. They will say *the Malazans with the wagon*. And then they will say *Sethand's Malazans*, because I am the one who brought you, and I will be hearing it at the clan-mother's fires until I am old, which I already am. I am telling you so you will know what they will call you. What I call you, I have not decided."
 
 ${S.f.c2_sethBarrows ? `He does not say *I said do not.* He said it once. He has never said a thing twice, and he is not going to start for a Malazan.` : `He goes to fetch his horse. It takes him a long time, and he does not hurry it.`}`,
       ch:[{t:'Ride on.', go:()=>startExplore()}]}),
@@ -771,7 +771,7 @@ ${S.f.c2_barrowCold ? `Kettle has her hands so near the flames that Brisk keeps 
 
 You sit.
 
-"My clan is the Mhybe's. You will not know the word. It means the woman who is the mother of the clan, and it means also a thing that is taken from her, and the Rhivi are not stupid; we know that a word which means both those things is a warning. I am telling you so you will understand that the Rhivi are not simple people who ride horses and shoot Malazans. We ride horses and shoot Malazans because it is a simple plain. The rest of us is not."
+"My clan is the clan-mother's. You will not know our words, so here is one: *mhybe*. It means a vessel, the kind you fill once and do not keep. The Rhivi are not stupid; we know that a word like that is a warning, and we do not say it lightly. I am telling you so you will understand that the Rhivi are not simple people who ride horses and shoot Malazans. We ride horses and shoot Malazans because it is a simple plain. The rest of us is not."
 
 He turns a stick in the fire.
 
@@ -1016,9 +1016,9 @@ Sethand has not drawn. He rides forward now, alone, into the space you've cleare
     c2_ashes:()=>({sp:'The ashes', scene:'plain_night', fx:()=>{S.f.c2_ashes=1; S.f.c2_lightOut=1;}, txt:
 `The light is gone by the time you reach the place, and it leaves a dark behind it that the stars can't get into.
 
-A circle of burned grass a hundred paces across, and in the middle of it the ground has gone to glass. Black glass, still ticking as it cools. Two shapes in it. One is very large, larger than a man should be, on its back with its arms out, and the glass has gone over it like water over a stone. The other is small, and near it, and you don't look at the other for long, because you knew her.
+A circle of burned grass a hundred paces across, and in the middle of it the ground has gone to glass. Black glass, still ticking as it cools. Two shapes in it, close enough to be one. The large one is larger than a man should be, on its back, and the glass has gone over it like water over a stone. The other is small, and has its arms round the large one, and you don't look at the other for long, because you knew her.
 
-The Rhivi are already here. Thirty of them. They are not looking at the glass. They are on the far edge of the circle, and in the middle of them is an old woman, and in the old woman's arms is something wrapped in a horse-blanket, and the whole of the Rhivi are standing around it the way the Fourth stood around Kettle's cusser at the Pale, except that they are not frightened of it. They are frightened *for* it.
+The Rhivi are already here. Thirty of them. They are not looking at the glass. They are on the far edge of the circle, and in the middle of them is a woman, perhaps middle-aged, and in her arms is something wrapped in a horse-blanket, and the whole of the Rhivi are standing around it the way the Fourth stood around Kettle's cusser at the Pale, except that they are not frightened of it. They are frightened *for* it.
 
 Ohl has the oilcloth open on his knee. He writes. One line. He closes it. "She was not mine to write, Sergeant. I wrote her." His hand is steady. His voice isn't.
 
@@ -1035,7 +1035,7 @@ Tuft is on her knees at the edge of the glass.`,
 
 She puts a hand flat on the glass. It should burn her. It doesn't.
 
-"The big one's Bellurdan. Thelomen. He was on the staff. He carried Nightchill's body south from Pale because he was told to, and he came after her because he was told to, and he didn't want to, and he did it anyway, and she burned him and herself rather than let him." Her voice hasn't risen at all. "Somebody told him to, Sergeant. Somebody sent a man who didn't want to go. I was on that staff. I know what that sounds like when it's said in a tent."
+"The big one's Bellurdan. Thelomen. He was cadre. He carried Nightchill's body out of Pale because he was told to, and he came after her because he was told to, and he didn't want to, and he did it anyway, and she burned him and herself rather than let him." Her voice hasn't risen at all. "Somebody told him to, Sergeant. Somebody sent a man who didn't want to go. I was on that staff. I know what that sounds like when it's said in a tent."
 
 ${S.f.knowTruth && S.ending === 'claw' ? `"*Moved before the Spawn attacked.* We read it, and then we gave it to the Claw, and she never saw it. She died without it." A breath. "He'll have read it the morning after, and put it in a drawer."` : S.f.knowTruth && S.ending === 'burned' ? `"*Moved before the Spawn attacked.* You read it. Varrow wrote it. She burned it without reading it, and now there's nobody left who read that page who isn't in this squad."` : S.f.knowTruth ? `"*Moved before the Spawn attacked.* You read it. Varrow wrote it. She died carrying it, and now there's nobody left who read that page who isn't in this squad."` : S.f.c1_plant ? `"She talked to you about me, outside the tent. She wouldn't tell me what she said. I'd give a lot to know now. I'd give the Deck."` : ''} "She sewed a badge on my collar once. I don't wear it. I'm going to start."
 
@@ -1046,9 +1046,9 @@ She takes her hand off the glass. Where it was, there's a print, and the print s
     c2_ashes_rhivi:()=>({sp:'Sethand', fx:()=>{S.f.c2_askedRhivi=1;}, txt:
 `"Do not ask. I said." He hasn't dismounted. His hands are on the reins and they are not still, which you have never seen.
 
-"I will not tell you, Malazan, and then you will know that I did not, and that is more than you should know. It is a thing the plain found in the fire. It is a thing that is ours now, and was not, and the Mhybe has it, and that is all. That is *all.*"
+"I will not tell you, Malazan, and then you will know that I did not, and that is more than you should know. It is a thing the plain found in the fire. It is a thing that is ours now, and was not, and the Mhybe has it. That is her name now. That is all. That is *all.*"
 
-The old woman across the circle has not looked up. The bundle in her arms is small. It is the size of a thing you don't say. The Rhivi around her are singing, very low, and it is not a song for the dead.${S.f.c2_outSang ? ((p) => ` ${p.N} ${p.you ? 'know' : 'knows'} the song for the dead now; ${p.they} sang it at the bowshot. This isn't it.`)(c2P(S.f.c2_songWho)) : ''}
+The woman across the circle has not looked up. The bundle in her arms is small. It is the size of a thing you don't say. The Rhivi around her are singing, very low, and it is not a song for the dead.${S.f.c2_outSang ? ((p) => ` ${p.N} ${p.you ? 'know' : 'knows'} the song for the dead now; ${p.they} sang it at the bowshot. This isn't it.`)(c2P(S.f.c2_songWho)) : ''}
 
 ${SQUAD().includes('ellis') ? `Ellis, at your elbow, in a voice with no weight in it at all: "It moved. Sergeant. Whatever it is. It moved." She doesn't say it again.` : `Kettle has stopped naming things. She's looking at the bundle and her lips are moving and nothing is coming out.`}`,
       ch:[{t:'Go to Tuft.', req:()=>!S.f.c2_ashesTuft, go:'c2_ashes_tuft'},
@@ -1066,13 +1066,13 @@ Then, because he is Ohl: "Drink something. Not the tea. The other flask."`,
           {t:'"Sethand. What are they carrying?"', req:()=>!S.f.c2_askedRhivi, go:'c2_ashes_rhivi'},
           {t:'Enough.', go:'c2_ashes_more'}]}),
     c2_ashes_more:()=>({sp:'The ashes', txt:
-`The Rhivi are going. They go the way they came, in a curve, and the old woman rides in the middle of them with the horse-blanket held against her chest, and not one of them looks back at the glass.
+`The Rhivi are going. They go the way they came, in a curve, and the woman rides in the middle of them with the horse-blanket held against her chest, and not one of them looks back at the glass.
 
 Brisk has the wagon turned already. Brisk has not looked at the glass either. She is looking east, where the timetable is, and she has not said one word of her own since the ridge, and she is not going to.
 
 Something crosses the stars.
 
-It's big. It's slow. It's the wrong shape for a bird and it's a bird anyway, and it comes down in a long spiral over the glass, and lands on Bellurdan's outflung hand as if it were a branch, and folds its wings, and looks at you.`,
+It's big. It's slow. It's the wrong shape for a bird and it's a bird anyway, and it comes down in a long spiral over the glass, and lands on Bellurdan's shoulder as if it were a branch, and folds its wings, and looks at you.`,
       ch:[{t:'Look back at it.', go:'c2_crone'}]}),
 
     /* ---- keep the timetable: the road ---- */
@@ -1189,7 +1189,7 @@ The head turns to ${c2P(S.f.c2_printsWho).n}. "And *you*. You've been standing w
     c2_crone_saw:()=>({sp:'Crone', fx:()=>{S.f.c2_croneSaw=1;}, txt:
 `"Everything, child. It is what I *do*."
 
-${S.f.c2_key === 'light' ? `"I saw a fat woman on a bad horse run four days from a man who loved her, and turn, and burn them both, and I saw what the fire made, and so did the Rhivi, and so, I think, did your little mage. Ask *her* what she saw. I am too old to tell children the ends of stories."` :
+${S.f.c2_key === 'light' ? `"I saw a fat woman run across this plain from a friend who was sent after her, and turn, and take hold of him, and burn them both, and I saw what the fire made, and so did the Rhivi, and so, I think, did your little mage. Ask *her* what she saw. I am too old to tell children the ends of stories."` :
   `"A mage. Burning. Two mages; one who ran and one who followed, and neither of them wanted to be there, and both of them were sent." The eye fixes on Tuft. "You know the word *sent*, child. You have the look of the sent. I have seen it on Tiste Andii. I have seen it on my lord. It is not a look that ends well, and it does not end at all."`}
 
 "And a woman with a thing walking beside her that is not a man, going to the hills, going to *wake* something. And a captain, gone into the ground with a Hound, and not dead, which is annoying; I had the eyes marked. And eight soldiers who went south by quorl and have gone under a city like rats under a floor." The head cocks. "Your friends. You'll be a week behind them. You'll be *late*, Malazan. Everyone is going to be late to what is coming, and you will be the latest, and it may be that that is the only reason you'll live through it."
@@ -1256,11 +1256,11 @@ He turns the horse.
 
 "I do not know what your Empress wants with a thing like that. I know what the grass will do when it wakes. It will burn. Ride on to your city. I hope it is there when you reach it. I hope, Malazan, that you are."${S.f.c2_songWrong ? ((p) => `
 
-He stops the horse again, half-turned. "The outriders have a name for ${p.n} now." Something happens at the corner of his mouth. "*Horse-singer.* It is not an insult. It is not not one. It will be at the Mhybe's fires before you are in your city."`)(c2P(S.f.c2_songWho)) : S.f.c2_outSang ? ((p) => `
+He stops the horse again, half-turned. "The outriders have a name for ${p.n} now." Something happens at the corner of his mouth. "*Horse-singer.* It is not an insult. It is not not one. It will be at the clan-mother's fires before you are in your city."`)(c2P(S.f.c2_songWho)) : S.f.c2_outSang ? ((p) => `
 
 He stops the horse again, half-turned. "The song, at the bowshot. The clans will ask me who taught a Malazan the words for the dead." He looks at ${p.n}. "I will tell them the grass did. It is nearly true."`)(c2P(S.f.c2_songWho)) : ''}
 
-${(S.f.c2_sethTrust || 0) >= 2 ? `And then, without looking back: "You listened. When I said *do not*, and when I said nothing. That is more than any Malazan. If the Fourth comes back across the plain, come by the Mhybe's fires. Say my name. It will be worth something, once."` : `He doesn't say anything else. He has said, by his count, more than enough.`}`,
+${(S.f.c2_sethTrust || 0) >= 2 ? `And then, without looking back: "You listened. When I said *do not*, and when I said nothing. That is more than any Malazan. If the Fourth comes back across the plain, come by the clan-mother's fires. Say my name. It will be worth something, once."` : `He doesn't say anything else. He has said, by his count, more than enough.`}`,
       ch:[{t:'"Ellis. You\'ve seen it before."', req:()=>SQUAD().includes('ellis') && !S.f.c2_hillsEllis, go:'c2_hills_ellis'},
           {t:'The road. The city.', go:()=>startExplore()}]}),
     c2_hills_ellis:()=>({sp:'Ellis', fx:()=>{S.f.c2_hillsEllis=1;}, txt:

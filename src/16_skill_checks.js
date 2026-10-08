@@ -196,7 +196,7 @@ const SCENES = {
   dragon_sky:{loc:'Darujhistan', sub:'The sky over the city', warren:true, cap:'Two dragons over the roofs, and one of them is not a dragon.', amb:'dark'},
   alley_night:{loc:'Darujhistan', sub:'An alley off the Daru District', cap:'Wet stone, one blue lamp, a doorway, and somebody standing in it.', amb:'dark'},
   lakefront_dawn:{loc:'Darujhistan', sub:'The Lakefront · dawn', cap:'Docks, the lake, a ship at the pier, and a sky with nothing in it.', amb:'explore'},
-  quorl_hill:{loc:'East of Darujhistan', sub:'A hill on the Gadrobi road', cap:'Quorls on the grass, Black Moranth in chitin, and the city small behind.', amb:'explore'},
+  quorl_hill:{loc:'East of Darujhistan', sub:'A hill on Jammit\'s Worry', cap:'Quorls on the grass, Black Moranth in chitin, and the city small behind.', amb:'explore'},
   road_east:{loc:'Genabackis', sub:'The road north-east', cap:'A column on a road through brown hills, very far off, and banners.', amb:'explore'},
   ship:{loc:'Lake Azur', sub:'A deck', cap:'Grey water, a sail, and the city getting smaller.', amb:'explore'},
 };
