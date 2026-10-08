@@ -18,14 +18,17 @@ const CHEND = {
     shield:['You held the roof','A Guild boy came over the parapet with a Tiste Andii behind him and the Fourth stood in between, which is what a line is for, and held three rounds against something that does not lose. Something in Quick Ben\'s sack laughed, and the silver-haired shapes went elsewhere. The boy is alive. The Guild knows which squad did that.'],
     aside:['You stepped aside','A Guild boy came over the parapet with a Tiste Andii behind him and the Fourth let it through. It killed him in one motion, looked at the sergeant, and nodded. Tuft looked into Kurald Galain and it looked back. Ohl\'s list has a name on it he did not put there.'] },
   5:{
-    through:['Into the grey','A puppet opened the world on a hillside and Toc the Younger went through it, and when someone in the Fourth moved to follow him, the sergeant said go. The rent closed. The Hounds came for the puppet and not for you. Something under the hill turned over in its sleep, and Paran rode for the city at dawn with a face like a man who has read the end of the book.'],
+    /* v3.16: Ellis went through after him (c5_ellisThrough); on the Tuft path nobody followed, and Tuft went only to the threshold */
+    through:{0:'Into the grey', length:2, get 1(){ const f = (typeof S !== 'undefined' && S && S.f) || {};
+      return 'A puppet opened the world on a hillside and Toc the Younger went through it, and ' + (f.c5_ellisThrough ? 'when Ellis moved to follow him, the sergeant said go' : 'Tuft went to the edge of it after him, as far as the sergeant said and no further') + '. The rent closed. The Hounds came for the puppet and not for you. Something under the hill turned over in its sleep, and Paran rode for the city at dawn with a face like a man who has read the end of the book.'; }},
     hold:['You held the line','A puppet opened the world on a hillside and Toc the Younger went through it, and the Fourth held on to its own. The rent closed on nothing. The Hounds came for the puppet and not for you. Something under the hill turned over in its sleep. Somebody in the squad has not forgiven the sergeant, and says so with silence.'] },
 };
 const CHTEASE = {
   0:'Next: Captain Paran arrives at the Pale, the Hounds of Shadow come hunting, and the Fourth is told where it is going.',
   1:'Next: the Black Moranth will not carry a second squad. The Fourth rides south-east across the Rhivi Plain, and something is riding the same way.',
   2:'Next: Darujhistan, the city of blue fire. The Bridgeburners are a week ahead and already under it.',
-  3:'Next: assassins on the rooftops, a war nobody in the city admits is being fought, and a name said quietly on a rooftop: Rallick Nom.',  4:'Next: the Gadrobi Hills. An Adjunct with a T\'lan Imass at her side is digging for something that should stay buried, and the Fourth is sent to watch the wrong hill.',
+  3:'Next: assassins on the rooftops, a war nobody in the city admits is being fought, and a name said quietly: Rallick Nom.',
+  4:'Next: the Gadrobi Hills. An Adjunct with a T\'lan Imass at her side is digging for something that should stay buried, and the Fourth is sent to watch the wrong hill.',
   5:'Next: the Fete. Darujhistan throws a party the size of a city while a Tyrant walks toward it, and everyone the Fourth has met is going to be at Lady Simtal\'s.',
 };
 function chapterEnd(n, key){
