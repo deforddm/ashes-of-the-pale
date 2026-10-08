@@ -14,7 +14,7 @@ Object.assign(AB, {
       blog(`${u.name}: "Shields!" ${in_.length > 1 ? `${in_.filter(p => p !== u).map(p => p.name).join(' and ')} lock${in_.length > 2 ? '' : 's'} in beside them. Rim to rim.` : 'One shield. It will have to do.'}`); }},
   t_song:{name:TRICKS.song.name, trick:'song', self:true, desc:()=>TRICKS.song.fx,
     run(u){ AUDIO.play('heal'); const near = party().filter(p => !p.ally && cheb(p, u) <= 4);
-      near.forEach(p => { heal(p, roll(1,6,2)); if (p.stun) { p.stun = false; float(p, 'awake', '#9fe0b8'); } B.fires = B.fires.filter(f => !(f.x === p.x && f.y === p.y)); sparks(p.x, p.y, 10, '#c8e0a0', .35); });
+      near.forEach(p => { heal(p, roll(1,6,2 + lvB())); if (p.stun) { p.stun = false; float(p, 'awake', '#9fe0b8'); } B.fires = B.fires.filter(f => !(f.x === p.x && f.y === p.y)); sparks(p.x, p.y, 10, '#c8e0a0', .35); });
       blog(`${u.name} sings the Rhivi words for the dead, low, the way Sethand's people sing them. The grass in them carries ${near.length > 1 ? 'the squad' : u.name} a little way.`); }},
   t_pull:{name:TRICKS.pull.name, trick:'pull', self:true, free:true, desc:()=>'Spin the coin: this turn\'s attack rolls twice and keeps the better. The Lord pushes back: the squad\'s next check is −2. Does not use the action.',
     ok:u=>!B.acted && u.luckyTurn !== B.turn,

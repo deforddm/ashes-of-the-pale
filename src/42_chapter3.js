@@ -649,7 +649,7 @@ He's already turned back to the niches, lips moving, counting the Bridgeburners'
 
 On a nail by the foot of the ladder, where nobody would put a thing they wanted to keep, hangs a pig's bladder, tied off at the neck and tight as a drum, with a twist of fuse pushed into a blob of wax. Hedge's eyes go to it once while he talks, and come away.`,
       fx:()=>{ S.inv.cusser += 1; S.inv.smoker = (S.inv.smoker || 0) + 2; S.f.gotSmokers = 1; note('Hedge\'s tip: +1 cusser, and two smokers.','good'); if (SQUAD().includes('kettle')) loy('kettle',1);
-        if (S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved') { S.inv.sharper += S.f.c3_charges === 'clean' ? 2 : 1; const up = gainXP(S.f.c3_charges === 'clean' ? 30 : 20); note(`Hedge's respect: +${S.f.c3_charges === 'clean' ? 2 : 1} sharper${S.f.c3_charges === 'clean' ? 's' : ''}, and +${S.f.c3_charges === 'clean' ? 30 : 20} experience.`, 'good'); if (up) note(`The squad reaches level ${S.lvl}.`, 'good'); } },
+        if (S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved') { S.inv.sharper += S.f.c3_charges === 'clean' ? 2 : 1; const up = gainXP(S.f.c3_charges === 'clean' ? 30 : 20); note(`Hedge's respect: +${S.f.c3_charges === 'clean' ? 2 : 1} sharper${S.f.c3_charges === 'clean' ? 's' : ''}, and +${S.f.c3_charges === 'clean' ? 30 : 20} experience.`, 'good'); if (up) note(lvlNote(), 'good'); } },
       ch:[{t:'Ask Hedge about the bladder on the nail.', check:['wits',15], trick:'bluefire',
             req:()=>!S.f.c3_blueTried, fx:()=>{ S.f.c3_blueTried = 1; },
             edges:id => [id === 'kettle' && ['a sapper asking a sapper', 2], (S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved') && ['Hedge watched you lay the junction run', 1]],
@@ -706,7 +706,7 @@ Silence. Then, from above, from a bucket by the barrier, one word.
 
 Nothing comes back down the ladder. Nothing at all. That's worse.`,
       ch:[{t:'Up the ladder.', go:'c3_work_done'}]}),
-    c3_work_done:()=>({sp:'The second night', scene:'city_street', fx:()=>{ S.f.c3_workDone=1; S.f.c3_night2=1; rest('Sleep till noon on the chandler\'s roof. Mallet looks at everyone\'s cuts on his way past with the bread, and says nothing, which from Mallet is a clean bill.'); gain('roadleather'); const up = gainXP(60); note('+60 experience. Road crew work.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
+    c3_work_done:()=>({sp:'The second night', scene:'city_street', fx:()=>{ S.f.c3_workDone=1; S.f.c3_night2=1; rest('Sleep till noon on the chandler\'s roof. Mallet looks at everyone\'s cuts on his way past with the bread, and says nothing, which from Mallet is a clean bill.'); gain('roadleather'); const up = gainXP(60); note('+60 experience. Road crew work.','good'); if (up) note(lvlNote(), 'good'); }, txt:
 `You sleep on the chandler's roof, all of you in a row under the eaves, and wake at noon to the sound of the city: carts and bells and a man shouting about fish, and under it, if you listen, the hiss. Mallet brings bread. Fiddler throws a crew jerkin at you, oiled leather with a guild mark burned in the back. "Look the part. Nobody looks twice at a man in one of those. Nobody looks *once*."
 
 Then dusk, and the lamps come on, street by street, and it's the second night.
@@ -1118,7 +1118,7 @@ ${SQUAD().includes('brisk') ? `Brisk has the ledger out before he's round the be
 
 ${SQUAD().includes('kettle') ? `Kettle, outraged, under her breath: "We could have *taken* them."${SQUAD().includes('brisk') ? ` "We could," says Brisk, putting the ledger away. "Then we'd be taking them again tomorrow, with more cousins."` : ''}` : ''}`,
       ch:[{t:'On up the alley.', go:()=>c3Arrive(S.f.c3_upTo)}]}),
-    c3_cousins_faced:()=>({sp:'The dogleg in the alley', fx:()=>{ S.f.c3_cousins='faced'; const up = gainXP(40); note('+40 experience. Nobody had to.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
+    c3_cousins_faced:()=>({sp:'The dogleg in the alley', fx:()=>{ S.f.c3_cousins='faced'; const up = gainXP(40); note('+40 experience. Nobody had to.','good'); if (up) note(lvlNote(), 'good'); }, txt:
 `${by({
   brisk:`Brisk walks up the alley until she is standing much too close to him, and sets her shield down on the cobbles between them, edge first, so that it rings off both walls, and leans on it. "Third Army," she says. "Heavy." It's the whole of what she says. He looks at the shield. He looks at the arm that goes with it.`,
   kettle:S.inv.cusser > 0 ? `Kettle takes a cusser out of her satchel, clay-grey and round, and holds it up to his lantern so he can see it properly, and tells him, in the bright helpful voice of somebody explaining a recipe, exactly what it would do to the alley, and the walls, and the cousins, in order, by name if he'd like to give her the names. He doesn't give her the names.` : `Kettle opens her satchel and holds it out to him so he can look in. It's dark in there. She lets him look for a long time, smiling, and he finds he doesn't want to know.`,

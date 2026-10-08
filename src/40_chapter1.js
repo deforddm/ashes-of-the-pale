@@ -643,7 +643,7 @@ ${SQUAD().includes('kettle') ? `Kettle has stopped walking. "Those are *Moranth*
             go:'c1_raid_scare', fail:'c1_raid_called'},
           {t:'Leave it. Pell can count his own crates.', go:'c1_raid_let'}]}),
     c1_raid_scare:()=>({sp:'Pell\'s wagon', fx:()=>{ S.f.c1_raidScared = 1; const up = gainXP(60); note('+60 experience. The right shout in the right voice is soldiering too.','good');
-        if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good');
+        if (up) note(lvlNote(), 'good');
         if (!S.f.c1_raidCrate) { S.inv.sharper++; note('Pell, off the books: +1 sharper.','good'); } }, txt:
 `${by({brisk:`"Provosts!" Brisk, in the regiment voice, the one that carries down a line of shields and into the next camp. "The Fist's provosts! Wagon lines, *now!*"`,
   kettle:`"Provosts!" Kettle, at the top of her lungs, and then, inspired: "They've got the *list!* Second Army! Every name!"`,

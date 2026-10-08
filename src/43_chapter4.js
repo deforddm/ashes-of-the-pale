@@ -645,7 +645,7 @@ The rope-line hangs down the wall now, from the Gadrobi chimney into the dark, a
 
     /* ---- the Daru roofs ---- */
     c4_daru_arrive:()=>({sp:'The Daru roofs', scene:'roof_night', fx:()=>{ S.f.c4_daruSeen=1;
-        if (S.f.c4_run === 'unseen' || S.f.c4_run === 'seen') { const n = S.f.c4_run === 'unseen' ? 30 : 10, up = gainXP(n); note(`+${n} experience. ${S.f.c4_run === 'unseen' ? 'Across the roofs unseen.' : 'Across the roofs.'}`, 'good'); if (up) note(`The squad reaches level ${S.lvl}.`, 'good'); } }, txt:
+        if (S.f.c4_run === 'unseen' || S.f.c4_run === 'seen') { const n = S.f.c4_run === 'unseen' ? 30 : 10, up = gainXP(n); note(`+${n} experience. ${S.f.c4_run === 'unseen' ? 'Across the roofs unseen.' : 'Across the roofs.'}`, 'good'); if (up) note(lvlNote(), 'good'); } }, txt:
 `${S.f.c4_run === 'unseen' ? `Three roofs, and not one lantern has touched you. You come down behind the last parapet in a row, all of you, breathing through your mouths, and ${SQUAD().includes('ellis') ? 'Ellis lets out a breath she has been holding since the plank. "Well," she says. "Well. The Guild\'s going to hate that."' : 'Kettle unclenches her hand. There is a smeared *8* in charcoal on the palm.'}
 
 ` : S.f.c4_run === 'seen' ? `You make it across, in the end. Somewhere behind you, on a roof you've already left, somebody is still whistling, low, two notes and two notes, and somebody else is answering. The Guild knows there are Malazans on its roofs tonight. So much for low and slow.

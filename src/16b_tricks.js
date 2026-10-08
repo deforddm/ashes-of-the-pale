@@ -12,7 +12,7 @@ const TRICKS = {
     fx:'Once a fight: the bearer and every squadmate beside them take +3 armour and cannot be flanked until the bearer\'s next turn.'},
   song:{name:'Rhivi Spirit-Song', ch:2, use:'fight', ab:'t_song', where:'the Rhivi outriders on the plain',
     lore:'The words the Rhivi sing over their dead, so the spirits of the grass will carry them. Sung for the living, they carry something else.',
-    fx:'Once a fight: every squadmate within 4 heals 1d6+2, wakes from any daze, and steps out of any fire under them.'},
+    fx:'Once a fight: every squadmate within 4 heals 1d6+2, and 1 more for each squad level past the first, wakes from any daze, and steps out of any fire under them.'},
   pull:{name:'The Lady\'s Pull', ch:3, use:'chapter', n:2, ab:'t_pull', where:'the Phoenix Inn, watching a boy spin a coin',
     lore:'Oponn are twins, back to back. The Lady pulls and the Lord pushes, and nobody who has felt the one has escaped the other.',
     fx:'Twice a chapter: spin the coin after a failed check and roll it again, or before an attack and roll it twice, keeping the better. The Lord pushes back: the squad\'s next check is −2.'},

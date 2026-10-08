@@ -99,4 +99,11 @@ function gainXP(n){
   if (S.lvl > before) { AUDIO.play('up'); for (let k = before + 1; k <= S.lvl; k++) if ([3,5,7].includes(k)) S.picksDue.push(k); }
   return S.lvl > before;
 }
+/* what a level gives, past the first. Every level: +4 health and +1 to hit. Levels 3, 5 and 7: +1 damage on every blow.
+   Levels 4 and 8: +1 armour. And the squad's own hands get better at it: the heals and Rally grow with lvB() (31). */
+const lvB = () => Math.max(0, ((S && S.lvl) || 1) - 1);
+const lvDmg = (l = (S && S.lvl) || 1) => [3,5,7].filter(k => l >= k).length;
+const lvAc = (l = (S && S.lvl) || 1) => [4,8].filter(k => l >= k).length;
+function lvlNote(){ const l = S.lvl, extra = [l === 3 || l === 5 || l === 7 ? '+1 damage on every blow' : '', l === 4 || l === 8 ? '+1 armour' : ''].filter(Boolean);
+  return `The squad reaches level ${l}: +4 health${extra.length ? ', ' : ' and '}+1 to hit${extra.length ? `, and ${extra.join(' and ')}` : ''} for everyone. Rally and the heals grow with it.`; }
 

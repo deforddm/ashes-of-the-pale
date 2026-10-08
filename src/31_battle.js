@@ -44,6 +44,7 @@ function mkParty(id, x, y){
   ['quorl','shadowstep','mockra','argument','quickshot'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
   trickAbs(id).forEach(k => { if (AB[k]) u.ab.splice(u.ab.length - 1, 0, k); }); // tricks won on hard checks (16b, 31b)
   if (B && B.def.nomagic && u.magic) { u.rng = 1; if (id === 'tuft') { u.dmg = [1,4,1]; u.verb = 'jabs a knife at'; } } // otataral: a knife, or the cudgel
+  u.ac += lvAc(); if (u.dmg && lvDmg()) u.dmg = [u.dmg[0], u.dmg[1], (u.dmg[2] || 0) + lvDmg()]; // levels 3/5/7 hit harder, 4/8 stand harder (15)
   u.hp = u.maxhp; const w = DIFF().carry ? woundOf(id) : null; if (w != null) u.hp = clamp(w, 1, u.maxhp); // Bridgeburner: the wounds the squad carried in
   return u;
 }
@@ -154,7 +155,7 @@ function win(){
   } else note(`${head} ${DIFF().carry ? '' : `${SQUAD().includes('ohl') ? 'Ohl patches up the squad' : 'The squad patches itself up'}; everyone is back on their feet.`}`, 'good');
   carryWounds(); lootSalve(); holdBonus();
   S.scene = 'talk'; save(); AUDIO.play('win');
-  if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good');
+  if (up) note(lvlNote(), 'good');
   updBattleUI();
   talk(B.def.after);
 }
@@ -176,13 +177,14 @@ function lose(){
     S = migrate(JSON.parse(snap)); if (st) S.stats = st; S.gods = gods; if (met) S.godsMet = met; startBattle(S.battle, S.bopt || {}); }; // the count and the gods remember the lost fight
 }
 
-/* abilities */
+/* abilities. The heals and Rally grow with the squad's level (lvB, 15), so they keep up with the road's harder blows */
+const rallyHeal = () => 5 + 2*lvB(), salveHeal = () => 8 + lvB();
 const AB = {
-  rally:{name:'Rally', self:true, desc:()=>'Squadmates within 3 heal 4 and get +2 to hit through next round. Once a fight.', ok:()=>!B.used.rally,
-    run(u){ B.used.rally = 1; AUDIO.play('heal'); party().forEach(p => { if (cheb(u,p) <= 3) { heal(p,4); p.rallyUntil = B.round + 1; } }); blog(`${u.name}: "On me, you sorry lot!" The squad steadies.`); }},
-  bash:{name:'Shield bash', desc:()=>'Adjacent enemy: 1d6+3 damage, and it loses its next turn on a hit. Recharges after 2 rounds.', ok:u=>!(u.cdBash >= B.round),
+  rally:{name:'Rally', self:true, desc:()=>`Squadmates within 4 heal ${rallyHeal()}, shake off a daze, stop bleeding, and get +2 to hit and +2 damage through next round. Grows with the squad's level. Once a fight.`, ok:()=>!B.used.rally,
+    run(u){ B.used.rally = 1; AUDIO.play('heal'); party().forEach(p => { if (cheb(u,p) <= 4) { heal(p, rallyHeal()); p.rallyUntil = B.round + 1; p.bleed = 0; if (p.stun) { p.stun = false; float(p, 'steadied', '#9fe0b8'); } } }); blog(`${u.name}: "On me, you sorry lot!" The squad steadies.`); }},
+  bash:{name:'Shield bash', desc:()=>`Adjacent enemy: 1d6+${3 + lvDmg()} damage, and it loses its next turn on a hit. Recharges after 2 rounds.`, ok:u=>!(u.cdBash >= B.round),
     tiles:u=>foes().filter(f => cheb(u,f) === 1),
-    run(u,x,y){ const t = unitAt(x,y); u.cdBash = B.round + 2; const r = attack(u, t, {dmg:[1,6,3], verb:'shield-bashes'}); if (r.hit && (t.hp - r.dmg > 0 || t.immortal)) { t.stun = true; blog(`${t.name} reels, dazed.`); } }},
+    run(u,x,y){ const t = unitAt(x,y); u.cdBash = B.round + 2; const r = attack(u, t, {dmg:[1,6,3 + lvDmg()], verb:'shield-bashes'}); if (r.hit && (t.hp - r.dmg > 0 || t.immortal)) { t.stun = true; blog(`${t.name} reels, dazed.`); } }},
   sharper:{name:'Sharper', item:'sharper', boom:true, aoe:1, range:4, desc:()=>'Throw, range 4. 1d10+2 where it lands and 1d6 to everything next to it, squad included. A natural 1 scatters it.',
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => { blast(pt, [[1,10,2],[1,6,0]], '#f2c46b'); AUDIO.play('boom', .8); sparks(pt.x, pt.y, 26, '#f2c46b'); }); blog(`${u.name} lobs a sharper.`); }},
   burner:{name:'Burner', item:'burner', boom:true, aoe:1, range:4, desc:()=>'Throw, range 4. 1d6 to everything in a 3×3 and leaves it burning for 2 rounds. A natural 1 scatters it.',
@@ -204,11 +206,11 @@ const AB = {
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#9a86e0', t:performance.now(), dur:400, wob:true});
       t.blindTurns = 2; float(t,'blinded','#9a86e0'); sparks(t.x, t.y, 14, '#6a58b0', .45);
       blog(`${u.name} pulls Meanas down over ${t.name}'s eyes. For its next two turns it will be fighting phantoms.`); }},
-  mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${has('ohl','triage') ? 6 : 3}${B && B.warren && B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
+  mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${(has('ohl','triage') ? 6 : 3) + lvB()}${B && B.warren && B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
     tiles:u=>party().filter(p => cheb(u,p) <= (has(u.id,'triage') ? 4 : 3)),
-    run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,has(u.id,'triage') ? 6 : 3) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
-  salve:{name:'Salve', item:'salve', desc:()=>'Heal 8, yourself or an adjacent squadmate.', tiles:u=>party().filter(p => cheb(u,p) <= 1),
-    run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, 8); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
+    run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,(has(u.id,'triage') ? 6 : 3) + lvB()) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
+  salve:{name:'Salve', item:'salve', desc:()=>`Heal ${salveHeal()}, yourself or an adjacent squadmate.`, tiles:u=>party().filter(p => cheb(u,p) <= 1),
+    run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, salveHeal()); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
   mark:{name:'Tracker\'s Mark', desc:()=>'An enemy within 5 is marked: every hit on it does +2 damage for two rounds.', tiles:u=>foes().filter(f => cheb(u,f) <= 5 && canShoot(u,f) && !(f.markedUntil >= B.round)),
     run(u,x,y){ const t = unitAt(x,y); t.markedUntil = B.round + 2; AUDIO.play('click'); float(t,'marked','#f2c46b'); blog(`${u.name} marks ${t.name}: a nick of chalk on the ground, a word to the squad, and it is a target.`); }},
   quickshot:{name:'Quick Shot', desc:()=>'Once a fight: two arrows at one target within range.', ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng && canShoot(u,f)),
@@ -225,10 +227,10 @@ const AB = {
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#e0a8d8', t:performance.now(), dur:400, wob:true});
       if (t.boss && d20() >= 12) { blog(`${t.name} shakes the whisper off.`); float(t,'resists','#a99a88'); }
       else { t.turned = true; sparks(t.x, t.y, 12, '#e0a8d8', .4); float(t,'turned','#e0a8d8'); blog(`${u.name} puts a word in ${t.name}'s ear, in a voice it knows. ${t.name} looks round at its own side, slowly.`); } }},
-  argument:{name:'Argument with Hood', strain:3, desc:()=>'Once a fight: a downed squadmate within 2 stands up at 6 health. Strain 3.', ok:()=>!B.used.argument,
+  argument:{name:'Argument with Hood', strain:3, desc:()=>`Once a fight: a downed squadmate within 2 stands up at ${6 + 2*lvB()} health. Strain 3.`, ok:()=>!B.used.argument,
     tiles:u=>B.units.filter(p => p.side === 'p' && !p.ally && p.hp <= 0 && cheb(u,p) <= 2 && freeNear(p.x, p.y, p)),
     run(u,x,y){ const t = B.units.find(p => p.side === 'p' && !p.ally && p.hp <= 0 && p.x === x && p.y === y); if (!t) return; const at = freeNear(t.x, t.y, t); if (!at) return; // someone may be standing over the body
-      B.used.argument = 1; AUDIO.play('heal'); t.x = at.x; t.y = at.y; t.hp = 6; t.deadAt = null; t.healed = performance.now(); sparks(t.x, t.y, 20, '#9fe0b8', .5); blog(`${u.name} argues with Hood in Ehrlii. ${t.name} gets up, which settles it for now.`); }},
+      B.used.argument = 1; AUDIO.play('heal'); t.x = at.x; t.y = at.y; t.hp = Math.min(t.maxhp, 6 + 2*lvB()); t.deadAt = null; t.healed = performance.now(); sparks(t.x, t.y, 20, '#9fe0b8', .5); blog(`${u.name} argues with Hood in Ehrlii. ${t.name} gets up, which settles it for now.`); }},
 };
 /* Chub's cusser, Maud: Kettle carries her "for the one that matters" and won't fire her in an ordinary fight. The story spends her (the barrow in Chapter 5, or Ch'kess in Chapter 7). */
 const maudKept = () => !!(S && S.f && !S.f.c5_cusserUsed && S.f.c7_debt !== 'paid');
@@ -295,7 +297,7 @@ function attack(a, t, o={}){
   const tagTxt = tags ? ` <span class="stat">[${tags}]</span>` : '';
   const land = ranged ? pace(200) : pace(140); // the blow lands when the bolt arrives or the lunge connects
   if (!hit) { blog(dark ? `${a.name} ${verb} ${t.name} and hits a phantom instead: the blow goes into the dark${tagTxt}${math}.` : `${a.name} ${verb} ${t.name} and misses${tagTxt}${math}.`); later(() => { float(t, dark ? 'into the dark' : 'miss', dark ? '#9a86e0' : '#a99a88'); if (!ranged) sparks(t.x, t.y - .2, 4, '#cfc8b8', .5); }, land); return {hit:false}; }
-  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0) + (t.rimeUntil >= B.round ? 2 : 0);
+  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0) + (t.rimeUntil >= B.round ? 2 : 0) + (a.side === 'p' && a.rallyUntil >= B.round ? 2 : 0);
   blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${tagTxt}${math}.`);
   later(() => { if (t.hp <= 0) return; if (crit) sparks(t.x, t.y, 16, '#ffcf7a'); else sparks(t.x, t.y - .1, 5, '#f08a7c', .6);
     hurt(t, dmg, crit); foeRiders(a, t, dmg);
@@ -558,7 +560,7 @@ function updBattleUI(){
       else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to ${a.darkness ? 'call it' : 'throw'}. ${cov.length ? `The ${a.darkness ? 'dark' : 'smoke'} covers ${cov.map(v => esc(v.name)).join(', ')}.` : `The ${a.darkness ? 'dark' : 'smoke'} covers empty ground.`} Nobody shoots into it or out of it.`; }
       else { const caught = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe), mine = caught.filter(v => v.side === 'p'), theirs = caught.length - mine.length;
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
-  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', u.turned ? 'turned on its own' : '', u.blindTurns > 0 ? `blinded by shadow (−50% to hit, ${u.blindTurns} turn${u.blindTurns > 1 ? 's' : ''})` : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
+  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied (+2 hit, +2 damage)' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', u.turned ? 'turned on its own' : '', u.blindTurns > 0 ? `blinded by shadow (−50% to hit, ${u.blindTurns} turn${u.blindTurns > 1 ? 's' : ''})` : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="bhint">${tapWord(hint)}</div>

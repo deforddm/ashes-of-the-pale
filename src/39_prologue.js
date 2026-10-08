@@ -178,7 +178,7 @@ Nobody has seen you yet.`,
 The lamp swings round. A long silence, then a thin voice: "Garrow's alive?" Then boots, running, the other way. One of them leaves the lamp behind.
 
 Brisk watches them go. "Malazans running from Malazans. Hood's laughing somewhere."`,
-    fx:()=>{ const up = gainXP(100); note('+100 experience. Talking them down is soldiering too.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); },
+    fx:()=>{ const up = gainXP(100); note('+100 experience. Talking them down is soldiering too.','good'); if (up) note(lvlNote(), 'good'); },
     ch:[{t:'Press on', go:'deep1'}]}),
   // Garrow's word, said wrong: one of them runs for the surface with Garrow's name (garrow_again, Ch1's pits and close)
   p_desert_named:()=>({sp:'North sapper tunnel', fx:()=>{ S.f.p_garrowCrossed = 1; }, txt:

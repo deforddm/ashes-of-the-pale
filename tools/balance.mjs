@@ -184,7 +184,7 @@ const INIT = () => {
       if (can(u, 'mend')) { const t = AB.mend.tiles(u).filter(p => !p.ally && pct(p) < .45).sort((a, b) => pct(a) - pct(b))[0];
         if (t && (strainOk(u, 3) || (pct(t) < .25 && u.strain + 3 <= STR_MAX + 1 && u.hp > 8))) return tryAb('mend', t.x, t.y); }
       // Denul Wash when two or more close by are hurt; Stanch on someone about to drop with enemies on them
-      if (can(u, 'wash') && strainOk(u, 4) && sq.filter(p => !p.ally && cheb(p, u) <= 2 && pct(p) < .65).length >= 2) return tryAb('wash', u.x, u.y);
+      if (can(u, 'wash') && strainOk(u, 3) && sq.filter(p => !p.ally && cheb(p, u) <= 3 && pct(p) < .65).length >= 2) return tryAb('wash', u.x, u.y);
       if (can(u, 'stanch') && strainOk(u, 2)) { const t = AB.stanch.tiles(u).filter(p => pct(p) < .25 && minD(p, opp) <= 1)[0]; if (t) return tryAb('stanch', t.x, t.y); }
       // a salve on yourself or the one beside you when it is bad (one a fight: the satchel has to last)
       if (can(u, 'salve') && W.st.salves < spec.salveCap) {
@@ -192,7 +192,7 @@ const INIT = () => {
         const t = AB.salve.tiles(u).filter(p => !p.ally && pct(p) < .3 && !(mendSoon && cheb(ohl, p) <= 5) && minD(p, opp) <= 3).sort((a, b) => a.hp - b.hp)[0];
         if (t) return tryAb('salve', t.x, t.y); }
       // the sergeant's Rally when most of the squad is close and the fight has come to them
-      if (can(u, 'rally')) { const near = sq.filter(p => p !== u && cheb(u, p) <= 3);
+      if (can(u, 'rally')) { const near = sq.filter(p => p !== u && cheb(u, p) <= 4);
         if (near.length >= 3 && (minD(u, opp) <= 3 || near.some(p => pct(p) < .6 || minD(p, opp) <= 1))) return tryAb('rally'); }
       // Tuft: out through Meanas if she is cornered and hurt; a veil on whoever is taking it; a phantom on the worst thing near us
       if (u.id === 'tuft') {

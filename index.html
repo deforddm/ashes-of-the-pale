@@ -579,7 +579,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.16.0';
+const VERSION = '3.16.1';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -1290,6 +1290,13 @@ function gainXP(n){
   if (S.lvl > before) { AUDIO.play('up'); for (let k = before + 1; k <= S.lvl; k++) if ([3,5,7].includes(k)) S.picksDue.push(k); }
   return S.lvl > before;
 }
+/* what a level gives, past the first. Every level: +4 health and +1 to hit. Levels 3, 5 and 7: +1 damage on every blow.
+   Levels 4 and 8: +1 armour. And the squad's own hands get better at it: the heals and Rally grow with lvB() (31). */
+const lvB = () => Math.max(0, ((S && S.lvl) || 1) - 1);
+const lvDmg = (l = (S && S.lvl) || 1) => [3,5,7].filter(k => l >= k).length;
+const lvAc = (l = (S && S.lvl) || 1) => [4,8].filter(k => l >= k).length;
+function lvlNote(){ const l = S.lvl, extra = [l === 3 || l === 5 || l === 7 ? '+1 damage on every blow' : '', l === 4 || l === 8 ? '+1 armour' : ''].filter(Boolean);
+  return `The squad reaches level ${l}: +4 health${extra.length ? ', ' : ' and '}+1 to hit${extra.length ? `, and ${extra.join(' and ')}` : ''} for everyone. Rally and the heals grow with it.`; }
 
 
 /* ============ skill checks ============
@@ -1536,7 +1543,7 @@ const TRICKS = {
     fx:'Once a fight: the bearer and every squadmate beside them take +3 armour and cannot be flanked until the bearer\'s next turn.'},
   song:{name:'Rhivi Spirit-Song', ch:2, use:'fight', ab:'t_song', where:'the Rhivi outriders on the plain',
     lore:'The words the Rhivi sing over their dead, so the spirits of the grass will carry them. Sung for the living, they carry something else.',
-    fx:'Once a fight: every squadmate within 4 heals 1d6+2, wakes from any daze, and steps out of any fire under them.'},
+    fx:'Once a fight: every squadmate within 4 heals 1d6+2, and 1 more for each squad level past the first, wakes from any daze, and steps out of any fire under them.'},
   pull:{name:'The Lady\'s Pull', ch:3, use:'chapter', n:2, ab:'t_pull', where:'the Phoenix Inn, watching a boy spin a coin',
     lore:'Oponn are twins, back to back. The Lady pulls and the Lord pushes, and nobody who has felt the one has escaped the other.',
     fx:'Twice a chapter: spin the coin after a failed check and roll it again, or before an attack and roll it twice, keeping the better. The Lord pushes back: the squad\'s next check is −2.'},
@@ -4020,6 +4027,7 @@ function mkParty(id, x, y){
   ['quorl','shadowstep','mockra','argument','quickshot'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
   trickAbs(id).forEach(k => { if (AB[k]) u.ab.splice(u.ab.length - 1, 0, k); }); // tricks won on hard checks (16b, 31b)
   if (B && B.def.nomagic && u.magic) { u.rng = 1; if (id === 'tuft') { u.dmg = [1,4,1]; u.verb = 'jabs a knife at'; } } // otataral: a knife, or the cudgel
+  u.ac += lvAc(); if (u.dmg && lvDmg()) u.dmg = [u.dmg[0], u.dmg[1], (u.dmg[2] || 0) + lvDmg()]; // levels 3/5/7 hit harder, 4/8 stand harder (15)
   u.hp = u.maxhp; const w = DIFF().carry ? woundOf(id) : null; if (w != null) u.hp = clamp(w, 1, u.maxhp); // Bridgeburner: the wounds the squad carried in
   return u;
 }
@@ -4130,7 +4138,7 @@ function win(){
   } else note(`${head} ${DIFF().carry ? '' : `${SQUAD().includes('ohl') ? 'Ohl patches up the squad' : 'The squad patches itself up'}; everyone is back on their feet.`}`, 'good');
   carryWounds(); lootSalve(); holdBonus();
   S.scene = 'talk'; save(); AUDIO.play('win');
-  if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good');
+  if (up) note(lvlNote(), 'good');
   updBattleUI();
   talk(B.def.after);
 }
@@ -4152,13 +4160,14 @@ function lose(){
     S = migrate(JSON.parse(snap)); if (st) S.stats = st; S.gods = gods; if (met) S.godsMet = met; startBattle(S.battle, S.bopt || {}); }; // the count and the gods remember the lost fight
 }
 
-/* abilities */
+/* abilities. The heals and Rally grow with the squad's level (lvB, 15), so they keep up with the road's harder blows */
+const rallyHeal = () => 5 + 2*lvB(), salveHeal = () => 8 + lvB();
 const AB = {
-  rally:{name:'Rally', self:true, desc:()=>'Squadmates within 3 heal 4 and get +2 to hit through next round. Once a fight.', ok:()=>!B.used.rally,
-    run(u){ B.used.rally = 1; AUDIO.play('heal'); party().forEach(p => { if (cheb(u,p) <= 3) { heal(p,4); p.rallyUntil = B.round + 1; } }); blog(`${u.name}: "On me, you sorry lot!" The squad steadies.`); }},
-  bash:{name:'Shield bash', desc:()=>'Adjacent enemy: 1d6+3 damage, and it loses its next turn on a hit. Recharges after 2 rounds.', ok:u=>!(u.cdBash >= B.round),
+  rally:{name:'Rally', self:true, desc:()=>`Squadmates within 4 heal ${rallyHeal()}, shake off a daze, stop bleeding, and get +2 to hit and +2 damage through next round. Grows with the squad's level. Once a fight.`, ok:()=>!B.used.rally,
+    run(u){ B.used.rally = 1; AUDIO.play('heal'); party().forEach(p => { if (cheb(u,p) <= 4) { heal(p, rallyHeal()); p.rallyUntil = B.round + 1; p.bleed = 0; if (p.stun) { p.stun = false; float(p, 'steadied', '#9fe0b8'); } } }); blog(`${u.name}: "On me, you sorry lot!" The squad steadies.`); }},
+  bash:{name:'Shield bash', desc:()=>`Adjacent enemy: 1d6+${3 + lvDmg()} damage, and it loses its next turn on a hit. Recharges after 2 rounds.`, ok:u=>!(u.cdBash >= B.round),
     tiles:u=>foes().filter(f => cheb(u,f) === 1),
-    run(u,x,y){ const t = unitAt(x,y); u.cdBash = B.round + 2; const r = attack(u, t, {dmg:[1,6,3], verb:'shield-bashes'}); if (r.hit && (t.hp - r.dmg > 0 || t.immortal)) { t.stun = true; blog(`${t.name} reels, dazed.`); } }},
+    run(u,x,y){ const t = unitAt(x,y); u.cdBash = B.round + 2; const r = attack(u, t, {dmg:[1,6,3 + lvDmg()], verb:'shield-bashes'}); if (r.hit && (t.hp - r.dmg > 0 || t.immortal)) { t.stun = true; blog(`${t.name} reels, dazed.`); } }},
   sharper:{name:'Sharper', item:'sharper', boom:true, aoe:1, range:4, desc:()=>'Throw, range 4. 1d10+2 where it lands and 1d6 to everything next to it, squad included. A natural 1 scatters it.',
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => { blast(pt, [[1,10,2],[1,6,0]], '#f2c46b'); AUDIO.play('boom', .8); sparks(pt.x, pt.y, 26, '#f2c46b'); }); blog(`${u.name} lobs a sharper.`); }},
   burner:{name:'Burner', item:'burner', boom:true, aoe:1, range:4, desc:()=>'Throw, range 4. 1d6 to everything in a 3×3 and leaves it burning for 2 rounds. A natural 1 scatters it.',
@@ -4180,11 +4189,11 @@ const AB = {
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#9a86e0', t:performance.now(), dur:400, wob:true});
       t.blindTurns = 2; float(t,'blinded','#9a86e0'); sparks(t.x, t.y, 14, '#6a58b0', .45);
       blog(`${u.name} pulls Meanas down over ${t.name}'s eyes. For its next two turns it will be fighting phantoms.`); }},
-  mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${has('ohl','triage') ? 6 : 3}${B && B.warren && B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
+  mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${(has('ohl','triage') ? 6 : 3) + lvB()}${B && B.warren && B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
     tiles:u=>party().filter(p => cheb(u,p) <= (has(u.id,'triage') ? 4 : 3)),
-    run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,has(u.id,'triage') ? 6 : 3) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
-  salve:{name:'Salve', item:'salve', desc:()=>'Heal 8, yourself or an adjacent squadmate.', tiles:u=>party().filter(p => cheb(u,p) <= 1),
-    run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, 8); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
+    run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,(has(u.id,'triage') ? 6 : 3) + lvB()) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
+  salve:{name:'Salve', item:'salve', desc:()=>`Heal ${salveHeal()}, yourself or an adjacent squadmate.`, tiles:u=>party().filter(p => cheb(u,p) <= 1),
+    run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, salveHeal()); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
   mark:{name:'Tracker\'s Mark', desc:()=>'An enemy within 5 is marked: every hit on it does +2 damage for two rounds.', tiles:u=>foes().filter(f => cheb(u,f) <= 5 && canShoot(u,f) && !(f.markedUntil >= B.round)),
     run(u,x,y){ const t = unitAt(x,y); t.markedUntil = B.round + 2; AUDIO.play('click'); float(t,'marked','#f2c46b'); blog(`${u.name} marks ${t.name}: a nick of chalk on the ground, a word to the squad, and it is a target.`); }},
   quickshot:{name:'Quick Shot', desc:()=>'Once a fight: two arrows at one target within range.', ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng && canShoot(u,f)),
@@ -4201,10 +4210,10 @@ const AB = {
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#e0a8d8', t:performance.now(), dur:400, wob:true});
       if (t.boss && d20() >= 12) { blog(`${t.name} shakes the whisper off.`); float(t,'resists','#a99a88'); }
       else { t.turned = true; sparks(t.x, t.y, 12, '#e0a8d8', .4); float(t,'turned','#e0a8d8'); blog(`${u.name} puts a word in ${t.name}'s ear, in a voice it knows. ${t.name} looks round at its own side, slowly.`); } }},
-  argument:{name:'Argument with Hood', strain:3, desc:()=>'Once a fight: a downed squadmate within 2 stands up at 6 health. Strain 3.', ok:()=>!B.used.argument,
+  argument:{name:'Argument with Hood', strain:3, desc:()=>`Once a fight: a downed squadmate within 2 stands up at ${6 + 2*lvB()} health. Strain 3.`, ok:()=>!B.used.argument,
     tiles:u=>B.units.filter(p => p.side === 'p' && !p.ally && p.hp <= 0 && cheb(u,p) <= 2 && freeNear(p.x, p.y, p)),
     run(u,x,y){ const t = B.units.find(p => p.side === 'p' && !p.ally && p.hp <= 0 && p.x === x && p.y === y); if (!t) return; const at = freeNear(t.x, t.y, t); if (!at) return; // someone may be standing over the body
-      B.used.argument = 1; AUDIO.play('heal'); t.x = at.x; t.y = at.y; t.hp = 6; t.deadAt = null; t.healed = performance.now(); sparks(t.x, t.y, 20, '#9fe0b8', .5); blog(`${u.name} argues with Hood in Ehrlii. ${t.name} gets up, which settles it for now.`); }},
+      B.used.argument = 1; AUDIO.play('heal'); t.x = at.x; t.y = at.y; t.hp = Math.min(t.maxhp, 6 + 2*lvB()); t.deadAt = null; t.healed = performance.now(); sparks(t.x, t.y, 20, '#9fe0b8', .5); blog(`${u.name} argues with Hood in Ehrlii. ${t.name} gets up, which settles it for now.`); }},
 };
 /* Chub's cusser, Maud: Kettle carries her "for the one that matters" and won't fire her in an ordinary fight. The story spends her (the barrow in Chapter 5, or Ch'kess in Chapter 7). */
 const maudKept = () => !!(S && S.f && !S.f.c5_cusserUsed && S.f.c7_debt !== 'paid');
@@ -4271,7 +4280,7 @@ function attack(a, t, o={}){
   const tagTxt = tags ? ` <span class="stat">[${tags}]</span>` : '';
   const land = ranged ? pace(200) : pace(140); // the blow lands when the bolt arrives or the lunge connects
   if (!hit) { blog(dark ? `${a.name} ${verb} ${t.name} and hits a phantom instead: the blow goes into the dark${tagTxt}${math}.` : `${a.name} ${verb} ${t.name} and misses${tagTxt}${math}.`); later(() => { float(t, dark ? 'into the dark' : 'miss', dark ? '#9a86e0' : '#a99a88'); if (!ranged) sparks(t.x, t.y - .2, 4, '#cfc8b8', .5); }, land); return {hit:false}; }
-  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0) + (t.rimeUntil >= B.round ? 2 : 0);
+  const dd = o.dmg || a.dmg; const dmg = roll(crit ? dd[0]*2 : dd[0], dd[1], dd[2]) + (t.markedUntil >= B.round ? 2 : 0) + (t.rimeUntil >= B.round ? 2 : 0) + (a.side === 'p' && a.rallyUntil >= B.round ? 2 : 0);
   blog(`${a.name} ${verb} ${t.name}${crit ? ', <em>critical</em>' : ''}: ${dmg} damage${tagTxt}${math}.`);
   later(() => { if (t.hp <= 0) return; if (crit) sparks(t.x, t.y, 16, '#ffcf7a'); else sparks(t.x, t.y - .1, 5, '#f08a7c', .6);
     hurt(t, dmg, crit); foeRiders(a, t, dmg);
@@ -4534,7 +4543,7 @@ function updBattleUI(){
       else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to ${a.darkness ? 'call it' : 'throw'}. ${cov.length ? `The ${a.darkness ? 'dark' : 'smoke'} covers ${cov.map(v => esc(v.name)).join(', ')}.` : `The ${a.darkness ? 'dark' : 'smoke'} covers empty ground.`} Nobody shoots into it or out of it.`; }
       else { const caught = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe), mine = caught.filter(v => v.side === 'p'), theirs = caught.length - mine.length;
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
-  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', u.turned ? 'turned on its own' : '', u.blindTurns > 0 ? `blinded by shadow (−50% to hit, ${u.blindTurns} turn${u.blindTurns > 1 ? 's' : ''})` : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
+  const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied (+2 hit, +2 damage)' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', u.turned ? 'turned on its own' : '', u.blindTurns > 0 ? `blinded by shadow (−50% to hit, ${u.blindTurns} turn${u.blindTurns > 1 ? 's' : ''})` : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
   const endHot = B.acted || (B.moved && !inReach); // nothing much left: make End turn the obvious button
   ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag you">your turn</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.magic ? `<span class="stat st">strain ${u.strain}/${STR_MAX}</span>` : ''}<span class="stat">${u.rng > 1 ? `range ${u.rng}` : 'melee'} · move ${mvLeft}/${u.mv}</span>${buffs ? `<span class="stat">${buffs}</span>` : ''}</div>
     <div class="bhint">${tapWord(hint)}</div>
@@ -4706,7 +4715,7 @@ Object.assign(AB, {
       blog(`${u.name}: "Shields!" ${in_.length > 1 ? `${in_.filter(p => p !== u).map(p => p.name).join(' and ')} lock${in_.length > 2 ? '' : 's'} in beside them. Rim to rim.` : 'One shield. It will have to do.'}`); }},
   t_song:{name:TRICKS.song.name, trick:'song', self:true, desc:()=>TRICKS.song.fx,
     run(u){ AUDIO.play('heal'); const near = party().filter(p => !p.ally && cheb(p, u) <= 4);
-      near.forEach(p => { heal(p, roll(1,6,2)); if (p.stun) { p.stun = false; float(p, 'awake', '#9fe0b8'); } B.fires = B.fires.filter(f => !(f.x === p.x && f.y === p.y)); sparks(p.x, p.y, 10, '#c8e0a0', .35); });
+      near.forEach(p => { heal(p, roll(1,6,2 + lvB())); if (p.stun) { p.stun = false; float(p, 'awake', '#9fe0b8'); } B.fires = B.fires.filter(f => !(f.x === p.x && f.y === p.y)); sparks(p.x, p.y, 10, '#c8e0a0', .35); });
       blog(`${u.name} sings the Rhivi words for the dead, low, the way Sethand's people sing them. The grass in them carries ${near.length > 1 ? 'the squad' : u.name} a little way.`); }},
   t_pull:{name:TRICKS.pull.name, trick:'pull', self:true, free:true, desc:()=>'Spin the coin: this turn\'s attack rolls twice and keeps the better. The Lord pushes back: the squad\'s next check is −2. Does not use the action.',
     ok:u=>!B.acted && u.luckyTurn !== B.turn,
@@ -4854,9 +4863,9 @@ async function foeAfter(u, gone){
 
 /* ---- Ohl's other hands: Denul Wash for the many, Stanch for the one who is about to go ---- */
 Object.assign(AB, {
-  wash:{name:'Denul Wash', strain:4, self:true, desc:()=>`Ohl and every squadmate within 2 of him heal 1d6+1${B && B.warren && B.warren.denul < 1 ? ' (weakened here)' : ''}, and their bleeding stops. Strain 4.`,
-    run(u){ const d = (B.warren && B.warren.denul) || 1, near = party().filter(p => !p.ally && cheb(p, u) <= 2); AUDIO.play('heal');
-      near.forEach(p => { heal(p, Math.max(1, Math.round(roll(1,6,1) * d))); p.bleed = 0; sparks(p.x, p.y, 10, '#9fe0b8', .35); });
+  wash:{name:'Denul Wash', strain:3, self:true, desc:()=>`Ohl and every squadmate within 3 of him heal 2d4+${2 + lvB()}${B && B.warren && B.warren.denul < 1 ? ' (weakened here)' : ''}, and their bleeding stops. Grows with the squad's level. Strain 3.`,
+    run(u){ const d = (B.warren && B.warren.denul) || 1, near = party().filter(p => !p.ally && cheb(p, u) <= 3); AUDIO.play('heal');
+      near.forEach(p => { heal(p, Math.max(1, Math.round(roll(2,4,2 + lvB()) * d))); p.bleed = 0; sparks(p.x, p.y, 10, '#9fe0b8', .35); });
       blog(`${u.name} opens his hands and lets Denul out like water from a cup. ${near.length > 1 ? 'Everyone close enough feels it.' : 'There is nobody close enough but him.'}${d < 1 ? ' It comes thin here.' : ''}`); }},
   stanch:{name:'Stanch', strain:2, desc:()=>'A squadmate within 3 cannot drop below 1 health until Ohl\'s next turn, and stops bleeding. No healing. Strain 2.',
     tiles:u=>party().filter(p => !p.ally && cheb(u, p) <= 3 && p.stanch !== u),
@@ -4984,7 +4993,7 @@ function openChars(i, tab){ requestAnimationFrame(() => { const c = $('#chars');
   const id = SQ[charIdx], c = TPL[id], L = S.lvl - 1, m = $('#chars'); m.hidden = false;
   const gearOf = Object.values(S.gear[id] || {}).map(g => ITEMS[g]).filter(Boolean);
   const sum = k => gearOf.reduce((a,it) => a + (it[k] || 0), 0);
-  const hp = c.hp + L*4 + (S.card === 'obelisk' ? 4 : 0) + sum('hp') + (has(id,'iron') ? 6 : 0), atk = c.atk + L + sum('atk') + (has(id,'keen') ? 1 : 0), ac = c.ac + sum('ac'), mv = c.mv + sum('mv') + (has(id,'fleet') ? 1 : 0), rng = c.rng + sum('rng'), init = c.init + (has(id,'nerve') ? 1 : 0);
+  const hp = c.hp + L*4 + (S.card === 'obelisk' ? 4 : 0) + sum('hp') + (has(id,'iron') ? 6 : 0), atk = c.atk + L + sum('atk') + (has(id,'keen') ? 1 : 0), ac = c.ac + sum('ac') + lvAc(), mv = c.mv + sum('mv') + (has(id,'fleet') ? 1 : 0), rng = c.rng + sum('rng'), init = c.init + (has(id,'nerve') ? 1 : 0);
   const allPicks = [...(PICKS[3][id] || []), ...PICKS.vet];
   const talents = (S.picks[id] || []).map(k => allPicks.find(o => o[0] === k)).filter(Boolean);
   const kitItems = S.kit.map(g => ITEMS[g] && {id:g, ...ITEMS[g]}).filter(it => it && (!it.who || it.who.includes(id)));
@@ -4994,12 +5003,12 @@ function openChars(i, tab){ requestAnimationFrame(() => { const c = $('#chars');
   const loyN = id === 'sgt' ? null : S.loy[id];
   const gb = gearBonus(id), plus = (total, b) => b ? `${total - b} <span class="gbon">+${b}</span> = <b>${total}</b>` : `${total}`;
   const bar = (k, v, cls='', b=0) => `<div class="stbar"><span>${k}</span><div class="bar ${cls}"><i style="width:${Math.min(1, v/4)*100}%"></i>${b ? `<i class="gb" style="left:${Math.min(1, v/4)*100}%;width:${Math.min(1, (v + b)/4)*100 - Math.min(1, v/4)*100}%"></i>` : ''}</div><span>${b ? `${v}<span class="gbon">+${b}</span>` : v}</span></div>`;
-  const abil = kitAb(id).map(k => { const a = AB[k]; let d; try { d = B ? a.desc() : a.desc(); } catch(e) { d = {rally:'Squadmates within 3 heal 4 and get +2 to hit through next round. Once per fight.', bash:'Adjacent enemy: 1d6+3 and it loses its next turn on a hit. Recharges after 2 rounds.', sharper:'Thrown, range 4. 1d10+2 at the centre, 1d6 around it. Scatters on a natural 1.', burner:'Thrown, range 4. 1d6 to a 3×3 and leaves it burning for 2 rounds.', cusser:'Fired from the crossbow\'s cradle, range 3. 3d8 centre and adjacent, 1d8 one step further. Scatters on 1–2.', smoker:'Thrown, range 4. A 3×3 of smoke for 2 rounds: nobody shoots into it or out of it.', veil:'Meanas illusion: enemies take −5 to hit the target for 2 rounds (more where Meanas is strong). Strain 2.', phantom:'Shadow over an enemy\'s eyes for its next 2 turns: half the blows that would land go into the dark (−50% to hit). Strain 2.', mend:'Denul healing, 2d6+3, weaker where Denul falters. Strain 3.', salve:'Heal 8, self or adjacent.'}[k]; }
+  const abil = kitAb(id).map(k => { const a = AB[k]; let d; try { d = B ? a.desc() : a.desc(); } catch(e) { d = {rally:'Squadmates within 4 heal 5, and 2 more for each level past the first, and get +2 to hit and +2 damage through next round. Once per fight.', bash:'Adjacent enemy: 1d6+3 and it loses its next turn on a hit. Recharges after 2 rounds.', sharper:'Thrown, range 4. 1d10+2 at the centre, 1d6 around it. Scatters on a natural 1.', burner:'Thrown, range 4. 1d6 to a 3×3 and leaves it burning for 2 rounds.', cusser:'Fired from the crossbow\'s cradle, range 3. 3d8 centre and adjacent, 1d8 one step further. Scatters on 1–2.', smoker:'Thrown, range 4. A 3×3 of smoke for 2 rounds: nobody shoots into it or out of it.', veil:'Meanas illusion: enemies take −5 to hit the target for 2 rounds (more where Meanas is strong). Strain 2.', phantom:'Shadow over an enemy\'s eyes for its next 2 turns: half the blows that would land go into the dark (−50% to hit). Strain 2.', mend:'Denul healing, 2d6+3, weaker where Denul falters. Strain 3.', salve:'Heal 8, and 1 more for each level past the first, self or adjacent.'}[k]; }
     return `<div>${a.item && ART['munitions/' + a.item] ? zoomArt('munitions/' + a.item, 'ico abico', a.name) : ''}<b>${a.name}${a.item ? ` <span class="stat">×${S.inv[a.item]}</span>` : ''}</b><span>${d}</span></div>`; }).join('');
   const banter = c.banter ? c.banter[loyN <= -1 ? 0 : loyN >= 2 ? 2 : 1] : null;
   const rel = c.rel ? Object.entries(c.rel).filter(([k]) => SQ.includes(k)).map(([k,v]) => `<li><b>${TPL[k].name}.</b> ${v}</li>`).join('') : SQ.slice(1).map(k => `<li><b>${TPL[k].name}.</b> ${loyLabel(S.loy[k])}.</li>`).join('');
   const soldier = `<div class="sec"><h4>Measure</h4><div class="grid2">${bar('Might', c.st.might, '', gb.might)}${bar('Wits', c.st.wits, 'w', gb.wits)}${bar('Guile', c.st.guile, 'g', gb.guile)}<div class="stbar"><span>Level</span><div class="bar"><i style="width:${S.lvl/8*100}%"></i></div><span>${S.lvl}</span></div></div></div>
-    <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${plus(hp, gb.hp)}</span><span>Armour</span><span>${plus(ac, gb.ac)}</span><span>To hit</span><span>${gb.atk ? `+${atk - gb.atk} <span class="gbon">+${gb.atk}</span> = <b>+${atk}</b>` : `+${atk}`}</span><span>Damage</span><span>${(d => `${d[0]}d${d[1]}${d[2] ? '+' + d[2] : ''}`)(gb.dmg || c.dmg)}${gb.dmg ? ' <span class="gbon">weapon</span>' : ''}</span><span>Reach</span><span>${rng > 1 ? `${gb.rng ? `${rng - gb.rng} <span class="gbon">+${gb.rng}</span> = <b>${rng}</b>` : rng} tiles` : 'adjacent'}</span><span>Move</span><span>${plus(mv, gb.mv)}</span><span>Initiative</span><span>+${init}</span>${c.magic ? `<span>Strain limit</span><span>${STR_MAX}</span>` : ''}</div></div>
+    <div class="sec"><h4>In the line</h4><div class="kv"><span>Health</span><span>${plus(hp, gb.hp)}</span><span>Armour</span><span>${plus(ac, gb.ac)}</span><span>To hit</span><span>${gb.atk ? `+${atk - gb.atk} <span class="gbon">+${gb.atk}</span> = <b>+${atk}</b>` : `+${atk}`}</span><span>Damage</span><span>${(d => `${d[0]}d${d[1]}${d[2] + lvDmg() ? '+' + (d[2] + lvDmg()) : ''}`)(gb.dmg || c.dmg)}${lvDmg() ? ` <span class="gbon">level +${lvDmg()}</span>` : ''}${gb.dmg ? ' <span class="gbon">weapon</span>' : ''}</span><span>Reach</span><span>${rng > 1 ? `${gb.rng ? `${rng - gb.rng} <span class="gbon">+${gb.rng}</span> = <b>${rng}</b>` : rng} tiles` : 'adjacent'}</span><span>Move</span><span>${plus(mv, gb.mv)}</span><span>Initiative</span><span>+${init}</span>${c.magic ? `<span>Strain limit</span><span>${STR_MAX}</span>` : ''}</div></div>
     <div class="sec"><h4>Field rules</h4><p class="fine">Flanking: +2 to hit when an ally stands next to the target on the far side, melee or ranged. Stepping out of a tile next to an enemy gives that enemy one free swing a turn, wherever you step to. Once you have moved and then acted, your movement for the turn is spent. The squad can move through its own people, but not stop on them. End a turn without acting and you are Steady: +2 to your next attack or save. A ranged squadmate who has not fired yet this fight is Posted up: the first enemy to step into their reach takes a free shot. Gold numbers are what gear adds.</p></div>
     <div class="sec"><h4>Abilities</h4><div class="abl">${abil}</div></div>
     ${talents.length ? `<div class="sec"><h4>Learned</h4><div class="abl">${talents.map(o => `<div><b>${o[1]}</b><span>${o[2]}</span></div>`).join('')}</div></div>` : ''}
@@ -5248,6 +5257,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.16.1', ['Levels count for more. Every level still gives +4 health and +1 to hit; now levels 3, 5 and 7 add +1 damage on every blow, and levels 4 and 8 add +1 armour. The character sheets show it.', 'Rally grows with the squad: it heals 5, plus 2 for every level past the first, reaches 4 tiles, wakes the dazed, stops bleeding, and gives +2 to hit and +2 damage through the next round.', 'Denul Wash is worth casting: 2d4+2 plus the squad\'s level past the first, to everyone within 3 of Ohl, for strain 3. Mend, salves, the Rhivi Spirit-Song, Shield Bash and Argument with Hood grow with level too.', 'Bridgeburner is still hard, but no longer close to hopeless.']],
   ['3.16.0', ['The whole story has been checked against the novels, Gardens of the Moon and the books after it, and set right wherever it strayed.', 'A few names have changed: the clerk at the Worry Gate is Pennick, Brisk\'s brother is Tavrin, and the card once called Chains is now the Wain.', 'The maps of Genabackis, Darujhistan, Pale and the Gadrobi Hills now follow the lie of the land in the books.', 'Tuft remembers what she has seen in the Deck\'s visions, and the visions now follow the books.', 'The painted set is finished: every card Tuft deals, a painting at the end of every chapter, and one picture at each chapter\'s opening.', 'A Courtesy of Darkness and Omtose Rime come from the oldest magic, and now work even beside otataral, as the books say they should.', 'What\'s new shows everything since you last played. The journal keeps notes to the end of the book, and its glossary grows as you meet things.', 'Deeds now count your tricks, the gods\' answers and the visions you have seen.', 'Bigger buttons, clearer small text, curly apostrophes, gentler motion when you ask for it, and updates that download once.']],
   ['3.15.4', ['End turn now ignores taps for a moment at the start of each squad turn, so a double tap can\'t skip a squadmate.']],
   ['3.15.3', ['On a phone, the Proclamation at the end of the book now fits the screen and sits centred, and the page no longer slides sideways, so the count above it is centred too.']],
@@ -6944,7 +6954,7 @@ Nobody has seen you yet.`,
 The lamp swings round. A long silence, then a thin voice: "Garrow's alive?" Then boots, running, the other way. One of them leaves the lamp behind.
 
 Brisk watches them go. "Malazans running from Malazans. Hood's laughing somewhere."`,
-    fx:()=>{ const up = gainXP(100); note('+100 experience. Talking them down is soldiering too.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); },
+    fx:()=>{ const up = gainXP(100); note('+100 experience. Talking them down is soldiering too.','good'); if (up) note(lvlNote(), 'good'); },
     ch:[{t:'Press on', go:'deep1'}]}),
   // Garrow's word, said wrong: one of them runs for the surface with Garrow's name (garrow_again, Ch1's pits and close)
   p_desert_named:()=>({sp:'North sapper tunnel', fx:()=>{ S.f.p_garrowCrossed = 1; }, txt:
@@ -7735,7 +7745,7 @@ ${SQUAD().includes('kettle') ? `Kettle has stopped walking. "Those are *Moranth*
             go:'c1_raid_scare', fail:'c1_raid_called'},
           {t:'Leave it. Pell can count his own crates.', go:'c1_raid_let'}]}),
     c1_raid_scare:()=>({sp:'Pell\'s wagon', fx:()=>{ S.f.c1_raidScared = 1; const up = gainXP(60); note('+60 experience. The right shout in the right voice is soldiering too.','good');
-        if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good');
+        if (up) note(lvlNote(), 'good');
         if (!S.f.c1_raidCrate) { S.inv.sharper++; note('Pell, off the books: +1 sharper.','good'); } }, txt:
 `${by({brisk:`"Provosts!" Brisk, in the regiment voice, the one that carries down a line of shields and into the next camp. "The Fist's provosts! Wagon lines, *now!*"`,
   kettle:`"Provosts!" Kettle, at the top of her lungs, and then, inspired: "They've got the *list!* Second Army! Every name!"`,
@@ -8698,7 +8708,7 @@ Brisk, not loudly: "${c2Count()}." It's the count. She says it the way another w
               fx:()=>{ if (S.inv.salve > 0) { S.inv.salve--; S.f.c2_desTook = 'salve'; } else if (S.silver > 0) { S.silver -= Math.min(3, S.silver); S.f.c2_desTook = 'silver'; } else { S.f.c2_desTook = 'nothing'; (S.rattled ??= {})[ROLL().who] = 1; } }},
             go:'c2_des_talk', fail:'c2_des_fail'},
           {t:'"Ten silver, and the road to the city. Take it and go."', tag:'10 silver', req:()=>S.silver >= 10, fx:()=>{ S.silver -= 10; AUDIO.play('coin'); loy('brisk',-1); loy('ohl',1); }, go:'c2_des_paid'}]}),
-    c2_des_talk:()=>({sp:'The foot of the ridge', scene:'plain_dusk', fx:()=>{ S.f.c2_desTalked=1; const up = gainXP(60); note('+60 experience. Talking them down is soldiering too.', 'good'); if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good'); }, txt:
+    c2_des_talk:()=>({sp:'The foot of the ridge', scene:'plain_dusk', fx:()=>{ S.f.c2_desTalked=1; const up = gainXP(60); note('+60 experience. Talking them down is soldiering too.', 'good'); if (up) note(lvlNote(), 'good'); }, txt:
 `${by({
   sgt:`You tell them the only true thing you've got that's worth more than the wagon: the clans have moved off the dust-line, there are Rhivi in the grass in numbers tonight, and a wagon is a slow thing to be caught with. Eight men on foot are a quick one.`,
   tuft:`Tuft talks. She doesn't raise her voice. She tells the grass, low and level, what the Rhivi do to men they find on the plain in Malazan kit and no regiment, and she sounds like somebody who has read the report.`,
@@ -9957,7 +9967,7 @@ He's already turned back to the niches, lips moving, counting the Bridgeburners'
 
 On a nail by the foot of the ladder, where nobody would put a thing they wanted to keep, hangs a pig's bladder, tied off at the neck and tight as a drum, with a twist of fuse pushed into a blob of wax. Hedge's eyes go to it once while he talks, and come away.`,
       fx:()=>{ S.inv.cusser += 1; S.inv.smoker = (S.inv.smoker || 0) + 2; S.f.gotSmokers = 1; note('Hedge\'s tip: +1 cusser, and two smokers.','good'); if (SQUAD().includes('kettle')) loy('kettle',1);
-        if (S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved') { S.inv.sharper += S.f.c3_charges === 'clean' ? 2 : 1; const up = gainXP(S.f.c3_charges === 'clean' ? 30 : 20); note(`Hedge's respect: +${S.f.c3_charges === 'clean' ? 2 : 1} sharper${S.f.c3_charges === 'clean' ? 's' : ''}, and +${S.f.c3_charges === 'clean' ? 30 : 20} experience.`, 'good'); if (up) note(`The squad reaches level ${S.lvl}.`, 'good'); } },
+        if (S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved') { S.inv.sharper += S.f.c3_charges === 'clean' ? 2 : 1; const up = gainXP(S.f.c3_charges === 'clean' ? 30 : 20); note(`Hedge's respect: +${S.f.c3_charges === 'clean' ? 2 : 1} sharper${S.f.c3_charges === 'clean' ? 's' : ''}, and +${S.f.c3_charges === 'clean' ? 30 : 20} experience.`, 'good'); if (up) note(lvlNote(), 'good'); } },
       ch:[{t:'Ask Hedge about the bladder on the nail.', check:['wits',15], trick:'bluefire',
             req:()=>!S.f.c3_blueTried, fx:()=>{ S.f.c3_blueTried = 1; },
             edges:id => [id === 'kettle' && ['a sapper asking a sapper', 2], (S.f.c3_charges === 'clean' || S.f.c3_charges === 'solved') && ['Hedge watched you lay the junction run', 1]],
@@ -10014,7 +10024,7 @@ Silence. Then, from above, from a bucket by the barrier, one word.
 
 Nothing comes back down the ladder. Nothing at all. That's worse.`,
       ch:[{t:'Up the ladder.', go:'c3_work_done'}]}),
-    c3_work_done:()=>({sp:'The second night', scene:'city_street', fx:()=>{ S.f.c3_workDone=1; S.f.c3_night2=1; rest('Sleep till noon on the chandler\'s roof. Mallet looks at everyone\'s cuts on his way past with the bread, and says nothing, which from Mallet is a clean bill.'); gain('roadleather'); const up = gainXP(60); note('+60 experience. Road crew work.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
+    c3_work_done:()=>({sp:'The second night', scene:'city_street', fx:()=>{ S.f.c3_workDone=1; S.f.c3_night2=1; rest('Sleep till noon on the chandler\'s roof. Mallet looks at everyone\'s cuts on his way past with the bread, and says nothing, which from Mallet is a clean bill.'); gain('roadleather'); const up = gainXP(60); note('+60 experience. Road crew work.','good'); if (up) note(lvlNote(), 'good'); }, txt:
 `You sleep on the chandler's roof, all of you in a row under the eaves, and wake at noon to the sound of the city: carts and bells and a man shouting about fish, and under it, if you listen, the hiss. Mallet brings bread. Fiddler throws a crew jerkin at you, oiled leather with a guild mark burned in the back. "Look the part. Nobody looks twice at a man in one of those. Nobody looks *once*."
 
 Then dusk, and the lamps come on, street by street, and it's the second night.
@@ -10426,7 +10436,7 @@ ${SQUAD().includes('brisk') ? `Brisk has the ledger out before he's round the be
 
 ${SQUAD().includes('kettle') ? `Kettle, outraged, under her breath: "We could have *taken* them."${SQUAD().includes('brisk') ? ` "We could," says Brisk, putting the ledger away. "Then we'd be taking them again tomorrow, with more cousins."` : ''}` : ''}`,
       ch:[{t:'On up the alley.', go:()=>c3Arrive(S.f.c3_upTo)}]}),
-    c3_cousins_faced:()=>({sp:'The dogleg in the alley', fx:()=>{ S.f.c3_cousins='faced'; const up = gainXP(40); note('+40 experience. Nobody had to.','good'); if (up) note(`The squad reaches level ${S.lvl}. Everyone is tougher and hits harder.`,'good'); }, txt:
+    c3_cousins_faced:()=>({sp:'The dogleg in the alley', fx:()=>{ S.f.c3_cousins='faced'; const up = gainXP(40); note('+40 experience. Nobody had to.','good'); if (up) note(lvlNote(), 'good'); }, txt:
 `${by({
   brisk:`Brisk walks up the alley until she is standing much too close to him, and sets her shield down on the cobbles between them, edge first, so that it rings off both walls, and leans on it. "Third Army," she says. "Heavy." It's the whole of what she says. He looks at the shield. He looks at the arm that goes with it.`,
   kettle:S.inv.cusser > 0 ? `Kettle takes a cusser out of her satchel, clay-grey and round, and holds it up to his lantern so he can see it properly, and tells him, in the bright helpful voice of somebody explaining a recipe, exactly what it would do to the alley, and the walls, and the cousins, in order, by name if he'd like to give her the names. He doesn't give her the names.` : `Kettle opens her satchel and holds it out to him so he can look in. It's dark in there. She lets him look for a long time, smiling, and he finds he doesn't want to know.`,
@@ -11507,7 +11517,7 @@ The rope-line hangs down the wall now, from the Gadrobi chimney into the dark, a
 
     /* ---- the Daru roofs ---- */
     c4_daru_arrive:()=>({sp:'The Daru roofs', scene:'roof_night', fx:()=>{ S.f.c4_daruSeen=1;
-        if (S.f.c4_run === 'unseen' || S.f.c4_run === 'seen') { const n = S.f.c4_run === 'unseen' ? 30 : 10, up = gainXP(n); note(`+${n} experience. ${S.f.c4_run === 'unseen' ? 'Across the roofs unseen.' : 'Across the roofs.'}`, 'good'); if (up) note(`The squad reaches level ${S.lvl}.`, 'good'); } }, txt:
+        if (S.f.c4_run === 'unseen' || S.f.c4_run === 'seen') { const n = S.f.c4_run === 'unseen' ? 30 : 10, up = gainXP(n); note(`+${n} experience. ${S.f.c4_run === 'unseen' ? 'Across the roofs unseen.' : 'Across the roofs.'}`, 'good'); if (up) note(lvlNote(), 'good'); } }, txt:
 `${S.f.c4_run === 'unseen' ? `Three roofs, and not one lantern has touched you. You come down behind the last parapet in a row, all of you, breathing through your mouths, and ${SQUAD().includes('ellis') ? 'Ellis lets out a breath she has been holding since the plank. "Well," she says. "Well. The Guild\'s going to hate that."' : 'Kettle unclenches her hand. There is a smeared *8* in charcoal on the palm.'}
 
 ` : S.f.c4_run === 'seen' ? `You make it across, in the end. Somewhere behind you, on a roof you've already left, somebody is still whistling, low, two notes and two notes, and somebody else is answering. The Guild knows there are Malazans on its roofs tonight. So much for low and slow.
@@ -14664,7 +14674,7 @@ Near the musicians' gallery a girl in a silver half-mask is dancing with a young
 Up in the gallery, in the shadow behind the musicians, something moves: a boy-shaped something with a coil of rope, crouched on the rail, watching the girl. ${S.f.c6_crokus ? `You know the rope.` : ''} Nobody else looks up. Nobody at a Fete ever looks up.`,
       ch:[{t:'Walk the hall and put names to the masks for Whiskeyjack.', tag:'Masks at the Fete', req:()=>!S.f.c6_masks && !S.f.c6_duelDone, go:()=>playMasks({after:r => { if (r.done) { S.f.c6_masks = r.right + 1; talk('c6_masks_after'); } else startExplore(); }})},
           {t:'Back to the terrace.', go:()=>startExplore()}]}),
-    c6_masks_after:()=>{ const n = (S.f.c6_masks || 1) - 1; return {sp:'Fiddler', scene:'fete_hall', fx:()=>{ const up = gainXP(n*8); if (n) note(`+${n*8} experience. ${numw(n, true)} of five names.`, 'good'); if (n >= 4) { S.f.wjRegard = (S.f.wjRegard || 0) + 1; note('Whiskeyjack will hear who wrote that list.', 'good'); } if (up) note(`The squad reaches level ${S.lvl}.`, 'good'); }, txt:
+    c6_masks_after:()=>{ const n = (S.f.c6_masks || 1) - 1; return {sp:'Fiddler', scene:'fete_hall', fx:()=>{ const up = gainXP(n*8); if (n) note(`+${n*8} experience. ${numw(n, true)} of five names.`, 'good'); if (n >= 4) { S.f.wjRegard = (S.f.wjRegard || 0) + 1; note('Whiskeyjack will hear who wrote that list.', 'good'); } if (up) note(lvlNote(), 'good'); }, txt:
 `Fiddler tucks the list into his sleeve, next to whatever else he keeps up there, and goes back to looking like a guard.
 
 ${n === 5 ? `"Five for five," he says again, to the halberd, as if he can't quite get over it. "Hedge owes me a silver. I said you would."` : n >= 3 ? `"It'll do," he says. "It'll more than do."` : `"It's a start," he says, kindly, which from Fiddler is the worst thing he can say.`}`,

@@ -111,9 +111,9 @@ async function foeAfter(u, gone){
 
 /* ---- Ohl's other hands: Denul Wash for the many, Stanch for the one who is about to go ---- */
 Object.assign(AB, {
-  wash:{name:'Denul Wash', strain:4, self:true, desc:()=>`Ohl and every squadmate within 2 of him heal 1d6+1${B && B.warren && B.warren.denul < 1 ? ' (weakened here)' : ''}, and their bleeding stops. Strain 4.`,
-    run(u){ const d = (B.warren && B.warren.denul) || 1, near = party().filter(p => !p.ally && cheb(p, u) <= 2); AUDIO.play('heal');
-      near.forEach(p => { heal(p, Math.max(1, Math.round(roll(1,6,1) * d))); p.bleed = 0; sparks(p.x, p.y, 10, '#9fe0b8', .35); });
+  wash:{name:'Denul Wash', strain:3, self:true, desc:()=>`Ohl and every squadmate within 3 of him heal 2d4+${2 + lvB()}${B && B.warren && B.warren.denul < 1 ? ' (weakened here)' : ''}, and their bleeding stops. Grows with the squad's level. Strain 3.`,
+    run(u){ const d = (B.warren && B.warren.denul) || 1, near = party().filter(p => !p.ally && cheb(p, u) <= 3); AUDIO.play('heal');
+      near.forEach(p => { heal(p, Math.max(1, Math.round(roll(2,4,2 + lvB()) * d))); p.bleed = 0; sparks(p.x, p.y, 10, '#9fe0b8', .35); });
       blog(`${u.name} opens his hands and lets Denul out like water from a cup. ${near.length > 1 ? 'Everyone close enough feels it.' : 'There is nobody close enough but him.'}${d < 1 ? ' It comes thin here.' : ''}`); }},
   stanch:{name:'Stanch', strain:2, desc:()=>'A squadmate within 3 cannot drop below 1 health until Ohl\'s next turn, and stops bleeding. No healing. Strain 2.',
     tiles:u=>party().filter(p => !p.ally && cheb(u, p) <= 3 && p.stanch !== u),

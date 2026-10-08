@@ -703,7 +703,7 @@ Brisk, not loudly: "${c2Count()}." It's the count. She says it the way another w
               fx:()=>{ if (S.inv.salve > 0) { S.inv.salve--; S.f.c2_desTook = 'salve'; } else if (S.silver > 0) { S.silver -= Math.min(3, S.silver); S.f.c2_desTook = 'silver'; } else { S.f.c2_desTook = 'nothing'; (S.rattled ??= {})[ROLL().who] = 1; } }},
             go:'c2_des_talk', fail:'c2_des_fail'},
           {t:'"Ten silver, and the road to the city. Take it and go."', tag:'10 silver', req:()=>S.silver >= 10, fx:()=>{ S.silver -= 10; AUDIO.play('coin'); loy('brisk',-1); loy('ohl',1); }, go:'c2_des_paid'}]}),
-    c2_des_talk:()=>({sp:'The foot of the ridge', scene:'plain_dusk', fx:()=>{ S.f.c2_desTalked=1; const up = gainXP(60); note('+60 experience. Talking them down is soldiering too.', 'good'); if (up) note(`The squad reaches level ${S.lvl}: +4 health and +1 to hit for everyone.`, 'good'); }, txt:
+    c2_des_talk:()=>({sp:'The foot of the ridge', scene:'plain_dusk', fx:()=>{ S.f.c2_desTalked=1; const up = gainXP(60); note('+60 experience. Talking them down is soldiering too.', 'good'); if (up) note(lvlNote(), 'good'); }, txt:
 `${by({
   sgt:`You tell them the only true thing you've got that's worth more than the wagon: the clans have moved off the dust-line, there are Rhivi in the grass in numbers tonight, and a wagon is a slow thing to be caught with. Eight men on foot are a quick one.`,
   tuft:`Tuft talks. She doesn't raise her voice. She tells the grass, low and level, what the Rhivi do to men they find on the plain in Malazan kit and no regiment, and she sounds like somebody who has read the report.`,
