@@ -186,7 +186,7 @@ function drawPinup(cv){
     ctx.beginPath(); ctx.arc(cx, cy, R + th/2, -Math.PI/2 - half, -Math.PI/2 + half); ctx.arc(cx, cy, R - th/2, -Math.PI/2 + half, -Math.PI/2 - half, true); ctx.closePath();
     ctx.fillStyle = PR.lin(ctx, 0, cy - R - th/2, 0, cy - R + th/2, [[0, shade(col, .2)], [.5, col], [1, shade(col, -.25)]]); ctx.fill(); ctx.strokeStyle = '#3a0c08'; ctx.lineWidth = 2.5; ctx.stroke();
     ctx.strokeStyle = 'rgba(255,220,140,.7)'; ctx.lineWidth = 1.2; [-1, 1].forEach(sd => { ctx.beginPath(); ctx.arc(cx, cy, R + sd*(th/2 - 5), -Math.PI/2 - half + .01, -Math.PI/2 + half - .01); ctx.stroke(); }); };
-  ribbon(300, 980, 860, .272, 60, '#c4302a'); arcText('RUMJUGS & SWEETLARD', 300, 980, 849, '400 35px "IM Fell English SC", Georgia, serif', '#fbefcf', 1.2);
+  ribbon(300, 1020, 860, .272, 60, '#c4302a'); arcText('RUMJUGS & SWEETLARD', 300, 1020, 849, '400 35px "IM Fell English SC", Georgia, serif', '#fbefcf', 1.2);
   ctx.restore(); // the panel's clip
   /* the border, painted round the panel; the small ribbon over it */
   panel(); ctx.strokeStyle = '#3a0c08'; ctx.lineWidth = 13; ctx.stroke(); panel(); ctx.strokeStyle = '#c4302a'; ctx.lineWidth = 8; ctx.stroke(); panel(); ctx.strokeStyle = '#e8b848'; ctx.lineWidth = 2; ctx.stroke();
