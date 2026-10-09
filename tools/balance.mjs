@@ -211,6 +211,9 @@ const INIT = () => {
       }
       // munitions and the quorl
       for (const k of ['cusser', 'sharper', 'burner', 'quorl', 'smoker']) { const t = bestThrow(u, k, spec); if (t) return tryAb(k, t.x, t.y); }
+      // the sergeant's Shield Drive: when a squadmate stands beside the same enemy, drive it out of their reach for the free swing
+      if (can(u, 'shove')) { const t = AB.shove.tiles(u).filter(e => !e.boss && !e.immortal && e.maxhp < 45 && sq.some(p => p !== u && cheb(p, e) === 1)).sort((a, b) => danger(b) - danger(a))[0];
+        if (t) return tryAb('shove', t.x, t.y); }
       // Vell: the hook on a shooter or a caster standing off, hauled in among the squad
       if (can(u, 'grapple')) { const t = AB.grapple.tiles(u).filter(e => !e.boss && !e.immortal && e.maxhp < 45 && (e.rng > 1 || danger(e) >= 8)).sort((a, b) => danger(b) - danger(a))[0];
         if (t) return tryAb('grapple', t.x, t.y); }

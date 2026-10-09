@@ -38,7 +38,7 @@ function mkParty(id, x, y){
   const t = TPL[id], L = S.lvl - 1;
   const u = {id, side:'p', name:NAME(id), sig:t.sig, col:t.col, maxhp:t.hp + L*4 + (S.card === 'obelisk' ? 4 : 0), ac:t.ac, atk:t.atk + L, dmg:t.dmg, rng:t.rng, mv:t.mv + (S.card === 'hounds' ? 1 : 0), init:t.init, ab:kitAb(id), magic:t.magic, strain:0, verb:VERB[id], x, y, kind:id};
   // gear
-  Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (!it) return; u.ac += it.ac || 0; u.atk += it.atk || 0; u.maxhp += it.hp || 0; u.mv += it.mv || 0; u.rng += it.rng || 0; if (it.dmg) u.dmg = it.dmg; });
+  Object.values(S.gear[id] || {}).forEach(g => { const it = ITEMS[g]; if (!it) return; if (it.reach) u.reachMelee = true; u.ac += it.ac || 0; u.atk += it.atk || 0; u.maxhp += it.hp || 0; u.mv += it.mv || 0; u.rng += it.rng || 0; if (it.dmg) u.dmg = it.dmg; });
   // veteran picks and talents
   if (has(id,'iron')) u.maxhp += 6; if (has(id,'keen')) u.atk += 1; if (has(id,'fleet')) u.mv += 1; if (has(id,'nerve')) u.init += 1;
   ['quorl','shadowstep','mockra','argument','quickshot','ropeswing'].forEach(k => { if (has(id,k)) u.ab.splice(u.ab.length - 1, 0, k); }); // before Salve
@@ -177,7 +177,7 @@ function lose(){
     S = migrate(JSON.parse(snap)); if (st) S.stats = st; S.gods = gods; if (met) S.godsMet = met; startBattle(S.battle, S.bopt || {}); }; // the count and the gods remember the lost fight
 }
 
-const grapR = () => 3 + lvT();
+const grapR = () => 3 + lvT(), shoveDist = () => 1 + lvAt(4);
 /* abilities. The heals and Rally grow with the squad's level (lvB, 15), so they keep up with the road's harder blows */
 const rallyHeal = () => 5 + 2*lvB(), salveHeal = () => 8 + lvB();
 const AB = {
@@ -219,16 +219,30 @@ const AB = {
   /* Vell's rope-and-hook: a throw at range that hauls whatever it bites to the tile beside him. The heavy take the hook and stay put. */
   grapple:{name:'Grappling Hook', desc:()=>`Throw the hook at an enemy 2 to ${grapR()} tiles off: 1d6+${1 + lvDmg()} on a hit, and it is hauled to the open tile beside Vell nearest it. Bosses and the very heavy take the hook but don't come. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
     ok:u=>!(u.cdHook >= B.round), tiles:u=>foes().filter(f => cheb(u,f) >= 2 && cheb(u,f) <= grapR() && canShoot(u,f)),
-    run(u,x,y){ const t = unitAt(x,y); if (!t) return; u.cdHook = B.round + 2 - lvAt(6); AUDIO.play('bow');
+    async run(u,x,y){ const t = unitAt(x,y); if (!t) return; u.cdHook = B.round + 2 - lvAt(6); AUDIO.play('bow');
       const r = attack(u, t, {dmg:[1,6,1 + lvDmg()], verb:'throws the hook at'}); if (!r.hit) return;
-      const heavy = t.boss || t.immortal || t.maxhp >= 45;
-      later(() => { if (t.hp <= 0) return;
-        if (heavy) { blog(`The hook bites into ${t.name}. ${t.name} doesn't come. Vell lets go of the line before it takes him instead.`); float(t, 'too heavy', '#a99a88'); return; }
-        const at = DIRS.map(([dx, dy]) => ({x:u.x + dx, y:u.y + dy})).filter(p => free(p.x, p.y, t)).sort((a, b) => cheb(a, t) - cheb(b, t))[0];
-        if (!at) { blog(`There's nowhere beside Vell to haul ${t.name} to. The hook comes back with a piece of it.`); return; }
-        sparks(t.x, t.y, 8, '#b0a0c8', .4); t.x = at.x; t.y = at.y; t.facing = u.x >= t.x ? 1 : -1; AUDIO.play('step'); float(t, 'hauled in', '#b0a0c8');
-        if (has(u.id, 'snare')) { t.snareUntil = B.round + 1; float(t, 'snared', '#b0a0c8'); }
-        blog(`Vell hauls on the line with his whole weight and ${t.name} comes off its feet and across the ground to him${has(u.id, 'snare') ? `, tangled to the knees in tarred rope` : ''}.`); updBattleUI(); }, pace(300)); }},
+      await wait(pace(300)); if (!B || t.hp <= 0) return;
+      if (t.boss || t.immortal || t.maxhp >= 45) { blog(`The hook bites into ${t.name}. ${t.name} doesn't come. Vell lets go of the line before it takes him instead.`); float(t, 'too heavy', '#a99a88'); return; }
+      const at = DIRS.map(([dx, dy]) => ({x:u.x + dx, y:u.y + dy})).filter(p => free(p.x, p.y, t)).sort((a, b) => cheb(a, t) - cheb(b, t))[0];
+      if (!at) { blog(`There's nowhere beside Vell to haul ${t.name} to. The hook comes back with a piece of it.`); return; }
+      blog(`Vell hauls on the line with his whole weight and ${t.name} comes off its feet and across the ground to him${has(u.id, 'snare') ? `, tangled to the knees in tarred rope` : ''}.`);
+      sparks(t.x, t.y, 8, '#b0a0c8', .4); AUDIO.play('step'); float(t, 'hauled in', '#b0a0c8');
+      if (await forcedMove(t, at, 'dragged')) return;
+      t.facing = u.x >= t.x ? 1 : -1;
+      if (has(u.id, 'snare')) { t.snareUntil = B.round + 1; float(t, 'snared', '#b0a0c8'); } }},
+  /* the sergeant's shield, picked up at Nathilog and never put down: drive an enemy back, out of the squad's reach, and let the squad answer it */
+  shove:{name:'Shield Drive', desc:()=>`An adjacent enemy: 1d6+${2 + lvDmg()} on a hit, and it is driven straight back ${shoveDist() > 1 ? `up to ${shoveDist()} tiles` : '1 tile'}. Every squadmate it is driven out of reach of gets a free swing. Into a wall or a body: +1d6 instead of the ground. Bosses and the very heavy don't move. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
+    ok:u=>!(u.cdShove >= B.round), tiles:u=>foes().filter(f => cheb(u,f) === 1),
+    async run(u,x,y){ const t = unitAt(x,y); if (!t) return; u.cdShove = B.round + 2 - lvAt(6); u.aooTurn = B.turn; // the sergeant's own swing is spent on the drive
+      const r = attack(u, t, {dmg:[1,6,2 + lvDmg()], verb:'drives a shield into'}); if (!r.hit) return;
+      await wait(pace(250)); if (!B || t.hp <= 0) return;
+      if (t.boss || t.immortal || t.maxhp >= 45) { blog(`${t.name} takes the shield and doesn't give a step.`); float(t, 'braced', '#a99a88'); return; }
+      const dx = Math.sign(t.x - u.x), dy = Math.sign(t.y - u.y); let to = {x:t.x, y:t.y}, slam = false;
+      for (let i = 0; i < shoveDist(); i++) { const n = {x:to.x + dx, y:to.y + dy}; if (!free(n.x, n.y, t)) { slam = true; break; } to = n; }
+      if (to.x === t.x && to.y === t.y) { const d = roll(1,6,0); blog(`${t.name} goes back into what's behind it, hard.`); hurt(t, d); updBattleUI(); return; }
+      blog(`${u.name} drives ${t.name} back${slam ? ' into what is behind it' : ''}.`); float(t, 'driven back', '#e8c073'); AUDIO.play('sword');
+      if (await forcedMove(t, to, 'driven')) return;
+      if (slam && t.hp > 0) { const d = roll(1,6,0); blog(`${t.name} fetches up against it with a sound like a dropped sack.`); hurt(t, d); updBattleUI(); } }},
   ropeswing:{name:'Rope Swing', free:true, desc:()=>`Once a turn, and it does not use his action: swing to any open tile within ${3 + lvT()}. Nobody gets a free swing. Grows with level.`, ok:u=>u.swungTurn !== B.turn,
     tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 3 + lvT() && free(x,y,u) && !(x === u.x && y === u.y)) out.push({x,y,step:true}); return out; },
     run(u,x,y){ u.swungTurn = B.turn; AUDIO.play('step'); sparks(u.x, u.y, 8, '#b0a0c8', .4); u.x = x; u.y = y; sparks(x, y, 8, '#b0a0c8', .4); blog(`${u.name} throws the hook at something high and goes with it.`); updBattleUI(); }},
@@ -303,7 +317,7 @@ function attack(a, t, o={}){
   let dark = false; if (hit && a.blindTurns > 0 && R(2) === 0) { hit = false; crit = false; dark = true; } // Phantom: half the blows that would land go into the dark
   if (crit && mine && !a.ally) tally('crits');
   const verb = o.verb || a.verb;
-  const ranged = cheb(a, t) > 1;
+  const ranged = cheb(a, t) > 1 && !a.reachMelee; // a halberd's reach is still a blow, not a shot
   const lash = a.kind === 'tuft' && !B.def.nomagic;
   if (ranged) B.fx.push({kind:'bolt', from:{x:a.x,y:a.y}, to:{x:t.x,y:t.y}, col:lash ? '#9a86e0' : '#cfc8b8', t:performance.now(), dur:220, wob:lash});
   else B.anim = {u:a, tx:t.x, ty:t.y, t0:performance.now()};
@@ -356,15 +370,29 @@ async function moveCur(x, y){
   B.busy = false; B.moved = B.mvLeft <= 0; afterAct();
 }
 /* resolve free attacks against u for stepping out of its current tile; returns true if u drops */
-async function opportunity(u, to){
+async function opportunity(u, to, forced){
   const es = provokes(u, u, to); if (!es.length) return false;
   for (const e of es) {
     e.aooTurn = B.turn; e.facing = u.x >= e.x ? 1 : -1;
-    blog(`<em>${u.name} steps away from ${e.name}.</em>`);
+    blog(forced ? `<em>${u.name} is ${forced} out of ${e.name}'s reach.</em>` : `<em>${u.name} steps away from ${e.name}.</em>`);
     attack(e, u, {aoo:true, verb:'takes a free swing at'}); updBattleUI(); await wait(420);
     if (!B || u.hp <= 0) return true;
   }
   return false;
+}
+/* forced movement (Vell's hook, the sergeant's Shield Drive): the target goes tile by tile, and every squadmate it is dragged or driven out of reach of
+   gets a free swing, the same rule as stepping away. Returns true if it dropped on the way. Tiles with something in them are passed over, not stood on. */
+async function forcedMove(t, to, how){
+  let x = t.x, y = t.y, guard = 0;
+  while ((x !== to.x || y !== to.y) && guard++ < 12) {
+    const st = {x:x + Math.sign(to.x - x), y:y + Math.sign(to.y - y)};
+    if (t.hp > 0 && await opportunity(t, st, how)) return true;
+    if (!B || t.hp <= 0) return true;
+    x = st.x; y = st.y; if (free(x, y, t)) { t.x = x; t.y = y; updBattleUI(); }
+    await wait(110);
+  }
+  if (t.hp > 0 && free(to.x, to.y, t)) { t.x = to.x; t.y = to.y; }
+  updBattleUI(); return t.hp <= 0;
 }
 function useAb(k, x, y){
   const u = B.cur, a = AB[k];
@@ -372,8 +400,9 @@ function useAb(k, x, y){
   if (a.boom || k === 'quickshot' || k === 'mark' || k === 'bash') u.fired = true;
   if (a.trick) { if (TRICKS[a.trick].use === 'chapter') spendTrick(a.trick); else { B.used[k] = 1; tally('tricksUsed'); } }
   if (!a.free) { B.acted = true; if (B.mvLeft < u.mv) B.moved = true; } B.mode = 'act'; B.aim = null; B.busy = true;
-  a.run(u, x, y); castStrain(u, a.strain && u.id === 'tuft' && S.card === 'magi' ? a.strain - 1 : a.strain);
+  const ran = a.run(u, x, y); castStrain(u, a.strain && u.id === 'tuft' && S.card === 'magi' ? a.strain - 1 : a.strain);
   if (a.aoe) { updBattleUI(); return; } // blast() resumes the turn when it lands
+  if (ran && ran.then) { updBattleUI(); ran.catch(e => console.warn(k, e)).then(() => later(() => { if (!B) return; B.busy = false; afterAct(); }, pace(250))); return; } // the hook and the drive: the turn resumes when the movement is done
   later(() => { B.busy = false; afterAct(); }, pace(350)); updBattleUI();
 }
 /* can the current unit still take a step this turn? */

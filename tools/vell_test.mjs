@@ -48,9 +48,24 @@ const fight = await ev(async () => { const wait = ms => new Promise(r => setTime
   const far = []; for (let y = 0; y < 10; y++) for (let x = 0; x < 8; x++) { const d = Math.max(Math.abs(x - v.x), Math.abs(y - v.y)); if (d >= 3 && d <= grapR() && free(x, y, f)) far.push({x, y}); }
   if (!far.length) return {err:'no tile'}; f.x = far[0].x; f.y = far[0].y; f.boss = false; f.immortal = false; f.maxhp = Math.max(f.maxhp, 30); f.hp = 30; B.smoke = [];
   const before = cheb(v, f); const realAtk = attack; window.attack = (a, t, o) => ({hit:true, dmg:1}); // a sure hit, so the haul is what's tested
-  AB.grapple.run(v, f.x, f.y); await wait(900); window.attack = realAtk;
-  return {before, after:cheb(v, f), cd:v.cdHook > B.round - 1, tiles:AB.grapple.tiles(v).length}; });
+  const sq = B.units.find(p => p.side === 'p' && !p.ally && p !== v && p.hp > 0), spotB = DIRS.map(([dx, dy]) => ({x:f.x + dx, y:f.y + dy})).find(p => free(p.x, p.y, sq) && cheb(p, v) > 2);
+  if (spotB) { sq.x = spotB.x; sq.y = spotB.y; sq.aooTurn = -1; sq.stun = false; } B.log = [];
+  const run = AB.grapple.run(v, f.x, f.y); window.attack = realAtk; await run; await wait(300);
+  return {before, after:f.hp > 0 ? cheb(v, f) : 1, cd:v.cdHook > B.round - 1, tiles:AB.grapple.tiles(v).length, aoo:!!spotB && B.log.join(' ').includes('dragged out of'), dbg:JSON.stringify({spotB, who:sq.id, log:B.log.slice(-8)})}; });
 ok(!fight.err && fight.before >= 3 && fight.after === 1, `the hook hauls an enemy from ${fight.before} tiles to beside Vell (${fight.after})`);
+ok(fight.aoo, 'dragging it out of a squadmate\'s reach gives that squadmate a free swing'); if (!fight.aoo) console.log(fight.dbg);
+const drive = await ev(async () => { const wait = ms => new Promise(r => setTimeout(r, ms));
+  S.squad = ['sgt','brisk','kettle','tuft','ohl','vell']; S.gear.sgt = {}; startBattle('guild_roofs', {}); await wait(600); B.smoke = [];
+  const g = B.units.find(u => u.id === 'sgt'), b2 = B.units.find(u => u.id === 'brisk'), f = foes().filter(e => !e.boss)[0];
+  B.units.filter(u => u !== g && u !== b2 && u !== f).forEach((u, i) => { u.x = i; u.y = 0; }); // out of the way
+  g.x = 3; g.y = 6; f.x = 3; f.y = 5; b2.x = 4; b2.y = 5; [g, b2, f].forEach(u => { u.stun = false; u.aooTurn = -1; }); f.hp = f.maxhp = 40; f.boss = false; f.immortal = false; B.log = [];
+  const realAtk = attack; let first = true; window.attack = (a, t, o) => { if (first) { first = false; return {hit:true, dmg:1}; } return realAtk(a, t, o); };
+  const run = AB.shove.run(g, f.x, f.y); await run; window.attack = realAtk; const y = f.y; await wait(300);
+  return {y, aoo:B.log.join(' ').includes('driven out of'), selfSwing:B.log.join(' ').includes(`${g.name} takes a free swing`)}; });
+ok(drive.y === 3, `Shield Drive drives it back two tiles at level 6 (to row ${drive.y})`); // measured as the drive ends, before the fight moves on
+ok(drive.aoo && !drive.selfSwing, 'driving it out of Brisk\'s reach gives Brisk a free swing; the sergeant spent his on the drive');
+const hb = await ev(() => { S.gear.sgt = {weapon:'simtalhalberd'}; const u = mkParty('sgt', 3, 6); S.gear.sgt = {}; const n = mkParty('sgt', 3, 6); return {rng:u.rng, reach:!!u.reachMelee, ac:u.ac - n.ac}; });
+ok(hb.rng === 2 && hb.reach && hb.ac === -1, `the halberd reaches 2 tiles as a blow, for −1 armour (${JSON.stringify(hb)})`);
 const swing = await ev(() => { const v = B.units.find(u => u.id === 'vell'); S.picks.vell = ['ropeswing']; const n = AB.ropeswing.tiles(v).length; const t = AB.ropeswing.tiles(v)[0]; AB.ropeswing.run(v, t.x, t.y); return {n, at:v.x === t.x && v.y === t.y, again:AB.ropeswing.ok(v)}; });
 ok(swing.n > 0 && swing.at && !swing.again, `Rope Swing moves him once a turn (${swing.n} tiles)`);
 await ev(() => { B = null; view = 'explore'; });

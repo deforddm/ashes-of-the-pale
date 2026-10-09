@@ -1,6 +1,6 @@
 /* ============ data ============ */
 const TPL = {
-  sgt:{name:'',role:'Sergeant',sig:'S',col:'#d6a24a',hp:22,ac:14,atk:4,dmg:[1,8,2],rng:1,mv:4,init:1,st:{might:2,wits:2,guile:1},ab:['rally','salve'],
+  sgt:{name:'',role:'Sergeant',sig:'S',col:'#d6a24a',hp:22,ac:14,atk:4,dmg:[1,8,2],rng:1,mv:4,init:1,st:{might:2,wits:2,guile:1},ab:['rally','shove','salve'],
     epithet:'Fourth Squad, Seventh Company',origin:'Unta, Quon Tali',age:34,service:'Eleven years, marines',height:'Middling. Stands like something taller.',
     weapon:'Malazan longsword, notched twice, and a knife nobody has seen drawn',armour:'Boiled leather over quilting, iron cap, a shield picked up at Nathilog and never put down',
     bio:`Eleven years in the marines, three of them under Dujek. Knows which orders to follow slowly and which to follow at a run, and has never once confused the two in front of an officer.`,
