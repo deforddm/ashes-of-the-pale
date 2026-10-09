@@ -244,7 +244,7 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
     fetemask:{name:'Fete mask', slot:'trinket', who:null, stat:{guile:1}, line:'A half-mask of dark red silk over stiffened linen, with a fringe of tiny brass bells along the lower edge that somebody has stuffed with wax so they will not ring. Murillio bought too many and could not choose. Guards do not wear masks. It is for after.'},
     simtalhalberd:{name:'House guard\'s halberd', slot:'weapon', who:['brisk','sgt'], atk:1, rng:1, reach:true, ac:-1, line:'Reach: strikes an enemy two tiles off, the way Simtal\'s own guards did, but it takes both hands, so the shield goes on the back (−1 armour). Seven feet of ash with a blade on the end polished for show and sharpened by somebody who did not trust the show, handed out of a barrel at Lady Simtal\'s gate like an oar. Nobody expected you to use it. Brisk calls it a hat you hold, and uses it.'},
     bbstrap:{name:'Sapper\'s satchel strap', slot:'trinket', who:null, hp:2, line:'A Bridgeburner\'s spare strap, double-stitched, oiled, with a buckle filed smooth so it will not strike a spark. Hedge wore it through Mott Wood and Pale. For carrying something close to the ribs where it cannot swing. He did not say what. He did not need to.'},
-    blackedblade:{name:'Blacked Guild blade', slot:'weapon', who:['sgt','ellis','kettle'], atk:1, stat:{guile:1}, line:'Longer than the roof knives, soot-black from point to pommel so that not even the edge catches a lantern. A Guild blade made for a party: for walking into lamplight and out of it again without anyone remembering you were there.'} },
+    blackedblade:{name:'Blacked Guild blade', slot:'weapon', who:['sgt','ellis','kettle','vell'], atk:1, stat:{guile:1}, line:'Longer than the roof knives, soot-black from point to pommel so that not even the edge catches a lantern. A Guild blade made for a party: for walking into lamplight and out of it again without anyone remembering you were there.'} },
 
   card:{ id:'chains', name:'The Wain', house:'Unaligned', hue:'#9a9aa6',
     txt:`A wagon, huge and black, coming out of a dark that has no top to it, and chains running back from it into the dark, every link catching a light that isn't there. Across its bed, where the chains run out of the picture, the shadow of something long and straight. Tuft turns it twice. "Bound," she says. "At both ends. Whatever holds this doesn't let go of what it takes." She doesn't like it. She doesn't put it back.`,
@@ -288,7 +288,8 @@ ${SQUAD().includes('kettle') ? `"A *lantern*," Kettle says. "In *there*." She's 
     if (S.f.c6_captainMum) x.push('The captain of Simtal\'s house knew the shape of Coll\'s ring at the gate and told nobody. At dawn he held the door for Coll.');
     else if (S.f.c6_signetSeen && !S.f.c6_collRing) x.push('The captain of Simtal\'s house knew the shape of the ring in the sergeant\'s pocket. So, by now, does half the hill.');
     if (preUsed('house_guards')) x.push('Kettle\'s sharper went off in Lady Simtal\'s stable yard on the night of the Fete. Every dangerous person on the hill heard it, and half the hill walked home.');
-    if (S.f.c6_guildPassed) x.push('Vell\'s token got the Fourth called furniture by the Guild. It was meant kindly.');
+    if (S.f.c6_guildPassed) x.push(SQUAD().includes('vell') ? 'Vell stood between the Fourth and the Guild on the terrace, and the Guild went by. Harl called him a rope man. It was meant kindly.' : 'Vell\'s token got the Fourth called furniture by the Guild. It was meant kindly.');
+    if (S.f.c6_vellJoined) x.push('Vell came down a rope into the vault under the crossing, the day of the Fete, to pay a debt. He stayed.');
     if (S.f.c6_terraceFought) x.push(C6H.knivesPre() ? 'Guild blood on Lady Simtal\'s upper terrace, and a black star on the marble. Kettle\'s sharper stopped the music for one breath; then a dark came down over the terrace and it started again. Somebody in the hall tidied up after the Fourth.' : 'Guild blood on Lady Simtal\'s upper terrace. The music did not stop.');
     if (S.f.c6_houndKnew) x.push(`A wounded Hound of Shadow lay down in the wet grass for Tuft.${oA ? ' Ohl has not stopped rubbing his hands.' : ''}`);
     if (S.f.c6_houndFought) x.push(S.f.c6_houndDowned ? 'A wounded Hound of Shadow came over the garden wall, and the Fourth held it off the guests and put it down once on the wet grass. It got up, and went home limping. It will remember the lawn.' : 'A wounded Hound of Shadow came over the garden wall, and the Fourth held it off the guests, and it went back into nothing.');
@@ -633,7 +634,7 @@ ${SQUAD().includes('kettle') ? `Kettle is counting lanterns. She got to three hu
 
 ${SQUAD().includes('tuft') ? `Tuft walks in the Andii cloak with her head down, not looking at anyone. ${S.f.c2_key === 'light' ? `Her hand keeps going to her collar and stopping just short of it, as if the badge were hot.` : `Her hand keeps going to the strap of her pack and stopping just short of it, as if the canvas were hot.`}` : ''}
 
-${SQUAD().includes('ellis') ? `Ellis has seen something at the east end of the street, and has stopped looking at it very carefully.` : ''}
+${SQUAD().includes('ellis') ? `Ellis has seen something at the east end of the street, and has stopped looking at it very carefully.` : SQUAD().includes('vell') ? `Vell keeps looking up. At every roof on the street he's checking where the lines would go. Some of them are already there, and he's stopped pointing them out.` : ''}
 
 Over the lake, over the lanterns, over every mask in the city: the Moon's Spawn. Nobody has hung a lantern on it.`,
       ch:[{t:'The street.', go:()=>startExplore()}]}),
@@ -820,7 +821,7 @@ He doesn't reach for it. He steps in close instead, so that his body is between 
 
 "That's the shape of this house," he says, very quietly. "Ground off. I'd know it in the dark. I polished the one over that gate for eleven years, before." Before what, he doesn't say. "There's a councillor inside tonight who'd give a great deal to know where that's been. So would I." His eyes come up. "Where'd you get it, Gadrobi?"
 
-${SQUAD().includes('ellis') ? `Ellis, at the end of the line, has gone still in the particular way that means she's counting exits.` : SQUAD().includes('kettle') ? `Kettle, behind you, very softly: "Kruppe *said*."` : ''}`,
+${SQUAD().includes('ellis') ? `Ellis, at the end of the line, has gone still in the particular way that means she's counting exits.` : SQUAD().includes('vell') ? `Vell, at the end of the line, is looking up at the eaves, counting the ways off.` : SQUAD().includes('kettle') ? `Kettle, behind you, very softly: "Kruppe *said*."` : ''}`,
       ch:[{t:'Tell him the truth: a drunk at the Phoenix, for the price of a round.', check:['guile',13], fx:()=>{ S.f.c6_signetTried=1; },
            edges:id => [S.f.c6_coll && ['Coll is across the street', 2], id === 'kettle' && ['the truth, told the way Kettle tells lies', -1]],
            near:{t:()=> S.f.c6_signetFee ? 'He believes it. He also holds out his palm, pleasantly, and waits until the price of a round is in it. Three silver.' : `He believes it. He also takes a long look at ${NAME(ROLL().who)}'s face, and lets it be seen that he is keeping it. Rattled: −1 on the next check.`,
@@ -937,7 +938,7 @@ His eyes go to the tall guest by the pillar, and come back.
 
 "A word, since we are on the same terrace. When the evening becomes interesting, and it will, stand somewhere else." He lifts the glass, a finger's width. "Not for my sake. For yours."
 
-${SQUAD().includes('ellis') ? `Ellis, when you've moved off, not to you but near you: "The High Alchemist. Baruk. The Claw's page on him is one line long." A pause. "It says *don't*."` : SQUAD().includes('tuft') ? `Tuft, when you've moved off: "He's a mage. A big one. He's got it folded up so small you could put it in a pocket." She glances back. "People only fold it that small when it's very, very large."` : ''}`,
+${SQUAD().includes('ellis') ? `Ellis, when you've moved off, not to you but near you: "The High Alchemist. Baruk. The Claw's page on him is one line long." A pause. "It says *don't*."` : SQUAD().includes('vell') ? `Vell, when you've moved off, very low: "The alchemist. In the Guild they tell you never to put a line across his roof." A pause. "They don't tell you why. Nobody's ever needed telling twice."` : SQUAD().includes('tuft') ? `Tuft, when you've moved off: "He's a mage. A big one. He's got it folded up so small you could put it in a pocket." She glances back. "People only fold it that small when it's very, very large."` : ''}`,
       ch:[{t:'Stand somewhere else.'}]}),
     c6_rake:()=>({sp:'The tall guest', fx:()=>{ S.f.c6_rakeMet=1; S.f.c6_sawRake=1; if (S.f.c4_seen) S.f.c6_rakeLooked=1; }, txt: (S.f.c6_rakeMet || (S.fxd && S.fxd.c6_rake)) ? // c6_sawRake is also set at Kruppe's table, so it can't mark this visit
 `He's by the pillar with his untouched wine, and the space round him is exactly the size it was. ${S.f.c6_badgeCold ? `He doesn't look at Tuft again. He has done her the one courtesy, and that's the end of it.` : `He doesn't look at you. You're furniture again.`}` :
@@ -1455,7 +1456,7 @@ Up on the terrace a woman laughs, and doesn't know.
 ${SQUAD().includes('tuft') ? (S.f.c5_tuftMarked ? `Tuft has gone very still. Her hand has gone up to the grey lock at her temple. "I know that one," she says, quietly and quite certainly. "Sergeant. That's the one that smelled my hand."` : `"It's hurt," Tuft says. "Something's hurt it badly. Things come to a place hurt when they're following something." She looks at the sapling. "It's following *that*."`) : ''}`,
       ch:[{t:'"Tuft. Go to it."', req:()=>SQUAD().includes('tuft') && !!S.f.c5_tuftMarked, go:'c6_hound_tuft'},
           {t:'Clear the lawn first, before it moves. Quietly.', check:['guile',15], near:false, req:()=>!S.f.c6_lawnTried, fx:()=>{ S.f.c6_lawnTried=1; },
-           edges:id => [(S.f.c6_masks || 0) >= 4 && ['you put names to the masks in the hall', 1], id === 'kettle' && ['a drunk lawn likes total confidence', 1], id === 'brisk' && ['nobody argues with the regiment voice', 2]],
+           edges:id => [(S.f.c6_masks || 0) >= 4 && ['you put names to the masks in the hall', 1], id === 'kettle' && ['a drunk lawn likes total confidence', 1], id === 'brisk' && ['nobody argues with the regiment voice', 2], id === 'vell' && ['four years of not being seen on roofs', 1]],
            go:'c6_lawn_ok', fail:'c6_lawn_bad'},
           {t:'"Shields! Keep it off the guests!"', go:()=>startBattle('garden_hound',{})},
           {t:'Kettle skims a sharper across the wet lawn.', tag:'uses 1 sharper', req:()=>SQUAD().includes('kettle') && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('garden_hound',{pre:true})}]}),

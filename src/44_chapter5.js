@@ -159,7 +159,7 @@ ${SQUAD().includes('brisk') ? `Brisk looks at the gap, and then back the way you
     rhivicharm:{name:'Rhivi bone charm', slot:'trinket', who:null, stat:{wits:1}, line:'A knuckle-bone, a horse\'s, bored through and strung on plaited hair, with a single blue bead. The Rhivi hang them on children so the grass will know whose they are. Sethand did not say whose this was. He tied it on your wrist himself, and pulled the knot tight with his teeth.'},
     barrowflint:{name:'Barrow-flint blade', slot:'weapon', who:['sgt','brisk','kettle','ellis'], atk:1, line:'A leaf of grey flint the length of a forearm, knapped so fine the edge is translucent, bound to an antler haft with sinew that should have rotted before the Empire had a name. It came up out of a barrow on the ridge in a dead hand. It still cuts. It cuts better than your sword.'},
     otatglove:{name:'Otataral-dusted glove', slot:'trinket', who:['sgt','brisk'], ac:1, line:'A plain riding glove, left on a stone where the Adjunct\'s tent stood. There is a fine red dust worked into the seams that will not brush out. Sorcery slides off the hand in it like rain off oilcloth: a mage\'s working will find the glove and forget what it was for. Tuft will not stand on the same side of the fire as it.'},
-    scoutcloak:{name:'Malazan scout\'s cloak', slot:'armour', who:['ellis','kettle','sgt'], ac:1, line:'Second Army issue, grey-green, rolled tight behind a saddle and strapped with a scout\'s knot. Toc\'s. The horse came back without him before dawn, lathered, and stood by the Fourth\'s fire because it had nowhere else to stand.'} },
+    scoutcloak:{name:'Malazan scout\'s cloak', slot:'armour', who:['ellis','kettle','sgt','vell'], ac:1, line:'Second Army issue, grey-green, rolled tight behind a saddle and strapped with a scout\'s knot. Toc\'s. The horse came back without him before dawn, lathered, and stood by the Fourth\'s fire because it had nowhere else to stand.'} },
 
   card:{ id:'herald', name:'Herald of High House Death', house:'High House Death', hue:'#8fa38a',
     txt:`A grey figure with its face turned away, holding a door open for somebody you cannot see. Tuft has turned it before, over the years, and never liked it. "Not for us," she says. "For someone near us. It always says that. I'd like it to stop."`,
@@ -479,7 +479,7 @@ Tuft looks at it for a long time. "This one," she says. "It keeps coming." She d
 
 Tuft doesn't put it back. She holds it very still between two fingers. "Hounds," she says. "Out here. With *her* two valleys away." She looks at it as if it had said something rude. "Shadow doesn't come where there's otataral. It can't. So why is it in my hand?"` : `${c.txt}`}
 
-${SQUAD().includes('ellis') ? `Ellis, who won't touch the Deck and has never yet missed a reading, has watched this one too. "Put them away," she says softly. "It's getting dark, and the dark's where we're going."` : `Kettle, softly: "Put them away, Tuft. It's getting dark."`}`,
+${SQUAD().includes('ellis') ? `Ellis, who won't touch the Deck and has never yet missed a reading, has watched this one too. "Put them away," she says softly. "It's getting dark, and the dark's where we're going."` : SQUAD().includes('vell') ? `Vell has never seen the Deck laid out before. He's been watching ${SQUAD().includes('brisk') ? `from behind Brisk's shoulder` : `from the edge of the light`} the whole time, the way you'd watch a dog you've been told doesn't bite. "In the city," he says, very quietly, "they say the cards know your name." Tuft doesn't look up. "They do," she says. "Put them away, then," says Vell. "Please."` : `Kettle, softly: "Put them away, Tuft. It's getting dark."`}`,
       ch:[{t:'Down into the vale.', go:()=>{ startExplore('barrow_vale'); talk('c5_vale_arrive'); }}]}; },
     c5_card_no:()=>({sp:'Tuft', scene:'hills_dusk', txt:
 `She doesn't argue. She squares the Deck against her knee and puts it back in her sleeve, and sits for a moment with her hand over the sleeve as if keeping something warm.
@@ -1463,7 +1463,21 @@ The squad is awake. You could talk to any of them. It's the hour for it.`,
           {t:'Kettle.', req:()=>SQUAD().includes('kettle') && !S.f.c5_closeKettle, fx:()=>{ S.f.c5_closeKettle=1; }, go:'c5_close_kettle'},
           {t:'Ohl.', req:()=>SQUAD().includes('ohl') && !S.f.c5_closeOhl, fx:()=>{ S.f.c5_closeOhl=1; }, go:'c5_close_ohl'},
           {t:'Tuft.', req:()=>SQUAD().includes('tuft') && !S.f.c5_closeTuft, fx:()=>{ S.f.c5_closeTuft=1; }, go:'c5_close_tuft'},
+          {t:'Vell.', req:()=>SQUAD().includes('vell') && !S.f.c5_closeVell, fx:()=>{ S.f.c5_closeVell=1; }, go:'c5_close_vell'},
           {t:'Look back at the vale one last time.', go:'c5_close_end'}]}),
+    c5_close_vell:()=>({sp:'Vell', scene:'hills', txt:
+`He's sitting on the highest barrow-stone he could find, with his knees drawn up and the line coiled in his lap, because it's the only high place for a league and he couldn't help himself.
+
+"I thought the hills were empty," he says, before you've sat down. "From the city walls they look empty. Brown. Nothing on them." He looks along the vale: the split stones, the torn turf, the long barrow with the frost still creeping out of it in its slow white ring. "They're not empty. They're *full*. It's graves all the way down, isn't it. Everything out here is somebody's grave."
+
+You don't tell him he's wrong.
+
+${S.f.c4_ellisToc ? `"She was up there." He points with the hook, at the ridge above where the fold was. "Ellis. On her knees. I saw her when the grey shut." He winds a turn of line round his wrist, and unwinds it. "I keep thinking: if I'd had the hook out. Thirty feet. I could have put it round him. Toc." A long breath. "Thirty feet isn't anything, against that. I know. I keep measuring it anyway."` : S.f.c5_key === 'through' ? `"She put her arm in that." He doesn't look at the place. "Tuft. On purpose. Into the grey. With nothing tied on." He winds a turn of line round his wrist. "In the Guild, you never go over a parapet without something tied on. Never. They beat that into you before they let you near a roof." He looks at you. "I'm going to tie something on everybody, Sergeant. From now on. Don't argue."` : `"That thing in the grey," he says. "It wanted somebody to come in after him. You could feel it wanting." He winds a turn of line round his wrist. "In the Guild, you never go over a parapet without something tied on. We didn't go over." He breathes out. "Good."`}
+
+${SQUAD().includes('brisk') ? `Down the slope Brisk is counting the rations. Vell watches her do it, the way he's watched her do everything since the Daru roof. "She counted me in," he says, quietly. "The first morning. I heard her. *Six.* Like I'd always been there." He swallows. "Nobody ever counted me in anything."` : ''}
+
+The sun comes up over the hills behind him, and the long shadows of the barrow-stones come down across the grass toward the city, and he watches them come, and doesn't say anything else, which for Vell is a kind of prayer.`,
+      ch:[{t:'Back to the squad.', go:'c5_close'}]}),
     c5_close_brisk:()=>({sp:'Brisk', scene:'hills', txt:
 `${S.f.c5_ellisThrough ? `She's sitting with the ledger closed on her knee and her shield against the stone, and she doesn't look up when you sit.
 

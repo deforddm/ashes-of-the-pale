@@ -146,7 +146,7 @@ Ocelot sent more than four. A crossbow on the gallery steps. Two more in soot-bl
   gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
     guildtoken:{name:'Guild token', slot:'trinket', who:null, stat:{guile:1}, line:'A disc of black horn the size of a thumbnail, with a hole through it and nothing carved on it at all. Vell says it opens a door. He does not say which door, or who is behind it, or what they will think of a Malazan holding it.'},
     ropehook:{name:'Journeyman\'s rope-and-hook', slot:'trinket', who:['ellis','sgt','kettle'], mv:1, line:'Thirty feet of tarred line and a three-pronged hook, wrapped in rag so it does not ring on slate. A Guild journeyman\'s kit. The rag is new. The journeyman is not going to need it.'},
-    guildblade:{name:'Guild blade', slot:'weapon', who:['sgt','ellis','kettle'], atk:1, line:'A short straight blade blackened with lamp-soot, the edge left bright. No guard to catch on a gutter. Made to be carried up a drainpipe in the teeth, and it has been.'},
+    guildblade:{name:'Guild blade', slot:'weapon', who:['sgt','ellis','kettle','vell'], atk:1, line:'A short straight blade blackened with lamp-soot, the edge left bright. No guard to catch on a gutter. Made to be carried up a drainpipe in the teeth, and it has been.'},
     andiicloak:{name:'Andii-grey cloak', slot:'armour', who:['tuft'], ac:1, line:'Grey, the grey of ash on a cold hearth, and lighter than cloth should be. It does not quite take the lamplight. Nobody but Tuft will put it on. Nobody else has been asked, and nobody else has offered.'} },
 
   // the chapter's own lines on the end screen, after the engine's

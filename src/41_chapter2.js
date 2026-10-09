@@ -169,7 +169,7 @@ ${SQUAD().includes('ellis') ? `Ellis: "Two gaps in the thorn. He's standing in t
     barrowtorc:{name:'Barrow torc', slot:'trinket', who:null, hp:2, line:'A twist of black iron from a dead man\'s neck. It is heavier than it looks and colder than it should be. Tuft would not touch it.'},
     secondbadge:{name:'Second Army badge, wrong regiment', slot:'trinket', who:['brisk','sgt'], ac:1, line:'A bronze badge of the Second, the Ninth Regiment\'s. Tav was the Fourth Regiment. Brisk knows the difference and carries it anyway.'},
     rhivibow:{name:'Rhivi horn bow', slot:'weapon', who:['ellis','kettle'], rng:1, atk:1, line:'A short recurve of horn and sinew, unstrung and given. Sethand said it was a bad bow. He did not say whose.'},
-    toccloak:{name:'Toc\'s spare cloak', slot:'armour', who:['ellis','tuft','sgt'], ac:1, line:'A Claw\'s field cloak, grey going brown, with the shoulder cut for a bow. Toc left it on the wagon\'s tailboard and did not look back at it.'} },
+    toccloak:{name:'Toc\'s spare cloak', slot:'armour', who:['ellis','tuft','sgt','vell'], ac:1, line:'A Claw\'s field cloak, grey going brown, with the shoulder cut for a bow. Toc left it on the wagon\'s tailboard and did not look back at it.'} },
 
   /* inside the barrow on the wagon road (it was 'dark', which is headed "Under the Pale" and tinted with Kurald Galain) */
   scenes:{ rhivi_barrow:{loc:'The Rhivi Plain', sub:'Inside the barrow', cap:'Dry-laid stone, a slab with nothing on it, and a cold that has nothing to do with the weather.', amb:'dark'} },

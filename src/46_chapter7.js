@@ -1439,7 +1439,7 @@ ${k ? `"No," says Kettle, in the voice you'd use to tell somebody the time. Her 
       ch:[{t:'"Shields."', go:()=>startBattle('c7_worrygate')},
           {t:'Kettle rolls a sharper up the arch.', tag:'uses 1 sharper', req:()=>k && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('c7_worrygate', {pre:true})},
           {t:'Stare him down.', check:['might',15],
-           edges:id=>[S.f.c3_gateFought && ['he remembers the wagon', 1], S.f.c7_clawFought && ['Claw blood on your boots', 1], id === 'ohl' && ['the healer\'s bag, open', 1], C7H.dead().length && ['the squad is short', -1]],
+           edges:id=>[S.f.c3_gateFought && ['he remembers the wagon', 1], S.f.c7_clawFought && ['Claw blood on your boots', 1], id === 'ohl' && ['the healer\'s bag, open', 1], id === 'vell' && ['a Guild coat, in Worrytown', 2], C7H.dead().length && ['the squad is short', -1]],
            go:'c7_worry_faced', fail:'c7_worry_fail'},
           {t:'Count out twenty silver.', tag:'20 silver', req:()=>S.silver >= 20, fx:()=>{ S.silver -= 20; S.f.c7_worryPaid=1; S.f.c7_worryDone=1; AUDIO.play('coin'); }, go:'c7_worry_paid'}]}; },
     c7_worry_faced:()=>{ const w = ROLL().who || 'sgt', near = nearMiss(); return {sp:'The Worry Gate', scene:'city_street', fx:()=>{ S.f.c7_worryFaced=1; S.f.c7_worryDone=1; }, txt:

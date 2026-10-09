@@ -101,6 +101,17 @@ ok(Object.values(c7.f).every(x => x && /Where the line goes/.test(x)), 'a fate p
 ok(c7.cl > 200, 'Vell\'s close on the quorl hill reads');
 ok(c7.g && /Rope/.test(c7.g), `a page if he falls (${c7.g})`);
 ok(c7.ge === 'He kept riding', 'Ellis gone east to Toc gets her own page');
+// ---- v3.18.2: the rest talks, gear, unfinished business ----
+const pass = await ev(() => { S = newState('Hask'); S.chapter = 5; S.lvl = 5; S.squad = ['sgt','brisk','kettle','tuft','ohl','vell']; S.picksDue = []; migrate(S); S.f.c4_vell = 1; S.f.c4_vellJoined = 1; save(); startExplore(CHAPTERS[5].area.id);
+  talk('c5_close'); const c5 = [...document.querySelectorAll('#sheet .choice')].map(b => b.textContent.trim());
+  talk('c5_close_vell'); const txt = $('#sheet').innerText.length;
+  const can = ['guildblade','daruknife','blackedblade','clawknife','toccloak','scoutcloak'].filter(k => ITEMS[k] && ITEMS[k].who && ITEMS[k].who.includes('vell'));
+  S.kit.push('guildblade'); equip('vell', 'guildblade'); const u = mkParty('vell', 1, 1);
+  S.chapter = 6; S.f.c6_guildPassed = 1; const q = TPL.vell.quest;
+  return {c5, txt, can, worn:S.gear.vell.weapon, atk:u.atk, q}; });
+ok(pass.c5.includes('Vell.') && pass.txt > 300, `Vell is in the Chapter 5 rest talk (${pass.c5.join(' | ')})`);
+ok(pass.can.length === 6 && pass.worn === 'guildblade', `he can use knives, Guild blades and cloaks (${pass.can.join(', ')})`);
+ok(/terrace/.test(pass.q), 'his unfinished business moves on with the story');
 console.log('ERRORS:', errors.length ? errors.join('\n') : 'none');
 await br.close(); srv.kill();
 process.exit(fail || errors.length ? 1 : 0);

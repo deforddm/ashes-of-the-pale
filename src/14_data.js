@@ -89,6 +89,11 @@ function squadQuest(id, base){
     if (s && s.ending) return `Something happened on the High Mage's staff that her transfer letter did not mention. Nobody has asked her what.${f.knowTruth ? ` Varrow's journal came close: the cadre moved before the Spawn attacked, on an order relayed through the staff she was on.` : f.partial ? ` Varrow's journal gave up one name before the ink ran, and she stopped moving when she heard it.` : ''}${f.c1_plant ? ` Tattersail wondered what he thinks he still has of hers.` : ''}`;
   }
   if (id === 'ohl' && Object.keys((s && s.dead) || {}).length) return `Keeps a list of every soldier he couldn't save. It has the Fourth on it now, in his own hand. He meant to die before he wrote one of them. He didn't manage it.`;
+  if (id === 'vell') {
+    if (f.c7_vell) return `The Guild's word came to him on the quay, through Harl: a crossbowman called Hollin, and *paid up*. Vell doesn't feel paid up. He keeps the name inside his coat, with the others he has started to keep.`;
+    if (f.c6_guildPassed) return `He stood between the Fourth and the Guild on Simtal's terrace, and Harl let the squad by, in front of the clan. There's no going back up those roofs now. He has found, to his surprise, that he doesn't want to.`;
+    if (ch >= 5) return `The Guild knows a Malazan squad held a roof for him, and that he walks with it now. He hasn't been back to the Daru roofs to find out what they call that. He'd rather find out on his own feet than off the end of somebody else's line.`;
+  }
   if (id === 'ellis' && f.c7_ledgerRead) {
     if (f.c7_ledgerBurnt && f.c7_ledger !== 'lost') return `She found the ledger behind the green door and put her burned hand into the fire for the page. The fire kept the one word that said which way it was written.`;
     if (f.c7_ledger === 'lost') return `She found the ledger behind the green door. It says lost, entry closed: they wrote her dead, in a neat hand. She doesn't feel closed.`;

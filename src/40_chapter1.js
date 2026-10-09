@@ -136,7 +136,7 @@ The tents are full of the Host, asleep. Not one of them gets up.${SQUAD().includ
     heater:{name:'Second Army heater shield', slot:'armour', who:['brisk','sgt'], ac:1, line:'A heater shield with the Second\'s sigil burned off. Brisk did not ask whose.'},
     houndtooth:{name:'Hound\'s tooth', slot:'trinket', who:null, atk:1, line:'A tooth the length of a finger, snapped off in a tent pole. It is warm. It stays warm.'},
     cadretoken:{name:'Cadre token', slot:'trinket', who:['tuft','ohl'], hp:2, line:'A bone disc on a cord, the kind the cadre give to people they intend to remember. Tattersail did not say whose it had been.'},
-    clawknife:{name:'Grey cloak\'s knife', slot:'weapon', who:['sgt','kettle'], atk:1, line:'A short blade with no maker\'s mark and no blood on it, which is not the same as never having had any.'} },
+    clawknife:{name:'Grey cloak\'s knife', slot:'weapon', who:['sgt','kettle','vell'], atk:1, line:'A short blade with no maker\'s mark and no blood on it, which is not the same as never having had any.'} },
 
   card:{ id:'hounds', name:'Hounds of Shadow', house:'High House Shadow', hue:'#7a6a9a',
     txt:`Seven shapes running under a moon that isn't there. Tuft looks at it for a long time. "They're not coming for us," she says, and then, quieter, "I don't think."`,
