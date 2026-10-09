@@ -43,6 +43,8 @@ await ev(() => { $('#chars').hidden = true; });
 
 // ---- the hook in a fight: hauled to the tile beside him ----
 const fight = await ev(async () => { const wait = ms => new Promise(r => setTimeout(r, ms)); startBattle('guild_roofs', {}); await wait(600);
+  for (let i = 0; i < 60 && !(B.cur && B.cur.side === 'p' && !B.busy); i++) await wait(100);
+  const realEnd0 = endTurn; window.endTurn = () => {}; B.busy = true; // hold the fight still while the hook is tested
   const v = B.units.find(u => u.id === 'vell'), f = foes().filter(e => !e.boss)[0];
   const spot = [[0,0],[1,0],[0,1],[2,0],[3,0]].map(([x, y]) => ({x, y})).find(p => free(p.x, p.y, v)); if (spot) { v.x = spot.x; v.y = spot.y; }
   const far = []; for (let y = 0; y < 10; y++) for (let x = 0; x < 8; x++) { const d = Math.max(Math.abs(x - v.x), Math.abs(y - v.y)); if (d >= 3 && d <= grapR() && free(x, y, f)) far.push({x, y}); }
@@ -50,19 +52,27 @@ const fight = await ev(async () => { const wait = ms => new Promise(r => setTime
   const before = cheb(v, f); const realAtk = attack; window.attack = (a, t, o) => ({hit:true, dmg:1}); // a sure hit, so the haul is what's tested
   const sq = B.units.find(p => p.side === 'p' && !p.ally && p !== v && p.hp > 0), spotB = DIRS.map(([dx, dy]) => ({x:f.x + dx, y:f.y + dy})).find(p => free(p.x, p.y, sq) && cheb(p, v) > 2);
   if (spotB) { sq.x = spotB.x; sq.y = spotB.y; sq.aooTurn = -1; sq.stun = false; } B.log = [];
-  const run = AB.grapple.run(v, f.x, f.y); window.attack = realAtk; await run; await wait(300);
+  const run = AB.grapple.run(v, f.x, f.y); window.attack = realAtk; await run; await wait(300); window.endTurn = realEnd0; B.busy = false;
   return {before, after:f.hp > 0 ? cheb(v, f) : 1, cd:v.cdHook > B.round - 1, tiles:AB.grapple.tiles(v).length, aoo:!!spotB && B.log.join(' ').includes('dragged out of'), dbg:JSON.stringify({spotB, who:sq.id, log:B.log.slice(-8)})}; });
 ok(!fight.err && fight.before >= 3 && fight.after === 1, `the hook hauls an enemy from ${fight.before} tiles to beside Vell (${fight.after})`);
 ok(fight.aoo, 'dragging it out of a squadmate\'s reach gives that squadmate a free swing'); if (!fight.aoo) console.log(fight.dbg);
 const drive = await ev(async () => { const wait = ms => new Promise(r => setTimeout(r, ms));
   S.squad = ['sgt','brisk','kettle','tuft','ohl','vell']; S.gear.sgt = {}; startBattle('guild_roofs', {}); await wait(600); B.smoke = [];
+  for (let i = 0; i < 60 && !(B.cur && B.cur.side === 'p' && !B.busy); i++) await wait(100); // the squad's turn, so no enemy is mid-move
+  const realEnd = endTurn; window.endTurn = () => {}; B.busy = true; // hold the fight still while the drive is tested
   const g = B.units.find(u => u.id === 'sgt'), b2 = B.units.find(u => u.id === 'brisk'), f = foes().filter(e => !e.boss)[0];
   B.units.filter(u => u !== g && u !== b2 && u !== f).forEach((u, i) => { u.x = i; u.y = 0; }); // out of the way
   g.x = 3; g.y = 6; f.x = 3; f.y = 5; b2.x = 4; b2.y = 5; [g, b2, f].forEach(u => { u.stun = false; u.aooTurn = -1; }); f.hp = f.maxhp = 40; f.boss = false; f.immortal = false; B.log = [];
   const realAtk = attack; let first = true; window.attack = (a, t, o) => { if (first) { first = false; return {hit:true, dmg:1}; } return realAtk(a, t, o); };
   const run = AB.shove.run(g, f.x, f.y); await run; window.attack = realAtk; const y = f.y; await wait(300);
-  return {y, aoo:B.log.join(' ').includes('driven out of'), selfSwing:B.log.join(' ').includes(`${g.name} takes a free swing`)}; });
+  const driveLog = B.log.join(' ');
+  const fol = B.follow && {x:B.follow.x, y:B.follow.y}; let followed = false;
+  if (fol) { B.cur = g; B.busy = false; B.mode = 'act'; B.log = []; battleTap(fol.x, fol.y); followed = g.x === fol.x && g.y === fol.y && !B.log.join(' ').includes('free swing at ' + g.name); }
+  window.endTurn = realEnd;
+  return {y, fol, followed, aoo:driveLog.includes('driven out of'), selfSwing:driveLog.includes(`${g.name} takes a free swing`)}; });
 ok(drive.y === 3, `Shield Drive drives it back two tiles at level 6 (to row ${drive.y})`); // measured as the drive ends, before the fight moves on
+ok(drive.fol && drive.fol.x === 3 && drive.fol.y === 5, `the tile it left is offered to follow into (${JSON.stringify(drive.fol)})`);
+ok(drive.followed, 'tapping it steps the sergeant in, with no free swings');
 ok(drive.aoo && !drive.selfSwing, 'driving it out of Brisk\'s reach gives Brisk a free swing; the sergeant spent his on the drive');
 const hb = await ev(() => { S.gear.sgt = {weapon:'simtalhalberd'}; const u = mkParty('sgt', 3, 6); S.gear.sgt = {}; const n = mkParty('sgt', 3, 6); return {rng:u.rng, reach:!!u.reachMelee, ac:u.ac - n.ac}; });
 ok(hb.rng === 2 && hb.reach && hb.ac === -1, `the halberd reaches 2 tiles as a blow, for −1 armour (${JSON.stringify(hb)})`);

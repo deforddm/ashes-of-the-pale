@@ -579,7 +579,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.17.1';
+const VERSION = '3.17.2';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -4163,7 +4163,7 @@ function nextTurn(){
   if (u.side === 'p' && !u.ally) { squadTurnStart(u); if (u.hp <= 0) { B.busy = true; updBattleUI(); if (checkEnd()) return; return later(nextTurn, pace(600)); } B.busy = false; B.mode = 'act'; updBattleUI(); barInView(); }
   else { B.busy = true; updBattleUI(); const turn = B.turn; later(() => ai(u, turn), pace(550)); } // not if the battle was left or restarted meanwhile
 }
-function endTurn(){ if (!B || B.over) return; const u = B.cur; if (u && u.blindTurns > 0) u.blindTurns--; /* Phantom wears off one of its own turns at a time */ if (u && u.side === 'p' && !u.ally && u.hp > 0 && !B.acted && !u.steady) { u.steady = true; float(u, 'steady', '#e8c073'); blog(`${u.name} holds, steady. <em>+2 to the next attack or save.</em>`); } B.busy = true; B.mode = null; B.aim = null; later(nextTurn, pace(250)); }
+function endTurn(){ if (!B || B.over) return; B.follow = null; const u = B.cur; if (u && u.blindTurns > 0) u.blindTurns--; /* Phantom wears off one of its own turns at a time */ if (u && u.side === 'p' && !u.ally && u.hp > 0 && !B.acted && !u.steady) { u.steady = true; float(u, 'steady', '#e8c073'); blog(`${u.name} holds, steady. <em>+2 to the next attack or save.</em>`); } B.busy = true; B.mode = null; B.aim = null; later(nextTurn, pace(250)); }
 function checkEnd(){
   if (!B || B.over) return true;
   const ob = B.def.objective;
@@ -4214,6 +4214,8 @@ function lose(){
 }
 
 const grapR = () => 3 + lvT(), shoveDist = () => 1 + lvAt(4);
+/* after a Shield Drive: the tile the enemy left is offered to the sergeant for one free step (tap it), until anything else is tapped or the turn ends */
+function offerFollow(u, at, t){ B.follow = {u, t, x:at.x, y:at.y}; blog(`<em>Tap the tile it left to follow through, or anywhere else to hold your ground.</em>`); updBattleUI(); }
 /* abilities. The heals and Rally grow with the squad's level (lvB, 15), so they keep up with the road's harder blows */
 const rallyHeal = () => 5 + 2*lvB(), salveHeal = () => 8 + lvB();
 const AB = {
@@ -4267,7 +4269,7 @@ const AB = {
       t.facing = u.x >= t.x ? 1 : -1;
       if (has(u.id, 'snare')) { t.snareUntil = B.round + 1; float(t, 'snared', '#b0a0c8'); } }},
   /* the sergeant's shield, picked up at Nathilog and never put down: drive an enemy back, out of the squad's reach, and let the squad answer it */
-  shove:{name:'Shield Drive', desc:()=>`An adjacent enemy: 1d6+${2 + lvDmg()} on a hit, and it is driven straight back ${shoveDist() > 1 ? `up to ${shoveDist()} tiles` : '1 tile'}. Every squadmate it is driven out of reach of gets a free swing. Into a wall or a body: +1d6 instead of the ground. Bosses and the very heavy don't move. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
+  shove:{name:'Shield Drive', desc:()=>`An adjacent enemy: 1d6+${2 + lvDmg()} on a hit, and it is driven straight back ${shoveDist() > 1 ? `up to ${shoveDist()} tiles` : '1 tile'}. Every squadmate it is driven out of reach of gets a free swing. Into a wall or a body: +1d6 instead of the ground. Then he may follow through into the tile it left: one step, no free swings. Bosses and the very heavy don't move. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
     ok:u=>!(u.cdShove >= B.round), tiles:u=>foes().filter(f => cheb(u,f) === 1),
     async run(u,x,y){ const t = unitAt(x,y); if (!t) return; u.cdShove = B.round + 2 - lvAt(6); u.aooTurn = B.turn; // the sergeant's own swing is spent on the drive
       const r = attack(u, t, {dmg:[1,6,2 + lvDmg()], verb:'drives a shield into'}); if (!r.hit) return;
@@ -4277,7 +4279,9 @@ const AB = {
       for (let i = 0; i < shoveDist(); i++) { const n = {x:to.x + dx, y:to.y + dy}; if (!free(n.x, n.y, t)) { slam = true; break; } to = n; }
       if (to.x === t.x && to.y === t.y) { const d = roll(1,6,0); blog(`${t.name} goes back into what's behind it, hard.`); hurt(t, d); updBattleUI(); return; }
       blog(`${u.name} drives ${t.name} back${slam ? ' into what is behind it' : ''}.`); float(t, 'driven back', '#e8c073'); AUDIO.play('sword');
-      if (await forcedMove(t, to, 'driven')) return;
+      const left = {x:x, y:y};
+      if (await forcedMove(t, to, 'driven')) { if (B && u.hp > 0 && free(left.x, left.y, u)) offerFollow(u, left, t); return; }
+      if (B && u.hp > 0 && (t.x !== left.x || t.y !== left.y) && free(left.x, left.y, u)) offerFollow(u, left, t);
       if (slam && t.hp > 0) { const d = roll(1,6,0); blog(`${t.name} fetches up against it with a sound like a dropped sack.`); hurt(t, d); updBattleUI(); } }},
   ropeswing:{name:'Rope Swing', free:true, desc:()=>`Once a turn, and it does not use his action: swing to any open tile within ${3 + lvT()}. Nobody gets a free swing. Grows with level.`, ok:u=>u.swungTurn !== B.turn,
     tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 3 + lvT() && free(x,y,u) && !(x === u.x && y === u.y)) out.push({x,y,step:true}); return out; },
@@ -4381,6 +4385,8 @@ function castStrain(u, cost){
 function battleTap(x, y){
   if (!B || B.busy || B.over || !B.cur || B.cur.side !== 'p' || !$('#sheet').hidden) return;
   const u = B.cur, t = unitAt(x,y);
+  if (B.follow && B.follow.u === u && (!B.mode || B.mode === 'act')) { const f = B.follow; B.follow = null; // Shield Drive's follow-through: one free step into the tile it left, no free swings; any other tap stays put
+    if (x === f.x && y === f.y && free(x, y, u)) { u.facing = x >= u.x ? 1 : -1; u.x = x; u.y = y; AUDIO.play('step'); sparks(x, y, 6, '#e8c073', .3); blog(`${u.name} follows through, shield first, into the space it left.`); updBattleUI(); return afterAct(); } }
   if (B.mode && B.mode !== 'act') {
     const a = AB[B.mode];
     if (a.aoe) {
@@ -4447,7 +4453,7 @@ function afterAct(){
   if (!B || B.over) return;
   if (checkEnd()) { updBattleUI(); return; }
   if (B.cur.hp <= 0) { updBattleUI(); return endTurn(); }
-  if (B.acted && !canStep(B.cur)) { B.moved = true; updBattleUI(); B.busy = true; return later(endTurn, pace(450)); } // nothing left to do: hand the turn on
+  if (B.acted && !canStep(B.cur) && !(B.follow && B.follow.u === B.cur)) { B.moved = true; updBattleUI(); B.busy = true; return later(endTurn, pace(450)); } // nothing left to do: hand the turn on (unless a follow-through is on offer)
   B.busy = false; updBattleUI();
 }
 
@@ -4703,6 +4709,7 @@ function drawBattle(t){
     ctx.fillStyle = bad ? 'rgba(201,120,63,.16)' : 'rgba(201,151,63,.14)'; ctx.fillRect(n.x*T+1, n.y*T+1, T-2, T-2);
     ctx.strokeStyle = bad ? 'rgba(240,138,124,.75)' : 'rgba(232,192,115,.4)'; ctx.lineWidth = bad ? 1.5 : 1; ctx.strokeRect(n.x*T+1.5, n.y*T+1.5, T-3, T-3);
     if (bad) { ctx.fillStyle = 'rgba(240,138,124,.9)'; ctx.beginPath(); ctx.moveTo(n.x*T+T-2, n.y*T+2); ctx.lineTo(n.x*T+T-2, n.y*T+T*.3); ctx.lineTo(n.x*T+T-T*.3, n.y*T+2); ctx.fill(); } });
+  if (B.follow && B.follow.u === B.cur) { const f = B.follow, p = RM ? .5 : (Math.sin(t/220)+1)*.5; ctx.fillStyle = `rgba(232,192,115,${.16 + p*.14})`; ctx.fillRect(f.x*T+1, f.y*T+1, T-2, T-2); ctx.strokeStyle = 'rgba(232,192,115,.9)'; ctx.lineWidth = 2; ctx.setLineDash([5,3]); ctx.strokeRect(f.x*T+2, f.y*T+2, T-4, T-4); ctx.setLineDash([]); } // Shield Drive: the tile it left, to follow through into
   if (B.hl) B.hl.tgt.forEach(k => { const [x,y] = k.split(',').map(Number); ctx.fillStyle = 'rgba(154,134,224,.18)'; ctx.fillRect(x*T+1, y*T+1, T-2, T-2); });
   if (B.aim) { const a = AB[B.mode]; const r = a ? a.aoe : 1, p = RM ? .5 : (Math.sin(t/200)+1)*.5;
     ctx.fillStyle = `rgba(224,87,74,${.18 + p*.1})`; ctx.fillRect((B.aim.x-r)*T, (B.aim.y-r)*T, (2*r+1)*T, (2*r+1)*T);
@@ -5357,6 +5364,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.17.2', ['Shield Drive can follow through: after the drive, the tile the enemy left glows, and tapping it steps the sergeant in behind his shield, one tile, with no free swings. Tap anywhere else to hold your ground.']],
   ['3.17.1', ['When Vell\'s hook drags an enemy, every squadmate it is dragged out of reach of gets a free swing at it.', 'The sergeant has a new ability, Shield Drive: drive an adjacent enemy straight back (two tiles from level 4), and every squadmate it is driven away from gets a free swing. Into a wall or a body it takes extra damage instead.', 'The house guard\'s halberd now has reach: it strikes an enemy two tiles away, as Simtal\'s guards did. It takes both hands, so the shield goes on the back: −1 armour.']],
   ['3.17.0', ['Vell can join the Fourth. Stand between him and the Tiste Andii on the Chapter 4 roofs, then ask him to come with you. He fights with a grappling hook: a ranged throw that hauls an enemy to the tile beside him.', 'The Fourth has room for one recruit at a time. If Ellis is with you when Vell asks, she can go east to find Toc and leave the place to him. If she went into the rift after Toc, Vell can come down a rope into the vault under the crossing in Chapter 6 and offer himself then.', 'Every skill, spell, talent and trick now grows with level: longer reach, longer Veils and darks, harder for bosses to shrug off, more uses of the chapter tricks from level 5, and a higher strain limit at levels 4 and 7. Munitions stay as the Moranth made them.', 'At level 4 each soldier gains +1 to the Measure their role leans on (Wits for the sergeant, Kettle and Ohl; Might for Brisk; Guile for Tuft, Ellis and Vell), and at level 8 +1 to a second one. The character sheets show it.', 'Choices that showed only a dash now say what they do.']],
   ['3.16.1', ['Levels count for more. Every level still gives +4 health and +1 to hit; now levels 3, 5 and 7 add +1 damage on every blow, and levels 4 and 8 add +1 armour. The character sheets show it.', 'Rally grows with the squad: it heals 5, plus 2 for every level past the first, reaches 4 tiles, wakes the dazed, stops bleeding, and gives +2 to hit and +2 damage through the next round.', 'Denul Wash is worth casting: 2d4+2 plus the squad\'s level past the first, to everyone within 3 of Ohl, for strain 3. Mend, salves, the Rhivi Spirit-Song, Shield Bash and Argument with Hood grow with level too.', 'Bridgeburner is still hard, but no longer close to hopeless.']],

@@ -173,6 +173,8 @@ const INIT = () => {
   /* one decision for the squadmate whose turn it is; returns a function that does it (through the UI's own entry points) */
   function choose(u, ts, spec) {
     const opp = foes(), sq = squadUnits(), ob = B.def.objective;
+    // Shield Drive's follow-through: step in only when no second enemy is waiting beside that tile
+    if (B.follow && B.follow.u === u) { const f = B.follow; if (!opp.some(e => e !== f.t && cheb(e, f) === 1) && free(f.x, f.y, u)) return () => { battleTap(f.x, f.y); return true; }; B.follow = null; }
     const tryAb = (k, x, y) => () => { const a = AB[k]; if (!can(u, k)) return false;
       if (a.self) { useAb(k, u.x, u.y); return true; }
       B.mode = k; B.aim = null; updBattleUI();
