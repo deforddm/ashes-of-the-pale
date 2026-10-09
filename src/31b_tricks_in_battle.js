@@ -39,7 +39,7 @@ Object.assign(AB, {
       blog(`${u.name} throws a pinch of red dust at ${t.name}. ${lost.length ? `It loses ${lost.join(', ')} for the rest of the fight.` : 'Nothing about it was magic. It sneezes.'}`); }},
   t_dark:{name:TRICKS.dark.name, trick:'dark', sorcery:true, elder:true, aoe:1, range:5, smoke:true, darkness:true, desc:()=>TRICKS.dark.fx,
     run(u,x,y){ const pt = {x, y}; AUDIO.play('shadow'); sparks(x, y, 22, '#3a3070', .5);
-      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(x+dx, y+dy)) B.smoke.push({x:x+dx, y:y+dy, until:B.round + 2 + lvAt(5), dark:true});
+      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(x+dx, y+dy)) B.smoke.push({x:x+dx, y:y+dy, until:B.round + 2 + lvAt(5), dark:true, g:'d' + B.turn + ':' + x + ',' + y});
       blog(`${u.name} says nothing and inclines their head. Kurald Galain comes down over the ${placeWord(B.def)} like a cloak over a lamp.`);
       updBattleUI(); afterAct(); }},
   t_rime:{name:TRICKS.rime.name, trick:'rime', sorcery:true, elder:true, desc:()=>TRICKS.rime.fx,

@@ -579,7 +579,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '3.18.2';
+const VERSION = '3.18.3';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -4792,8 +4792,18 @@ function drawBattle(t){
     if (u.turned) { ctx.fillStyle = '#e0a8d8'; ctx.font = `bold ${Math.round(T*.32)}px sans-serif`; ctx.textAlign = 'left'; ctx.fillText('?', cx + T*.3, cy - T*.7 + Math.sin(t/260)*2); }
   });
   // smoke: grey billows over each smoked tile, thick enough to lose a figure in
-  (B.smoke || []).filter(s => s.until >= B.round).forEach(s => { const px = s.x*T + T/2, py = s.y*T + T/2, fade = s.until === B.round ? .65 : 1;
-    if (s.dark) { ell(ctx, px, py, T*.56, T*.5, `rgba(4,3,10,${.78*fade})`); for (let i = 0; i < 3; i++) { const ph = t/(2400 + i*500) + hash(s.x, s.y, i)*6.28; ell(ctx, px + (RM ? 0 : Math.sin(ph)*T*.1), py + (RM ? 0 : Math.cos(ph)*T*.08), T*.42, T*.34, `rgba(40,30,80,${.22*fade})`); } return; }
+  /* Andii dark (A Courtesy of Darkness): one cloud over the whole cast, see-through enough to play under, with its edge traced so the tiles it covers are plain */
+  { const groups = {}; (B.smoke || []).filter(s => s.dark && s.until >= B.round).forEach(s => { const k = s.g || ('u' + s.until); (groups[k] ||= []).push(s); });
+    Object.values(groups).forEach(ts => { const fade = ts[0].until === B.round ? .6 : 1, xs = ts.map(s => s.x), ys = ts.map(s => s.y), x0 = Math.min(...xs), x1 = Math.max(...xs) + 1, y0 = Math.min(...ys), y1 = Math.max(...ys) + 1;
+      const cx = (x0 + x1)/2*T, cy = (y0 + y1)/2*T, rx = (x1 - x0)/2*T + T*.18, ry = (y1 - y0)/2*T + T*.18, has = (x, y) => ts.some(s => s.x === x && s.y === y);
+      ctx.save(); ctx.beginPath(); ts.forEach(s => ctx.rect(s.x*T - T*.12, s.y*T - T*.12, T*1.24, T*1.24)); ctx.clip(); // the cloud stays on the tiles it covers (walls cut it)
+      ctx.save(); ctx.translate(cx, cy); ctx.scale(1, ry/rx); const g = ctx.createRadialGradient(0, 0, rx*.1, 0, 0, rx); g.addColorStop(0, `rgba(12,8,32,${.55*fade})`); g.addColorStop(.75, `rgba(28,18,64,${.46*fade})`); g.addColorStop(1, `rgba(40,26,90,${.12*fade})`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, rx, 0, 7); ctx.fill(); ctx.restore();
+      for (let i = 0; i < 5; i++) { const ph = t/(2600 + i*430) + i*1.7, wx = cx + (RM ? 0 : Math.sin(ph)*rx*.35), wy = cy + (RM ? 0 : Math.cos(ph*.8)*ry*.3); ell(ctx, wx, wy, rx*(.38 + (i%2)*.12), ry*(.22 + (i%3)*.06), `rgba(96,72,170,${.13*fade})`, Math.sin(ph)*.3); } // slow wisps
+      ctx.restore();
+      ctx.save(); ctx.strokeStyle = `rgba(170,150,240,${.62*fade})`; ctx.lineWidth = Math.max(1, T*.035); ctx.setLineDash([T*.12, T*.09]); ctx.lineDashOffset = RM ? 0 : -t/90; ctx.beginPath();
+      ts.forEach(s => { const X = s.x*T, Y = s.y*T; if (!has(s.x, s.y - 1)) { ctx.moveTo(X, Y); ctx.lineTo(X + T, Y); } if (!has(s.x, s.y + 1)) { ctx.moveTo(X, Y + T); ctx.lineTo(X + T, Y + T); } if (!has(s.x - 1, s.y)) { ctx.moveTo(X, Y); ctx.lineTo(X, Y + T); } if (!has(s.x + 1, s.y)) { ctx.moveTo(X + T, Y); ctx.lineTo(X + T, Y + T); } });
+      ctx.stroke(); ctx.restore(); }); }
+  (B.smoke || []).filter(s => s.until >= B.round && !s.dark).forEach(s => { const px = s.x*T + T/2, py = s.y*T + T/2, fade = s.until === B.round ? .65 : 1;
     for (let i = 0; i < 4; i++) { const ph = t/(1900 + i*350) + hash(s.x, s.y, i)*6.28, ox = RM ? 0 : Math.sin(ph)*T*.12, oy = RM ? 0 : Math.cos(ph*.8)*T*.08;
       ell(ctx, px + ox + (i % 2 ? T*.2 : -T*.2), py + oy + (i < 2 ? -T*.16 : T*.14), T*.48, T*.38, `rgba(150,146,138,${.26*fade})`); }
     ell(ctx, px, py, T*.52, T*.44, `rgba(118,114,108,${.3*fade})`); });
@@ -4885,7 +4895,7 @@ Object.assign(AB, {
       blog(`${u.name} throws a pinch of red dust at ${t.name}. ${lost.length ? `It loses ${lost.join(', ')} for the rest of the fight.` : 'Nothing about it was magic. It sneezes.'}`); }},
   t_dark:{name:TRICKS.dark.name, trick:'dark', sorcery:true, elder:true, aoe:1, range:5, smoke:true, darkness:true, desc:()=>TRICKS.dark.fx,
     run(u,x,y){ const pt = {x, y}; AUDIO.play('shadow'); sparks(x, y, 22, '#3a3070', .5);
-      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(x+dx, y+dy)) B.smoke.push({x:x+dx, y:y+dy, until:B.round + 2 + lvAt(5), dark:true});
+      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(x+dx, y+dy)) B.smoke.push({x:x+dx, y:y+dy, until:B.round + 2 + lvAt(5), dark:true, g:'d' + B.turn + ':' + x + ',' + y});
       blog(`${u.name} says nothing and inclines their head. Kurald Galain comes down over the ${placeWord(B.def)} like a cloak over a lamp.`);
       updBattleUI(); afterAct(); }},
   t_rime:{name:TRICKS.rime.name, trick:'rime', sorcery:true, elder:true, desc:()=>TRICKS.rime.fx,
@@ -5402,6 +5412,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['3.18.3', ['A Courtesy of Darkness is one cloud now, not nine, and you can see through it: the figures under it stay visible, and a slow dotted edge shows exactly which tiles it covers.']],
   ['3.18.2', ['Vell is in the rest at the end of Chapter 5 with the rest of the squad, with a scene of his own on the barrow-stones.', 'Vell can use knives, Guild blades and cloaks: the grey cloak\'s knife, the Daru duelling knife, both Guild blades, Toc\'s spare cloak and the scout\'s cloak.', 'More of Vell along the road: Tuft\'s Deck in the hills, the streets and the alchemist at the Fete, the toughs at the Worry Gate on the way out, his unfinished business on the sheet, and the chapter recaps.']],
   ['3.18.1', ['Fire on the ground now bites whoever goes through it. Stepping into a burning tile, or being dragged or driven through one, costs 1d4 and a save: the better of Might and Guile against 12. Fail it and you catch fire: 1d4 at the start of each of your next two turns. Rally, Denul Wash and the Rhivi song put it out. Enemies burn the same way, so a burner between you and them is a wall now.', 'The banner on the painted crate lid (Rumjugs and Sweetlard) sits lower, so the whole of it is inside the arch.']],
   ['3.18.0', ['There is a stall in the queue at the Worry Gate. Doctor Ottavio Brack, Purveyor of Wonders, Remedies and the Occasional Lesser Miracle, has been waiting nine days for the gate-clerk to find a column for miracles, and has opened for business in the meantime.', 'His wares are mostly nonsense: a two-headed coin, a shard of Moon\'s Spawn with a certificate, a map to a tyrant\'s hoard. Mostly. Ohl tasted the Hood\'s Repellent and will not say it doesn\'t work.', 'You can haggle with him, and Kettle has opinions about his Moranth powders.']],
