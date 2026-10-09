@@ -23,7 +23,7 @@ ITEM = {"Grey cloak's knife": 'clawknife', 'Rhivi horn bow': 'rhivibow', 'Daru d
         "Hound's tooth": 'houndtooth', 'Cadre token': 'cadretoken', 'Barrow torc': 'barrowtorc', 'Second Army badge': 'secondbadge',
         'Blue-glass lamp-chip': 'lampchip', "Coll's old signet": 'collsignet', 'Guild token': 'guildtoken', "Journeyman's rope-and-hook": 'ropehook',
         'Rhivi bone charm': 'rhivicharm', 'Otataral-dusted glove': 'otatglove', 'Fete mask': 'fetemask', "Sapper's satchel strap": 'bbstrap',
-        'Moranth chit': 'moranthchit', 'Key to a door that does not exist': 'phoenixkey', "A neat hand's pen": 'clawpen'}
+        'Moranth chit': 'moranthchit', "Oponn's Own Coin": 'brackcoin', "Hood's Repellent": 'hoodrep', "Genuine Shard of Moon's Spawn": 'spawnshard', "Map to the Tyrant's Hoard": 'tyrantmap', 'Key to a door that does not exist': 'phoenixkey', "A neat hand's pen": 'clawpen'}
 BOARDS = {  # board file -> (namespace, game key per aria-label prefix; None = keep under a slug of the label)
   'Main':          ('k',  {}),
   'Deck':          ('dk', {'Hounds of Shadow': 'hounds', 'The Great Raven': 'raven', 'Magi of High House Shadow': 'magi', 'Herald of High House Death': 'herald', 'The Wain': 'chains', 'Crown': 'crown', 'The blank card': 'blank',

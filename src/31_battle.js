@@ -24,6 +24,7 @@ function float(u, txt, col, big){ const now = performance.now(), n = B.fx.filter
   B.fx.push({kind:'txt', x:u.x, y:u.y, txt, col, big, t:now + n*140}); }
 function hurt(u, n, crit){ if (u.hp <= 0) return; // already down: a second blast or a late blow does nothing
   if (u.side === 'p' && !u.ally && DIFF().dmg !== 1) n = Math.max(1, Math.round(n * DIFF().dmg)); // the difficulty, on every wound the squad takes
+  if (u.side === 'p' && !u.ally && u.hp - n <= 0 && S.f && S.f.hoodRepCh !== (S.chapter || 0) && Object.values((S.gear && S.gear[u.id]) || {}).includes('hoodrep')) { S.f.hoodRepCh = S.chapter || 0; n = u.hp - 1; blog(`<em>The little black bottle at ${u.name}'s throat cracks.</em> ${u.name} does not go down. Nobody can explain it. Doctor Brack could, at length.`); float(u, 'repelled', '#9fb3d9'); } // Doctor Brack's Hood's Repellent: once a chapter
   if (u.side === 'p' && !u.ally && S.card === 'herald' && u.hp - n <= 0 && !B.used.herald) { B.used.herald = true; n = u.hp - 1; blog(`<em>The Herald turns its head.</em> ${u.name} stays standing at 1 health.`); float(u, 'spared', '#8fa38a'); }
   if (u.stanch && u.stanch.hp > 0 && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'held', '#9fe0b8'); blog(`${u.name} should have gone down. Ohl said no.`); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // Stanch
   if (u.immortal && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'holds', '#bfe8ff'); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // it does not fall

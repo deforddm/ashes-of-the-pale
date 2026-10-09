@@ -1425,7 +1425,9 @@ He looks up for you.
 
 "Outbound," he says. ${name} ${d.length ? `He looks along the Fourth and counts, the way everyone does, and writes a number, and it isn't the number he wrote on the way in. He doesn't ask. He has been writing the dead out of this gate since first light; he knows a short count when he sees one.` : `He looks along the Fourth and counts, the way everyone does, and writes the number down.`}
 
-"Mind the lane," he says, to the ledger. "It's the same lane. Going out, it's on the other side." He turns a page. "The Watch is inside this morning, carrying shutters. The lane has noticed."
+${f.c3_brack ? `Across the arch, in the inbound queue, under an awning the colour of old soup, Doctor Ottavio Brack is still open for business. He sees the Fourth and lifts a blue bottle in salute. Pennick does not look at him. "The Council," says Pennick, to the ledger, "has not ruled on miracles." A pause. "I have written again."${S.kit.includes('hoodrep') && S.f.hoodRepCh != null ? ` Brack sees the cracked black bottle on its thong and his whole face lights up. "*Satisfied customer!*" he shouts across the arch, to the entire queue.` : ''}
+
+` : ''}"Mind the lane," he says, to the ledger. "It's the same lane. Going out, it's on the other side." He turns a page. "The Watch is inside this morning, carrying shutters. The lane has noticed."
 
 So it has.
 

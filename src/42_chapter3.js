@@ -11,6 +11,8 @@ const c3Spot = () => { const k = S.f.bonesSpotLast; if (!k) return '';
   return k.back >= k.lent ? `\n\nFiddler holds out his hand, palm up, without looking, and you put his five in it. He counts them by weight. "That's the first time my silver's come back from a game Hedge was in," he says. "I'll have it framed."`
     : k.back > 0 ? `\n\nFiddler takes back what's left of his five, ${k.back} silver, and doesn't ask for the rest. "Call it tuition," he says. Hedge, through the onion: "Call it *mine.*"`
     : `\n\nFiddler watches his last silver go across the cobbles to Hedge. "That's the first time my silver's ever gone to him on purpose," he says. Hedge, stacking it: "On purpose is the best way."`; };
+/* Doctor Brack's discount: two off for a good haggle, two off once Kettle has seen his "Moranth" tray, three at most */
+const brackOff = () => Math.min(3, (S.f.c3_brackDisc ? 2 : 0) + (S.f.c3_brackKettle ? 2 : 0));
 const CH3 = {
   title:'Blue Fire', number:'Three',
   intro:{loc:'Darujhistan', sub:'The Worry Gate · dusk', cap:'Blue lamps coming on one at a time along the walls, and above the lake a mountain that nobody looks at.',
@@ -36,7 +38,9 @@ const CH3 = {
             "#.L.....,.....L#",
             "################" ],
       walk:'.,DH><', triggers:{W:'c3_wagon', '<':'c3_to_cross'}, start:{x:12,y:5},
-      npcs:[ {id:'pallick', name:'Pennick', kind:'guard', x:2, y:7, node:()=>S.f.c3_gate?'c3_pallick_again':'c3_pallick', fresh:()=>!S.f.c3_gate} ] },
+      npcs:[ {id:'pallick', name:'Pennick', kind:'guard', x:2, y:7, node:()=>S.f.c3_gate?'c3_pallick_again':'c3_pallick', fresh:()=>!S.f.c3_gate},
+             /* v3.18: a dealer in wonders, stuck in the inbound queue because Pennick's ledger has no column for miracles */
+             {id:'brack', name:'A stall under a striped awning', kind:'brack', x:9, y:9, still:true, node:()=>S.f.c3_brack ? 'c3_brack_wares' : 'c3_brack', fresh:()=>!S.f.c3_brack} ] },
 
     /* . cobbles  , gutter  # wall  H the dig  x stakes  W the crew's wagon  F brazier  B barrels  L lamp  > the alley up into Daru (the Phoenix at the top of it) */
     { id:'gadrobi_cross', title:'Darujhistan · the Gadrobi crossroads', sub:'Night', hint:'Tap ground to move · tap a figure to talk · the hole is in the middle', decor:'city_night',
@@ -161,6 +165,11 @@ Inside, steam, and a sour mineral stink, and vats sunk in the floor like wells, 
          c3_slinger:{name:'Gadrobi slinger', sig:'s', kind:'thug', hp:9, ac:12, atk:4, dmg:[1,4,1], rng:4, mv:5, init:3, sk:['pin'], verb:'slings a stone at'} },
 
   gear:{ // slot ∈ weapon|armour|trinket. who = ids that can wear it, or null for anyone.
+    /* Doctor Brack's wares (v3.18): mostly nonsense. Mostly. */
+    brackcoin:{name:'Oponn\'s Own Coin', slot:'trinket', who:null, stat:{guile:1}, line:'A Daru copper with a head on both sides. "Touched by the Twins themselves," says Doctor Brack. It has never once lost a toss, which is the most honest thing about it.'},
+    hoodrep:{name:'Hood\'s Repellent', slot:'trinket', who:null, line:'A stoppered blue bottle on a thong. "Keeps the Lord of Death at arm\'s length. No customer has ever come back to complain." Once a chapter, the first time whoever wears it would go down in a fight, they stay up at 1 health instead. Ohl has tasted it. He will not say what it is. He will not say it doesn\'t work.'},
+    spawnshard:{name:'Genuine Shard of Moon\'s Spawn', slot:'trinket', who:null, line:'A lump of black glassy stone in a velvet bag, with a certificate. Tuft says it is forge slag from somebody\'s back yard. Kettle says that is what they would want you to think. It does nothing. It does it beautifully.'},
+    tyrantmap:{name:'Map to the Tyrant\'s Hoard', slot:'trinket', who:null, line:'Vellum, foxed, with sea-serpents in the margins of a country that has no sea. The Gadrobi Hills, roughly, and an X, and in a flourishing hand: *Here Lieth the Hoard of the Tyrant, Asleep*. Doctor Brack sells a great many of them. He says the X is not to scale.'},
     daruknife:{name:'Daru duelling knife', slot:'weapon', who:['sgt','ellis'], atk:1, line:'Long, thin, with a basket of brass wire round the grip. Far too good for the man who was carrying it. He had not stolen it recently; he had stolen it well.'},
     roadleather:{name:'Gadrobi road-crew leather', slot:'armour', who:null, ac:1, line:'A crew jerkin of oiled leather with the Guild of Paviors\' mark burned into the back. It smells of gas and wet stone. It fits nobody and everybody, which is the point.'},
     lampchip:{name:'Blue-glass lamp-chip', slot:'trinket', who:null, stat:{might:1,wits:1,guile:1}, line:'A thumbnail of blue glass from a broken street lamp, drilled and hung on a cord. Daru knives wear them for luck. This one\'s luck ran out, which some would say makes it due.'},
@@ -177,6 +186,7 @@ Inside, steam, and a sour mineral stink, and vats sunk in the floor like wells, 
     else if (f.c3_collSore) x.push('The Fourth asked Coll what he paid, and asked it wrong. He tells it to walls now, when nobody is asking.');
     if (f.c3_watchSaw) x.push('The Daru Watch sent a boy up the Blue Hand\'s back stair to say a road crew was coming with a shield. Madryn pays them in good grey cloth.');
     else if (f.c3_watchYoung) x.push('A young Watchman in the Daru District counted the road crew on his fingers, twice, and got the same number both times.');
+    if (f.c3_brack) x.push(S.kit.includes('hoodrep') ? 'Doctor Ottavio Brack sold the Fourth a bottle of Hood\'s Repellent in the queue at the Worry Gate. Ohl tasted it. He has not explained himself.' : 'Doctor Ottavio Brack, Purveyor of Wonders, is still in the queue at the Worry Gate, waiting on the Council to rule on miracles.');
     if (preUsed('cutpurses')) x.push('The lamp-pipe in the lane by the Worry Gate burned blue for a day and a night before the warden found the cock. Pennick wrote two words in his margin beside it: not the gas.');
     if (preUsed('knives')) x.push('The Daru Watch blew whistles till dawn over a bang behind the Blue Hand, and wrote it up as a gas main. Madryn sent them two bolts of good grey that winter instead of one.');
     if (f.c3_blueFlash) x.push('The hole under the Gadrobi crossing breathed blue fire once, the height of a house. Whiskeyjack told the warden it was the gas.');
@@ -310,6 +320,127 @@ Brisk waits until you're ten paces past the desk.
       ch:[{t:'Leave him.'}]}),
 
     /* ---- the wagon at the gate ---- */
+    /* ---- v3.18: Doctor Ottavio Brack, Purveyor of Wonders, in the inbound queue ---- */
+    c3_brack:()=>({sp:'Doctor Ottavio Brack', fx:()=>{ S.f.c3_brack=1; }, txt:
+`Halfway along the queue for the gate, between a cart of onions and a family arguing in Gadrobi about a goat, somebody has built a shop.
+
+It's a cart, really, with its sides let down into counters and a striped awning over it, red and yellow once and now the colours of old soup, and on the counters, in rows, bottles: blue ones and green ones and one very small black one under a glass dome, as if it might get out. A board nailed to the awning-pole says, in gold leaf that has been retouched by somebody without any gold leaf:
+
+*DR. OTTAVIO BRACK · PURVEYOR OF WONDERS, REMEDIES & THE OCCASIONAL LESSER MIRACLE · LATELY OF SEVEN CITIES, UNTA, PALE & ELSEWHERE · NO REFUNDS IN THIS LIFE*
+
+The man behind the counter is long and thin, in a coat made of more colours than a coat should be, with a hat that has been to more places than he has. He sees the Fourth coming up the queue and spreads both arms as if you were the rain after a drought.
+
+"*Soldiers*," he says. "The Empire's finest, and so *tired*. I can see it in the eyes. I have something for the eyes. I have something for everything, friends, I have something for things that haven't happened to you yet."
+
+"How long have you been in the queue?" you ask.
+
+The arms come down a little. "Nine days." He nods at the gate, at the little desk under the arch, at the clerk with ink to the second knuckle. "That gentleman requires me to declare my goods. I declared them. *Remedies, wonders, and lesser miracles.* He says there is no column for miracles, lesser or otherwise, and he has written to the Council for a ruling." Brack leans in. "The Council, I am told, does not read it." He straightens up, and the arms go out again. "So! Doctor Brack is open for business, in the queue, until the Council rules or the world ends. Whichever is first, I have a tonic for it."
+
+${SQUAD().includes('kettle') ? `Kettle is already at the counter. She has picked up the small black bottle under the glass dome and is reading the label with her lips moving.` : SQUAD().includes('ohl') ? `Ohl has picked up one of the blue bottles, unstoppered it, sniffed it, and put it back with the expression of a surgeon finding a cobbler in his tent.` : ''}`,
+      ch:[{t:'"Show us your wonders, Doctor."', go:'c3_brack_wares'},
+          {t:'Leave him to the goat.'}]}),
+    c3_brack_wares:()=>{ const off = brackOff(), pr = n => Math.max(1, n - off), has = id => S.kit.includes(id); return {sp:'Doctor Brack\'s stall', txt:
+`${S.f.c3_brackVisit ? `"*Returning* custom!" Doctor Brack spreads his arms. "The finest kind. Let me guess. You've reconsidered the Repellent."` : `Doctor Brack lays a hand on each of the bottles in turn, the way a man lays hands on a congregation.`}${off ? ` ${S.f.c3_brackKettle ? `He keeps one eye on Kettle at all times. His prices have come down. He'd rather not say why.` : `"For the Empire," he says, a little sourly, "a soldier's discount."`}` : ''}
+
+*Tincture of Soliel's Own Tears,* in the blue bottles. ${SQUAD().includes('ohl') ? `"Lard," says Ohl. "Lard and rosewater and something for the smell." A pause. "It'll work, mind. Lard works. I just object to the goddess."` : `"Healing in a bottle, blessed at the temple in Unta," says Brack. It smells of roses and, under the roses, of lard.`}
+
+*Oponn's Own Coin,* a copper with a head on both sides. "Touched by the Twins. Has never lost a toss." It hasn't. It can't.
+
+*Hood's Repellent,* in the very small black bottle under the glass dome. "Keeps the Lord of Death at arm's length. I have sold four hundred. No customer has *ever* come back to complain." ${SQUAD().includes('brisk') ? `Brisk looks at it for a long time. "They wouldn't," she says.` : `You look at the bottle, and at him, and at the logic, and he looks back, perfectly serene.`}
+
+*A Genuine Shard of Moon's Spawn,* in a velvet bag, with a certificate. ${SQUAD().includes('tuft') ? `"That's slag," says Tuft. "From a forge." Brack: "From a *celestial* forge."` : `He points at the mountain over the lake, and then at the bag, and raises his eyebrows meaningfully.`}
+
+*A Map to the Hoard of the Tyrant,* on foxed vellum with sea-serpents in the margins. "Of which I have," says Brack modestly, "a quantity."`,
+      ch:[{t:`Tincture of Soliel's Own Tears, ${pr(6)} silver`, tag:`have ${S.inv.salve} salve${S.inv.salve === 1 ? '' : 's'}`, req:()=>S.silver >= pr(6), fx:()=>{ S.silver -= pr(6); S.inv.salve++; S.f.c3_brackVisit=1; tally('brackBought'); AUDIO.play('coin'); note('Bought a Tincture of Soliel\'s Own Tears. It counts as a salve. It is a salve.', 'good'); }, go:'c3_brack_wares'},
+          {t:`Oponn's Own Coin, ${pr(4)} silver`, req:()=>!has('brackcoin') && S.silver >= pr(4), fx:()=>{ S.silver -= pr(4); S.f.c3_brackVisit=1; tally('brackBought'); gain('brackcoin'); }, go:'c3_brack_coin'},
+          {t:`Hood's Repellent, ${pr(12)} silver`, req:()=>!has('hoodrep') && S.silver >= pr(12), fx:()=>{ S.silver -= pr(12); S.f.c3_brackVisit=1; tally('brackBought'); gain('hoodrep'); }, go:'c3_brack_hood'},
+          {t:`A Genuine Shard of Moon's Spawn, ${pr(3)} silver`, req:()=>!has('spawnshard') && S.silver >= pr(3), fx:()=>{ S.silver -= pr(3); S.f.c3_brackVisit=1; tally('brackBought'); gain('spawnshard'); }, go:'c3_brack_shard'},
+          {t:`A Map to the Hoard of the Tyrant, ${pr(2)} silver`, req:()=>!has('tyrantmap') && S.silver >= pr(2), fx:()=>{ S.silver -= pr(2); S.f.c3_brackVisit=1; tally('brackBought'); gain('tyrantmap'); }, go:'c3_brack_map'},
+          {t:'Haggle.', check:['guile', 13], req:()=>!S.f.c3_brackHaggled, fx:()=>{ S.f.c3_brackHaggled=1; }, go:'c3_brack_haggle_ok', fail:'c3_brack_haggle_bad'},
+          {t:'Let Kettle look at his "Moranth" powders.', check:['wits', 12, 'kettle'], req:()=>SQUAD().includes('kettle') && !S.f.c3_brackKettleTried, fx:()=>{ S.f.c3_brackKettleTried=1; }, go:'c3_brack_kettle_ok', fail:'c3_brack_kettle_bad'},
+          {t:'Ask about the deck of cards in the window.', req:()=>!S.f.c3_brackDeck, fx:()=>{ S.f.c3_brackDeck=1; }, go:'c3_brack_deck'},
+          {t:'"Good luck with the Council, Doctor."'}]}; },
+    c3_brack_coin:()=>({sp:'Doctor Brack', txt:
+`He spins it for you on the counter, and slaps it flat. "Heads." He spins it again. "Heads." He offers it to you to try. You spin it. Heads.
+
+"Never lost a toss," he says. "Never *will*. That's not luck, friends, that's *policy*."
+
+${SQUAD().includes('tuft') ? `Tuft takes it off the counter and turns it over, and turns it over again, and something in her face goes very still. "Don't spin it near me," she says. "I mean it. Not near the Deck."` : SQUAD().includes('kettle') ? `Kettle: "Can I have it?" "No." "Can I *hold* it?" "...Yes."` : ''}`,
+      ch:[{t:'Back to the counter.', go:'c3_brack_wares'}]}),
+    c3_brack_hood:()=>({sp:'Doctor Brack', txt:
+`He lifts the glass dome off the little black bottle with enormous care, like a man lifting the lid off something that bites, and hangs it round your neck on its thong himself.
+
+"Wear it in good health," he says. "Or at any rate, wear it."
+
+${SQUAD().includes('ohl') ? `Ohl holds out his hand. You give him the bottle. He unstoppers it, sniffs, puts one drop on the tip of his finger, and tastes it, and stands for a long moment with a very strange expression.
+
+"Well?" you say.
+
+"It's nothing," says Ohl. "It's water and a bit of tar and, I think, a dead beetle." He stoppers it and gives it back. "Wear it anyway."
+
+"Why?"
+
+"Because I can't tell you why not," says Ohl, "and I've been arguing with Hood for twenty-two years, and I know when I've been out-argued by a beetle."` : `It smells of tar and something that might once have been a beetle. You wear it anyway. It seems rude not to.`}
+
+*Hood's Repellent: whoever wears it, once a chapter, stays up at 1 health the first time they would go down in a fight.*`,
+      ch:[{t:'Back to the counter.', go:'c3_brack_wares'}]}),
+    c3_brack_shard:()=>({sp:'Doctor Brack', txt:
+`He gives you the velvet bag, and the certificate, which is signed *the Lord of Moon's Spawn, Personally*, in a hand that is very obviously Doctor Brack's.
+
+${SQUAD().includes('kettle') ? `Kettle takes the shard out of the bag and holds it up against the mountain over the lake, closing one eye, comparing. "It's the same colour," she says, awed. "Sergeant. It's the *same colour*."
+
+"It's slag," says ${SQUAD().includes('tuft') ? 'Tuft' : 'somebody'}.
+
+"From the same *forge*," says Kettle, and puts it away very carefully in the satchel, next to the cussers, where it will be safe.` : `It's black and glassy and a little warm from his hand. Out over the lake the real thing hangs where it always hangs. You decide not to hold them up side by side.`}`,
+      ch:[{t:'Back to the counter.', go:'c3_brack_wares'}]}),
+    c3_brack_map:()=>({sp:'Doctor Brack', txt:
+`He unrolls it for you on the counter, weighting the corners with bottles. The Gadrobi Hills, more or less, east of the city. Sea-serpents in the margins, though there's no sea. A compass rose with five points. And in the middle of the hills, an X, and beside the X in a flourishing hand: *Here Lieth the Hoard of the Tyrant, Asleep.*
+
+"The *Tyrant*?" you say.
+
+"The very same." He has no idea which tyrant. You can see him not having any idea. "Asleep for a thousand years, friends, on a mountain of gold, and nobody with the stomach to go and wake him."
+
+${SQUAD().includes('tuft') ? `Tuft has gone quiet. She's looking at the X, and then east, toward the hills, where it's already dark. "Who drew this?" she says. "A man in Pale," says Brack, "who'd had it from a man in Unta, who'd had it from a dream." She doesn't laugh. You notice that she doesn't laugh.` : `Somebody laughs. It's the right response. You roll the map up and put it in the pack, and for no reason at all you look east once, at the hills, where it's already dark.`}`,
+      ch:[{t:'Back to the counter.', go:'c3_brack_wares'}]}),
+    c3_brack_haggle_ok:()=>({sp:'Doctor Brack', fx:()=>{ S.f.c3_brackDisc=1; }, txt:
+`${by({kettle:`Kettle starts listing, out loud and in order, every ingredient she can smell from where she's standing, with their prices in the Unta market. She gets to eleven before he holds up both hands.`, tuft:`Tuft just looks at him. Not at the bottles. At him. For quite a long time. He clears his throat first.`, brisk:`Brisk puts four coppers on the counter, and then her shield, and leaves them both there.`, ohl:`Ohl tells him, in some detail, what is in the tincture, and what it does to the bowels in quantity, and that he will be telling the queue.`, ellis:`Ellis asks, very politely, which temple in Unta blessed the tincture, and which priest, and what day.`, vell:`Vell tells him, very sincerely, that the Guild has a standing interest in men who sell tonics in queues. It doesn't. Brack doesn't know that.`, _:`You tell him what the clerk at the gate told you about columns, and that you've a mind to go back and help him find one.`})}
+
+"*Two* off," says Doctor Brack, as if you'd removed one of his teeth. "Two silver off everything. For the Empire. Out of love."`,
+      ch:[{t:'Back to the counter.', go:'c3_brack_wares'}]}),
+    c3_brack_haggle_bad:()=>({sp:'Doctor Brack', txt:
+`He listens to the whole of it with his head on one side and an expression of enormous sympathy, and when you've finished he sighs, and pats your hand.
+
+"Friend," he says. "I have haggled with Seven Cities camel-traders. I have haggled with a *Moranth*. It clicked at me for an hour." He shakes his head. "Prices are prices. The miracles, alas, are fixed."`,
+      ch:[{t:'Back to the counter.', go:'c3_brack_wares'}]}),
+    c3_brack_kettle_ok:()=>({sp:'Kettle', fx:()=>{ S.f.c3_brackKettle=1; loy('kettle',1); }, txt:
+`He has a tray at the back marked *GENUINE MORANTH ALCHEMICKS* in letters of gold, little paper twists of coloured powder, and Kettle goes through it like a quartermaster going through a deserter's pack.
+
+"Chalk," she says. "Chalk. Pepper. Chalk with *ochre in it*." She opens the red one and sniffs it and her eyes water. "Pepper with ambition." She puts it down. She looks at him. "Do you know what a Moranth does to a man who sells chalk with their name on it?"
+
+Doctor Brack does not know. He finds, looking at Kettle's face, that he would very much like to go on not knowing.
+
+"I could tell him," says Kettle, sweetly. "I know one. I owe it money."
+
+The tray goes under the counter. The prices come down. Doctor Brack keeps one eye on Kettle for the rest of your acquaintance, the way you'd keep one eye on a dog that has not yet decided about you.`,
+      ch:[{t:'Back to the counter.', go:'c3_brack_wares'}]}),
+    c3_brack_kettle_bad:()=>({sp:'Kettle', txt:
+`Kettle goes through the tray of *GENUINE MORANTH ALCHEMICKS* with great seriousness, and picks up the red twist, and opens it, and sniffs it hard to be sure.
+
+It's pepper. She is sure. She is sure for some time, at volume, bent double in the queue while the Gadrobi family with the goat stop arguing to watch.
+
+"Potent," says Doctor Brack, gravely. "I did warn you. Moranth, you see."`,
+      ch:[{t:'Back to the counter.', go:'c3_brack_wares'}]}),
+    c3_brack_deck:()=>({sp:'Doctor Brack', txt:
+`In the window of the cart, propped on a little stand, there's a Deck of Dragons, fanned: *Complete and Blessed*, says the card under it, *as Used by the Mages of the Empire*.
+
+${SQUAD().includes('tuft') ? `Tuft goes to it like a needle to north. She counts the fan without touching it, and her mouth goes thin.
+
+"There's a card missing," she says. "Two. And this one—" she points, not quite touching, at a card in the middle, a man in a coat of many colours holding up a bottle, "—there's no such card."
+
+"There is *now*," says Doctor Brack, with dignity. "I painted it. *The Merchant.* High House of Commerce. Unaligned."
+
+Tuft looks at him for a long time. Then, very quietly: "Don't ever lay that out. Not near anything that's listening." And she walks away, and doesn't look back at the stall again, and the doctor, who has been called many things, looks for the first time like a man who has been told something true.` : `There are fewer cards than there should be, and one card in the middle shows a man in a coat of many colours holding up a bottle. "*The Merchant*," says Doctor Brack, proudly. "I painted it myself. High House of Commerce. Unaligned." You decide you'd rather not know if it's listening.`}`,
+      ch:[{t:'Back to the counter.', go:'c3_brack_wares'}]}),
     c3_wagon:()=>({sp:'The wagon', txt:
 `${S.f.c3_wagonSeen ? `${S.f.c2_wagon ? 'Pell the mule' : 'The mule'} is eating something off the cobbles that you'd rather not know about. Brisk has the ledger closed on her knee. The crate under the oilcloth is where it has been for ${tripDays()} days.` :
 `Brisk is at the tailboard with the ledger open, writing in the last of the light, which she does when she wants a thing on paper before a city gets a look at it.

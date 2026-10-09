@@ -243,7 +243,9 @@ ${S.inv.cusser > 0 ? `Kettle doesn't say anything. She puts her face down agains
 
 The first day the hills are just hills. The second day the stones start: one on a crest, then three, then a line of them along a ridge like the back of a buried animal. The sheep go round them. The squad goes round them too, after Brisk watches the sheep for a while and says nothing and leads the way the sheep went.
 
-The third morning, from the top of a long brown ridge, you see smoke. Not a lot. A thin grey thread, going straight up in the still air two valleys east, and under it, small as a flea on a blanket, a tent.
+The third morning, from the top of a long brown ridge, you see smoke. Not a lot. A thin grey thread, going straight up in the still air two valleys east, and under it, small as a flea on a blanket, a tent.${S.kit.includes('tyrantmap') ? `
+
+${SQUAD().includes('kettle') ? 'Kettle' : 'Somebody'} has Doctor Brack's map out, and is turning it this way and that against the hills, and has gone quiet. The sea-serpents are still wrong. The compass rose still has five points. The X, give or take a valley, is under the smoke. ${SQUAD().includes('tuft') ? `"Put it away," says Tuft, without looking at it. "Please."` : `Nobody says anything. The map goes away, and stays away.`}` : ''}
 
 ${SQUAD().includes('tuft') ? `Tuft stops dead. She puts a hand to her ear as if she'd heard something, and then takes it away, and looks at it. "Sergeant," she says. "Something's wrong with Meanas. It's *thin*. Like a coat worn through at the elbow." She tries a small working, a shadow round her fingers; it comes, and it's weak, and it goes out. "That's the far side of two valleys. Two valleys, and I can feel it from here."` : ''}
 
