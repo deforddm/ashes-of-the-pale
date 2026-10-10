@@ -133,7 +133,7 @@ const CH6 = {
 
   battles:{
     house_guards:{title:'The stable yard behind the gate', warrenText:'Straw and lanterns · the Fete loud over the wall · warrens steady', warren:{meanas:1,denul:1}, music:'battle', style:'city',
-      map:["##....##","........",".#.,,.#.","........","..#..#..","........","#..,,..#","........","........","#......#"],
+      map:["##....##","........",".#.,,.#.","........","..t..t..","........","#..,,..#","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['houseguard',2,1],['houseguard',5,1],['houseguard',3,3],['housecaptain',4,0]], xp:200, after:'c6_after_guards',
       /* the sharper: the straw holds, the horses don't. The halberds are bowled over; the gatehouse and the whole hill hear it */
@@ -149,11 +149,11 @@ ${SQUAD().includes('brisk') ? `Brisk looks at the arch. Two paces wide, and seve
         party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
         foes:[['c6_housebow',1,0],['c6_farrier',4,1],['houseguard',5,3],['houseguard',3,4]] }},
     terrace_knives:{title:'The upper terrace', warrenText:'Marble and lake wind · the music forty paces off · Meanas leans into the dark · Denul holds', warren:{meanas:1.2,denul:1}, dark:true, music:'dark', style:'terrace',
-      map:["#.#..#.#","........","..,,,,..",".#....#.","........","..#..#..","........","...,,...","........","#......#"],
+      map:["#.#..#.#","........","..,,,,..",".#....#.","........","..t..t..","........","...,,...","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0]], xp:240, after:'c6_after_knives', stage2:C6H.roof, ...C6H.terracePre},
     terrace_knives_2:{title:'The upper terrace', warrenText:'Marble and lake wind · the music forty paces off · Meanas leans into the dark · Denul holds', warren:{meanas:1.2,denul:1}, dark:true, music:'dark', style:'terrace',
-      map:["#.#..#.#","........","..,,,,..",".#....#.","........","..#..#..","........","...,,...","........","#......#"],
+      map:["#.#..#.#","........","..,,,,..",".#....#.","........","..t..t..","........","...,,...","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['guildknife',1,0],['guildknife',6,0],['guildknife',3,2],['guildveteran',4,0],['guildveteran',3,0]], xp:240, after:'c6_after_knives', stage2:C6H.roof, ...C6H.terracePre},
     garden_hound:{title:'The lawn by the east wall', warrenText:'Wet grass and lantern-light · something of Shadow on the lawn · Meanas swells', warren:{meanas:1.3,denul:1}, dark:true, music:'dark', style:'garden',

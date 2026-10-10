@@ -31,7 +31,7 @@ const TRICKS = {
     get fx(){ return `${trickTimes('otataral')} a chapter: a pinch thrown at an enemy within ${3 + lvT()}. For the rest of the fight its sorcery fails: no lances, no slams, no shadow-bolts, one blow a turn. Grows with level. Tuft and Ohl will not carry it.`; }},
   dark:{name:'A Courtesy of Darkness', ch:6, use:'fight', ab:'t_dark', sorcery:true, elder:true, where:'the terrace at Lady Simtal\'s',
     lore:'A tall guest in a black dragon mask inclined his head, once, the way the Tiste Andii do to someone whose face they know. Something of Kurald Galain came with the nod and has not left.',
-    get fx(){ return `Once a fight: a 3×3 of Andii dark within 5, for ${2 + lvAt(5)} rounds. Nothing shoots into it or out of it, and enemies standing in it are −2 to hit. Grows with level. Elder sorcery: otataral does not touch it.`; }},
+    get fx(){ return `Once a fight: a 3×3 of Andii dark within 5, for ${2 + lvAt(5)} rounds. Nothing shoots into it, out of it or through it, and enemies standing in it are −2 to hit. Grows with level. Elder sorcery: otataral does not touch it.`; }},
   rime:{name:'Omtose Rime', ch:6, use:'fight', ab:'t_rime', sorcery:true, elder:true, where:'the Tyrant\'s frost on the garden lawn',
     lore:'Jaghut ice, Omtose Phellack, the warren of the old cold. A ring of it went across the lawn and stopped at the bearer\'s boots, and a little of it stayed.',
     get fx(){ return `Once a fight: an enemy within 4 is rimed. It loses its next turn (a boss shakes that off on ${12 + 2*lvT()}+), and every hit on it does +${2 + lvT()} through the next round. Grows with level. Elder sorcery: otataral does not touch it.`; }},

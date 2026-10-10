@@ -49,7 +49,7 @@ function fitCanvas(cols, rows){
     cv.onpointercancel = () => { d = null; };
   }
   if (ex) { const a = AREA(); prerender(a.map, cols, rows, a.decor === 'camp_night' || a.decor === 'plain_night' || a.decor === 'city_night' || a.decor === 'cellar' || a.decor === 'roof_night' || a.decor === 'hills_night' || a.decor === 'estate_night' || a.decor === 'estate_terrace' || a.decor === 'estate_storm', false, a.decor); exploreParticles(); }
-  else if (view === 'battle' && B) prerender(B.def.map, 8, 10, B.def.dark, !B.def.open && !B.def.style, B.def.style || (B.def.open ? 'plain' : ''));
+  else if (view === 'battle' && B) prerender(B.def.map, 8, 10, B.def.dark, !B.def.open && !B.def.style, B.def.style || (B.def.open ? 'plain' : ''), true);
 }
 /* the camera: follow the sergeant (his interpolated position from the last frame), eased; a drag holds it */
 function camStep(t){

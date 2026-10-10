@@ -200,7 +200,7 @@ const CH7 = {
 
   battles:{
     last_accounting:{title:'The last accounting', warrenText:'Open water on three sides · Meanas thin · Denul steady', warren:{meanas:0.9,denul:1}, music:'battle', style:'dock',
-      map:["##,,,.##","#..,...#","..,.....","..#..#..","........",".#....#.","........","...,,...","........","#......#"],
+      map:["##,,,.##","#..,...#","..,.....","..t..t..","........",".#....#.","........","...,,...","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['greycloak',4,1],['assassin',1,2],['assassin',6,2],['clawcrossbow',3,0],['clawmage',5,0]], xp:320, after:'c7_after_accounting',
       /* v3.13 Kettle's sharper, rolled along the quay: it goes off on the step of the green door. The door goes in with the hand-mage
@@ -242,7 +242,7 @@ ${preUsed('last_accounting') ? `Behind you the eel-crates are still burning on t
 ${preUsed('c7_worrygate') ? `Behind you, back through the arch, the two from the Watch are sitting against the wall holding their heads, and Pennick is relighting his lamp. Nobody is following you into Worrytown to help. Nobody in Worrytown expected them to.
 
 ` : ''}Pits in rows, full of things nobody should name, with planks between them a man can stand on if he's careful. Hides on drying frames like the flags of a very ugly country. ${C7H.has('kettle') ? `"Oh, that *smell*," says Kettle, with something like respect. "That's not a smell. That's a *position*."` : `The smell comes out of the pits and stands in front of you like one more Gadrobi with a cudgel.`}`,
-        map:["#..,...#",".##..##.","........",".#.##.#.","........","#..##..#","........",".#.##.#.","........","........"],
+        map:["#..,...#",".tt..tt.","........",".#.oo.#.","........","#..oo..#","........",".#.oo.#.","........","........"], pitTxt:'a tanning pit', // the drying frames are low (t), the pits are pits (o): v3.19
         party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
         foes:[['c7_bigone',4,1],['c7_gatebow',3,0],['knife',1,2],['knife',6,2],['cutpurse',0,4],['cutpurse',7,4]],
         waves:[{round:3, foes:[['bruiser',1,0]], text:'Somebody comes out of the drying-shed with a hide-scraper and a grievance.'}] } } },

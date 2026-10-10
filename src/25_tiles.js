@@ -13,7 +13,7 @@ function drawEstateTile(ctx, ch, x, y, T, mode, battle){
   const px = x*T, py = y*T, h = hash(x,y), terr = mode === 'terrace', storm = mode === 'storm';
   const fill = c => { ctx.fillStyle = c; ctx.fillRect(px,py,T,T); };
   const line = (x0,y0,x1,y1,c,w=1) => { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(px+x0*T, py+y0*T); ctx.lineTo(px+x1*T, py+y1*T); ctx.stroke(); };
-  if (battle && ch !== '#' && ch !== ',') ch = '.';
+  if (battle && ch !== '#' && ch !== ',' && ch !== 't') ch = '.'; // a battle's tables stay ('t', low cover); its pits are drawn over by drawFeature
   const lawn = () => { // trimmed dark lawn with mower stripes, or pale marble flags, or frozen grass
     if (terr) { fill(shade('#3e434c', (h - .5)*.12)); ctx.strokeStyle = 'rgba(14,16,20,.75)'; ctx.lineWidth = 1; ctx.strokeRect(px+.5, py+.5, T-1, T-1); ctx.beginPath(); ctx.moveTo(px + (x%2 ? T*.5 : 0), py + T*.5); ctx.lineTo(px + (x%2 ? T : T*.5), py + T*.5); ctx.stroke();
       ctx.strokeStyle = 'rgba(210,216,232,.09)'; ctx.beginPath(); ctx.moveTo(px + hash(x,y,3)*T, py); ctx.bezierCurveTo(px + T*.3, py + T*.4, px + T*.7, py + T*.3, px + hash(x,y,4)*T, py + T); ctx.stroke();
@@ -226,6 +226,33 @@ function drawTile(ctx, ch, x, y, T, dark, tunnel, style){
   if (ch === 'x') { ctx.fillStyle = '#3a2a18'; ctx.fillRect(px+T*.44, py+T*.2, T*.12, T*.7); ctx.fillStyle = '#6b5a3c'; ctx.fillRect(px+T*.44, py+T*.2, T*.12, T*.1); ctx.strokeStyle = 'rgba(120,100,70,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, py+T*.35); ctx.lineTo(px+T, py+T*.35); ctx.stroke(); }
   if (ch === 'T' && (tunnel || plain)) { ctx.fillStyle = '#030202'; ctx.fillRect(px+T*.15, py+T*.2, T*.7, T*.72); ctx.fillStyle = '#4a3a26'; ctx.fillRect(px+T*.08, py+T*.12, T*.84, T*.12); ctx.fillRect(px+T*.1, py+T*.12, T*.1, T*.8); ctx.fillRect(px+T*.8, py+T*.12, T*.1, T*.8); }
 }
+/* battle ground features (v3.19): 't' low cover (blocks a step, not a shot) and 'o' a pit (blocks a step, not a shot; forced in, you fall).
+   Drawn per style over the plain ground: tables with cloth on the terraces, crates in the streets and on the quays, a fallen barrow-stone out in the open. */
+function drawFeature(ctx, ch, x, y, T, dark, style, map){
+  const px = x*T, py = y*T, st = style || '', est = st === 'garden' || st === 'terrace' || st === 'storm', city = st.startsWith('city') || st === 'cellar' || st === 'dock' || st === 'lakefront', open = st.startsWith('plain') || st.startsWith('hills') || st === 'open';
+  if (ch === 't') {
+    if (est) return drawEstateTile(ctx, 't', x, y, T, st === 'terrace' ? 'terrace' : st === 'storm' ? 'storm' : 'night', false); // the fete's tables, cloth to the ground
+    ell(ctx, px+T*.52, py+T*.86, T*.42, T*.1, 'rgba(0,0,0,.5)');
+    if (city) { // two crates, one on the other, rope round them
+      const box = (bx, by, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(bx, by, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 1; ctx.strokeRect(bx + .5, by + .5, w - 1, h - 1); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + w, by + h); ctx.moveTo(bx + w, by); ctx.lineTo(bx, by + h); ctx.stroke(); ctx.fillStyle = 'rgba(232,192,115,.12)'; ctx.fillRect(bx, by, w, Math.max(1, h*.12)); };
+      box(px+T*.1, py+T*.44, T*.5, T*.42, dark ? '#3a2c1c' : '#4a3a26'); box(px+T*.46, py+T*.5, T*.44, T*.36, dark ? '#33261a' : '#423222'); box(px+T*.24, py+T*.12, T*.42, T*.34, dark ? '#45351f' : '#5a4630');
+      ctx.strokeStyle = 'rgba(160,140,100,.55)'; ctx.lineWidth = Math.max(1, T*.03); ctx.beginPath(); ctx.moveTo(px+T*.45, py+T*.12); ctx.lineTo(px+T*.45, py+T*.86); ctx.stroke(); return; }
+    // a fallen stone, waist high, lichen on its back
+    ctx.fillStyle = dark ? '#2a2826' : '#3e3a36'; ctx.beginPath(); ctx.moveTo(px+T*.08, py+T*.84); ctx.lineTo(px+T*.14, py+T*.42); ctx.quadraticCurveTo(px+T*.5, py+T*.26, px+T*.88, py+T*.4); ctx.lineTo(px+T*.94, py+T*.84); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = dark ? '#3a3734' : '#57534c'; ctx.beginPath(); ctx.moveTo(px+T*.14, py+T*.42); ctx.quadraticCurveTo(px+T*.5, py+T*.26, px+T*.88, py+T*.4); ctx.lineTo(px+T*.86, py+T*.5); ctx.quadraticCurveTo(px+T*.5, py+T*.38, px+T*.16, py+T*.52); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = open ? 'rgba(130,150,90,.35)' : 'rgba(120,120,100,.25)'; for (let i=0;i<4;i++) ell(ctx, px+T*(.25 + hash(x,y,i)*.5), py+T*(.4 + hash(x,y,i+3)*.1), T*.06, T*.03, ctx.fillStyle);
+    return; }
+  if (ch === 'o') { // a pit: a ragged black mouth, the far wall catching a little light, the near lip throwing its shadow in
+    const n = (dx, dy) => map && map[y + dy] && map[y + dy][x + dx] === 'o';
+    const l = n(-1,0) ? 0 : .1, r = n(1,0) ? 1 : .9, tp = n(0,-1) ? 0 : .12, bt = n(0,1) ? 1 : .9;
+    ctx.fillStyle = est ? '#3a2e22' : '#2a2018'; ctx.fillRect(px + T*(l - .04), py + T*(tp - .04), T*(r - l + .08), T*(bt - tp + .08)); // turned earth at the lip
+    const g = ctx.createLinearGradient(0, py + T*tp, 0, py + T*bt); g.addColorStop(0, '#000'); g.addColorStop(.6, '#050404'); g.addColorStop(1, '#16110d'); ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(px + T*l, py + T*tp + (n(0,-1) ? 0 : hash(x,y,1)*T*.05)); ctx.lineTo(px + T*r, py + T*tp + (n(0,-1) ? 0 : hash(x,y,2)*T*.05)); ctx.lineTo(px + T*r, py + T*bt); ctx.lineTo(px + T*l, py + T*bt); ctx.closePath(); ctx.fill();
+    if (!n(0,1)) { ctx.fillStyle = 'rgba(170,140,105,.3)'; ctx.fillRect(px + T*l, py + T*(bt - .1), T*(r - l), T*.1); } // the far wall, lit
+    if (!n(0,-1)) { ctx.fillStyle = 'rgba(190,160,120,.42)'; ctx.fillRect(px + T*l, py + T*tp - 1, T*(r - l), 2); } // the near lip
+    ctx.fillStyle = 'rgba(110,90,70,.35)'; for (let i=0;i<3;i++) ell(ctx, px + T*(.2 + hash(x,y,i+6)*.6), py + T*(tp - .02), T*.05, T*.025, ctx.fillStyle); // crumbs of earth at the edge
+    return; }
+}
 let tileMap = null; // the map being prerendered, for tiles that look at their neighbours (pits)
 /* the crater at the heart of the Pale: one bowl across all its tiles, a rim of thrown earth, glassed and cracked stone, shards that hold the warren's light */
 function drawCrater(ctx, map, T){
@@ -241,12 +268,14 @@ function drawCrater(ctx, map, T){
   ctx.restore();
   ctx.strokeStyle = 'rgba(190,160,120,.12)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(cx, cy + 1, rx*.97, ry*.97, 0, Math.PI*.1, Math.PI*.9); ctx.stroke(); // the far lip catching a little light
 }
-function prerender(map, cols, rows, dark, tunnel, style){
+function prerender(map, cols, rows, dark, tunnel, style, battle){
   const {bctx, T} = G; if (!bctx) return;
   const est = style && style.startsWith('estate');
   if (style && (est || style === 'storm')) { estateRing = est ? {x:8, y:5} : {x:3.5, y:1}; map.forEach((r, y) => [...r].forEach((c, x) => { if (est && c === 'A') estateRing = {x, y}; })); }
   estateMap = est ? map : null; tileMap = map;
-  for (let y=0;y<rows;y++) for (let x=0;x<cols;x++) drawTile(bctx, map[y][x] === '#' ? '#' : tunnel ? (hash(x,y,4) > .8 ? ',' : '.') : map[y][x], x, y, T, dark, tunnel, style);
+  for (let y=0;y<rows;y++) for (let x=0;x<cols;x++) { const c = map[y][x], feat = battle && (c === 't' || c === 'o');
+    drawTile(bctx, c === '#' ? '#' : tunnel || feat ? (hash(x,y,4) > .8 ? ',' : '.') : c, x, y, T, dark, tunnel, style);
+    if (feat) drawFeature(bctx, c, x, y, T, dark, style, map); }
   estateMap = null;
   const earth = !style || style === 'pale' || style === 'camp_night' || style.startsWith('plain') || style.startsWith('hills');
   if (earth) { // broad, soft light and dark across the ground, so the tiles read as one field and not a board

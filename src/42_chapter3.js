@@ -107,7 +107,7 @@ const CH3 = {
 
   battles:{
     cutpurses:{title:'The alley by the Worry Gate', warrenText:'City stone · the blue lamps hiss · warrens steady', warren:{meanas:1,denul:1}, music:'battle', style:'city',
-      map:["#..##..#","........","..#..#..","........","#......#","........","..#..#..","........","........","#......#"],
+      map:["#..##..#","........","..t..t..","........","#......#","........","..t..t..","........","........","#......#"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['cutpurse',1,1],['cutpurse',6,1],['cutpurse',4,3],['bruiser',3,1],['bruiser',5,0]], xp:160, after:'c3_after_cutpurses',
       waves:[{round:2, foes:[['cutpurse',1,0],['cutpurse',6,0]], text:'Two more drop off the wall at the far end of the lane.'}],

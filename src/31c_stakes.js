@@ -67,7 +67,8 @@ function foeRiders(a, t, dmg){
   if (hasSk(a, 'root') && t.hp > 0) { t.prone = true; float(t, 'held', '#9a86e0'); }
   if (hasSk(a, 'drain') && a.hp > 0 && dmg > 0) { heal(a, dmg); blog(`${a.name} drinks something out of ${t.name} and is whole again.`); }
   if (hasSk(a, 'shove') && t.hp > 0) { const dx = Math.sign(t.x - a.x), dy = Math.sign(t.y - a.y), nx = t.x + dx, ny = t.y + dy;
-    if ((dx || dy) && free(nx, ny, t)) { t.x = nx; t.y = ny; blog(`${a.name} shoves ${t.name} back a pace.`); float(t, 'shoved', '#cfc8b8'); enterFire(t); } }
+    if ((dx || dy) && pitAt(nx, ny)) { blog(`${a.name} shoves ${t.name} back toward the edge.`); overEdge(t, {x:nx, y:ny}, 'shoved'); } // the pit, the drop, the lake (31_battle.js)
+    else if ((dx || dy) && free(nx, ny, t)) { t.x = nx; t.y = ny; blog(`${a.name} shoves ${t.name} back a pace.`); float(t, 'shoved', '#cfc8b8'); enterFire(t); } }
 }
 /* the squad's own state at the start of its turn: bleeding, slowed, held down. Returns false if the turn is lost to it. */
 function squadTurnStart(u){
@@ -115,7 +116,7 @@ Object.assign(AB, {
       near.forEach(p => { heal(p, Math.max(1, Math.round(roll(2,4,2 + lvB()) * d))); p.bleed = 0; putOut(p); sparks(p.x, p.y, 10, '#9fe0b8', .35); });
       blog(`${u.name} opens his hands and lets Denul out like water from a cup. ${near.length > 1 ? 'Everyone close enough feels it.' : 'There is nobody close enough but him.'}${d < 1 ? ' It comes thin here.' : ''}`); }},
   stanch:{name:'Stanch', strain:2, desc:()=>'A squadmate within 3 cannot drop below 1 health until Ohl\'s next turn, stops bleeding, and heals 1 for each squad level past the first. Strain 2.',
-    tiles:u=>party().filter(p => !p.ally && cheb(u, p) <= 3 && p.stanch !== u),
+    tiles:u=>party().filter(p => !p.ally && cheb(u, p) <= 3 && p.stanch !== u && sees(u, p)),
     run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.stanch = u; t.bleed = 0; if (lvB()) heal(t, lvB()); AUDIO.play('heal'); float(t, 'stanched', '#9fe0b8'); sparks(t.x, t.y, 8, '#9fe0b8', .3);
       blog(`${u.name} puts two fingers on ${t === u ? 'his own' : `${t.name}'s`} wound and says something to Hood in Ehrlii. ${t === u ? 'He' : t.name} is not going anywhere until he says so.`); }},
 });
@@ -230,5 +231,5 @@ const preUsed = id => !!(S && S.f && S.f.pre && S.f.pre[id]);
 function preWave(round, foes, text){ B.xwaves ??= []; B.xwaves.push({round, foes, text}); }
 function preTile(x, y, ch){ if (!inB(x, y) || unitAt(x, y)) return; const m = B.def.map.slice(); m[y] = m[y].slice(0, x) + ch + m[y].slice(x + 1); B.def = Object.assign({}, B.def, {map:m}); }
 function preFire(x, y, rounds = 2, txt){ if (!wall(x, y)) B.fires.push({x, y, until:(B.round || 0) + rounds, txt}); }
-function preSmoke(x, y, rounds = 2){ if (!wall(x, y)) B.smoke.push({x, y, until:(B.round || 0) + rounds}); }
+function preSmoke(x, y, rounds = 2){ if (!solid(x, y)) B.smoke.push({x, y, until:(B.round || 0) + rounds, g:'pre'}); }
 function preFoe(kind, x, y){ const at = freeNear(x, y); if (!at || !FOES[kind]) return null; const u = mkFoe(kind, at.x, at.y); u.ini = d20() + (u.init || 0); u.arrived = performance.now(); B.units.push(u); B.initOrder.push(u); return u; }

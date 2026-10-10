@@ -3,16 +3,46 @@ const party = () => B.units.filter(u => u.side === 'p' && u.hp > 0);
 const squadUnits = () => B.units.filter(u => u.side === 'p' && !u.ally && u.hp > 0);
 const foesOf = u => B.units.filter(x => x.hp > 0 && x.side !== u.side);
 const friendsOf = u => B.units.filter(x => x.hp > 0 && x.side === u.side && x !== u);
+/* where a throw (or the dark) can be aimed: in range, not inside a wall, and somewhere the thrower can see. The Quorl comes from the sky and needs only the range. */
+const aoeOk = (u, a, x, y) => cheb(u, {x, y}) <= abRange(u, a) && !solid(x, y) && (a.sky || sees(u, {x, y}));
 const abRange = (u, a) => (a.range || 0) + (a.item && has(u.id, 'longfuse') ? 1 : 0); // 'longfuse' is the Crossbow Cradle talent (key kept for old saves)
-/* smoke from a smoker: nobody shoots into it or out of it. Blades still work, and so does sorcery. */
+/* smoke from a smoker: nobody shoots into it, out of it, or through it. Blades still work, and so does sorcery. */
 const smoked = (x, y) => !!(B && B.smoke && B.smoke.some(s => s.x === x && s.y === y && s.until >= B.round));
-const canShoot = (a, t) => cheb(a, t) <= 1 || (!smoked(a.x, a.y) && !smoked(t.x, t.y));
+/* what the ground is (v3.19). Three kinds of thing stand on a battle map:
+   solid  '#' walls, pillars, standing stones: nobody walks through them and nobody sees past them
+   low    't' tables, crates, stalls, barrow-stones: nobody walks through them, but you can see and shoot over them (with cover behind)
+   pit    'o' pits and shafts, and on the roofs and the quays '#' is the drop or the lake: nobody walks over, everyone sees across, and anyone forced into one falls */
+const tileCh = (x, y) => inB(x, y) ? (B.def.map[y] || '')[x] || '.' : '#';
+const dropStyle = () => !!(B && B.def && (B.def.style === 'roof' || B.def.style === 'dock'));
+const pitAt = (x, y) => inB(x, y) && (tileCh(x, y) === 'o' || (tileCh(x, y) === '#' && dropStyle()));
+const lowAt = (x, y) => inB(x, y) && tileCh(x, y) === 't';
+const solid = (x, y) => !inB(x, y) || (tileCh(x, y) === '#' && !dropStyle());
+/* the tiles a line from the centre of a to the centre of b passes through, not counting either end. Grazing a corner doesn't count. */
+function rayTiles(ax, ay, bx, by){
+  const out = [], seen = new Set(), dx = bx - ax, dy = by - ay, n = Math.max(Math.abs(dx), Math.abs(dy)) * 12, e = .04;
+  for (let i = 1; i < n; i++) { const fx = ax + .5 + dx*i/n, fy = ay + .5 + dy*i/n, tx = Math.floor(fx), ty = Math.floor(fy), rx = fx - tx, ry = fy - ty;
+    if ((rx < e || rx > 1 - e) && (ry < e || ry > 1 - e) && Math.abs(Math.abs(dx) - Math.abs(dy)) > 0) continue; // on a corner, unless the line is a true diagonal
+    const k = tx + ',' + ty; if (seen.has(k) || (tx === ax && ty === ay) || (tx === bx && ty === by)) continue; seen.add(k); out.push({x:tx, y:ty}); }
+  return out; }
+/* line of sight: no wall between. Lenient at the edges: a line from either side of the tile will do, so a squadmate can lean round a pillar */
+function sees(a, b){
+  if (!B || cheb(a, b) <= 1) return true;
+  const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy), px = -dy/L*.3, py = dx/L*.3;
+  const clear = (ox, oy) => { const n = Math.max(Math.abs(dx), Math.abs(dy)) * 12; for (let i = 1; i < n; i++) { const fx = a.x + .5 + ox + dx*i/n, fy = a.y + .5 + oy + dy*i/n, tx = Math.floor(fx), ty = Math.floor(fy); if ((tx !== a.x || ty !== a.y) && (tx !== b.x || ty !== b.y) && solid(tx, ty)) return false; } return true; };
+  return clear(0, 0) || clear(px, py) || clear(-px, -py); }
+/* smoke anywhere on the line, the shooter's tile and the target's included */
+const smokeOnLine = (a, b) => smoked(a.x, a.y) || smoked(b.x, b.y) || rayTiles(a.x, a.y, b.x, b.y).some(p => smoked(p.x, p.y));
+const canShoot = (a, t) => cheb(a, t) <= 1 || (sees(a, t) && !smokeOnLine(a, t));
+/* why a shot can't be taken, for the log */
+const noShotWhy = (a, t) => !sees(a, t) ? 'no line of sight' : 'smoke in the way';
+/* low cover: a table or a crate right in front of the target, on the line from the shooter, is +2 armour against shots */
+const coverFor = (a, t) => cheb(a, t) > 1 && rayTiles(a.x, a.y, t.x, t.y).some(p => lowAt(p.x, p.y) && cheb(p, t) === 1);
 /* the word for where a fight is, for the log: a sharper wakes the whole tunnel, or the whole street */
 const placeWord = def => ({city:'street', roof:'roof', terrace:'terrace', garden:'garden', storm:'garden', cellar:'vault', dock:'quay', plain:'plain', hills:'hillside'})[def.style] || (def.open ? 'plain' : 'tunnel');
 const foes = () => B.units.filter(u => u.side === 'e' && u.hp > 0);
 const unitAt = (x,y) => B.units.find(u => u.hp > 0 && u.x === x && u.y === y);
 const inB = (x,y) => x>=0 && y>=0 && x<8 && y<10;
-const wall = (x,y) => !inB(x,y) || B.def.map[y][x] === '#';
+const wall = (x,y) => !inB(x,y) || '#to'.includes(tileCh(x, y)); // nobody stands here: walls, low cover, pits (see solid, lowAt, pitAt for sight)
 const free = (x,y,self) => !wall(x,y) && !B.units.some(u => u !== self && u.hp > 0 && u.x === x && u.y === y);
 const veilPen = () => Math.round((5 + lvT()) * (B && B.warren ? B.warren.meanas : 1)); // 1 outside a fight, for the squad sheet
 const pace = ms => ms * SET.speed; // combat pace setting (Slow / Normal / Fast)
@@ -127,7 +157,8 @@ function nextTurn(){
   if (u.hp <= 0) { B.busy = true; updBattleUI(); if (checkEnd()) return; return later(nextTurn, pace(600)); }
   if (u.stun) { u.stun = false; B.busy = true; blog(`${u.name} is dazed and loses the turn.`); float(u, 'dazed', '#c9bbff'); updBattleUI(); return later(nextTurn, pace(800)); }
   if (u.side === 'p' && !u.ally) { squadTurnStart(u); if (u.hp <= 0) { B.busy = true; updBattleUI(); if (checkEnd()) return; return later(nextTurn, pace(600)); } B.busy = false; B.mode = 'act'; updBattleUI(); barInView(); }
-  else { B.busy = true; updBattleUI(); const turn = B.turn; later(() => ai(u, turn), pace(550)); } // not if the battle was left or restarted meanwhile
+  else { if (u.prone) { u.prone = false; u.rising = B.turn; blog(`${u.name} gets up off the ground.`); float(u, 'getting up', '#cfc8b8'); } // knocked down (the edge of a pit): no move this turn
+    B.busy = true; updBattleUI(); const turn = B.turn; later(() => ai(u, turn), pace(550)); } // not if the battle was left or restarted meanwhile
 }
 function endTurn(){ if (!B || B.over) return; B.follow = null; const u = B.cur; if (u && u.blindTurns > 0) u.blindTurns--; /* Phantom wears off one of its own turns at a time */ if (u && u.side === 'p' && !u.ally && u.hp > 0 && !B.acted && !u.steady) { u.steady = true; float(u, 'steady', '#e8c073'); blog(`${u.name} holds, steady. <em>+2 to the next attack or save.</em>`); } B.busy = true; B.mode = null; B.aim = null; later(nextTurn, pace(250)); }
 function checkEnd(){
@@ -198,21 +229,22 @@ const AB = {
       blog(`${u.name} throws a burner. The ${placeWord(B.def)} fills with orange light.`); }},
   cusser:{name:'Cusser', item:'cusser', boom:true, aoe:2, range:3, desc:()=>'Fired from the crossbow\'s cradle, range 3: nobody throws a cusser by hand twice. 3d8 to the centre and everything next to it, 1d8 one step further. Scatters on a 1–2.' + (maudKept() ? ' Maud, Chub\'s cusser, stays in the satchel: Kettle is keeping her for the one that matters.' : ''),
     run(u,x,y){ const pt = scatter(u,x,y,2,R(2)+1); throwArc(u, pt, () => { blast(pt, [[3,8,0],[3,8,0],[1,8,0]], '#fff1c2'); AUDIO.play('boom', 1.6); sparks(pt.x, pt.y, 60, '#fff1c2', 1.6); shakeMap(); const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }); blog(`${u.name} cradles a cusser on the crossbow and looses it. The ${placeWord(B.def) === 'tunnel' || placeWord(B.def) === 'vault' ? 'ceiling' : 'ground'} thinks about it.`); }},
-  smoker:{name:'Smoker', item:'smoker', boom:true, aoe:1, range:4, smoke:true, desc:()=>'Throw, range 4. A 3×3 of smoke for 2 rounds: nobody shoots into it or out of it. Blades still work. A natural 1 scatters it.',
+  smoker:{name:'Smoker', item:'smoker', boom:true, aoe:1, range:4, smoke:true, desc:()=>'Throw, range 4. A 3×3 of smoke for 2 rounds: nobody shoots into it, out of it or through it. Blades still work. A natural 1 scatters it.',
     run(u,x,y){ const pt = scatter(u,x,y,1,1); throwArc(u, pt, () => { AUDIO.play('burner', .5); sparks(pt.x, pt.y, 18, '#9a968e', .35);
-      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!wall(pt.x+dx, pt.y+dy)) B.smoke.push({x:pt.x+dx, y:pt.y+dy, until:B.round+2}); });
+      const g = 's' + B.turn + ':' + pt.x + ',' + pt.y; for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (!solid(pt.x+dx, pt.y+dy)) B.smoke.push({x:pt.x+dx, y:pt.y+dy, until:B.round+2, g});
+      updBattleUI(); if (B.cur && B.cur.side === 'p') afterAct(); }); // a smoker has no blast() to hand the turn back, so it does it here (it used to wait for the watchdog: the hang)
       blog(`${u.name} breaks a smoker. Grey rolls out across the ${placeWord(B.def)} and sits there like a held breath.`); }},
   veil:{name:'Veil', strain:2, desc:()=>`Meanas illusion on a squadmate within 4: enemies take −${veilPen()} to hit them for ${2 + lvAt(5)} rounds. Grows with level. Strain 2.`,
-    tiles:u=>party().filter(p => cheb(u,p) <= 4),
+    tiles:u=>party().filter(p => cheb(u,p) <= 4 && sees(u,p)),
     run(u,x,y){ const t = unitAt(x,y); t.veilUntil = B.round + 2 + lvAt(5); AUDIO.play('magic'); sparks(t.x, t.y, 14, '#c9bbff', .4); blog(`${u.name} folds shadow around ${t.name}. They blur at the edges.`); float(t,'veiled','#c9bbff'); }},
   /* Phantom (Meanas): shadow folded over an enemy's eyes for two rounds. It fights phantoms; half the blows that would land go into the dark. */
   phantom:{name:'Phantom', strain:2, desc:()=>`Meanas shadow over the eyes of an enemy within 5 for its next ${2 + lvT()} turns: it swings at phantoms, and half the blows that would have landed go into the dark (−50% to hit). Grows with level. Strain 2.`,
-    tiles:u=>foes().filter(f => cheb(u,f) <= 5),
+    tiles:u=>foes().filter(f => cheb(u,f) <= 5 && sees(u,f)),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#9a86e0', t:performance.now(), dur:400, wob:true});
       t.blindTurns = 2 + lvT(); float(t,'blinded','#9a86e0'); sparks(t.x, t.y, 14, '#6a58b0', .45);
       blog(`${u.name} pulls Meanas down over ${t.name}'s eyes. For its next ${['','one','two','three','four','five'][t.blindTurns] || t.blindTurns} turns it will be fighting phantoms.`); }},
   mend:{name:'Mend', strain:3, desc:()=>`Denul healing on a squadmate within ${has('ohl','triage') ? 4 : 3}: 2d6+${(has('ohl','triage') ? 6 : 3) + lvB()}${B && B.warren && B.warren.denul < 1 ? ', weakened here' : ''}. Strain 3.`,
-    tiles:u=>party().filter(p => cheb(u,p) <= (has(u.id,'triage') ? 4 : 3)),
+    tiles:u=>party().filter(p => cheb(u,p) <= (has(u.id,'triage') ? 4 : 3) && sees(u,p)),
     run(u,x,y){ const t = unitAt(x,y); const n = Math.max(1, Math.round(roll(2,6,(has(u.id,'triage') ? 6 : 3) + lvB()) * B.warren.denul)); AUDIO.play('heal'); heal(t, n); sparks(t.x, t.y, 12, '#9fe0b8', .4); blog(`${u.name} lays hands on ${t.name}${B.warren.denul < 1 ? '. Denul comes thin and grudging' : ''}.`); }},
   salve:{name:'Salve', item:'salve', desc:()=>`Heal ${salveHeal()}, yourself or an adjacent squadmate.`, tiles:u=>party().filter(p => cheb(u,p) <= 1),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('heal'); heal(t, salveHeal()); blog(`${u.name} slaps salve on ${t === u ? 'their own wounds' : t.name}.`); }},
@@ -221,7 +253,7 @@ const AB = {
   quickshot:{name:'Quick Shot', desc:()=>`Once a fight: ${lvAt(6) ? 'three' : 'two'} arrows at one target within range${lvAt(6) ? '' : ' (three from level 6)'}.`, ok:()=>!B.used.quickshot, tiles:u=>foes().filter(f => cheb(u,f) <= u.rng && canShoot(u,f)),
     run(u,x,y){ const t = unitAt(x,y); B.used.quickshot = 1; attack(u, t); later(() => { if (t.hp > 0) attack(u, t, {verb:'puts a second arrow into'}); }, pace(320)); if (lvAt(6)) later(() => { if (t.hp > 0) attack(u, t, {verb:'puts a third arrow into'}); }, pace(640)); }},
   /* Vell's rope-and-hook: a throw at range that hauls whatever it bites to the tile beside him. The heavy take the hook and stay put. */
-  grapple:{name:'Grappling Hook', desc:()=>`Throw the hook at an enemy 2 to ${grapR()} tiles off: 1d6+${1 + lvDmg()} on a hit, and it is hauled to the open tile beside Vell nearest it. Bosses and the very heavy take the hook but don't come. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
+  grapple:{name:'Grappling Hook', desc:()=>`Throw the hook at an enemy 2 to ${grapR()} tiles off: 1d6+${1 + lvDmg()} on a hit, and it is hauled to the open tile beside Vell nearest it. Hauled across a pit or a drop, it saves to catch the lip and go down prone, or goes in. Bosses and the very heavy take the hook but don't come. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
     ok:u=>!(u.cdHook >= B.round), tiles:u=>foes().filter(f => cheb(u,f) >= 2 && cheb(u,f) <= grapR() && canShoot(u,f)),
     async run(u,x,y){ const t = unitAt(x,y); if (!t) return; u.cdHook = B.round + 2 - lvAt(6); AUDIO.play('bow');
       const r = attack(u, t, {dmg:[1,6,1 + lvDmg()], verb:'throws the hook at'}); if (!r.hit) return;
@@ -235,14 +267,14 @@ const AB = {
       t.facing = u.x >= t.x ? 1 : -1;
       if (has(u.id, 'snare')) { t.snareUntil = B.round + 1; float(t, 'snared', '#b0a0c8'); } }},
   /* the sergeant's shield, picked up at Nathilog and never put down: drive an enemy back, out of the squad's reach, and let the squad answer it */
-  shove:{name:'Shield Drive', desc:()=>`An adjacent enemy: 1d6+${2 + lvDmg()} on a hit, and it is driven straight back ${shoveDist() > 1 ? `up to ${shoveDist()} tiles` : '1 tile'}. Every squadmate it is driven out of reach of gets a free swing. Into a wall or a body: +1d6 instead of the ground. Then he may follow through into the tile it left: one step, no free swings. Bosses and the very heavy don't move. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
+  shove:{name:'Shield Drive', desc:()=>`An adjacent enemy: 1d6+${2 + lvDmg()} on a hit, and it is driven straight back ${shoveDist() > 1 ? `up to ${shoveDist()} tiles` : '1 tile'}. Every squadmate it is driven out of reach of gets a free swing. Into a wall or a body: +1d6 instead of the ground. Toward a pit, a roof's edge or the water: it saves to catch the lip and go down prone, or goes over. Then he may follow through into the tile it left: one step, no free swings. Bosses and the very heavy don't move. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
     ok:u=>!(u.cdShove >= B.round), tiles:u=>foes().filter(f => cheb(u,f) === 1),
     async run(u,x,y){ const t = unitAt(x,y); if (!t) return; u.cdShove = B.round + 2 - lvAt(6); u.aooTurn = B.turn; // the sergeant's own swing is spent on the drive
       const r = attack(u, t, {dmg:[1,6,2 + lvDmg()], verb:'drives a shield into'}); if (!r.hit) return;
       await wait(pace(250)); if (!B || t.hp <= 0) return;
       if (t.boss || t.immortal || t.maxhp >= 45) { blog(`${t.name} takes the shield and doesn't give a step.`); float(t, 'braced', '#a99a88'); return; }
       const dx = Math.sign(t.x - u.x), dy = Math.sign(t.y - u.y); let to = {x:t.x, y:t.y}, slam = false;
-      for (let i = 0; i < shoveDist(); i++) { const n = {x:to.x + dx, y:to.y + dy}; if (!free(n.x, n.y, t)) { slam = true; break; } to = n; }
+      for (let i = 0; i < shoveDist(); i++) { const n = {x:to.x + dx, y:to.y + dy}; if (pitAt(n.x, n.y)) { to = n; break; } if (!free(n.x, n.y, t)) { slam = true; break; } to = n; } // a pit takes it (forcedMove asks the save)
       if (to.x === t.x && to.y === t.y) { const d = roll(1,6,0); blog(`${t.name} goes back into what's behind it, hard.`); hurt(t, d); updBattleUI(); return; }
       blog(`${u.name} drives ${t.name} back${slam ? ' into what is behind it' : ''}.`); float(t, 'driven back', '#e8c073'); AUDIO.play('sword');
       const left = {x:x, y:y};
@@ -250,17 +282,17 @@ const AB = {
       if (B && u.hp > 0 && (t.x !== left.x || t.y !== left.y) && free(left.x, left.y, u)) offerFollow(u, left, t);
       if (slam && t.hp > 0) { const d = roll(1,6,0); blog(`${t.name} fetches up against it with a sound like a dropped sack.`); hurt(t, d); updBattleUI(); } }},
   ropeswing:{name:'Rope Swing', free:true, desc:()=>`Once a turn, and it does not use his action: swing to any open tile within ${3 + lvT()}. Nobody gets a free swing. Grows with level.`, ok:u=>u.swungTurn !== B.turn,
-    tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 3 + lvT() && free(x,y,u) && !(x === u.x && y === u.y)) out.push({x,y,step:true}); return out; },
+    tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 3 + lvT() && free(x,y,u) && !(x === u.x && y === u.y) && sees(u,{x,y})) out.push({x,y,step:true}); return out; },
     run(u,x,y){ u.swungTurn = B.turn; AUDIO.play('step'); sparks(u.x, u.y, 8, '#b0a0c8', .4); u.x = x; u.y = y; sparks(x, y, 8, '#b0a0c8', .4); blog(`${u.name} throws the hook at something high and goes with it.`); enterFire(u); updBattleUI(); }},
   /* talents (level 3 picks) */
-  quorl:{name:'Quorl Signal', boom:true, aoe:1, range:5, desc:()=>'Once a fight: a Moranth drop. A sharper from the sky, range 5, not from the satchel.', ok:()=>!B.used.quorl,
+  quorl:{name:'Quorl Signal', boom:true, sky:true, aoe:1, range:5, desc:()=>'Once a fight: a Moranth drop. A sharper from the sky, range 5, not from the satchel.', ok:()=>!B.used.quorl,
     run(u,x,y){ B.used.quorl = 1; const pt = {x,y}; AUDIO.play('bow'); B.fx.push({kind:'arc', from:{x:pt.x + 1.5, y:-3}, to:pt, t:performance.now(), dur:REDUCE() ? 1 : pace(480), drop:true}); later(() => { blast(pt, [[1,10,2],[1,6,0]], '#f2c46b'); AUDIO.play('boom', .8); sparks(pt.x, pt.y, 26, '#f2c46b'); }, REDUCE() ? 1 : pace(500)); blog(`${u.name} shows a lamp to the sky. Something with wings answers.`); }},
   shadowstep:{name:'Shadow Step', strain:1, desc:()=>`Step through Meanas to any free tile within ${4 + lvT()}. No free swings. Grows with level. Strain 1.`, tiles:u=>{ const out = []; for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (cheb(u,{x,y}) <= 4 + lvT() && free(x,y,u) && !(x === u.x && y === u.y)) out.push({x,y,step:true}); return out; },
     run(u,x,y){ AUDIO.play('shadow'); sparks(u.x, u.y, 12, '#c9bbff', .4); u.x = x; u.y = y; sparks(x, y, 12, '#c9bbff', .4); blog(`${u.name} is somewhere else.`); enterFire(u); }},
   /* Mockra, the warren of the mind: not a lost turn (that is Phantom) but a turned one. The enemy hears its own side say something
      unforgivable and spends its next turn going for the nearest of them instead of the squad. */
   mockra:{name:'Mockra Whisper', strain:3, desc:()=>`An enemy within 4 hears its own side whisper something unforgivable. On its next turn it goes for the nearest of them instead of you. Bosses resist on ${12 + 2*lvT()}+. Grows with level. Strain 3.`,
-    tiles:u=>foes().filter(f => cheb(u,f) <= 4 && !f.turned),
+    tiles:u=>foes().filter(f => cheb(u,f) <= 4 && !f.turned && sees(u,f)),
     run(u,x,y){ const t = unitAt(x,y); AUDIO.play('shadow'); B.fx.push({kind:'bolt', from:{x:u.x,y:u.y}, to:{x:t.x,y:t.y}, col:'#e0a8d8', t:performance.now(), dur:400, wob:true});
       if (t.boss && d20() >= 12 + 2*lvT()) { blog(`${t.name} shakes the whisper off.`); float(t,'resists','#a99a88'); }
       else { t.turned = true; sparks(t.x, t.y, 12, '#e0a8d8', .4); float(t,'turned','#e0a8d8'); blog(`${u.name} puts a word in ${t.name}'s ear, in a voice it knows. ${t.name} looks round at its own side, slowly.`); } }},
@@ -305,15 +337,16 @@ function atkCalc(a, t, o={}){
   const aooBonus = o.aoo && !a.ally && a.side === 'p' && (has(a.id,'holdline') || has(a.id,'sappers_eye')) ? 2 + lvAt(6) : 0;
   const bonus = (o.bonus || 0) + (mine && a.steady ? 2 : 0) + (mine && B.howlUntil >= B.round ? -1 : 0) + (!mine && B.foeRallyUntil >= B.round ? 2 : 0) + (!mine && t.clawMarkUntil >= B.round ? 2 : 0) + a.atk + (mine && S.card === 'oponn' ? 1 : 0) + (mine && a.rallyUntil >= B.round ? 2 : 0) + (!mine && S.card === 'knight' ? -1 : 0) + (fl ? 2 : 0) + aooBonus + (a.dazzleUntil >= B.round ? -3 : 0) + (!mine && a.snareUntil >= B.round ? -2 : 0) + (!mine && inDark(a.x, a.y) ? -2 : 0); // Blue Fire dazzles; Andii dark blinds
   const ghost = t.side === 'p' && !t.ally && has(t.id,'ghost') ? 2 + lvAt(6) : 0;
-  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost + (line ? 3 + lvT() : 0) + (t.darkUntil >= B.round ? 2 : 0) + (t.side === 'e' && t.snareUntil >= B.round ? -2 : 0);
-  return {bonus, ac, critOn:mine && S.card === 'assassin' ? 19 : 20, fl};
+  const cover = !o.aoo && coverFor(o.from || a, t); // behind a table or a crate: +2 against shots (v3.19)
+  const ac = t.ac + (t.veilUntil >= B.round ? veilPen() : 0) + wallBonus + discipline + ghost + (line ? 3 + lvT() : 0) + (t.darkUntil >= B.round ? 2 : 0) + (t.side === 'e' && t.snareUntil >= B.round ? -2 : 0) + (cover ? 2 : 0) + (t.prone && cheb(o.from || a, t) <= 1 ? -2 : 0);
+  return {bonus, ac, critOn:mine && S.card === 'assassin' ? 19 : 20, fl, cover};
 }
 /* chance to hit in percent: a natural 1 always misses, a crit always hits */
 function hitPct(c){ let n = 0; for (let r = 1; r <= 20; r++) if (r >= c.critOn || (r !== 1 && r + c.bonus >= c.ac)) n++; return n * 5; }
 function attack(a, t, o={}){
   const mine = a.side === 'p', lucky = mine && a.luckyTurn === B.turn; let nat = d20();
   if (lucky) { const n2 = d20(); blog(`<em>The Lady pulls.</em> ${a.name} rolls ${SET.dice ? `${nat} and ${n2}` : 'twice'} and keeps the better.`); nat = Math.max(nat, n2); a.luckyTurn = -1; }
-  const {bonus, ac, critOn, fl} = atkCalc(a, t, o);
+  const {bonus, ac, critOn, fl, cover} = atkCalc(a, t, o);
   if (mine && a.steady) a.steady = false; // spent on this blow
   if (mine && !a.ally) a.fired = true; // a ranged squadmate who has fired is no longer posted up
   let crit = nat >= critOn;
@@ -330,7 +363,7 @@ function attack(a, t, o={}){
   a.facing = t.x >= a.x ? 1 : -1;
   AUDIO.play(lash ? 'shadow' : a.kind === 'kettle' || a.kind === 'xbow' ? 'bow' : hit ? 'sword' : 'miss');
   const math = SET.dice ? ` <span class="stat">(${nat}+${bonus} vs ${ac})</span>` : '';
-  const tags = [o.aoo ? 'free attack' : '', fl ? 'flanking +2' : ''].filter(Boolean).join(', ');
+  const tags = [o.aoo ? 'free attack' : '', fl ? 'flanking +2' : '', cover ? 'behind cover' : '', t.prone && cheb(a, t) <= 1 ? 'prone' : ''].filter(Boolean).join(', ');
   const tagTxt = tags ? ` <span class="stat">[${tags}]</span>` : '';
   const land = ranged ? pace(200) : pace(140); // the blow lands when the bolt arrives or the lunge connects
   if (!hit) { blog(dark ? `${a.name} ${verb} ${t.name} and hits a phantom instead: the blow goes into the dark${tagTxt}${math}.` : `${a.name} ${verb} ${t.name} and misses${tagTxt}${math}.`); later(() => { float(t, dark ? 'into the dark' : 'miss', dark ? '#9a86e0' : '#a99a88'); if (!ranged) sparks(t.x, t.y - .2, 4, '#cfc8b8', .5); }, land); return {hit:false}; }
@@ -356,7 +389,7 @@ function battleTap(x, y){
   if (B.mode && B.mode !== 'act') {
     const a = AB[B.mode];
     if (a.aoe) {
-      if (cheb(u,{x,y}) > abRange(u,a) || wall(x,y)) { B.mode = 'act'; B.aim = null; return updBattleUI(); }
+      if (!aoeOk(u, a, x, y)) { B.mode = 'act'; B.aim = null; return updBattleUI(); }
       if (B.aim && B.aim.x === x && B.aim.y === y) return useAb(B.mode, x, y);
       AUDIO.play('click'); B.aim = {x,y}; return updBattleUI();
     }
@@ -364,7 +397,7 @@ function battleTap(x, y){
     B.mode = 'act'; return updBattleUI();
   }
   if (t && t.side === 'e' && !B.acted && cheb(u,t) <= u.rng && canShoot(u,t)) { B.acted = true; if (B.mvLeft < u.mv) B.moved = true; B.busy = true; attack(u, t); later(() => { B.busy = false; afterAct(); }, pace(380)); updBattleUI(); return; }
-  if (t) { B.ping = {u:t, t:performance.now()}; blog(`${t.name}: ${t.hp}/${t.maxhp} health, armour ${t.ac}${t.rng > 1 ? `, range ${t.rng}` : ''}${t.side === 'e' && !B.acted ? (cheb(u,t) > u.rng ? ' · out of range' : !canShoot(u,t) ? ' · smoke in the way' : '') : ''}.`); return; }
+  if (t) { B.ping = {u:t, t:performance.now()}; blog(`${t.name}: ${t.hp}/${t.maxhp} health, armour ${t.ac}${t.rng > 1 ? `, range ${t.rng}` : ''}${t.side === 'e' && !B.acted ? (cheb(u,t) > u.rng ? ' · out of range' : !canShoot(u,t) ? ' · ' + noShotWhy(u,t) : '') : ''}.`); return; }
   if (!B.moved && B.reach && B.reach.has(K(x,y)) && !(x === u.x && y === u.y)) moveCur(x, y);
 }
 async function moveCur(x, y){
@@ -404,12 +437,27 @@ function enterFire(u){
 const putOut = u => { if (u.burnTurns > 0) { u.burnTurns = 0; float(u, 'put out', '#9fe0b8'); } };
 /* forced movement (Vell's hook, the sergeant's Shield Drive): the target goes tile by tile, and every squadmate it is dragged or driven out of reach of
    gets a free swing, the same rule as stepping away. Returns true if it dropped on the way. Tiles with something in them are passed over, not stood on. */
+/* the edge (v3.19): anything dragged, driven or shoved into a pit, off a roof or into the lake gets a save, the same as fire's.
+   Make it and it catches the lip and goes down on the ground where it stood, prone: no move next turn, and blades next to it hit it easier (−2 armour).
+   Miss it and it goes over. An enemy is out of the fight. A squadmate climbs back up hurt (2d6+2) and prone. Returns true if it dropped. */
+const edgeWord = (x, y) => tileCh(x, y) === 'o' ? (B.def.pitTxt || 'the pit') : B.def.style === 'dock' ? 'the lake' : 'the drop';
+async function overEdge(t, pit, how){
+  const mine = t.side === 'p', what = edgeWord(pit.x, pit.y);
+  const mod = mine && !t.ally ? Math.max(statOf(t.id, 'might'), statOf(t.id, 'guile')) + (t.steady ? 2 : 0) : Math.floor((t.atk || 0) / 2), dc = 12 + (mine && !t.ally ? DIFF().dc : 0), nat = d20();
+  const math = SET.dice ? ` <span class="stat">(${nat}+${mod} vs ${dc})</span>` : '';
+  if (nat !== 1 && (nat === 20 || nat + mod >= dc)) {
+    t.prone = true; float(t, 'catches the edge', '#e8c073'); AUDIO.play('step'); sparks(pit.x, pit.y, 6, '#a99a88', .3);
+    blog(`${t.name} is ${how || 'forced'} to the lip of ${what}, catches it, and goes down on the ground instead of over${math}.`); updBattleUI(); return false; }
+  if (mine) { blog(`<em>${t.name} goes over into ${what}</em>${math} and comes back up it, the hard way.`); float(t, 'fell', '#f08a7c'); hurt(t, roll(2,6,2)); if (t.hp > 0) t.prone = true; updBattleUI(); return t.hp <= 0; }
+  t.x = pit.x; t.y = pit.y; t.fell = true; AUDIO.play('miss'); sparks(pit.x, pit.y, 10, '#6a6460', .5);
+  blog(`<em>${t.name} goes over into ${what}.</em>${math} It isn't coming back up.`); tally('pitfalls'); hurt(t, t.hp); updBattleUI(); return true; }
 async function forcedMove(t, to, how){
   let x = t.x, y = t.y, guard = 0;
   while ((x !== to.x || y !== to.y) && guard++ < 12) {
     const st = {x:x + Math.sign(to.x - x), y:y + Math.sign(to.y - y)};
     if (t.hp > 0 && await opportunity(t, st, how)) return true;
     if (!B || t.hp <= 0) return true;
+    if (pitAt(st.x, st.y)) return await overEdge(t, st, how);
     x = st.x; y = st.y; if (free(x, y, t)) { t.x = x; t.y = y; enterFire(t); updBattleUI(); if (t.hp <= 0) return true; }
     await wait(110);
   }
@@ -446,6 +494,7 @@ async function ai(u, turnId){
 const leaveCost = (u, x, y) => threatsAt(u, x, y).filter(e => e.aooTurn !== B.turn || (e.side === 'p' && !e.ally && has(e.id,'holdline'))).length;
 /* walk u along a path, paying free swings on the way; false if the battle or the turn went away meanwhile */
 async function aiWalk(u, path, gone){
+  if (u.rising === B.turn) return true; // spent getting up
   for (const st of path) { if (await opportunity(u, st) || gone()) break; const was = {x:u.x, y:u.y}; u.facing = st.x >= u.x ? 1 : -1; u.x = st.x; u.y = st.y; if (u.kind !== 'shade') AUDIO.play('step'); enterFire(u); await wait(160); if (gone()) return false; if (u.hp <= 0) break;
     if (u.side === 'e' && await postUp(u, was)) { if (gone()) return false; if (u.hp <= 0) break; } }
   return !gone();
@@ -623,9 +672,9 @@ function updBattleUI(){
   if (B.hl.aoo.size && canMove) hint += ' <span class="warn">A red corner means a free swing on the way.</span>';
   if (B.mode && B.mode !== 'act') { const a = AB[B.mode];
     if (!a.aoe) { hint = `${a.desc()} Tap a highlighted target, or the button again to cancel.`; a.tiles(u).forEach(t => B.hl.tgt.add(K(t.x,t.y))); }
-    else { for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (!wall(x,y) && cheb(u,{x,y}) <= abRange(u,a)) B.hl.tgt.add(K(x,y));
+    else { for (let y=0;y<10;y++) for (let x=0;x<8;x++) if (aoeOk(u, a, x, y)) B.hl.tgt.add(K(x,y));
       if (!B.aim) hint = `${a.desc()} Tap a tile to aim.`;
-      else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to ${a.darkness ? 'call it' : 'throw'}. ${cov.length ? `The ${a.darkness ? 'dark' : 'smoke'} covers ${cov.map(v => esc(v.name)).join(', ')}.` : `The ${a.darkness ? 'dark' : 'smoke'} covers empty ground.`} Nobody shoots into it or out of it.`; }
+      else if (a.smoke) { const cov = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe); hint = `Tap the marked tile again to ${a.darkness ? 'call it' : 'throw'}. ${cov.length ? `The ${a.darkness ? 'dark' : 'smoke'} covers ${cov.map(v => esc(v.name)).join(', ')}.` : `The ${a.darkness ? 'dark' : 'smoke'} covers empty ground.`} Nobody shoots into it, out of it or through it.`; }
       else { const caught = B.units.filter(v => v.hp > 0 && cheb(v, B.aim) <= a.aoe), mine = caught.filter(v => v.side === 'p'), theirs = caught.length - mine.length;
         hint = `Tap the marked tile again to throw. ${theirs ? `It catches ${theirs === 1 ? 'one enemy' : theirs + ' enemies'}.` : 'No enemy in the blast.'}${mine.length ? ` <span class="warn">And ${mine.map(v => esc(v.name)).join(', ')}.</span>` : ''}`; } } }
   const buffs = [u.veilUntil >= B.round ? 'veiled' : '', u.rallyUntil >= B.round ? 'rallied (+2 hit, +2 damage)' : '', lineCovers(u) ? 'in the line' : '', u.luckyTurn === B.turn ? 'the Lady pulls' : '', u.dazzleUntil >= B.round ? 'dazzled' : '', u.bleed > 0 ? 'bleeding' : '', u.burnTurns > 0 ? `on fire (${u.burnTurns} turn${u.burnTurns > 1 ? 's' : ''})` : '', u.steady ? 'steady (+2)' : '', postedUp(u) ? 'posted up' : '', u.clawMarkUntil >= B.round ? 'marked by the Claw' : '', u.stanch ? 'stanched' : '', u.turned ? 'turned on its own' : '', u.blindTurns > 0 ? `blinded by shadow (−50% to hit, ${u.blindTurns} turn${u.blindTurns > 1 ? 's' : ''})` : '', B.howlUntil >= B.round ? 'shaken by the howl' : ''].filter(Boolean).join(' · ');
@@ -699,7 +748,7 @@ function drawBattle(t){
     ctx.strokeStyle = hot ? 'rgba(255,224,160,.9)' : 'rgba(232,192,115,.3)'; ctx.lineWidth = hot ? 2 : 1; ctx.strokeRect(hv.x*T + 2, hv.y*T + 2, T - 4, T - 4); }
   // corpses first
   B.units.filter(u => u.hp <= 0).forEach(u => { const k = clamp((now - (u.deadAt || 0)) / 900, 0, 1); const d = dispOf(ukey(u), u.x, u.y);
-    ctx.save(); ctx.translate(d.x*T + T/2, d.y*T + T*.6); ctx.rotate(ease(k) * Math.PI/2 * (u.facing || 1)); ctx.globalAlpha = 1 - k*.55; drawFigure(ctx, u.kind, 0, 0, T/32*(u.boss ? 1.3 : 1), t, {still:true}); ctx.restore(); });
+    ctx.save(); ctx.translate(d.x*T + T/2, d.y*T + T*.6); if (u.fell) { ctx.scale(1 - k*.85, 1 - k*.85); ctx.globalAlpha = 1 - k; } else { ctx.rotate(ease(k) * Math.PI/2 * (u.facing || 1)); ctx.globalAlpha = 1 - k*.55; } /* over the edge: it dwindles away down the drop */ drawFigure(ctx, u.kind, 0, 0, T/32*(u.boss ? 1.3 : 1), t, {still:true}); ctx.restore(); });
   // living units
   const cur = B.cur, labels = [];
   B.units.filter(u => u.hp > 0).sort((a,b) => a.y - b.y).forEach(u => {
@@ -733,22 +782,21 @@ function drawBattle(t){
     if (u.blindTurns > 0) { const hx = cx, hy = cy - T*.62; for (let i=0;i<3;i++){ const ph = t/420 + i*2.1; ctx.fillStyle = `rgba(28,18,52,${.5 - i*.1})`; ctx.beginPath(); ctx.ellipse(hx + Math.cos(ph)*T*.07, hy + Math.sin(ph*1.3)*T*.03, T*(.3 - i*.05), T*(.1 + i*.02), Math.sin(ph)*.2, 0, 7); ctx.fill(); } ctx.strokeStyle = 'rgba(154,134,224,.55)'; ctx.lineWidth = Math.max(1, T*.03); ctx.beginPath(); ctx.ellipse(hx, hy, T*.3, T*.1, 0, 0, 7); ctx.stroke(); } // Phantom: shadow over the eyes
     if (u.turned) { ctx.fillStyle = '#e0a8d8'; ctx.font = `bold ${Math.round(T*.32)}px sans-serif`; ctx.textAlign = 'left'; ctx.fillText('?', cx + T*.3, cy - T*.7 + Math.sin(t/260)*2); }
   });
-  // smoke: grey billows over each smoked tile, thick enough to lose a figure in
-  /* Andii dark (A Courtesy of Darkness): one cloud over the whole cast, see-through enough to play under, with its edge traced so the tiles it covers are plain */
-  { const groups = {}; (B.smoke || []).filter(s => s.dark && s.until >= B.round).forEach(s => { const k = s.g || ('u' + s.until); (groups[k] ||= []).push(s); });
-    Object.values(groups).forEach(ts => { const fade = ts[0].until === B.round ? .6 : 1, xs = ts.map(s => s.x), ys = ts.map(s => s.y), x0 = Math.min(...xs), x1 = Math.max(...xs) + 1, y0 = Math.min(...ys), y1 = Math.max(...ys) + 1;
+  /* clouds (v3.18.3 the dark, v3.19 smoke): one cloud per throw or cast, see-through enough to play under, clipped to the tiles it covers, with its edge traced so they are plain.
+     Smoke is grey and drifts quicker; A Courtesy of Darkness is violet-black and slow. */
+  { const groups = {}; (B.smoke || []).filter(s => s.until >= B.round).forEach(s => { const k = (s.dark ? 'D' : 'S') + (s.g || ('u' + s.until)); (groups[k] ||= []).push(s); });
+    Object.values(groups).forEach(ts => { const dk = !!ts[0].dark, fade = ts[0].until === B.round ? .6 : 1, xs = ts.map(s => s.x), ys = ts.map(s => s.y), x0 = Math.min(...xs), x1 = Math.max(...xs) + 1, y0 = Math.min(...ys), y1 = Math.max(...ys) + 1;
       const cx = (x0 + x1)/2*T, cy = (y0 + y1)/2*T, rx = (x1 - x0)/2*T + T*.18, ry = (y1 - y0)/2*T + T*.18, has = (x, y) => ts.some(s => s.x === x && s.y === y);
+      const pal = dk ? {c0:[12,8,32,.55], c1:[28,18,64,.46], c2:[40,26,90,.12], w:'96,72,170', wa:.13, e:'170,150,240', ea:.62, sp:2600}
+                     : {c0:[138,134,126,.5], c1:[120,116,110,.4], c2:[104,100,96,.1], w:'176,172,164', wa:.16, e:'205,200,190', ea:.5, sp:1500};
+      const rgba = c => `rgba(${c[0]},${c[1]},${c[2]},${c[3]*fade})`;
       ctx.save(); ctx.beginPath(); ts.forEach(s => ctx.rect(s.x*T - T*.12, s.y*T - T*.12, T*1.24, T*1.24)); ctx.clip(); // the cloud stays on the tiles it covers (walls cut it)
-      ctx.save(); ctx.translate(cx, cy); ctx.scale(1, ry/rx); const g = ctx.createRadialGradient(0, 0, rx*.1, 0, 0, rx); g.addColorStop(0, `rgba(12,8,32,${.55*fade})`); g.addColorStop(.75, `rgba(28,18,64,${.46*fade})`); g.addColorStop(1, `rgba(40,26,90,${.12*fade})`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, rx, 0, 7); ctx.fill(); ctx.restore();
-      for (let i = 0; i < 5; i++) { const ph = t/(2600 + i*430) + i*1.7, wx = cx + (RM ? 0 : Math.sin(ph)*rx*.35), wy = cy + (RM ? 0 : Math.cos(ph*.8)*ry*.3); ell(ctx, wx, wy, rx*(.38 + (i%2)*.12), ry*(.22 + (i%3)*.06), `rgba(96,72,170,${.13*fade})`, Math.sin(ph)*.3); } // slow wisps
+      ctx.save(); ctx.translate(cx, cy); ctx.scale(1, ry/rx); const g = ctx.createRadialGradient(0, 0, rx*.1, 0, 0, rx); g.addColorStop(0, rgba(pal.c0)); g.addColorStop(.75, rgba(pal.c1)); g.addColorStop(1, rgba(pal.c2)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, rx, 0, 7); ctx.fill(); ctx.restore();
+      for (let i = 0; i < 5; i++) { const ph = t/(pal.sp + i*430) + i*1.7, wx = cx + (RM ? 0 : Math.sin(ph)*rx*.35), wy = cy + (RM ? 0 : Math.cos(ph*.8)*ry*.3); ell(ctx, wx, wy, rx*(.38 + (i%2)*.12), ry*(.22 + (i%3)*.06), `rgba(${pal.w},${pal.wa*fade})`, Math.sin(ph)*.3); } // drifting wisps
       ctx.restore();
-      ctx.save(); ctx.strokeStyle = `rgba(170,150,240,${.62*fade})`; ctx.lineWidth = Math.max(1, T*.035); ctx.setLineDash([T*.12, T*.09]); ctx.lineDashOffset = RM ? 0 : -t/90; ctx.beginPath();
+      ctx.save(); ctx.strokeStyle = `rgba(${pal.e},${pal.ea*fade})`; ctx.lineWidth = Math.max(1, T*.035); ctx.setLineDash([T*.12, T*.09]); ctx.lineDashOffset = RM ? 0 : -t/(dk ? 90 : 60); ctx.beginPath();
       ts.forEach(s => { const X = s.x*T, Y = s.y*T; if (!has(s.x, s.y - 1)) { ctx.moveTo(X, Y); ctx.lineTo(X + T, Y); } if (!has(s.x, s.y + 1)) { ctx.moveTo(X, Y + T); ctx.lineTo(X + T, Y + T); } if (!has(s.x - 1, s.y)) { ctx.moveTo(X, Y); ctx.lineTo(X, Y + T); } if (!has(s.x + 1, s.y)) { ctx.moveTo(X + T, Y); ctx.lineTo(X + T, Y + T); } });
       ctx.stroke(); ctx.restore(); }); }
-  (B.smoke || []).filter(s => s.until >= B.round && !s.dark).forEach(s => { const px = s.x*T + T/2, py = s.y*T + T/2, fade = s.until === B.round ? .65 : 1;
-    for (let i = 0; i < 4; i++) { const ph = t/(1900 + i*350) + hash(s.x, s.y, i)*6.28, ox = RM ? 0 : Math.sin(ph)*T*.12, oy = RM ? 0 : Math.cos(ph*.8)*T*.08;
-      ell(ctx, px + ox + (i % 2 ? T*.2 : -T*.2), py + oy + (i < 2 ? -T*.16 : T*.14), T*.48, T*.38, `rgba(150,146,138,${.26*fade})`); }
-    ell(ctx, px, py, T*.52, T*.44, `rgba(118,114,108,${.3*fade})`); });
   // darkness: lantern light around the party (the layer covers the headroom band too)
   if (def.dark) {
     const layer = G.darkc || (G.darkc = document.createElement('canvas')), lw = Math.round(8*T*G.dpr), lh = Math.round((10*T + H)*G.dpr);

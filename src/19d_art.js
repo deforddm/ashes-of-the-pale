@@ -45,7 +45,7 @@ const MUNI = {
   sharper:['Sharper', 'Moranth munition · thrown', 'A clay egg the size of a fist that breaks into a hundred knives. Kettle counts them the way priests count prayers.'],
   burner:['Burner', 'Moranth munition · thrown', 'Liquid fire in a waxed clay jar, and the ground goes on burning after. Strapped down whenever there is otataral about, and nobody stands downwind.'],
   cusser:['Cusser', 'Moranth munition · the crossbow cradle', () => 'The big one. Fired from the cradle under Kettle\'s crossbow, never thrown by anyone who wants to keep the arm. ' + (S && S.f && S.f.c5_cusserUsed ? 'Chub\'s was called Maud. Kettle spent her at the barrow.' : S && S.f && S.f.c7_debt === 'paid' ? 'Chub\'s was called Maud. Kettle handed her back to the Moranth.' : 'Chub\'s is called Maud, and Kettle keeps her out of ordinary fights.')],
-  smoker:['Smoker', 'Moranth munition · from Hedge\'s cellar', 'A grey jar that blooms into a wall. Nothing shoots into the smoke, and nothing shoots out of it.'],
+  smoker:['Smoker', 'Moranth munition · from Hedge\'s cellar', 'A grey jar that blooms into a wall. Nothing shoots into the smoke, out of it, or through it.'],
   salve:['Healing salve', 'Field dressing · anyone can apply it', 'A tin of salve and a clean binding. One in the pack at the start, more from Quartermaster Pell, and one found each chapter from the Rhivi Plain on. Ellis rations her own, for the hand.'],
 };
 function itemInfo(key){

@@ -98,8 +98,8 @@ const CH5 = {
     barrow_night:()=> 'Night. East, past the dig, to Paran\'s fire.' },
 
   battles:{
-    barrow_wards:{title:'The ridge of small barrows', warrenText:'Otataral somewhere below · Meanas thin as old cloth · Denul holds, barely', warren:{meanas:0.7,denul:0.8}, dark:true, music:'dark', open:true,
-      map:["#..##..#","........","..#..#..","........","...,,...",".#....#.","........","........","..,..,..","........"],
+    barrow_wards:{pitTxt:'an open barrow', title:'The ridge of small barrows', warrenText:'Otataral somewhere below · Meanas thin as old cloth · Denul holds, barely', warren:{meanas:0.7,denul:0.8}, dark:true, music:'dark', open:true,
+      map:["#..##..#","........","..#..#..","........","...oo...",".#....#.","........","........","..,..,..","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['wight',1,1],['wight',6,1],['wight',3,3],['ward',4,1]], xp:220, after:'c5_after_wards',
       waves:[{round:2, foes:[['wight',1,0],['wight',6,0],['wight',2,0]], text:'Three more of the small barrows split, and what was in them sits up.'}],
@@ -125,8 +125,8 @@ ${SQUAD().includes('brisk') ? `Brisk looks at the gap, and then back the way you
         foes:[['c5_barrowchief',3,1],['wight',1,3],['wight',6,3],['wight',4,0]], xp:110,
         waves:[{round:2, foes:[['wight',0,9],['wight',7,9]], text:'Behind you, two of the barrows you walked past split open, and what was in them gets up.'}] } },
     /* the night the Adjunct left: barrow-robbers out of Worrytown at the lip of the dig, and what their digging woke */
-    c5_dig:{title:'The lip of the dig', warrenText:'The Adjunct is gone · Meanas creeps back · Denul holds · the ground is listening', warren:{meanas:1,denul:1}, dark:true, music:'dark', open:true,
-      map:["..####..",".#.##.#.","........","........","#..,...#","........","..#.....","......,.","........","........"],
+    c5_dig:{pitTxt:'the robbers\' shaft', title:'The lip of the dig', warrenText:'The Adjunct is gone · Meanas creeps back · Denul holds · the ground is listening', warren:{meanas:1,denul:1}, dark:true, music:'dark', open:true,
+      map:["..####..",".#.##.#.","........","........","#..,...#","...oo...","..#.....","......,.","........","........"],
       party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
       foes:[['c5_mattock',3,2],['c5_digger',1,3],['c5_digger',6,3],['c5_robberbow',7,1],['c5_robberknife',0,2]], xp:200, after:'c5_after_dig',
       waves:[{round:2, foes:[['wight',2,1],['wight',5,1]], text:'The spoil they were digging in heaves. Something under it sits up with the earth running off it, and turns its empty face toward the nearest warm thing.'}],
