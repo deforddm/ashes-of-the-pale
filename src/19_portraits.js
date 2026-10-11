@@ -166,7 +166,25 @@ const POR = {
     ctx.fillStyle = PR.lit(ctx, '#7a2a1e', '#240c08', -58, 40); ctx.fillRect(-60, -9, 120, 12); PR.stroke(ctx, 'rgba(0,0,0,.5)', .6, () => { ctx.moveTo(-60, -9); ctx.lineTo(60, -9); }); // the tunic below the mail's hem
     ctx.fillStyle = PR.lit(ctx, '#5a4028', '#241810', -30, 30); PR.path(ctx, [[-32, -41], [-27, -44], [36, 2], [28, 2]]); ctx.fill(); ctx.fillStyle = '#9a9488'; ctx.fillRect(4, -21, 4.4, 4.4); ctx.fillStyle = '#34322e'; ctx.fillRect(5.1, -19.9, 2.2, 2.2); ctx.restore(); // the baldric and its buckle
     PR.neck(ctx, F, 9);
-    PR.scales(ctx, -23, 23, -52, 3, 4, '#7e776a'); // the scale gorget
+    // the scale gorget (v3.19.1): a collar round the base of the neck, not a band across it. Its top dips in front and rises behind the neck,
+    // its hem curves down over the chest, and the scales follow both curves, each row hanging over the one below like slates
+    { const q = (a, c, b, t) => (1-t)*(1-t)*a + 2*(1-t)*t*c + t*t*b, top = t => [q(-25, 0, 25, t), q(-51, -40, -51, t)], hem = t => [q(-33, 0, 33, t), q(-43, -29, -43, t)];
+      const shape = () => { ctx.beginPath(); ctx.moveTo(-25, -51); ctx.quadraticCurveTo(0, -29.5, 25, -51); ctx.quadraticCurveTo(31, -48, 33, -43); ctx.quadraticCurveTo(0, -15, -33, -43); ctx.quadraticCurveTo(-31, -48, -25, -51); ctx.closePath(); };
+      ctx.save(); shape(); ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2; ctx.fillStyle = '#2a2722'; ctx.fill(); ctx.restore(); // its shadow on the mail
+      ctx.save(); shape(); ctx.clip();
+      const rows = 6;
+      for (let r = rows; r >= 0; r--) { const v = r/rows, n = 13 + r*2, sw = 4.2 + v*.8;
+        for (let i = -1; i <= n; i++) { const tt = (i + (r % 2)*.5)/n, a = top(tt), b = hem(tt), x = a[0] + (b[0] - a[0])*v, y = a[1] + (b[1] - a[1])*v;
+          const a2 = top(tt + .01), b2 = hem(tt + .01), ang = Math.atan2((a2[1] + (b2[1] - a2[1])*v) - y, (a2[0] + (b2[0] - a2[0])*v) - x), k = clamp((x + 33)/66, 0, 1);
+          ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.beginPath(); ctx.moveTo(-sw*.5, -sw*.2); ctx.lineTo(sw*.5, -sw*.2); ctx.lineTo(sw*.5, sw*.35); ctx.quadraticCurveTo(sw*.5, sw*.95, 0, sw*1.05); ctx.quadraticCurveTo(-sw*.5, sw*.95, -sw*.5, sw*.35); ctx.closePath();
+          ctx.fillStyle = PR.lin(ctx, -sw*.5, -sw*.2, sw*.4, sw, [[0, shade('#8a8274', .22 - k*.5)], [1, shade('#8a8274', -.3 - k*.45)]]); ctx.fill(); ctx.strokeStyle = 'rgba(12,10,8,.75)'; ctx.lineWidth = .35; ctx.stroke();
+          ctx.fillStyle = `rgba(240,228,200,${.22 - k*.18})`; ctx.fillRect(-sw*.32, -sw*.1, sw*.18, sw*.5); ctx.restore(); } } // a glint down each lit edge
+      PR.soft(ctx, 22, -38, 18, 12, '#000000', .35); PR.soft(ctx, -16, -44, 10, 6, '#e8dcc0', .1); ctx.restore();
+      // the leather it's riveted to, rolled over at the top edge, with a rivet every few scales
+      ctx.save(); ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-25, -51); ctx.quadraticCurveTo(0, -29.5, 25, -51); ctx.strokeStyle = '#3a2618'; ctx.lineWidth = 2.6; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-24, -51.6); ctx.quadraticCurveTo(0, -30.6, 24, -51.6); ctx.strokeStyle = 'rgba(200,160,110,.28)'; ctx.lineWidth = .6; ctx.stroke();
+      for (let i = 1; i < 8; i++) { const [x, y] = top(i/8); ell(ctx, x, y + .3, .75, .75, i < 4 ? '#c8c0b0' : '#6a645a'); }
+      ctx.beginPath(); ctx.moveTo(-33, -43); ctx.quadraticCurveTo(0, -15, 33, -43); ctx.strokeStyle = 'rgba(10,8,6,.7)'; ctx.lineWidth = .7; ctx.stroke(); ctx.restore(); } // the hem's dark edge
     F.under = (ctx, F) => { const u = F.h/20; PR.dots(ctx, F, 70, 'rgba(150,80,50,.22)', .5, [-4, 8, (x, y) => Math.abs(x) > F.w*.8]); // freckles, sun-faded
       PR.soft(ctx, 2, F.cy + 16, 5.5, 2, '#140806', .22);
       ctx.lineCap = 'round'; PR.stroke(ctx, 'rgba(236,196,176,.4)', .5, () => { ctx.moveTo(-6.2, F.cy + 16.4*u); ctx.lineTo(-3.8, F.cy + 17.6*u); }); // a nick on the chin that healed pale
