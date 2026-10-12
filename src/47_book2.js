@@ -301,4 +301,30 @@ const b2HeatFrom = () => B && B.def && B.def.isStage2 ? 2 : 4;
       if (!u.heatSaid) { u.heatSaid = true; blog(`<em>The heat has ${u.name}. The mail is an oven: one step fewer every turn.</em>`); } }
     return r; }; }
 
+/* ---- the split on the Geleen Plain (v4.5, Chapter 6) ----
+   Coltaine splits the Chain: the refugees go on to Aren, the Seventh stays behind with him. The sergeant always goes with the column.
+   S.f.b2_stay = {id:true} for each squadmate who stayed with the rearguard. b2StayBehind(id) takes them out of the squad at the split
+   (letGo, not kill: they die at the Barrow in Chapter 7), with their kit kept in S.f.b2_stayGear[id]; their loyalty and picks stay in
+   S.loy / S.picks. If Tangle stayed and took the satchel, S.f.b2_stayInv holds its munitions (the squad's are zeroed).
+   Chapter 7, the Barrow: b2LastStand() puts the ones who stayed back on the map as the whole squad (no sergeant: the sergeant is on Aren's
+   walls), with their kit and Tangle's satchel if it went; the squad that went ahead waits in S.f.b2_wallSquad. Fight the last stand with
+   that squad (Hackle comes with Sathi as always), then call b2LastStandEnd(): they are recorded dead at the Barrow (S.dead[id], ch 7) and
+   the walls' squad comes back, its own munitions with it (S.f.b2_barrowFell = 1). Both are safe to call twice. */
+const B2_SPLIT = ['haddat', 'sathi', 'tangle', 'marrow', 'redblade'];
+const b2Rearguard = () => B2_SPLIT.filter(id => S && S.f && S.f.b2_stay && S.f.b2_stay[id] === true && TPL[id]);
+function b2StayBehind(id){ if (!b2Mate(id) || !S.squad.includes(id)) return;
+  S.f.b2_stay ??= {}; S.f.b2_stay[id] = true; S.f.b2_stayGear ??= {}; S.f.b2_stayGear[id] = Object.assign({}, S.gear[id] || {});
+  letGo(id, `${NAME(id)} stays with the Fist's rearguard.`); }
+const B2_MUNI = ['sharper', 'burner', 'cusser', 'smoker'];
+function b2LastStand(){ const rg = b2Rearguard(); if (!rg.length || S.f.b2_wallSquad || S.f.b2_barrowFell) return false;
+  S.f.b2_wallSquad = S.squad.slice(); S.f.b2_wallInv = Object.assign({}, S.inv);
+  rg.forEach(id => { S.gear[id] = Object.assign({}, (S.f.b2_stayGear || {})[id] || {}); S.loy[id] ??= 0; S.picks[id] ??= []; });
+  S.squad = rg.slice(); S.inv = Object.assign({salve:1}, ...B2_MUNI.map(k => ({[k]:rg.includes('tangle') && S.f.b2_stayInv ? S.f.b2_stayInv[k] || 0 : 0})));
+  S.trail = S.trail.slice(0, Math.max(1, S.squad.length - 1)); save(); return true; }
+function b2LastStandEnd(){ if (!Array.isArray(S.f.b2_wallSquad)) return false; const rg = b2Rearguard();
+  S.dead ??= {}; rg.forEach(id => { S.dead[id] = {ch:7, where:'The Barrow'}; S.gear[id] = {}; });
+  S.squad = S.f.b2_wallSquad.filter(id => !rg.includes(id)); if (!S.squad.includes('sgt')) S.squad.unshift('sgt');
+  if (S.f.b2_wallInv) S.inv = Object.assign({}, S.f.b2_wallInv);
+  S.f.b2_wallSquad = null; S.f.b2_wallInv = null; S.f.b2_barrowFell = 1; S.trail = S.trail.slice(0, Math.max(1, S.squad.length - 1)); save(); return true; }
+
 /* Book Two's chapters register in start() (90), after Book One's */

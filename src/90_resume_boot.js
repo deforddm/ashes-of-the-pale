@@ -52,6 +52,7 @@ function start(){
   if (typeof B2CH3 !== 'undefined') registerChapter(3, B2CH3, 'dg'); // Book Two, Chapter 3: The Ridge (50)
   if (typeof B2CH4 !== 'undefined') registerChapter(4, B2CH4, 'dg'); // Book Two, Chapter 4: The Day of Pure Blood (51)
   if (typeof B2CH5 !== 'undefined') registerChapter(5, B2CH5, 'dg'); // Book Two, Chapter 5: The Dry March (52)
+  if (typeof B2CH6 !== 'undefined') registerChapter(6, B2CH6, 'dg'); // Book Two, Chapter 6: Sanimon (53)
   showTitle();
   requestAnimationFrame(loop);
 }

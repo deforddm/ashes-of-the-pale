@@ -47,6 +47,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.5.0 — Book Two, Chapter Six: Sanimon (the Khundryl, Dojal Spring, the split on the Geleen Plain). Squadmates who stay with Coltaine are gone for good; their last stand comes in Chapter Seven.
 - v4.4.0 — Book Two, Chapter Five: The Dry March (Vathar Forest, the Jaghut tower, the Nenoth, the Trygalle). Heat at midday; the Tower's Breath trick.
 - v4.3.0 — Book Two, Chapter Four: The Day of Pure Blood (the Vathar crossing). The *Silanda*; Stormy's Way In. Later chapters can no longer register an id over an earlier chapter's: the lint fails on it.
 - v4.2.0 — Book Two, Chapter Three: The Ridge (the warlocks' tunnel and Gelor Ridge). The Weasels' bait on the Shallows; the Earth's Hand trick.

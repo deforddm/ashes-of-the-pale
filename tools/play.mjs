@@ -4,7 +4,7 @@
 // Usage: node tools/play.mjs [runs=3] [--cheat] [--from=N] [--shots=dir] [--quiet] [--wide] [--book=dg]
 //   --book=dg   pick Book Two (Deadhouse Gates) on the new-sergeant form; the run ends at its last written chapter's end screen
 //   --cheat     win every battle instantly (flow testing only)
-//   --from=N    start from a synthetic save at the start of chapter N
+//   --from=N    start from a synthetic save at the start of chapter N (with --book=dg, Book Two's chapter N: SYNTH_DG)
 //   --shots=dir screenshot on every new view/area and on any problem
 //   --wide      play in a 1366x768 window (the wide, PC layout) instead of a phone
 // Exit code 1 if any run hit a page error, a stuck state, or failed to reach the end.
@@ -106,6 +106,29 @@ const SYNTH = (n) => {
   save(); startChapter(n);
 };
 
+// Book Two (--book=dg --from=N): a synthetic save at the start of Book Two's chapter N, with the earlier chapters' keys and the flags
+// later chapters read drawn at random (the Silanda or a kept wound, Ramin or not, Ilhar's skin, Sathi's standing with the Weasels...)
+const SYNTH_DG = (n) => {
+  const pick = a => a[Math.floor(Math.random() * a.length)], coin = () => Math.random() < .5;
+  setBook('dg'); S = newStateDG('Hask'); S.lvl = {1:1, 2:3, 3:4, 4:5, 5:6, 6:7, 7:7}[n] || 7; S.xp = LEVELS[S.lvl - 1];
+  const keys = {1:['b2_key', ['daughters', 'carts']], 2:['b2_c2_key', ['spring', 'water']], 3:['b2_c3_key', ['bait', 'pull']], 4:['b2_c4_key', ['silanda', 'keep']], 5:['b2_c5_key', ['squad', 'column']], 6:['b2_c6_key', ['whole', 'some', 'many']]};
+  S.chapters = {}; for (let i = 1; i < n; i++) { const [f, v] = keys[i]; S.f[f] = pick(v); S.chapters[i] = S.f[f]; }
+  const f = S.f;
+  if (n > 2 && coin()) { f.b2_raminDone = 1; S.squad.push('redblade'); S.loy.redblade = 0; } else if (n > 2) f.b2_raminDone = 0;
+  if (n > 1) { f.b2_ilharHeard = 1; f.b2_prisonerFate = pick(['free', 'column', 'wickans']); f.b2_yedda = coin() ? 1 : 0; f.b2_bungle5 = pick(['gave', 'kept', 'met']); }
+  if (n > 3) { f.b2_sathiTeeth = coin() ? 1 : 0; if (f.b2_c3_key === 'bait') f.b2_weaselHonour = 1; else f.b2_sathiShamed = 1; f.b2_duikerTold3 = coin() ? 1 : 0; }
+  if (n > 4) { f.b2_ilharSeen = 1; f.b2_ilharSign = pick(['silent', 'named']); f.b2_robe = pick(['mincer', 'squad', 'none']); f.b2_marrowEnd = pick(['on', 'stopped']); if (f.b2_marrowEnd === 'on') f.b2_warrenFloor = 1; f.b2_sathiLaugh = coin() ? 1 : 0;
+    const mates = ['haddat', 'sathi', 'tangle', 'marrow'];
+    if (f.b2_c4_key === 'silanda') { const w = pick(mates); f.b2_silandaWho = w; f.b2_silandaGear = {}; S.squad = S.squad.filter(k => k !== w); } else f.b2_woundWho = pick(mates); }
+  if (n > 5) { f.b2_list7 = 1; f.b2_bottle = 1; f.b2_trygalle = 1; f.b2_sathiRode = coin() ? 1 : 0; if (S.squad.includes('haddat')) { f.b2_ilharWater = 1; f.b2_ilharSkin = pick(['drunk', 'kept']); if (f.b2_ilharSkin === 'kept') gain('b2_sealskin'); }
+    if (f.b2_key === 'daughters') f.b2_jar = pick(['poured', 'kept']); else { f.b2_jarboy = pick(['took', 'cart']); f.b2_girlsRode = 1; } f.b2_knots = 8; f.b2_sputters = 2; }
+  migrate(S); Object.keys(S.loy).forEach(k => { S.loy[k] = Math.floor(Math.random() * 5) - 1; });
+  S.chain = {water:8, column:20 + Math.floor(Math.random() * 10)}; S.inv = {sharper:1, burner:1, cusser:1, salve:2, smoker:1}; S.silver = 20;
+  S.picksDue = []; if (S.lvl >= 3) S.squad.forEach(id => { const o = PICKS[3][id]; if (o) S.picks[id].push(o[0][0]); });
+  if (S.lvl >= 5) S.squad.forEach(id => S.picks[id].push('iron')); if (S.lvl >= 7) S.squad.forEach(id => S.picks[id].push('keen'));
+  save(); startChapter(n);
+};
+
 let bad = 0;
 async function run(i) {
   const { ctx, page, errors: errs } = await openGame(browser, srv.url, wide ? { fast: true, width: 1366, height: 768 } : { fast: true });
@@ -113,7 +136,7 @@ async function run(i) {
   await page.evaluate(BOT);
   if (cheat) await page.evaluate(() => { __bot.cheat = true; });
   if (book !== 'gotm') await page.evaluate(b => { __bot.book = b; }, book);
-  if (from) await page.evaluate(SYNTH, from);
+  if (from) await page.evaluate(book === 'dg' ? SYNTH_DG : SYNTH, from);
   const t0 = Date.now();
   let last = '', same = 0, status = '', ticks = 0, chapterSeen = -1, areaSeen = '', viewSeen = '', errShot = 0;
   const problems = [];
