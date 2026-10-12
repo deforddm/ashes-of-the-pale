@@ -69,7 +69,7 @@ function deedsHTML(){
       <div class="row chsel">${done.map(n => `<button class="btn" data-replay="${n}">${replayLabel(n)}</button>`).join('')}</div><p class="fine" id="replayMsg"></p>` : `<p class="fine">Finish a chapter, and it can be played again from here.</p>`}` : ''}`;
 }
 function bindDeeds(){
-  const cv = $('#dRoute'); if (cv) { routeAnim = t => { if (!cv.isConnected) { routeAnim = null; return; } drawRoute(cv, S || {chapter:0}, t); }; }
+  const cv = $('#dRoute'); if (cv && S && S.book && S.book !== 'gotm') cv.parentNode.hidden = true; else if (cv) { routeAnim = t => { if (!cv.isConnected) { routeAnim = null; return; } drawRoute(cv, S || {chapter:0}, t); }; }
   document.querySelectorAll('[data-replay]').forEach(b => b.onclick = () => { const n = +b.dataset.replay, name = replayName(n), msg = $('#replayMsg');
     if (roster().list.some(e => sameName(e.name, name)) && b.dataset.arm !== '1') { document.querySelectorAll('[data-replay]').forEach(x => delete x.dataset.arm); b.dataset.arm = '1'; msg.textContent = tapWord(`Sergeant ${name} already has a save. Tap ${replayLabel(n)} again to start it over.`); return; }
     AUDIO.play('click'); replayChapter(n); });

@@ -166,8 +166,21 @@ const PICKS = {
       vell:[['ropeswing','Rope Swing','Once a turn, without using his action: swing to any open tile within 3 (further as the squad levels). Nobody gets a free swing.'],['snare','Snare','Whatever the hook hauls in is tangled in the line: −2 to hit and −2 armour through its next turn.']] },
   vet:[['iron','Iron','+6 health.'],['keen','Keen','+1 to hit.'],['fleet','Fleet','+1 move.'],['nerve','Nerve','+1 initiative, and +1 to every skill check this soldier rolls.']],
 };
-function registerChapter(n, CH){
-  CHAPTERS[n] = CH;
+/* v4.0 books. Each book has its own chapters 1..7 (and its own end lines and teasers); the globals CHAPTERS, CHEND and CHTEASE
+   always hold the book being played, swapped by setBook() (15). Areas, fights, foes, nodes and scenes are shared by id, so a
+   later book's ids carry a prefix (b2_ for Deadhouse Gates). */
+const BOOKS = {
+  gotm:{id:'gotm', n:1, word:'One', title:'Gardens of the Moon', unit:'the Fourth', tag:'Onearm\'s Host holds the ruins of Pale. Five marines are sent below them, and then south.',
+    blurb:'Genabackis. The Fourth Squad under Onearm\'s Host, from the Pale to the Fete in Darujhistan. The prologue and seven chapters.'},
+  dg:{id:'dg', n:2, word:'Two', title:'Deadhouse Gates', unit:'the squad', tag:'Seven Cities rises. Coltaine\'s Seventh Army walks forty thousand refugees across a burning continent, and five soldiers walk with them.',
+    blurb:'Seven Cities. A new squad of the Seventh on the Chain of Dogs, from the fall of Hissar toward Aren. Plays on its own. Chapter One so far.'},
+};
+const BOOKSNAP = {gotm:{ch:{}, end:{}, tease:{}}, dg:{ch:{}, end:{}, tease:{}}};
+let BOOK = 'gotm';
+function registerChapter(n, CH, book = 'gotm'){
+  CH.book = book;
+  if (book !== BOOK) { const b = BOOKSNAP[book]; b.ch[n] = CH; if (CH.end) b.end[n] = CH.end; if (CH.tease) b.tease[n] = CH.tease; } // another book's chapter: kept aside until setBook()
+  else CHAPTERS[n] = CH;
   if (CH.areas && !CH.area) CH.area = CH.areas[0];
   (CH.areas || (CH.area ? [CH.area] : [])).forEach(a => { AREAS[a.id] = Object.assign({decor:a.decor || 'camp_night'}, a); });
   if (CH.battles) Object.assign(BATTLES, CH.battles);
@@ -177,8 +190,7 @@ function registerChapter(n, CH){
   if (CH.dlg) Object.assign(DLG, CH.dlg);
   if (CH.scenes) Object.assign(SCENES, CH.scenes);
   if (CH.quests) Object.assign(QUESTS, CH.quests);
-  if (CH.end) CHEND[n] = CH.end;
-  if (CH.tease) CHTEASE[n] = CH.tease;
+  if (book === BOOK) { if (CH.end) CHEND[n] = CH.end; if (CH.tease) CHTEASE[n] = CH.tease; }
 }
 
 const BATTLES = {

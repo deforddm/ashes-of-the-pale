@@ -39,13 +39,13 @@ function showChapterEnd(){
   view = 'end'; $('#sheet').hidden = true; B = null; AUDIO.setScene('end');
   const n = S.chapter, key = S.chapters[n]; const E = (CHEND[n] || {})[key] || ['The end',''];
   const extra = [];
-  if (n === 0) {
+  if (BOOK === 'gotm' && n === 0) { // Book One's own end lines read Book One's flags; later books bring theirs through CH.extras
     if (S.f.decoy) extra.push('A Claw is walking around with Kettle\'s munitions ledger. He\'ll notice eventually.');
     if (S.f.marked) extra.push('A Claw has your name in a neat hand.');
     if (S.f.noisy) extra.push('Your sharper woke the Stonebound early. It remembered.');
     if (S.f.garrowWord && !S.f.noisy) extra.push('Garrow\'s word reached Moreau\'s section.');
   }
-  if (n === 2) {
+  if (BOOK === 'gotm' && n === 2) {
     if (SQUAD().includes('ellis')) extra.push('Ellis rides with the Fourth. Toc\'s word, and yours.'); if (S.f.c2_ellisRefused) extra.push('Ellis stayed on the plain. Toc\'s word was not enough.');
     if (S.f.c2_late) extra.push('The wagon is a day late. Whiskeyjack does not forget days.');
     if (S.f.c2_outFought) extra.push('Rhivi blood on the grass. They will remember the squad that spilled it.');
@@ -54,7 +54,7 @@ function showChapterEnd(){
     if (S.f.c2_badge) extra.push('A Second Army badge from the barrow. Wrong regiment. Brisk keeps it anyway.');
     if (S.f.c2_croneSaw) extra.push('A Great Raven knows the sergeant\'s name now. That is not a comfort.');
   }
-  if (n === 3) {
+  if (BOOK === 'gotm' && n === 3) {
     if (S.f.c3_lied) extra.push(S.f.c3_lieHeld ? 'You lied to a Claw handler to her face, and she half believed it. She will find out which half.' : 'You lied to a Claw handler to her face. She thanked you for the trouble.');
     if (S.f.c3_told) extra.push('Madryn knows what is under the intersection. That is a drop of acid on a wax plug, with the Fourth\'s name on it.');
     if (S.f.c3_wjTold) extra.push('Whiskeyjack said "Good." Once. The squad heard it.');
@@ -66,7 +66,7 @@ function showChapterEnd(){
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
     if (S.f.c3_pinup) extra.push('Two painted women on a crate lid, Rumjugs and Sweetlard, rode out of the crossing on the Bridgeburners\' tailboard. Nobody knows who they are. Hedge thinks he will.');
   }
-  if (n === 4) {
+  if (BOOK === 'gotm' && n === 4) {
     if (S.f.c4_vell) extra.push(SQUAD().includes('vell') ? 'Vell is alive, and walks with the Fourth. A Guild journeyman owed it his life, and has decided to pay in person.' : 'Vell is alive. A Guild journeyman owes the Fourth his life, and the Guild pays its debts, one way or the other.');
     if (S.f.c4_ellisToc) extra.push('Ellis went east, into the hills, to find Toc. The Fourth counts the gap.');
     if (S.f.c4_guildKnows) extra.push('Ocelot knows a Malazan squad held a roof for one of his. Vell told him, and then told the rest of the clan.');
@@ -78,7 +78,7 @@ function showChapterEnd(){
     if (S.f.c4_rallick) extra.push((SQUAD().includes('ellis') && (S.f.c4_rallickOk || S.f.c4_rallickTail) ? 'Rallick Nom' : 'The Guild man on the roof') + ' told the Fourth to go home. He is the first person in this city to say it as a kindness.');
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
   }
-  if (n === 5) {
+  if (BOOK === 'gotm' && n === 5) {
     if (S.f.c5_ellisThrough) extra.push('Ellis went into the grey after her captain. The rent closed on her heel. Nobody has said the word \'dead\'. Nobody will.');
     if (S.f.c5_ellisHeld) extra.push('Ellis is with the Fourth and has not spoken to the sergeant since the hillside. She counts the squad every morning and arrives at the wrong number.');
     if (S.f.c5_tuftMarked) extra.push('Tuft came back from the threshold with grey in her hair. Shadow has noticed her. She says it was polite.');
@@ -88,7 +88,7 @@ function showChapterEnd(){
     if (S.f.c5_crone) extra.push('Crone says her lord is interested in the hill. Crone laughed when she said it. That is worse.');
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
   }
-  if (n === 1) {
+  if (BOOK === 'gotm' && n === 1) {
     if (S.f.wjRegard > 0) extra.push('Whiskeyjack has decided the Fourth is worth the trouble.'); if (S.f.wjRegard < 0) extra.push('Whiskeyjack has decided the Fourth is trouble.');
     if (S.f.c1_accFought) extra.push('Three of the Claw\'s people did not walk away from the picket line.');
     if (S.f.c1_accBluffed) extra.push('Kettle introduced her cusser to three of the Claw\'s people, by name. They left.');
@@ -102,7 +102,7 @@ function showChapterEnd(){
   const title = n === 0 ? 'End of the prologue' : `End of Chapter ${CH ? CH.number : n}`;
   const cap = n === 0 ? 'The Fourth comes up out of the dark. All five.' : CH && CH.endCap ? safe(() => CH.endCap(), 'Morning finds the Fourth still standing, which is the whole of the job.') : 'Morning finds the Fourth still standing, which is the whole of the job.';
   toTop(); $('#app').innerHTML = smartq(`<div class="end">
-    ${ART_ENDVISTA[n] && ARTON() ? artScene(ART_ENDVISTA[n], cap) : `<div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>`}
+    ${ART_ENDVISTA[n] && ARTON() && BOOK === 'gotm' ? artScene(ART_ENDVISTA[n], cap) : `<div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>`}
     <div class="sub" style="margin-top:12px">${title}</div>
     <h2>${E[0]}</h2>
     <p class="narr" style="margin:0">${E[1]}</p>

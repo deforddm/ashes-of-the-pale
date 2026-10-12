@@ -191,7 +191,10 @@ function drawFigure(ctx, kind, cx, cy, s, t, o = {}){
       ell(ctx, 2.6, -1, 4.6, 3.4, '#101016'); ell(ctx, 2, -2.6, 2.4, 1, 'rgba(140,175,190,.2)'); ell(ctx, 8.4, -1.6, 3, 2.6, '#0c0c10'); ell(ctx, 9.4, -2.4, 1.9, 1.9, '#3a1a14'); ctx.fillStyle = 'rgba(255,200,150,.5)'; ctx.fillRect(9.6, -3.2, .9, .9); // head, compound eye
       ctx.strokeStyle = '#0c0c10'; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(10.5, 0); ctx.lineTo(12.5, 1.4); ctx.moveTo(10, .6); ctx.lineTo(11.4, 2.4); ctx.stroke(); ctx.restore(); break; }
     case 'urchin': ctx.save(); ctx.scale(.78, .78); ctx.translate(0, 3); legs('#2a2320'); torso('#4a4034', '#241e16', 5); head('#b89a80', 4.4); look(); ctx.fillStyle = '#2a2018'; ctx.beginPath(); ctx.arc(0, -13, 4.6, Math.PI*.9, Math.PI*2.1); ctx.fill(); ctx.restore(); break;
+    default: if (FIGX[kind]) FIGX[kind](ctx, {legs, torso, head, capHelm, fullHelm, hood, sword, shield, eyes, look, armor}, t, o); // later books' figures (47b)
   }
   ctx.restore();
 }
+/* figures added by later books: FIGX[kind](ctx, helpers, t, o), drawn in the same ~32px frame, already translated, scaled and bobbing */
+const FIGX = {};
 

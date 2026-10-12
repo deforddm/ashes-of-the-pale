@@ -49,6 +49,7 @@ function openModal(tab){
 }
 /* the journal's notes, newest chapter first. Each line waits on the flag that means the player has seen it happen, so nothing spoils. */
 function journalNotes(){
+  if (S.book && S.book !== 'gotm') return [1, 2, 3, 4, 5, 6, 7].filter(n => n <= (S.chapter || 1) && CHAPTERS[n] && CHAPTERS[n].journal).reverse().map(n => { try { return CHAPTERS[n].journal() || []; } catch(e) { return []; } }).flat().filter(Boolean); // later books: each chapter's own journal lines
   const f = S.f, ch = S.chapter || 0, done = n => !!(S.chapters && S.chapters[n] != null) || ch > n, here = id => SQUAD().includes(id);
   const dead = Object.keys(S.dead || {}).filter(id => TPL[id]);
   const c7 = ch >= 7 ? [
@@ -116,6 +117,8 @@ function journalHead(){
 }
 
 /* the glossary at the foot of the journal: the words the book throws at you, unlocked as the story reaches them */
+/* a later book's own glossary rows, the same shape: [chapter, word, meaning, met?] (47) */
+const GLOSSX = {};
 const GLOSS = [
   [0, 'The Malazan Empire', 'The Empire the Fourth serves: an Empress on the throne in Unta, armies on three continents, and a habit of taking cities.'],
   [0, "Onearm's Host", "What is left of the Second, Fifth and Sixth Armies on Genabackis, under High Fist Dujek Onearm. The Fourth are marines in it."],
@@ -163,12 +166,13 @@ const watchedVis = id => !!(S && (S.seenVisions || []).includes(id)); // any, th
 /* a row shows from its chapter on, and only once its met() test (if it has one) is true: the player has heard the word */
 function glossHTML(){
   const ch = S ? S.chapter || 0 : 0, val = x => typeof x === 'function' ? x() : x;
-  const rows = GLOSS.filter(g => { try { return g[0] <= ch && (!g[3] || (S && g[3]())); } catch(e) { return false; } });
+  const rows = (S && S.book && S.book !== 'gotm' && GLOSSX[S.book] ? GLOSSX[S.book] : GLOSS).filter(g => { try { return g[0] <= ch && (!g[3] || (S && g[3]())); } catch(e) { return false; } });
   return `<details class="gloss"><summary>Words you'll hear</summary><dl>${rows.map(([, t, d]) => `<dt>${val(t)}</dt><dd>${d}</dd>`).join('')}</dl>${ch < 7 ? `<p class="fine">More as the story reaches them.</p>` : ''}</details>`;
 }
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.0.0', ['Book Two: Deadhouse Gates. Pick it on the new-sergeant form. It is its own campaign with a new squad of the Seventh Army, and it plays without Book One.', 'Chapter One, Hissar Burns: the night Hissar rises, a promise in the water-sellers\' quarter, the south gate, Coltaine\'s camp, and the first battle of the march, at Bat\'rol in the Vin\'til Basin.', 'The new squad: Haddat, a Hissari auxiliary with a shield; Sathi, a Wickan outrider of the Weasel Clan, and her cattle-dog Hackle, who fights beside her and smells an ambush coming; Tangle, a sapper whose munitions will never be resupplied; and Marrow, a healer whose warren has gone strange.', 'The Chain: the squad now counts its water and the refugees it walks with. A rest costs a skin of water, and a squad with none fights parched. Choices trade one for the other.', 'A finished Book One sergeant can be brought along. What the Fourth did after the Fete matters late in Book Two.', 'Book One is unchanged.']],
   ['3.19.1', ['Brisk\'s scale gorget is a collar round her neck now, curved, the scales hanging row over row on a riveted leather rim, instead of a flat band of bricks across her throat.']],
   ['3.19.0', ['Throwing a smoker no longer stalls the fight for a few seconds: the turn comes straight back.', 'Smoke is one grey cloud per smoker now, see-through, with its edge marked, like A Courtesy of Darkness.', 'Line of sight is traced tile by tile. Walls, pillars and standing stones block a shot; smoke anywhere on the line blocks it too. Throws, the hook, Veil, Phantom, Mend, Stanch and the other aimed tricks need sight of their target. The Quorl drop comes from the sky and doesn\'t.', 'New ground: tables, crates and fallen stones (block a step, not a shot; a target right behind one gets +2 armour against shots), and pits (block a step, not a shot). On the roofs the drop between roofs counts as a pit, and on the quays so does the lake.', 'Forced toward a pit, a roof\'s edge or the water by the hook, Shield Drive or an enemy\'s shove: a save to catch the lip and go down prone (no move next turn, −2 armour against blades), or over. An enemy that goes over is out of the fight. A squadmate climbs back up, hurt.', 'Where: crates in the alley by the Worry Gate, the stable yard and on the quay; tables on the upper terrace; the robbers\' shaft at the dig; an open barrow on the ridge; tanning pits and drying frames in the tanners\' yard.']],
   ['3.18.3', ['A Courtesy of Darkness is one cloud now, not nine, and you can see through it: the figures under it stay visible, and a slow dotted edge shows exactly which tiles it covers.']],

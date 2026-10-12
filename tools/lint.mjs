@@ -28,7 +28,8 @@ for (const m of all.matchAll(/S\.f\.([A-Za-z0-9_]+)\s*=\s*'([^']+)'/g)) (flagVal
 for (const m of all.matchAll(/S\.f\.([A-Za-z0-9_]+)\s*===?\s*'([^']+)'/g)) (flagVals[m[1]] ||= new Set()).add(m[2]);
 for (const m of setPairs) (flagVals[m[1]] ||= new Set()).add(m[2]);
 const flagValsObj = Object.fromEntries(Object.entries(flagVals).map(([k, v]) => [k, [...v]]));
-const spriteKinds = [...new Set([...fs.readFileSync(path.join(root, 'src/18_figure_sprites.js'), 'utf8').matchAll(/case '([a-z_0-9]+)'/g)].map(m => m[1]))];
+const spriteKinds = [...new Set([...fs.readFileSync(path.join(root, 'src/18_figure_sprites.js'), 'utf8').matchAll(/case '([a-z_0-9]+)'/g)].map(m => m[1])
+  .concat([...all.matchAll(/\bFIGX\.([a-z_0-9]+)\s*=/g)].map(m => m[1])))]; // later books add theirs to FIGX (47b)
 const portraitSrc = fs.readFileSync(path.join(root, 'src/19_portraits.js'), 'utf8');
 
 const srv = await server(); const browser = await launch();
@@ -36,10 +37,29 @@ const { page, errors: pageErrors } = await openGame(browser, srv.url, {});
 const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, objFlags }) => {
   const E = [], W = [];
   const err = (m) => E.push(m), warn = (m) => W.push(m);
+  if (typeof FIGX !== 'undefined') spriteKinds = spriteKinds.concat(Object.keys(FIGX)); // later books' figures, however 47b registers them
   let seed = 1; const rng = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
   const STATS = ['might', 'wits', 'guile'];
   const ALLIDS = Object.keys(TPL);
   const chOf = id => { const m = /^c(\d)_/.exec(id); return m ? +m[1] : 0; };
+  // Book Two (Deadhouse Gates): ids carry a b2_ prefix and are checked under Book Two states (S.book 'dg', the new squad, a chain)
+  const isDG = id => /^b2_/.test(id);
+  function mkDG(v) {
+    S = newStateDG('Hask'); S.chapter = 1; S.scene = 'talk';
+    S.lvl = 1 + (v % 3); S.xp = LEVELS[S.lvl - 1] || 0;
+    if (v % 5 === 3) S.squad = S.squad.filter(x => x !== 'sathi' && x !== 'marrow'); // text must hold up if a squadmate is missing
+    if (v % 7 === 4) S.squad = S.squad.filter(x => x !== 'haddat' && x !== 'tangle');
+    migrate(S);
+    S.chapters = {}; S.chain = { water: v % 6 === 0 ? 0 : Math.floor(rng() * 13), column: Math.floor(rng() * 40) };
+    S.inv = { sharper: v % 4, burner: v % 3, cusser: v % 2, salve: 2, smoker: v % 3 };
+    const setF = f => { if (objFlags.includes(f)) S.f[f] = f === 'lastFallen' ? [] : {}; else S.f[f] = flagVals[f] ? flagVals[f][Math.floor(rng() * flagVals[f].length)] : (rng() < .15 ? 2 : 1); };
+    if (v === 1) flags.forEach(f => objFlags.includes(f) ? setF(f) : S.f[f] = (flagVals[f] && flagVals[f][0]) || 1);
+    else if (v > 1) flags.forEach(f => { if (rng() < 0.35) setF(f); });
+    Object.keys(S.loy).forEach(k => { S.loy[k] = (v % 7) - 3; });
+    S.card = null;
+    return S;
+  }
+  const mkFor = (id, ch, v) => isDG(id) ? mkDG(v) : mk(ch, v);
   function mk(ch, v) {
     S = newState('Hask'); S.chapter = ch; S.scene = 'talk';
     S.lvl = Math.min(8, 1 + ch); S.xp = LEVELS[S.lvl - 1] || 0;
@@ -65,12 +85,14 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
     const ch = chOf(id);
     const seen = new Set();
     for (let v = 0; v < VAR; v++) {
-      mk(ch, v);
+      mkFor(id, ch, v);
       let n;
       try { n = DLG[id](); } catch (e) { const k = 'throw ' + id + ': ' + e.message; if (!seen.has(k)) { seen.add(k); err(k + ` (variant ${v})`); } continue; }
       if (!n || typeof n !== 'object') { err(`${id}: node did not return an object`); break; }
       if (typeof n.txt !== 'string' || !n.txt.trim()) { const k = 'notxt'; if (!seen.has(k)) { seen.add(k); err(`${id}: empty txt (variant ${v})`); } }
       else { const f = fmt(n.txt); const m = bad.exec(f); if (m) { const k = 'leak' + m[0]; if (!seen.has(k)) { seen.add(k); err(`${id}: text contains "${m[0]}" (variant ${v}): …${f.slice(Math.max(0, m.index - 80), m.index + 40).replace(/<[^>]+>/g, '')}…`); } } }
+      if (n.html && typeof n.html !== 'string' && !seen.has('html')) { seen.add('html'); err(`${id}: html is not a string (variant ${v})`); }
+      if (typeof n.html === 'string' && bad.test(n.html.replace(/<[^>]+>/g, ' ')) && !seen.has('htmll')) { seen.add('htmll'); err(`${id}: html contains a leak (variant ${v})`); }
       if (n.after) { const f = fmt(n.after); const m = bad.exec(f); if (m && !seen.has('aft')) { seen.add('aft'); err(`${id}: after-text contains "${m[0]}"`); } }
       if (n.scene && n.scene !== 'explore' && !SCENES[n.scene]) { if (!seen.has('sc')) { seen.add('sc'); err(`${id}: unknown scene "${n.scene}"`); } }
       if (n.oncard && !CARDS[n.oncard[0]]) { if (!seen.has('card')) { seen.add('card'); err(`${id}: unknown card ${n.oncard[0]}`); } }
@@ -118,14 +140,15 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
       if (c === undefined) err(`area ${aid}: npc ${n.id} off map`);
       else if (c === '#') err(`area ${aid}: npc ${n.id} stands on a wall`);
       if (!spriteKinds.includes(n.kind)) warn(`area ${aid}: npc ${n.id} kind "${n.kind}" has no sprite case`);
-      for (let v = 0; v < VAR; v++) { mk(chOf(aid) || 0, v); try { const nd = n.node(); refd.add(nd); areaNodes.add(nd); if (!DLG[nd]) err(`area ${aid}: npc ${n.id} -> missing node ${nd}`); } catch (e) { err(`area ${aid}: npc ${n.id} node() throws ${e.message}`); break; } }
-      for (let v = 0; v < VAR; v++) { mk(0, v); try { n.show && n.show(); n.fresh && n.fresh(); } catch (e) { err(`area ${aid}: npc ${n.id} show/fresh throws ${e.message}`); break; } }
+      for (let v = 0; v < VAR; v++) { mkFor(aid, chOf(aid) || 0, v); try { const nd = n.node(); refd.add(nd); areaNodes.add(nd); if (!DLG[nd]) err(`area ${aid}: npc ${n.id} -> missing node ${nd}`); } catch (e) { err(`area ${aid}: npc ${n.id} node() throws ${e.message}`); break; } }
+      for (let v = 0; v < VAR; v++) { mkFor(aid, 0, v); try { n.show && n.show(); n.fresh && n.fresh(); } catch (e) { err(`area ${aid}: npc ${n.id} show/fresh throws ${e.message}`); break; } }
       // overlapping NPCs that can be visible at once
       const k = n.x + ',' + n.y; (occ[k] ||= []).push(n);
     }
     for (const [k, list] of Object.entries(occ)) if (list.length > 1) {
-      for (let v = 0; v < VAR; v++) { mk(6, v); const vis = list.filter(n => !n.show || n.show()); if (vis.length > 1) { warn(`area ${aid}: npcs ${vis.map(n => n.id).join('+')} visible together at ${k}`); break; } }
+      for (let v = 0; v < VAR; v++) { mkFor(aid, 6, v); const vis = list.filter(n => !n.show || n.show()); if (vis.length > 1) { warn(`area ${aid}: npcs ${vis.map(n => n.id).join('+')} visible together at ${k}`); break; } }
     }
+    if (a.quest) for (let v = 0; v < VAR; v++) { mkFor(aid, chOf(aid) || 0, v); try { const q = a.quest(); if (typeof q !== 'string' || bad.test(q)) { err(`area ${aid}: quest() gives "${q}" (variant ${v})`); break; } } catch (e) { err(`area ${aid}: quest() throws ${e.message}`); break; } }
     // reachability of npcs/triggers from start (walls only)
     const seenT = new Set([a.start.x + ',' + a.start.y]), q = [[a.start.x, a.start.y]];
     while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of DIRS) { const nx = x + dx, ny = y + dy, kk = nx + ',' + ny; if (!seenT.has(kk) && walkable(nx, ny) && !(a.triggers && a.triggers[m[ny][nx]])) { seenT.add(kk); q.push([nx, ny]); } else if (!seenT.has(kk) && walkable(nx, ny)) seenT.add(kk); } }
@@ -142,7 +165,7 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
     b.foes.forEach(f => chkFoe(f, 'start'));
     (b.waves || []).forEach(w => w.foes.forEach(f => chkFoe(f, 'wave' + w.round)));
     (b.allies || []).forEach(f => { if (!FOES[f[0]]) err(`battle ${bid}: ally ${f[0]} missing`); });
-    if (b.style && !['city', 'terrace', 'garden', 'storm', 'cellar', 'roof', 'plain', 'hills', 'estate', 'lake', 'dock', 'street'].includes(b.style)) warn(`battle ${bid}: style ${b.style}`);
+    if (b.style && !['city', 'terrace', 'garden', 'storm', 'cellar', 'roof', 'plain', 'hills', 'estate', 'lake', 'dock', 'street', 'hissar', 'odhan', 'odhan_night'].includes(b.style)) warn(`battle ${bid}: style ${b.style}`);
   }
   // items, cards
   const itemIds = Object.keys(ITEMS);
@@ -172,6 +195,19 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
       }
     }
   }
+  // Book Two's chapters: the end screen and the journal, built only from S.f.b2_*, under Book Two states
+  for (const [n, CH] of Object.entries(BOOKSNAP.dg.ch || {})) {
+    for (let v = 0; v < VAR; v++) { mkDG(v);
+      const C = CHAPTERS[n] || CH;
+      for (const k of ['extras', 'journal', 'endCap']) { if (!C[k]) { if (k !== 'endCap' && v === 0) warn(`dg chapter ${n}: no ${k}`); continue; }
+        let r; try { r = C[k](); } catch (e) { err(`dg chapter ${n}: ${k}() throws ${e.message} (variant ${v})`); continue; }
+        const txt = Array.isArray(r) ? r.filter(Boolean).join(' | ') : String(r); if (bad.test(txt)) { err(`dg chapter ${n}: ${k}() leaks (variant ${v}): ${txt.slice(0, 160)}`); } }
+      if (C.end) Object.entries(C.end).forEach(([k, e]) => { if (!Array.isArray(e) || e.length < 2) err(`dg chapter ${n}: end.${k} is not [title, text]`); });
+      if (C.endScene && !SCENES[C.endScene] && v === 0) err(`dg chapter ${n}: endScene ${C.endScene} unknown`);
+      if (C.intro && C.intro.scene && !SCENES[C.intro.scene] && v === 0) err(`dg chapter ${n}: intro.scene ${C.intro.scene} unknown`);
+    }
+  }
+  newState('Hask'); // back to Book One for whatever follows
   const orphans = ids.filter(id => !refd.has(id));
   return { E, W, dead, absent, orphans, battleIds, itemIds, cardIds: Object.keys(CARDS), sceneIds: Object.keys(SCENES), nodeCount: ids.length, areaCount: Object.keys(AREAS).length };
 }, { flags, flagVals: flagValsObj, spriteKinds, portraitSrc, objFlags });

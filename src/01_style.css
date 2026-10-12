@@ -543,3 +543,16 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 .ivline{font-family:var(--prose);font-size:1.18rem;line-height:1.6;color:var(--ink);margin:0 0 14px}
 .ivwho{color:var(--mute);font-size:.95rem;line-height:1.45;margin:0}
 @media (max-width:719px){.ivbox{flex-direction:column;gap:16px}.ivpic{flex:none;width:100%}.ivtext h3{font-size:1.7rem}}
+/* v4.0: the Book picker on the new-sergeant form */
+.bseg .btn{flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.15;min-height:52px}
+.bseg .btn small{font-size:.68rem;opacity:.75;font-style:italic}
+#impSel{width:100%;min-height:44px;background:#100d0b;color:inherit;border:1px solid rgba(201,151,63,.45);border-radius:2px;padding:6px 8px;font:inherit}
+/* v4.0: the Chain (Book Two): water and the column, on the map header and in march conversations */
+.chainpill{display:inline-flex;gap:8px;align-items:center;font-size:.78rem;color:#e8d8b8;white-space:nowrap}
+.chainpill b{font-weight:600;color:#ffe0a0}.chainpill .dry b{color:#f08a7c}
+.chainbox{margin:10px 0 4px;padding:10px 12px;border:1px solid rgba(201,151,63,.35);background:linear-gradient(180deg,rgba(60,40,18,.35),rgba(20,14,8,.35));border-radius:2px}
+.chainbox .crow{display:flex;justify-content:space-between;gap:12px;font-size:.85rem}
+.chainbox .bar{height:6px;margin:4px 0 8px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}
+.chainbox .bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#6aa0c8,#9fd0e8)}
+.chainbox .bar.col i{background:linear-gradient(90deg,#b8894a,#e8c070)}
+.chainbox .road{font-size:.72rem;opacity:.75;letter-spacing:.04em;text-transform:uppercase}

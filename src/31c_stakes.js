@@ -83,7 +83,7 @@ async function foeSpecial(u, gone){
   u.cd = u.cd || {}; const ready = k => hasSk(u, k) && !(u.cd[k] > B.round);
   const adjFree = t => DIRS.map(([dx, dy]) => ({x:t.x + dx, y:t.y + dy})).filter(p => free(p.x, p.y, u));
   // free actions first
-  if (ready('howl') && B.round >= 1 && !B.used['howl_' + u.kind]) { B.used['howl_' + u.kind] = 1; B.howlUntil = B.round + 1; AUDIO.play('growl'); shakeMap(); blog(`<em>${u.name} howls.</em> Every hand in the Fourth shakes: −1 to hit through the next round.`); await wait(500); if (gone()) return true; }
+  if (ready('howl') && B.round >= 1 && !B.used['howl_' + u.kind]) { B.used['howl_' + u.kind] = 1; B.howlUntil = B.round + 1; AUDIO.play('growl'); shakeMap(); blog(`<em>${u.name} howls.</em> Every hand in the squad shakes: −1 to hit through the next round.`); await wait(500); if (gone()) return true; }
   if (ready('rally') && u.hp < u.maxhp / 2 && !u.rallied) { u.rallied = true; B.foeRallyUntil = B.round + 1; blog(`${u.name} bellows for the household. The guards take heart: +2 to hit through the next round.`); float(u, 'rally', '#f08a7c'); await wait(400); if (gone()) return true; }
   if (ready('darkness') && u.hp < u.maxhp && !u.darkened) { u.darkened = true; u.darkUntil = B.round + 1; blog(`Kurald Galain closes round ${u.name} like a cloak: −2 to hit it through the next round.`); float(u, 'darkness', '#3a3070'); await wait(400); if (gone()) return true; }
   if (ready('mark')) { const t = sq.filter(p => cheb(u, p) <= 6).sort((a, b) => a.hp - b.hp)[0]; if (t) { u.cd.mark = B.round + 2; t.clawMarkUntil = B.round + 1; blog(`${u.name} looks at ${t.name} and writes something down. <em>Every Claw blade on the field knows the name now: +2 to hit them.</em>`); float(t, 'marked', '#f08a7c'); await wait(400); if (gone()) return true; } }
@@ -111,11 +111,11 @@ async function foeAfter(u, gone){
 
 /* ---- Ohl's other hands: Denul Wash for the many, Stanch for the one who is about to go ---- */
 Object.assign(AB, {
-  wash:{name:'Denul Wash', strain:3, self:true, desc:()=>`Ohl and every squadmate within 3 of him heal 2d4+${2 + lvB()}${B && B.warren && B.warren.denul < 1 ? ' (weakened here)' : ''}, and their bleeding stops. Grows with the squad's level. Strain 3.`,
+  wash:{name:'Denul Wash', strain:3, self:true, desc:()=>`${HEALER() ? NAME(HEALER()) : 'The healer'} and every squadmate within 3 heal 2d4+${2 + lvB()}${B && B.warren && B.warren.denul < 1 ? ' (weakened here)' : ''}, and their bleeding stops. Grows with the squad's level. Strain 3.`,
     run(u){ const d = (B.warren && B.warren.denul) || 1, near = party().filter(p => !p.ally && cheb(p, u) <= 3); AUDIO.play('heal');
       near.forEach(p => { heal(p, Math.max(1, Math.round(roll(2,4,2 + lvB()) * d))); p.bleed = 0; putOut(p); sparks(p.x, p.y, 10, '#9fe0b8', .35); });
-      blog(`${u.name} opens his hands and lets Denul out like water from a cup. ${near.length > 1 ? 'Everyone close enough feels it.' : 'There is nobody close enough but him.'}${d < 1 ? ' It comes thin here.' : ''}`); }},
-  stanch:{name:'Stanch', strain:2, desc:()=>'A squadmate within 3 cannot drop below 1 health until Ohl\'s next turn, stops bleeding, and heals 1 for each squad level past the first. Strain 2.',
+      blog(`${u.name} opens ${u.id === 'ohl' ? 'his' : 'her'} hands and lets Denul out like water from a cup. ${near.length > 1 ? 'Everyone close enough feels it.' : `There is nobody close enough but ${u.id === 'ohl' ? 'him' : 'her'}.`}${d < 1 ? ' It comes thin here.' : ''}`); }},
+  stanch:{name:'Stanch', strain:2, desc:()=>'A squadmate within 3 cannot drop below 1 health until the healer\'s next turn, stops bleeding, and heals 1 for each squad level past the first. Strain 2.',
     tiles:u=>party().filter(p => !p.ally && cheb(u, p) <= 3 && p.stanch !== u && sees(u, p)),
     run(u,x,y){ const t = unitAt(x,y); if (!t) return; t.stanch = u; t.bleed = 0; if (lvB()) heal(t, lvB()); AUDIO.play('heal'); float(t, 'stanched', '#9fe0b8'); sparks(t.x, t.y, 8, '#9fe0b8', .3);
       blog(`${u.name} puts two fingers on ${t === u ? 'his own' : `${t.name}'s`} wound and says something to Hood in Ehrlii. ${t === u ? 'He' : t.name} is not going anywhere until he says so.`); }},
@@ -124,10 +124,10 @@ Object.assign(AB, {
 /* ---- Bridgeburner: wounds carry from fight to fight until the squad rests (a new chapter, or a rest the story gives) ---- */
 function carryWounds(){
   if (!DIFF().carry || !B) return;
-  const ohl = B.units.find(u => u.id === 'ohl' && u.side === 'p' && !u.ally && u.hp > 0), k = ohl ? .2 : .1; S.wounds = {};
+  const ohl = B.units.find(u => u.id === HEALER() && u.side === 'p' && !u.ally && u.hp > 0), k = ohl ? .2 : .1; S.wounds = {};
   B.units.filter(u => u.side === 'p' && !u.ally && SQUAD().includes(u.id)).forEach(u => { const base = u.hp > 0 ? u.hp : Math.round(u.maxhp * .25); S.wounds[u.id] = Math.min(u.maxhp, base + Math.round(u.maxhp * k)); S.wounds[u.id + '_max'] = u.maxhp; });
   const hurtN = SQUAD().filter(id => S.wounds[id] < S.wounds[id + '_max']).length;
-  if (hurtN) note(`Bridgeburner: ${ohl ? 'Ohl patches what he can' : 'the squad binds its own cuts'}; the rest they carry into the next fight until they rest.`, 'bad');
+  if (hurtN) note(`Bridgeburner: ${ohl ? `${ohl.name} patches what ${ohl.id === 'ohl' ? 'he' : 'she'} can` : 'the squad binds its own cuts'}; the rest they carry into the next fight until they rest.`, 'bad');
 }
 function rest(t){ if (S && S.wounds) { S.wounds = null; note(t || 'The Fourth rests. Wounds close, mostly.', 'good'); } }
 const woundOf = id => S && S.wounds && S.wounds[id] != null ? S.wounds[id] : null;

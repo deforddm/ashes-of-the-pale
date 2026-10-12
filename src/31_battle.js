@@ -56,7 +56,7 @@ function hurt(u, n, crit){ if (u.hp <= 0) return; // already down: a second blas
   if (u.side === 'p' && !u.ally && DIFF().dmg !== 1) n = Math.max(1, Math.round(n * DIFF().dmg)); // the difficulty, on every wound the squad takes
   if (u.side === 'p' && !u.ally && u.hp - n <= 0 && S.f && S.f.hoodRepCh !== (S.chapter || 0) && Object.values((S.gear && S.gear[u.id]) || {}).includes('hoodrep')) { S.f.hoodRepCh = S.chapter || 0; n = u.hp - 1; blog(`<em>The little black bottle at ${u.name}'s throat cracks.</em> ${u.name} does not go down. Nobody can explain it. Doctor Brack could, at length.`); float(u, 'repelled', '#9fb3d9'); } // Doctor Brack's Hood's Repellent: once a chapter
   if (u.side === 'p' && !u.ally && S.card === 'herald' && u.hp - n <= 0 && !B.used.herald) { B.used.herald = true; n = u.hp - 1; blog(`<em>The Herald turns its head.</em> ${u.name} stays standing at 1 health.`); float(u, 'spared', '#8fa38a'); }
-  if (u.stanch && u.stanch.hp > 0 && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'held', '#9fe0b8'); blog(`${u.name} should have gone down. Ohl said no.`); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // Stanch
+  if (u.stanch && u.stanch.hp > 0 && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'held', '#9fe0b8'); blog(`${u.name} should have gone down. ${u.stanch.name} said no.`); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // Stanch
   if (u.immortal && u.hp - n < 1) { n = Math.max(0, u.hp - 1); float(u, 'holds', '#bfe8ff'); if (!n) { u.flash = performance.now(); AUDIO.play('hurt'); return; } } // it does not fall
   if (u.side === 'e') tally('dealt', Math.min(n, u.hp)); else if (!u.ally) tally('taken', Math.min(n, u.hp));
   u.hp = Math.max(0, u.hp - n); if (u.hp === 0 && u.side === 'e') { tally('kills'); holdDown(u); } if (u.immortal && u.hp === 1 && u.side === 'e' && !u.knelt) { u.knelt = true; holdDown(u, true); } if (!(u.immortal && u.hp === 1)) float(u, '−' + n + (crit ? '!' : ''), crit ? '#ffcf7a' : '#f08a7c', crit); u.flash = performance.now(); bloodDecal(u.x, u.y, n >= 8);
@@ -126,7 +126,7 @@ function startBattle(id, opt={}){
   if (def.mortal) blog(`<em>Whoever falls here stays down.</em>`);
   if (def.isStage2) blog(`<em>${def.title}. The second ground.</em>`);
   if (def.objective) blog(`<em>${def.objective.text}</em>`);
-  if (def.allies && def.allies.length) blog(`Others fight beside you tonight. They are not yours.`);
+  if (def.allies && def.allies.some(x => x[0] !== 'hackle')) blog(`Others fight beside you${def.dark ? ' tonight' : ''}. They are not yours.`);
   if (B.surprise === 'p') blog(`Surprise: your squad moves first.`);
   if (B.surprise === 'e') { blog(`<em>Something moves before you do.</em>`); if (id === 'stone' || def.foes.some(f => f[0] === 'hound')) AUDIO.play('growl'); }
   later(nextTurn, 500);
@@ -185,7 +185,7 @@ function win(){
     const dead = fallen.filter(id => id !== 'sgt'); S.f.lastFallen = dead; dead.forEach(id => kill(id));
     const names = dead.map(NAME), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
     note(dead.length ? `${head} ${list} did not get up.` : `${head} Everyone is still breathing.`, dead.length ? 'bad' : 'good');
-  } else note(`${head} ${DIFF().carry ? '' : `${SQUAD().includes('ohl') ? 'Ohl patches up the squad' : 'The squad patches itself up'}; everyone is back on their feet.`}`, 'good');
+  } else note(`${head} ${DIFF().carry ? '' : `${HEALER() ? `${NAME(HEALER())} patches up the squad` : 'The squad patches itself up'}; everyone is back on their feet.`}`, 'good');
   carryWounds(); lootSalve(); holdBonus();
   S.scene = 'talk'; save(); AUDIO.play('win');
   if (up) note(lvlNote(), 'good');
@@ -302,7 +302,7 @@ const AB = {
       B.used.argument = 1; AUDIO.play('heal'); t.x = at.x; t.y = at.y; t.hp = Math.min(t.maxhp, 6 + 2*lvB()); t.deadAt = null; t.healed = performance.now(); sparks(t.x, t.y, 20, '#9fe0b8', .5); blog(`${u.name} argues with Hood in Ehrlii. ${t.name} gets up, which settles it for now.`); }},
 };
 /* Chub's cusser, Maud: Kettle carries her "for the one that matters" and won't fire her in an ordinary fight. The story spends her (the barrow in Chapter 5, or Ch'kess in Chapter 7). */
-const maudKept = () => !!(S && S.f && !S.f.c5_cusserUsed && S.f.c7_debt !== 'paid');
+const maudKept = () => !!(S && S.f && BOOK === 'gotm' && !S.f.c5_cusserUsed && S.f.c7_debt !== 'paid');
 const itemLeft = k => Math.max(0, (S.inv[k] || 0) - (k === 'cusser' && maudKept() ? 1 : 0));
 function abOk(u, k){ const a = AB[k]; if (!a) return false; if (a.trick && !trickOk(u, a)) return false; if (a.sorcery && !a.elder && B && B.def.nomagic) return false; /* Elder warrens shrug off otataral */ if (a.strain && B && B.def.nomagic) return false; if (a.boom && B && B.def.nothrow) return false; if (a.item === 'cusser' && B && B.def.style === 'roof') return false; /* Fiddler's order: no cussers on the roofs */ if (a.item === 'burner' && B && B.def.nomagic) return false; /* burners and otataral: Kettle won't */ if (a.item && !(itemLeft(a.item) > 0)) return false; if (a.ok && !a.ok(u)) return false; if (a.tiles && !a.tiles(u).length) return false; return true; }
 function scatter(u, x, y, failOn, dist){

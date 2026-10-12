@@ -120,7 +120,10 @@ function drawEstateOver(ctx, ch, x, y, T, mode, map){
     ctx.strokeStyle = '#0a0706'; ctx.lineWidth = Math.max(1.4, T*.05); ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.bezierCurveTo(cx - T*.1, cy - T*.2, cx + T*.1, cy - T*.3, cx - T*.02, cy - T*.55); ctx.stroke(); // a black, twisted young tree
     ctx.lineWidth = Math.max(1, T*.03); [[-.2,-.5,-.34,-.62],[.02,-.42,.24,-.58],[-.04,-.3,-.26,-.34],[.04,-.52,.12,-.74]].forEach(([a,b,c,d]) => { ctx.beginPath(); ctx.moveTo(cx + a*T*.3, cy + b*T); ctx.quadraticCurveTo(cx + (a+c)*T*.5, cy + (b+d)*T*.5 - T*.05, cx + c*T, cy + d*T); ctx.stroke(); }); ctx.lineCap = 'butt'; }
 }
+/* ground drawn by later books: TILEX[style](ctx, ch, x, y, T, dark), for maps and battles whose decor or style names it (47b) */
+const TILEX = {};
 function drawTile(ctx, ch, x, y, T, dark, tunnel, style){
+  if (style && TILEX[style]) return TILEX[style](ctx, ch, x, y, T, dark);
   const px = x*T, py = y*T, h = hash(x,y);
   const plain = style && (style.startsWith('plain') || style.startsWith('hills'));
   const est = style && (style.startsWith('estate') || style === 'garden' || style === 'terrace' || style === 'storm');

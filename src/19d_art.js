@@ -16,7 +16,7 @@ function artCover(ctx, im, x, y, w, h){ const s = Math.max(w / im.naturalWidth, 
 function artWarm(){ Object.keys(ART).filter(k => k.startsWith('deck/')).forEach(artImg); }
 
 /* how far this player has read: a finished book (any sergeant on the title) unlocks everything */
-function artReach(){ return !S ? 0 : S.chapters && S.chapters[7] != null ? 8 : (S.chapter || 0); }
+function artReach(){ return !S ? 0 : S.book && S.book !== 'gotm' ? -1 : S.chapters && S.chapters[7] != null ? 8 : (S.chapter || 0); }
 const CHWORDS = ['the prologue', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'];
 const chWord = n => n === 0 ? 'the prologue' : `Chapter ${CHWORDS[n] || n}`;
 /* a paper's lines that only some roads write: <span data-f="flag">, "flag=value" or "flag=a|b" */
@@ -101,7 +101,7 @@ function bindArtJournal(m){ m.querySelectorAll('[data-map]').forEach(b => b.oncl
 const ART_ENDVISTA = {0:'vistas/prologue', 1:'vistas/pale', 2:'vistas/lake', 3:'vistas/canal', 4:'vistas/roof', 5:'vistas/barrow', 6:'vistas/garden', 7:'vistas/hill'};
 function artScene(key, cap){ return `<div class="scene artscene">${art(key, 'vista').replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" ')}${cap ? `<div class="cap">${cap}</div>` : ''}</div>`; }
 /* a chapter opening shows one picture: the painted plate, or with the Classic set the drawn scene */
-function artPlate(n, cap){ return ARTON() && ART['chapters/' + n] ? `<div class="scene artscene plate">${art('chapters/' + n, 'vista')}<div class="cap">${cap}</div></div>`
+function artPlate(n, cap){ return ARTON() && BOOK === 'gotm' && ART['chapters/' + n] ? `<div class="scene artscene plate">${art('chapters/' + n, 'vista')}<div class="cap">${cap}</div></div>`
   : `<div class="scene"><canvas id="scv" width="560" height="240"></canvas><div class="cap">${cap}</div></div>`; }
 /* the viewer owns the keyboard while it is open: Esc closes it, nothing else reaches the game */
 window.addEventListener('keydown', e => { if (!artViewOpen()) return; e.stopImmediatePropagation(); if (e.key === 'Escape') { e.preventDefault(); $('#avClose').click(); } }, true);

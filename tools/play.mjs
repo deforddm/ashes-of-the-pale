@@ -1,7 +1,8 @@
 // Playthrough bot for Ashes of the Pale: drives the real UI from the title screen through the
 // prologue, all seven chapters and the finale, picking choices at random (preferring unseen nodes),
 // walking to NPCs and trigger tiles, and fighting battles with the enemy AI on the squad's side.
-// Usage: node tools/play.mjs [runs=3] [--cheat] [--from=N] [--shots=dir] [--quiet] [--wide]
+// Usage: node tools/play.mjs [runs=3] [--cheat] [--from=N] [--shots=dir] [--quiet] [--wide] [--book=dg]
+//   --book=dg   pick Book Two (Deadhouse Gates) on the new-sergeant form; the run ends at its last written chapter's end screen
 //   --cheat     win every battle instantly (flow testing only)
 //   --from=N    start from a synthetic save at the start of chapter N
 //   --shots=dir screenshot on every new view/area and on any problem
@@ -15,6 +16,7 @@ const runs = +(args.find(a => /^\d+$/.test(a)) || 3);
 const cheat = args.includes('--cheat');
 const quiet = args.includes('--quiet');
 const wide = args.includes('--wide');
+const book = (args.find(a => a.startsWith('--book=')) || '').split('=')[1] || 'gotm';
 const from = +((args.find(a => a.startsWith('--from=')) || '').split('=')[1] || 0);
 const shots = (args.find(a => a.startsWith('--shots=')) || '').split('=')[1] || '';
 if (shots) fs.mkdirSync(shots, { recursive: true });
@@ -24,7 +26,7 @@ const browser = await launch();
 
 const BOT = () => {
   window.__bot = {
-    visited: {}, hist: [], nodeVisits: 0, choices: 0, battles: [], cur: null, events: [], tapFails: 0, targets: {}, cheat: false, lastView: '',
+    visited: {}, hist: [], book: 'gotm', nodeVisits: 0, choices: 0, battles: [], cur: null, events: [], tapFails: 0, targets: {}, cheat: false, lastView: '',
     ev(m) { this.events.push(`[ch${S ? S.chapter : '-'} ${view}${S && S.node ? ' ' + S.node : ''}] ${m}`); },
     sig() { return [$('#mg').hidden ? '' : (($('#mgPanel') || {}).textContent || ''), view, S && S.node, S && S.area, S && S.pos && S.pos.x, S && S.pos && S.pos.y, B && B.round, B && B.idx, B && B.units.map(u => u.hp + ':' + u.x + u.y).join(''), !$('#sheet').hidden, ($('#sheet').textContent || '').length, !$('#modal').hidden, S && S.finPage].join('|'); },
     tick() {
@@ -39,7 +41,7 @@ const BOT = () => {
       }
       const dice = $('#dice'); if (dice) { const pull = $('#dPull'); if (pull && Math.random() < .5) { this.ev('pull: spun the coin'); pull.click(); return 'dice-pull'; } dice.click(); return 'dice'; }
       if (!$('#cardfx').hidden) { const fold = $('#cfFold'); if (fold && Math.random() < .5) { this.ev('fold: drew again'); fold.click(); return 'cardfx-fold'; } const keep = $('#cfKeep'); if (keep && Math.random() < .5) { keep.click(); return 'cardfx-keep'; } const b = $('#cardfx').querySelector('button:not([disabled])'); if (b) { b.click(); return 'cardfx-btn'; } $('#cardfx').click(); return 'cardfx'; }
-      if (view === 'title') { const b = $('#bNew') || $('#bNewSgt'); if (b) { b.click(); return 'new'; } }
+      if (view === 'title') { const bk = $(`[data-book="${this.book}"]`); if (bk && !bk.classList.contains('on')) { bk.click(); return 'book'; } const b = $('#bNew') || $('#bNewSgt'); if (b) { b.click(); return 'new'; } }
       if (!sh.hidden) {
         const on = $('#bOn'); if (on) { this.ev('stage: push on'); on.click(); return 'push-on'; } // a fight's second area
         const retry = $('#bRetry');
@@ -110,6 +112,7 @@ async function run(i) {
   page.on('console', m => { if (m.type() === 'warning' && /finale|backdrop leave|unknown/i.test(m.text())) errs.push('warn: ' + m.text()); });
   await page.evaluate(BOT);
   if (cheat) await page.evaluate(() => { __bot.cheat = true; });
+  if (book !== 'gotm') await page.evaluate(b => { __bot.book = b; }, book);
   if (from) await page.evaluate(SYNTH, from);
   const t0 = Date.now();
   let last = '', same = 0, status = '', ticks = 0, chapterSeen = -1, areaSeen = '', viewSeen = '', errShot = 0;
@@ -129,10 +132,10 @@ async function run(i) {
     if (Date.now() - t0 > 25 * 60 * 1000) { problems.push(`timeout after 25 min at ch ${info.ch} ${info.view} ${info.node}`); await shot('timeout'); break; }
     await page.waitForTimeout(status.startsWith('battle-wait') || status === 'walking' ? 25 : status === 'dice' ? 120 : 15);
   }
-  const rep = await page.evaluate(() => ({ nodes: __bot.nodeVisits, choices: __bot.choices, events: __bot.events, battles: __bot.battles.map(b => ({ id: b.id, rounds: b.rounds, losses: b.losses, cheated: !!b.cheated })), dead: Object.keys(S.dead || {}), squad: S.squad, lvl: S.lvl, chapters: S.chapters, key7: S.f.c7_key }));
+  const rep = await page.evaluate(() => ({ nodes: __bot.nodeVisits, choices: __bot.choices, events: __bot.events, battles: __bot.battles.map(b => ({ id: b.id, rounds: b.rounds, losses: b.losses, cheated: !!b.cheated })), dead: Object.keys(S.dead || {}), squad: S.squad, book: S.book, chain: S.chain, lvl: S.lvl, chapters: S.chapters, key7: S.f.c7_key }));
   const ok = status === 'END' && !errs.length && !problems.length;
   if (!ok) bad++;
-  console.log(`\n=== run ${i}: ${ok ? 'OK' : 'PROBLEMS'} in ${((Date.now() - t0) / 1000).toFixed(0)}s · ${rep.nodes} nodes seen · ${rep.choices} choices · level ${rep.lvl} · squad ${rep.squad.join(',')} · dead ${rep.dead.join(',') || 'none'} · road ${JSON.stringify(rep.chapters)}`);
+  console.log(`\n=== run ${i}: ${ok ? 'OK' : 'PROBLEMS'} in ${((Date.now() - t0) / 1000).toFixed(0)}s · ${rep.nodes} nodes seen · ${rep.choices} choices · level ${rep.lvl} · squad ${rep.squad.join(',')} · dead ${rep.dead.join(',') || 'none'} · road ${JSON.stringify(rep.chapters)}${rep.book && rep.book !== 'gotm' ? ` · book ${rep.book} · chain ${JSON.stringify(rep.chain)}` : ''}`);
   problems.forEach(p => console.log('  PROBLEM ' + p));
   [...new Set(errs)].forEach(e => console.log('  PAGE ERROR ' + e));
   rep.events.forEach(e => console.log('  event ' + e));

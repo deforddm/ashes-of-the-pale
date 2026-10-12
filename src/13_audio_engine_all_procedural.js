@@ -295,11 +295,12 @@ const AUDIO = (() => {
 
   /* ---- what to play where ---- */
   const SCENE_AMB = {camp:'camp', camp_night:'camp_night', fire:'camp_night', tent:'interior', room:'interior', inn:'inn', plain:'plain', plain_dusk:'dusk', plain_night:'night',
-    hills:'hills', hills_dusk:'dusk', quorl_hill:'hills', road_east:'hills', city_street:'city', roof:'city_night', roof_night:'city_night', fete_garden:'plain'};
-  const DECOR_AMB = {pale:'camp', camp_night:'camp_night', plain:'plain', plain_dusk:'dusk', plain_night:'night', hills:'hills', hills_dusk:'dusk', city_dusk:'city', city_night:'city_night', roof_night:'city_night', cellar:'tunnel'};
+    hills:'hills', hills_dusk:'dusk', quorl_hill:'hills', road_east:'hills', city_street:'city', roof:'city_night', roof_night:'city_night', fete_garden:'plain',
+    b2_hissar_burning:'city_night', b2_coltaine_tent:'interior', b2_odhan_dusk:'dusk', b2_odhan_day:'plain', b2_well:'city_night', b2_basin:'dusk'}; // Book Two
+  const DECOR_AMB = {pale:'camp', camp_night:'camp_night', plain:'plain', plain_dusk:'dusk', plain_night:'night', hills:'hills', hills_dusk:'dusk', city_dusk:'city', city_night:'city_night', roof_night:'city_night', cellar:'tunnel', hissar:'city_night', odhan:'plain', odhan_night:'night'};
   function where(){ try { return {v:view, sk:G && G.sceneKind, decor:view === 'explore' ? AREA().decor : null, b:view === 'battle' && S ? BATTLES[S.battle] : null, id:S && S.battle, ch:S ? S.chapter : 0}; } catch(e) { return {}; } }
   function battleAmb(w){ const d = w.b || {}, st = d.style;
-    return st === 'terrace' || st === 'garden' || w.id === 'house_guards' ? 'fete' : st === 'dock' ? 'lake' : st === 'cellar' ? 'tunnel' : st === 'storm' ? 'storm'
+    return st === 'hissar' ? 'city_night' : st && st.startsWith('odhan') ? (d.dark || st === 'odhan_night' ? 'night' : 'plain') : st === 'terrace' || st === 'garden' || w.id === 'house_guards' ? 'fete' : st === 'dock' ? 'lake' : st === 'cellar' ? 'tunnel' : st === 'storm' ? 'storm'
       : st === 'city' || st === 'roof' ? (d.dark ? 'city_night' : 'city') : d.dark ? 'dark' : d.open ? 'night' : w.ch === 1 ? 'camp_night' : 'tunnel'; }
   function cue(kind){
     const w = where();

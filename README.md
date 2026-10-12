@@ -1,6 +1,6 @@
 # Ashes of the Pale
 
-A non-commercial Malazan Book of the Fallen fan RPG for personal play: an original marine squad, the Fourth, walking beside the events of *Gardens of the Moon* in the aftermath of the Pale. Turn-based tactical combat, dialogue skill checks, warren strain, Moranth munitions and a Deck of Dragons reading.
+A non-commercial Malazan Book of the Fallen fan RPG for personal play, told from the ranks in books that each play on their own. **Book One** follows an original marine squad, the Fourth, beside the events of *Gardens of the Moon* in the aftermath of the Pale. **Book Two** (in progress) follows a new squad of the Seventh Army on the Chain of Dogs in *Deadhouse Gates*. Turn-based tactical combat, dialogue skill checks, warren strain, Moranth munitions and a Deck of Dragons reading.
 
 Play: https://deforddm.github.io/ashes-of-the-pale/ (installable as an app).
 
@@ -47,6 +47,10 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.0.0 — Book Two begins. The title screen picks a book; each book has its own saves, chapters and squad, and Book Two plays without Book One.
+  - *Deadhouse Gates*, Chapter One, Hissar Burns: four areas, 73 conversations, four fights, from the night Hissar rises to Bat'rol in the Vin'til Basin.
+  - A new squad (Haddat, Sathi and her dog Hackle, Tangle, Marrow), the Chain (water and the column), fouled warrens, and an import from a finished Book One.
+  - Book Two's plan and canon: `docs/dg-canon.md`, `docs/dg-ch1-brief.md`; the outline lives in the project as `book2-dg-plan.md`.
 - v3.16.0 — The canon check and full polish pass. The whole story was checked against *Gardens of the Moon*, and against the later books wherever they would make a line false.
   - New names where the old ones clashed with the books: the gate clerk is Pennick, Brisk's brother is Tavrin, and the Chains card is the Wain, Dragnipur's wagon.
   - The reborn Tattersail grows as she should, carried by the Mhybe; Whiskeyjack's leg could mend if he would give it the time; the High Mage himself is never placed, only his staff.

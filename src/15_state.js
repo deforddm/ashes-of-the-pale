@@ -15,6 +15,7 @@ function newState(name){
 }
 /* fill in fields added after v1 saves, so old saves keep working */
 function migrate(s){
+  s.book ??= 'gotm'; setBook(s.book); // v4.0: which book this save is in; the chapters, end lines and the sergeant's history follow it
   if (s.scene === 'end') s.scene = 'chend'; // the oldest saves called the chapter-end page 'end'
   s.tuftVisions ??= [...(s.seenVisions || [])]; // v3.16: the visions Tuft saw at a reading; older saves did not tell them apart from journal replays
   s.chapter ??= 0; s.area ??= 'pale'; s.squad ??= [...PORDER]; s.kit ??= []; s.picksDue ??= []; s.chapters ??= {};
@@ -23,6 +24,7 @@ function migrate(s){
   s.dead ??= {};
   s.tricks ??= {}; s.rattled ??= {}; s.push ??= 0; // v3.11: tricks won on hard checks, a natural 1's rattle, the Lord's push
   s.inv ??= {}; s.inv.smoker ??= 0; // v3.7.1: smokers. Saves already past Hedge's cellar in Chapter 3 get the two he handed over there.
+  if (s.book !== 'gotm') return s; // the fixes below are for Book One saves only
   if (!s.f.gotSmokers && (s.chapter > 3 || (s.fxd && s.fxd.c3_work_hedge))) { s.inv.smoker += 2; s.f.gotSmokers = 1; }
   // v3.7.3: the Phoenix's door moved off the crossing, up the alley into the Daru District; a save standing in its old doorway steps back into the street
   // v3.7.4: Kettle never fires Chub's cusser (Maud) in an ordinary fight. A save that spent her before the barrow gets her back, so the barrow and Ch'kess still have her.
@@ -33,6 +35,16 @@ function migrate(s){
   if (s.area === 'gadrobi_cross' && s.pos && s.pos.x === 5 && s.pos.y === 1) s.pos = {x:5, y:2};
   return s;
 }
+/* swap the book being played: CHAPTERS, CHEND and CHTEASE (37) hold one book at a time, and so does the sergeant's own history (TPL.sgt) */
+function setBook(b){
+  b = BOOKS[b] ? b : 'gotm'; if (b === BOOK) return;
+  const out = BOOKSNAP[BOOK]; out.ch = {...CHAPTERS}; out.end = {...CHEND}; out.tease = {...CHTEASE}; out.sgt = Object.getOwnPropertyDescriptors(TPL.sgt);
+  [CHAPTERS, CHEND, CHTEASE].forEach(o => Object.keys(o).forEach(k => delete o[k]));
+  const inn = BOOKSNAP[b]; Object.assign(CHAPTERS, inn.ch); Object.assign(CHEND, inn.end); Object.assign(CHTEASE, inn.tease);
+  if (inn.sgt) TPL.sgt = Object.defineProperties({}, inn.sgt);
+  BOOK = b; if (typeof PORTRAIT_CACHE !== 'undefined') PORTRAIT_CACHE.clear();
+}
+const inBook = b => (S ? S.book || 'gotm' : BOOK) === b;
 /* difficulty, per sergeant: Story (gentler foes, easier checks), Soldier (as written), Bridgeburner (harder). Changeable any time. */
 const DIFFS = {story:{name:'Story', hp:.75, dmg:.7, atk:-1, dc:-2, blurb:'Softer fights, easier checks, enemies without tricks, and the gods always answer. For the story.'},
   soldier:{name:'Soldier', hp:1, dmg:1, atk:0, dc:0, blurb:'The book as written. Enemies have their tricks; each god answers once a chapter.'},
@@ -41,6 +53,8 @@ const DIFF = () => DIFFS[(S && S.diff) || 'soldier'] || DIFFS.soldier;
 /* the count, kept on the save: the finale and the Deeds page read it */
 function tally(k, n = 1){ if (!S) return; S.stats ??= {}; S.stats[k] = (S.stats[k] || 0) + n; }
 const SQUAD = () => S.squad;
+/* the squad's healer, if one is with it: Ohl in Book One, Marrow in Book Two */
+const HEALER = () => S && S.squad ? ['ohl', 'marrow'].find(id => S.squad.includes(id)) || null : null;
 /* a squadmate's abilities: the template's, plus Kettle's smokers once she has ever had any */
 const kitAb = id => { const ab = [...TPL[id].ab]; if (id === 'kettle' && S && ((S.inv && S.inv.smoker > 0) || (S.f && S.f.gotSmokers))) ab.splice(ab.indexOf('cusser') + 1, 0, 'smoker'); return ab; };
 /* a new squadmate. If the squad has already earned its level-3 habits, the recruit picks hers before the next conversation. */
@@ -72,7 +86,7 @@ const sameName = (a, b) => String(a || '').trim().toLowerCase() === String(b || 
 const newSid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 /* what the title shows for a sergeant without opening their save: chapter, where they stand, level, when last played */
 function rosterMeta(s){ const a = typeof AREAS !== 'undefined' && AREAS[s.area], t = a && a.title ? splitTitle(a.title)[1] : '';
-  return {id:s.sid, name:s.name || 'Hask', ch:s.chapter || 0, lvl:s.lvl || 1, where:t, done:!!(s.chapters && s.chapters[7] != null), diff:s.diff && s.diff !== 'soldier' ? s.diff : undefined, upd:Date.now()}; }
+  return {id:s.sid, book:s.book && s.book !== 'gotm' ? s.book : undefined, name:s.name || 'Hask', ch:s.chapter || 0, lvl:s.lvl || 1, where:t, done:!!(s.chapters && s.chapters[7] != null), diff:s.diff && s.diff !== 'soldier' ? s.diff : undefined, upd:Date.now()}; }
 function roster(){
   let r = null; try { r = JSON.parse(localStorage.getItem(RKEY)); } catch(e) { return {list:[]}; }
   if (r && Array.isArray(r.list)) return r;

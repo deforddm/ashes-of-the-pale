@@ -3,6 +3,8 @@
    at the device's pixel ratio: nothing is squashed on a narrow phone, and it stays sharp. W and H are drawing units: CSS pixels on a phone;
    on a wide screen, where the box is taller than 240px, the drawing is scaled up (SCENE_K) so the scene is the same picture, only bigger. */
 let SCENE_K = 1;
+/* backdrops added by later books: SCENEX[kind](canvas, t), drawn in place of the built-in ones (47b) */
+const SCENEX = {};
 function sceneFit(cv){
   const ctx = cv.getContext('2d'), cw = cv.clientWidth, ch = cv.clientHeight;
   if (!cw || !ch) { ctx.setTransform(1,0,0,1,0,0); return {ctx, W:cv.width, H:cv.height}; }
