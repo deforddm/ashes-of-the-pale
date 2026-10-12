@@ -5,7 +5,7 @@
 const PORTRAIT_CACHE = new Map();
 function portraitState(id){ const f = (typeof S !== 'undefined' && S && S.f) || {}; return id === 'sgt' ? (f.sgtScar ? 'scar' : '') : id === 'tuft' ? (f.c5_tuftMarked ? 'marked' : '') : ''; }
 function drawPortrait(ctx, id, W, H, t){
-  const c = TPL[id] || TPL.sgt, hue = c.col, st = portraitState(id), key = `${id}|${W}x${H}|${st}`, mo = REDUCE() ? 0 : 1;
+  const c = TPL[id] || TPL.sgt, hue = c.col, st = portraitState(id), key = `${id}|${W}x${H}|${st}|${BOOK}`, mo = REDUCE() ? 0 : 1;
   let layer = PORTRAIT_CACHE.get(key);
   if (!layer) { layer = document.createElement('canvas'); layer.width = W; layer.height = H; paintPortrait(layer.getContext('2d'), id, W, H, st); if (PORTRAIT_CACHE.size > 24) PORTRAIT_CACHE.clear(); PORTRAIT_CACHE.set(key, layer); }
   const fl = 1 + (Math.sin(t/130)*.05 + Math.sin(t/57)*.03)*mo;
@@ -316,6 +316,6 @@ const POR = {
 };
 function paintPortrait(ctx, id, W, H, st){
   const s = H/120; ctx.clearRect(0,0,W,H); ctx.save(); ctx.translate(W/2, H*.98); ctx.scale(s, s);
-  (POR[id] || POR.sgt)(ctx, st);
+  (id === 'sgt' && BOOK === 'dg' && POR.sgt_dg ? POR.sgt_dg : POR[id] || POR.sgt)(ctx, st); // Book Two has its own sergeant (55b)
   ctx.restore();
 }

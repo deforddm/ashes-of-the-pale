@@ -197,7 +197,7 @@ The Red Blades go up the rise beside you without waiting to be asked.`}`,
     b2_semksorc:{name:'Semk sorcerer', sig:'s', kind:'semk', hp:11, ac:11, atk:4, dmg:[1,6,0], rng:3, mv:4, init:2, sk:['sbolt'], verb:'claws the air at'},
     b2_semkhost:{name:'The god\'s host', sig:'H', kind:'semk', hp:30, ac:13, atk:5, dmg:[1,10,2], rng:3, mv:4, init:3, boss:true, sk:['sbolt','daze'], verb:'reaches for'},
     /* allies: Red Blades on foot, their horses dead at the ford */
-    b2_redally:{name:'Red Blade', sig:'r', kind:'redblade', hp:24, ac:15, atk:5, dmg:[1,8,2], rng:1, mv:4, init:2, verb:'cuts at'} },
+    b2_redally:{name:'Red Blade', sig:'r', kind:'redblade_trooper', hp:24, ac:15, atk:5, dmg:[1,8,2], rng:1, mv:4, init:2, verb:'cuts at'} },
 
   gear:{
     b2_tamarisk:{name:'Tamarisk switch', slot:'trinket', who:null, hp:1, line:'A green switch of tamarisk from Dryj Spring, cut where it grew over the water. It has gone grey and hard in the sun and smells, if you put your face to it, of the only cool place for fifty leagues.'},
