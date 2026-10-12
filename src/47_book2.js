@@ -162,4 +162,73 @@ GLOSSX.dg = [
   [1, 'Kamist Reloe', 'A High Mage of Seven Cities who was thought dead. He leads the first rebel army against the Seventh.', ()=>!!(S.f && S.f.b2_reloe)],
 ];
 
+/* ---- the Red Blade (v4.1, Chapter 2): a Seven Cities loyalist, lent to the squad after Sekala until the company remounts in Aren.
+   One recruit at a time. He leaves with the Red Blades in Aren (Chapter 7). ---- */
+Object.assign(TPL, {
+  redblade:{name:'Ramin', role:'Red Blade · dismounted', sig:'R', col:'#c4483a', hp:20, ac:15, atk:4, dmg:[1,8,2], rng:1, mv:4, init:2, st:{might:2, wits:1, guile:1}, ab:['b2_lance','salve'],
+    epithet:'"I am of the Red Blades. I am lent. I will be given back."', origin:'Ehrlitan, the Old Quarter', age:26, service:'Seven years, the Red Blades. Cavalry, until the Sekala',
+    height:'Lean, very straight, and still wears his spurs.',
+    weapon:'A lance cut down to a short spear after it broke at the Sekala, and a curved sword he keeps better than he keeps himself', armour:'Red-enamelled scale over chain, a slit-visored helm he carries more than he wears, and spurs with no horse under them',
+    bio:`A Seven Cities man who swore to the Empire and meant it, which makes him a traitor to every tribe on the Odhan and a native to every Malazan in the column. The Red Blades are used to both. His horse died at the ford and most of his file died on the west bank, and his commander lent what was left of him to the squad, until the company has horses again.`,
+    bio2:`Grew up in Ehrlitan, where his father kept the Empire's tolls on the Old Quarter gate and was spat at for it every day of his life. Joined the Red Blades at nineteen because they were the only people in the city who did not spit. He was in Ehrlitan the winter the company cleared the market, and he does not speak about the market. He speaks about the company, often, in the present tense, and about the day it will take him back.`,
+    traits:['Polishes the red of his scale every night, whatever else is undone', 'Answers rebels in their own dialect, politely, and it makes them angrier', 'Counts the company\'s dead by name, out loud, at dusk', 'Will not take water before the squad\'s civilians have had theirs, and says it is an order he gave himself'],
+    gear:['A lance-head on a broken shaft', 'A Red Blade\'s red sash, folded, for the day he has a horse to ride in it', 'A tin of enamel and a brush'],
+    get quest(){ return `Lent to the squad after the Sekala, until the Red Blades remount. He says he will go back to the company the day it asks for him. He says it often enough that nobody doubts it.`; },
+    banter:[`"The tribes call us lapdogs. A dog that knows its house is not the worst thing to be, Sergeant."`, `"I am lent. A lent sword is kept clean, so the owner does not complain."`, `"Your Wickan girl laughs at funerals. In Ehrlitan we do it at weddings. Both are correct."`],
+    rel:{haddat:'Another Seven Cities soldier who took the silver. They have not decided whether that makes them kin or rivals, and are polite about it in two languages.', sathi:'She calls him "the red horse with no horse". He has taken it as a rank.', tangle:'Tangle counts the satchel when Ramin is near. Ramin has noticed, and counts it with him, out loud, to help.', marrow:'She cleaned the lance-cut on his arm and asked nothing about the company. He has decided she is the only Malazan in the squad.'}},
+});
+VERB.redblade = 'cuts at';
+STATUP.redblade = ['might', 'guile'];
+PICKS[3].redblade = [['holdline','The Red Line','Ramin\'s free swings are unlimited and hit +2. The Red Blades were drilled to hold a street on foot when the horses would not.'],['discipline','Company Drill','Every squadmate wears +1 armour. He drills them at dusk whether they asked or not.']];
+PATRONS.redblade = {god:'the Queen of Dreams', title:'The Queen of Dreams', txt:id => `Ramin, down in the dust, says the Ehrlitan prayer his mother said over the toll-gate every dusk, and the noise of the fight goes far away, as if it were a dream somebody else were having.\n\nIn the dream the squad stands up. It is not the Queen's habit to explain herself. It is not Ramin's habit to ask.`};
+/* Ramin's lance, held short: a blow at two paces */
+AB.b2_lance = {name:'Lance Held Short', desc:()=>`An enemy up to 2 tiles off: 1d10+${2 + lvDmg()} on a hit. Recharges after ${2 - lvAt(6)} round${lvAt(6) ? '' : 's'}. Grows with level.`,
+  ok:u=>!(u.cdLance >= B.round), tiles:u=>foes().filter(f => cheb(u, f) <= 2 && sees(u, f)),
+  run(u,x,y){ const t = unitAt(x,y); if (!t) return; u.cdLance = B.round + 2 - lvAt(6); u.reachMelee = true; attack(u, t, {dmg:[1,10,2 + lvDmg()], verb:'drives the short lance at'}); u.reachMelee = false; }};
+/* a recruit in Book Two joins the squad, not the Fourth */
+{ const _recruit = recruit; recruit = function(id){ if (!S || S.book !== 'dg') return _recruit(id); const n0 = note; note = (t, c) => n0(String(t).replace('joins the Fourth', 'joins the squad'), c); try { _recruit(id); } finally { note = n0; } }; }
+/* how far Book Two goes, for the title: counted from the chapters actually registered */
+const dgChCount = () => Object.keys(BOOK === 'dg' ? CHAPTERS : BOOKSNAP.dg.ch).length;
+const dgProgress = () => { const n = dgChCount(); return n >= 7 ? 'All seven chapters.' : n === 1 ? 'Chapter One so far.' : `${['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'][n]} chapters so far.`; };
+Object.defineProperty(BOOKS.dg, 'blurb', {get(){ return 'Seven Cities. A new squad of the Seventh on the Chain of Dogs, from the fall of Hissar toward Aren. Plays on its own. ' + dgProgress(); }});
+
+/* ---- fouled warrens (v4.1): in Book Two a spell that costs strain can sputter for half its effect, the warren giving back mud.
+   10% in Chapter 2, rising 5% a chapter to 35% by Chapter 7. Wickan spirit-craft (a.spirit) and Elder tricks (a.elder) never sputter.
+   Marrow ties a knot for a clean healing only: S.f.b2_knots counts the clean ones, S.f.b2_sputters the ones the warren spoiled. ---- */
+const b2Sputter = () => S && S.book === 'dg' && (S.chapter || 0) >= 2 ? Math.min(.35, .05 * S.chapter) : 0;
+const b2Mud = () => ['The warren gives back mud.', 'The warren gives back mud, and something in it with fur.', 'The warren gives back mud. Half of what was asked for comes up through it.', 'The warren gives back mud, thick and warm, as if something enormous had just waded through.'][R(4)];
+const B2_HEALS = ['mend', 'wash', 'stanch', 'argument'];
+{ const _useAb = useAb;
+  useAb = function(k, x, y){
+    const u = B && B.cur, a = AB[k];
+    if (!S || S.book !== 'dg' || !u || !a || !a.strain || a.elder || a.spirit || u.side !== 'p' || u.ally) return _useAb(k, x, y);
+    const heal = B2_HEALS.includes(k);
+    if (R(100) >= Math.round(b2Sputter() * 100)) { if (heal && u.id === 'marrow') S.f.b2_knots = (S.f.b2_knots || 0) + 1; return _useAb(k, x, y); }
+    if (heal && u.id === 'marrow') S.f.b2_sputters = (S.f.b2_sputters || 0) + 1;
+    blog(`<em>${u.name} reaches into the warren. ${b2Mud()}</em> Half effect.`); float(u, 'sputters', '#a08a5a'); tally('sputters');
+    const w0 = B.warren || {}, down = B.units.filter(p => p.side === 'p' && p.hp <= 0);
+    B.warren = Object.assign({}, w0, {denul:(w0.denul || 1) * .5, meanas:(w0.meanas || 1) * .5});
+    try { _useAb(k, x, y); }
+    finally { B.warren = w0; down.filter(p => p.hp > 0).forEach(p => { p.hp = Math.max(1, Math.ceil(p.hp / 2)); }); } }; }
+/* an enemy caster's warren is as fouled as anyone's: a Semk's daze can come out as a stagger, a sorcerer's bolt at half */
+SORC.push('sbolt');
+{ const _foeSpecial = foeSpecial;
+  foeSpecial = async function(u, gone){
+    if (!S || S.book !== 'dg' || !B) return _foeSpecial(u, gone);
+    u.cd = u.cd || {};
+    if (hasSk(u, 'sbolt') && !(u.cd.sbolt > B.round)) {
+      const t = party().filter(p => !p.ally && cheb(u, p) <= 5 && cheb(u, p) > 1 && canShoot(u, p)).sort((a, b) => a.hp - b.hp)[0];
+      if (t && R(2) === 0) { u.cd.sbolt = B.round + 2; const sp = R(100) < Math.round(b2Sputter() * 100);
+        if (sp) blog(`<em>${u.name} calls on the Semk god. ${b2Mud()}</em>`);
+        AUDIO.play('shadow'); attack(u, t, {dmg:sp ? [1,6,0] : [2,6,1], verb:sp ? 'spits half a curse at' : 'throws the god\'s fire at'}); await wait(650); return true; } }
+    const dazeReady = hasSk(u, 'daze') && !(u.cd.daze > B.round), before = new Set(party().filter(p => p.stun));
+    const r = await _foeSpecial(u, gone);
+    if (dazeReady && u.cd.daze > B.round && B && R(100) < Math.round(b2Sputter() * 100)) {
+      party().filter(p => p.stun && !before.has(p)).forEach(p => { p.stun = false; p.slowTurn = true; float(p, 'staggered', '#a08a5a'); blog(`<em>The warren gives ${u.name} back mud.</em> ${p.name} staggers, and keeps the turn.`); }); }
+    return r; }; }
+/* flat on the ground (Mincer's Drop, Chapter 2): shots and thrown things find it hard to hit what is lying in a fold of earth */
+{ const _atkCalc = atkCalc;
+  atkCalc = function(a, t, o = {}){ const c = _atkCalc(a, t, o);
+    if (t && t.flatUntil >= B.round && cheb(o.from || a, t) > 1) c.ac += t.flatAc || 3; return c; }; }
+
 /* Book Two's chapters register in start() (90), after Book One's */

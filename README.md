@@ -47,6 +47,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.1.0 — Book Two, Chapter Two: The Odhan (Dryj Spring and the Sekala crossing). Ramin the Red Blade can join; fouled warrens make Book Two's healing and sorcery unreliable.
 - v4.0.0 — Book Two begins. The title screen picks a book; each book has its own saves, chapters and squad, and Book Two plays without Book One.
   - *Deadhouse Gates*, Chapter One, Hissar Burns: four areas, 73 conversations, four fights, from the night Hissar rises to Bat'rol in the Vin'til Basin.
   - A new squad (Haddat, Sathi and her dog Hackle, Tangle, Marrow), the Chain (water and the column), fouled warrens, and an import from a finished Book One.

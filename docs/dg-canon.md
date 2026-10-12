@@ -112,3 +112,23 @@ Wiki pages for Chain of Dogs, Sanimon, Vathar Crossing, Tathimon, Dojal Spring, 
 ## Sources
 
 Reactor re-read of DG, chapters 12-13, 14-15, 16-17, 18-19, 20-21, 22-23 (reactormag.com). Malazan Wiki (malazan.fandom.com): DG chapters 3, 4, 6-10, 12, 13, 16, 19-22, Dramatis Personae; Battle of Bat'rol, Battle of Sekala Crossing, Battle of Gelor Ridge; Coltaine, Duiker, Lull, Bult, Keneb, Nil, Blistig, Squint, Nok, Mallick Rel, Kamist Reloe, Korbolo Dom, Pullyk Alar, Felisin Paran, Fener, Path of Hands, Khundryl, Seti. Wikipedia *Deadhouse Gates* (unreliable on Coltaine's death). SuperSummary; TV Tropes.
+
+## Chapter 2 re-check (Sun Oct 11, 2026 7:56 PM PDT)
+
+Read for Chapter 2 (Dryj Spring to the Sekala). The Reactor re-read pages came back empty; everything below is from the Malazan Wiki (DG chapter pages 7, 8, 10, 12; Battle of Sekala Crossing; Duiker; Red Blades). Marks as above.
+
+**Confirmed or added**
+- **Dryj Spring.** Coltaine left the refugees at the spring to draw water and led the Wickans "over a league" into the Odhan, where, seven to one against, they destroyed the Tithansi; the tribesmen began to see the Wickans as "something more than human". The spring was pillaged after the column left. [1]
+- **Sekala, timing.** The army crossed overnight, the cattle in the morning, the refugees in the afternoon; then the rearguard withdrew and the ford was blown. A rest day followed; Reloe had to go north to the next crossing at Sekal, 10 to 11 days. [1]
+- **Sekala, people.** Captains Mincer (sappers), **Lull (rearguard, east bank)** and **Chenned (Seventh troops on the west bank)**; **Baria Setral** led the Red Blades; Cuttle blew the road. Sormo, Nil and Nether hid the ford with sorcery; Nil raised ancient dead on the oxbow island (the dead re-fought old Wickan clan wars); Nether faced the Semk sorcerers. Two of Sormo's young warlocks died. [1]
+- **Sekala, forces.** West bank: three Guran heavy-infantry legions to the north, **largely unengaged**; Tithansi lancers; Semk warriors and sorcerers, whom the Red Blades fought hardest. The Semk god burned out many of its own sorcerers. The Weasel Clan was badly mauled and short of horses. [1]
+- **After Sekala.** Sormo showed Duiker the Semk god's body in Jaghut ice and gave it to the land's spirits, which tore it apart. News came that **Ubaryd had fallen**, so the column had to go all the way to Aren. Nethpara, Tumlit and Lenestro complained to Duiker that Coltaine had taken their servants. [1]
+- **The ford.** The battle page says the sappers paved the muddy ford into an underwater road laced with 55 cussers; one chapter summary says a road "from wagons". The game uses paving stones under the water and keeps the count at 55. [1, sources differ]
+- **Red Blades.** Seven Cities natives sworn to the Empire, cavalry in chain (sometimes otataral-linked), slit-visored helms, swords, bows, lances; natives call them Malazan lapdogs. Named: Baria Setral, Orto Setral (commander imprisoned in Aren), Tene Baralta, Lostara Yil, Barathol Mekhar. [1]
+
+**Corrections and open points**
+- **Duiker was not with the column between Hissar and the Sekala.** He was separated at the rising, travelled three months in disguise with the rebels (he saw Bat'rol's aftermath from their side) and rejoined at the Sekala. Book Two's Chapter 1 (v4.0) shows him in the camp outside Hissar (defensible: he joined Coltaine's staff there) and **at the Vin'til Basin during Bat'rol (a slip)**. Chapter 2 reconciles it: he rode back across the basin after the battle and was lost; he walks into the Sekala camp in rebel robes. Suggest softening his Bat'rol scene in Chapter 1 if it is ever revised.
+- **Which Red Blades go to prison in Aren.** The wiki says Baria Setral's company "served under Fist Coltaine and was lost with him", and that the Red Blades locked up in Aren were **Orto Setral's**. The canon sheet (§2) says the Chain's Red Blades were arrested in Aren. Chapter 7 should check this before it sends Ramin away; Chapter 2 only says he will go back "to the company" when it calls, and leaves which company open.
+- Name check for the recruit: **Ramin** (of Ehrlitan) clashes with no canon name found.
+
+Sources: malazan.fandom.com/wiki/Battle_of_Sekala_Crossing, /Deadhouse_Gates/Chapter_7, /Chapter_8, /Chapter_10, /Chapter_12, /Duiker, /Red_Blades.

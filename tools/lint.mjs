@@ -49,6 +49,7 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
     S.lvl = 1 + (v % 3); S.xp = LEVELS[S.lvl - 1] || 0;
     if (v % 5 === 3) S.squad = S.squad.filter(x => x !== 'sathi' && x !== 'marrow'); // text must hold up if a squadmate is missing
     if (v % 7 === 4) S.squad = S.squad.filter(x => x !== 'haddat' && x !== 'tangle');
+    if (v % 2 === 0 && TPL.redblade) S.squad.push('redblade'); // the Red Blade recruit (Chapter 2 on): text must hold up with him and without him
     migrate(S);
     S.chapters = {}; S.chain = { water: v % 6 === 0 ? 0 : Math.floor(rng() * 13), column: Math.floor(rng() * 40) };
     S.inv = { sharper: v % 4, burner: v % 3, cusser: v % 2, salve: 2, smoker: v % 3 };
@@ -165,7 +166,7 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
     b.foes.forEach(f => chkFoe(f, 'start'));
     (b.waves || []).forEach(w => w.foes.forEach(f => chkFoe(f, 'wave' + w.round)));
     (b.allies || []).forEach(f => { if (!FOES[f[0]]) err(`battle ${bid}: ally ${f[0]} missing`); });
-    if (b.style && !['city', 'terrace', 'garden', 'storm', 'cellar', 'roof', 'plain', 'hills', 'estate', 'lake', 'dock', 'street', 'hissar', 'odhan', 'odhan_night'].includes(b.style)) warn(`battle ${bid}: style ${b.style}`);
+    if (b.style && !['city', 'terrace', 'garden', 'storm', 'cellar', 'roof', 'plain', 'hills', 'estate', 'lake', 'dock', 'street', 'hissar', 'odhan', 'odhan_night', 'river'].includes(b.style)) warn(`battle ${bid}: style ${b.style}`);
   }
   // items, cards
   const itemIds = Object.keys(ITEMS);
@@ -191,6 +192,19 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
         const vis = (n.ch || []).filter(c => { try { return !c.req || c.req(); } catch (e) { return false; } });
         const text = [n.txt || '', n.after || '', ...vis.map(c => c.t)].join(' ');
         const mm = re.exec(text);
+        if (mm) { const k = id + ' · ' + nm; if (!absent[k]) absent[k] = '…' + text.slice(Math.max(0, mm.index - 90), mm.index + 60).replace(/\s+/g, ' ') + '…'; break; }
+      }
+    }
+  }
+  // Book Two: the same check for its own squad (each squadmate dropped in turn, the Red Blade recruit included)
+  for (const id of ids.filter(isDG)) {
+    for (const x of ['haddat', 'sathi', 'tangle', 'marrow', 'redblade']) {
+      if (!TPL[x]) continue; const nm = TPL[x].name, re = new RegExp('\\b' + nm + '\\b');
+      for (let v = 0; v < 8; v++) {
+        mkDG(v); S.squad = S.squad.filter(q => q !== x);
+        let n; try { n = DLG[id](); } catch (e) { continue; }
+        const vis = (n.ch || []).filter(c => { try { return !c.req || c.req(); } catch (e) { return false; } });
+        const text = [n.txt || '', ...vis.map(c => c.t)].join(' '); const mm = re.exec(text);
         if (mm) { const k = id + ' · ' + nm; if (!absent[k]) absent[k] = '…' + text.slice(Math.max(0, mm.index - 90), mm.index + 60).replace(/\s+/g, ' ') + '…'; break; }
       }
     }

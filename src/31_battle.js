@@ -657,7 +657,7 @@ function updBattleUI(){
   const u = B.cur, ub = $('#ubar');
   B.reach = null; B.hl = {atk:new Set(), tgt:new Set(), aoo:new Set(), flank:new Set(), pct:new Map()};
   if (!u || B.over) { ub.innerHTML = `<div class="bhint">${B.over ? 'The fighting stops.' : 'Rolling initiative…'}</div>`; return; }
-  if (u.side === 'e' || u.ally) { ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag ${u.ally ? 'ally' : 'foe'}">${u.ally ? 'ally' : 'enemy turn'}</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.stun ? '<span class="stat">dazed</span>' : ''}</div><div class="bhint">${u.ally ? 'They fight for themselves. It happens to help.' : 'Watch the one ringed in red.'}</div>`; return; }
+  if (u.side === 'e' || u.ally) { ub.innerHTML = `<div class="uhead"><b>${esc(u.name)}</b><span class="tag ${u.ally ? 'ally' : 'foe'}">${u.ally ? 'ally' : 'enemy turn'}</span><span class="stat hp">${u.hp}/${u.maxhp} health</span>${u.stun ? '<span class="stat">dazed</span>' : ''}</div><div class="bhint">${u.ally ? (u.dog ? 'Sathi\'s dog. He goes where she points, and a little further.' : 'They fight for themselves. It happens to help.') : 'Watch the one ringed in red.'}</div>`; return; }
   const mvLeft = B.mvLeft ?? u.mv;
   if (!B.moved && !B.busy) { B.reach = reachSafe(u.x, u.y, (x,y) => passFriend(x,y,u), mvLeft, (x,y) => leaveCost(u, x, y)); B.reach.forEach((n, k) => { if (n.d && !free(n.x, n.y, u)) B.reach.delete(k); }); } // through the squad, never ending on it
   // enemies in reach: ringed, with the chance to hit (and whether it flanks)
