@@ -598,7 +598,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '4.7.5';
+const VERSION = '4.7.6';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -4228,7 +4228,9 @@ function drawExplore(t){
   a.npcs.forEach(n => { if (n.show && !n.show()) return; drawFigure(ctx, n.kind, n.x*T + T/2, n.y*T + T*.6, T/32, t, {phase:n.x + n.y*3, still:!!n.still});
     if (n.fresh && n.fresh()) { const by = Math.sin(t/300)*2; ctx.fillStyle = '#e8c073'; const cx = n.x*T+T/2, cy = n.y*T - T*.15 + by; ctx.beginPath(); ctx.moveTo(cx, cy-T*.16); ctx.lineTo(cx+T*.1, cy); ctx.lineTo(cx, cy+T*.12); ctx.lineTo(cx-T*.1, cy); ctx.fill(); } });
   // party: sergeant + trail, interpolated
-  SQUAD().slice(1).forEach((id,i) => { const p = S.trail[i]; if (!p) return; const d = dispOf(id, p.x, p.y); drawFigure(ctx, id, d.x*T + T/2, d.y*T + T*.6, T/32*.85, t, {phase:i+1, dir: d.x <= S.pos.x ? 1 : -1, still:!walking}); });
+  // a squadmate standing on the map to be talked to is not also in the line behind
+  const onMap = new Set(a.npcs.filter(n => !n.show || n.show()).map(n => n.kind));
+  SQUAD().slice(1).filter(id => !onMap.has(id)).forEach((id,i) => { const p = S.trail[i]; if (!p) return; const d = dispOf(id, p.x, p.y); drawFigure(ctx, id, d.x*T + T/2, d.y*T + T*.6, T/32*.85, t, {phase:i+1, dir: d.x <= S.pos.x ? 1 : -1, still:!walking}); });
   const d = dispOf('sgt', S.pos.x, S.pos.y);
   if (!walking) { const p = REDUCE() ? 0 : (Math.sin(t/260)+1)*.5; ctx.strokeStyle = `rgba(201,151,63,${.35+p*.4})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(d.x*T + T/2, d.y*T + T*.6, T*.4 + p*2, T*.16 + p, 0, 0, 7); ctx.stroke(); }
   drawFigure(ctx, 'sgt', d.x*T + T/2, d.y*T + T*.6, T/32, t, {phase:0, still:!walking});
@@ -5671,6 +5673,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.7.6', ['A squadmate standing on the map to be talked to is no longer also walking in the line behind the sergeant. The line closes up without them.']],
   ['4.7.5', ['Nothing on a map moves the story on by surprise any more. Every way into the next place, the next fight or the next chapter now offers "Not yet." (or a way to stay), in both books, and opening it changes nothing until you choose to go on.', 'If someone on the map still has something to say when you are about to leave, one of the squad mentions it.']],
   ['4.7.4', ['The Ways on buttons under the map are gone too. What stays: a brass ring on the ground under anything you can walk to and use, and an arrow at the edge of the view when it is off screen.']],
   ['4.7.3', ['The names floating over things on the map are gone. The brass rings and markers stay, and the Ways on buttons under the map still name each one and walk the squad there.']],

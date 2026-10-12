@@ -47,6 +47,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.7.6 — A squadmate shown on the map to talk to is not also drawn in the party line; the line closes up. New tools/trail_test.mjs checks every area of both books.
 - v4.7.5 — Every onward step from a map can be declined ("Not yet."), in both books, and a squadmate mentions anyone still waiting to talk. New tools/onward_test.mjs audits it.
 - v4.7.4 — The Ways on button row is removed; the brass rings on the map and the edge arrows stay.
 - v4.7.3 — The floating names over the map's ways on are removed; the rings, edge arrows and Ways on buttons stay.
