@@ -281,7 +281,10 @@ There are stories going up and down the column now, the way there are when peopl
 
 ${b2Tg() ? `"${b2Count()}," Tangle says at the halt. Then, because nobody asked: "Still." ` : ''}${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('The Odhan · nine days east of the P\'atha'),
-    ch:[{t:'Make camp.', go:()=>startExplore()}]}),
+    ch:[b2DeckChoice(3), {t:'Make camp.', go:()=>startExplore()}]}),
+  /* the reading at the night camp (47c) */
+  b2_c3_deck:()=>b2DeckOffer(3, 'b2_c3_card'),
+  b2_c3_card:()=>b2DeckCard(3),
 
   /* ---- Captain Lull ---- */
   b2_lull:()=>({sp:'Captain Lull · Sialk Marines', fx:()=>{ S.f.b2_lull = 1; }, txt:

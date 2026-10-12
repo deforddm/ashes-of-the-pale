@@ -479,22 +479,33 @@ The last thing she feels is the easing: a small, tired thing, like taking off he
     {sp:'Tuft', fig:'tuft', bg:'deck', txt:
 `Tuft lets the card go. "She was *afraid*," she says at last. "The whole time. I didn't know she could be." Her hands are cold.`}]},
 };
-const VISION_IDS = Object.keys(VISIONS);
+const VISION_IDS = Object.keys(VISIONS); // Book One's (later books' visions load after this line and are listed by visIds)
+/* the visions of the book being played: entries carry book:'dg' etc.; Book One's carry none */
+const visIds = () => Object.keys(VISIONS).filter(k => (VISIONS[k].book || 'gotm') === ((S && S.book) || 'gotm'));
+/* later books' vision backdrops: VISBG[key](ctx, W, H, T, v, t) draws the place and may return {fx, fy, fs, air} for the figure */
+const VISBG = {};
+/* who reads the Deck: Tuft in Book One; a later book names its own reader (VISREADER(): {id, name, he}) */
+let VISREADER = null;
+const visReader = () => (VISREADER && S && S.book && S.book !== 'gotm' ? VISREADER() : null) || {id:'tuft', name:'Tuft', he:false};
+/* the reader's name in the middle of a sentence ("the old Kanese"); and the node a reading's card screen comes back to: c4_card in Book One, b2_c4_card in Book Two */
+const visMid = () => { const r = visReader(); return r.mid || r.name; };
+const cardNodeName = () => (S && S.book === 'dg' ? 'b2_c' : 'c') + (S ? S.chapter : 0) + '_card';
 /* which vision the turned card opens this chapter: Ch4 keys its four by card; every other chapter has one, for any card */
 function visionFor(ch, card){
   if (!ch || !card || card === 'blank') return null;
-  const vs = VISION_IDS.filter(k => VISIONS[k].ch === ch);
+  const vs = visIds().filter(k => VISIONS[k].ch === ch);
   return vs.find(k => VISIONS[k].cards && VISIONS[k].cards.includes(card)) || vs.find(k => !VISIONS[k].cards) || null;
 }
 let VIS = null; // the vision playing: {id, done, ret, resume, bg, fig}
 /* watched again from the journal: the closing beat is Tuft in the present, so it changes; without her, the card just goes dark */
-const visAgain = st => !!(VIS && VIS.replay && st.sp === 'Tuft');
-const visTuftHere = () => !!(S && S.squad && S.squad.includes('tuft') && !(S.dead && S.dead.tuft));
+const visAgain = st => !!(VIS && VIS.replay && st.sp === visReader().name);
+const visTuftHere = () => { const r = visReader(); return !TPL[r.id] ? !!r.name : !!(S && S.squad && S.squad.includes(r.id) && !(S.dead && S.dead[r.id])); };
 function visNodes(id){
   const V = VISIONS[id], n = V.steps.length;
   V.steps.forEach((st, i) => { DLG[`vis_${id}_${i}`] = () => { const last = i === n - 1, nx = last ? () => visEnd() : `vis_${id}_${i + 1}`;
-    if (visAgain(st)) return {sp:visTuftHere() ? 'Tuft' : 'The Deck of Dragons', onshow:() => visStep(id, i), ch:[{t:'Put the cards away.', go:nx}],
-      txt:visTuftHere() ? (VIS.again ? `Tuft lets the card go. She has watched this one before. It doesn't get any easier, and she doesn't say anything. Her hands are cold.` : `Tuft lets the card go. She doesn't say anything for a long time. Her hands are cold.`) : `The card goes still, and dark, and is only paint and wood again.`};
+    if (visAgain(st)) { const r = visReader(), sh = r.he ? 'He' : 'She', hs = r.he ? 'His' : 'Her';
+      return {sp:visTuftHere() ? r.name : 'The Deck of Dragons', onshow:() => visStep(id, i), ch:[{t:'Put the cards away.', go:nx}],
+      txt:visTuftHere() ? (VIS.again ? `${r.name} lets the card go. ${sh} has watched this one before. It doesn't get any easier, and ${sh.toLowerCase()} doesn't say anything. ${hs} hands are cold.` : `${r.name} lets the card go. ${sh} doesn't say anything for a long time. ${hs} hands are cold.`) : `The card goes still, and dark, and is only paint and wood again.`}; }
     return {sp:st.sp || V.who, txt:typeof st.txt === 'function' ? st.txt() : st.txt, onshow:() => visStep(id, i),
       ch:st.ch ? st.ch.map(c => ({t:c.t, fx:() => { S.f[c.set[0]] = c.set[1]; }, go:nx})) : [{t:st.go || (last ? 'Put the cards away.' : 'Go on.'), go:nx}]}; }; });
 }
@@ -512,7 +523,7 @@ function playVision(id, done){
   S.seenVisions = S.seenVisions || []; const again = S.seenVisions.includes(id); if (!again) S.seenVisions.push(id);
   /* v3.16: only a vision Tuft looked into at a reading is hers (S.tuftVisions, which the chapters' seenVis() reads); a journal replay is listed, not counted as hers */
   if (done) { S.tuftVisions = S.tuftVisions || []; if (!S.tuftVisions.includes(id)) S.tuftVisions.push(id); }
-  const ret = {view, kind:G.sceneKind, bg:S.bg, node:S.node}, cardNode = 'c' + S.chapter + '_card';
+  const ret = {view, kind:G.sceneKind, bg:S.bg, node:S.node}, cardNode = cardNodeName();
   VIS = {id, ret, replay:!done, again, done:done || (() => { if (ret.node && DLG[ret.node]) talk(ret.node); }), resume:done ? (DLG[cardNode] ? cardNode : ret.node) : ret.node, bg:V.bg, fig:V.fig, t0:performance.now()};
   $('#sheet').hidden = true; $('#modal').hidden = true; routeAnim = null;
   document.body.classList.add('vision');
@@ -524,7 +535,7 @@ function playVision(id, done){
 }
 function visEnd(){
   const v = VIS; VIS = null; document.body.classList.remove('vision'); const sh = $('#sheet'); if (sh) sh.classList.remove('vsheet');
-  if (!v) { const n = 'c' + S.chapter + '_card'; if (DLG[n]) talk(n); else startExplore(); return; }
+  if (!v) { const n = cardNodeName(); if (DLG[n]) talk(n); else startExplore(); return; }
   const r = v.ret; S.bg = r.bg; G.sceneKind = null; S.node = null;
   if (r.view === 'explore') startExplore(); else if (r.view === 'scene' && r.kind && r.kind !== 'vision') sceneShell(r.kind);
   save(); v.done();
@@ -542,7 +553,9 @@ function drawVision(cv, v, t){
   const lamps = (y, n) => { for (let i=0;i<n;i++){ const x = hash(i,7)*W, yy = y + hash(i,8)*(H - y)*.8; glow(ctx, x, yy, 18, '#6aa0ff', .35 + Math.sin(T/400 + i)*.05); ctx.fillStyle = '#bcd6ff'; ctx.fillRect(x - .8, yy - .8, 1.6, 1.6); } };
   const spawnRock = (x, y, s) => { poly(ctx, [[x - s, y],[x - s*.6, y - s*.25],[x, y - s*.32],[x + s*.7, y - s*.2],[x + s, y],[x + s*.4, y + s*.45],[x - s*.2, y + s*.6],[x - s*.6, y + s*.3]], '#050408'); };
   let fx = W*.32, fy = H*.86, fs = 2.4, air = false;
-  if (k === 'gate') { ground(H*.7, '#5e5a6a', 2); ctx.fillStyle = '#ece8f2'; ctx.fillRect(W*.6, H*.3, 7, H*.42); ctx.fillRect(W*.74, H*.3, 7, H*.42); ctx.fillRect(W*.59, H*.27, W*.16, 6);
+  const vbx = VISBG[k] ? VISBG[k](ctx, W, H, T, v, t) : null; if (vbx) { if (vbx.fx != null) fx = vbx.fx; if (vbx.fy != null) fy = vbx.fy; if (vbx.fs != null) fs = vbx.fs; if (vbx.air != null) air = vbx.air; }
+  if (VISBG[k]) {}
+  else if (k === 'gate') { ground(H*.7, '#5e5a6a', 2); ctx.fillStyle = '#ece8f2'; ctx.fillRect(W*.6, H*.3, 7, H*.42); ctx.fillRect(W*.74, H*.3, 7, H*.42); ctx.fillRect(W*.59, H*.27, W*.16, 6);
     drawFigure(ctx, 'stone', W*.82, H*.74, 2.6, t, {still:true, dir:-1, alpha:.55}); }
   else if (k === 'plainfire' || k === 'plainnight' || k === 'camp') { stars(40); ground(H*.72, '#120e14', 3, 1);
     if (k === 'plainfire') { const fl = .8 + Math.sin(T/70)*.1 + Math.sin(T/23)*.05; glow(ctx, W*.64, H*.6, W*.5, '#ff7a30', .35*fl); const pg = ctx.createLinearGradient(0, 0, 0, H*.72); pg.addColorStop(0, 'rgba(255,220,150,0)'); pg.addColorStop(.3, `rgba(255,180,90,${.7*fl})`); pg.addColorStop(1, 'rgba(255,240,200,.95)'); ctx.fillStyle = pg; ctx.fillRect(W*.64 - 9 - Math.sin(T/90)*2, 0, 18 + Math.sin(T/90)*4, H*.72); }
@@ -580,9 +593,9 @@ function drawVision(cv, v, t){
 function visionsHTML(){
   /* every vision of every chapter the squad has reached; unseen ones are marked and can be watched for the first time */
   const ch = S ? S.chapter || 0 : 0, seen = (S && S.seenVisions) || [];
-  const ids = VISION_IDS.filter(k => VISIONS[k].ch <= ch); if (!ids.length) return '';
+  const ids = visIds().filter(k => VISIONS[k].ch <= ch); if (!ids.length) return '';
   const can = (view === 'explore' || view === 'scene') && !VIS && !document.body.classList.contains('vision');
-  return `<h4 class="jh">Visions</h4><p class="fine">What the Deck can show Tuft when she looks into the card: a glimpse through someone else's eyes. Look into the card when she reads for you, or watch them here.${can ? '' : ' (Watch from the map, or a conversation.)'}</p><ul class="jl vlist">${ids.map(k => { const V = VISIONS[k], s = seen.includes(k);
+  return `<h4 class="jh">Visions</h4><p class="fine">What the Deck can show ${esc(visMid())} when ${visReader().he ? 'he looks' : 'she looks'} into the card: a glimpse through someone else's eyes. Look into the card when ${visReader().he ? 'he reads' : 'she reads'} for you, or watch them here.${can ? '' : ' (Watch from the map, or a conversation.)'}</p><ul class="jl vlist">${ids.map(k => { const V = VISIONS[k], s = seen.includes(k);
     return `<li><span class="vnm"><em>Chapter ${V.ch}</em> · ${esc(V.who)} · ${esc(V.where)}${s ? '' : ' <b class="vnew">unseen</b>'}</span>${can ? ` <button class="btn sm vis" data-vision="${k}">✦ ${s ? 'Watch again' : 'Watch'}</button>` : ''}</li>`; }).join('')}</ul>`;
 }
 function bindVisions(m){ m.querySelectorAll('[data-vision]').forEach(b => b.onclick = () => { AUDIO.play('click'); m.hidden = true; playVision(b.dataset.vision, null); }); }

@@ -744,8 +744,12 @@ ${S.f.b2_key === 'carts' ? `You ask about the quarters. The water-sellers'. Two 
 
 Behind you Hissar is a smudge of smoke on the horizon. Ahead is the Vin'til Basin, south-west, a day and a half.`,
       html:chainHTML('The road south-west · first light'),
-      ch:[{t:'March.', go:()=>{ startExplore('b2_basin'); talk('b2_basin_arrive'); }},
+      ch:[b2DeckChoice(1),
+          {t:'March.', go:()=>{ startExplore('b2_basin'); talk('b2_basin_arrive'); }},
           {t:'Not yet.'}]},
+    /* the reading: Marrow (or whoever reads, 47) at the wagons, first light (47c) */
+    b2_c1_deck:()=>b2DeckOffer(1, 'b2_c1_card'),
+    b2_c1_card:()=>b2DeckCard(1),
     /* ---- the Vin'til Basin: the march, and Reloe's army ---- */
     b2_basin_arrive:()=>({sp:'The Vin\'til Basin', scene:'b2_basin', fx:()=>{ S.f.b2_basinIn = 1; }, txt:
 `A day and a half south-west, the ground drops away into the Vin'til Basin: a wide pan of cracked clay under a white sky, with scrub round its rim and dry washes cut across its floor like old knife-cuts. The heat comes up off it into your face. The column goes down into it because the column goes where it's told.

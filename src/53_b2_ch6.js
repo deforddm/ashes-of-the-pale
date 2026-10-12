@@ -307,7 +307,10 @@ There is also everyone else.
 
 ${b2Away() ? `You count the squad at the halt and get to ${NAME(b2Away())} and stop. Aren, by now. Or not. ` : ''}${b2Hurt() ? `${NAME(b2Hurt())} sits down carefully at the halt and gets up carefully, the Vathar wound bound tight under the kit, and says it is better. It is not better. ` : ''}${b2In('tangle') ? `"${b2Count()}," Tangle says, to the satchel. ` : ''}${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('The hills above Sanimon · the end of the Nenoth'),
-    ch:[{t:'Look round.', go:()=>startExplore()}]}),
+    ch:[b2DeckChoice(6), {t:'Look round.', go:()=>startExplore()}]}),
+  /* the reading at the halt above Sanimon (47c) */
+  b2_c6_deck:()=>b2DeckOffer(6, 'b2_c6_card'),
+  b2_c6_card:()=>b2DeckCard(6),
 
   /* ---- Bult: the dawn ---- */
   b2_bult9:()=>({sp:'Bult', fx:()=>{ S.f.b2_bult9 = 1; }, txt:

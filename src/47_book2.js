@@ -350,4 +350,15 @@ function b2OldHand(id){ if (!TPL[id] || S.squad.includes(id) || S.squad.includes
   if (S.lvl >= 5 && !S.picks[id].includes('iron')) S.picks[id].push('iron'); if (S.lvl >= 7 && !S.picks[id].includes('keen')) S.picks[id].push('keen');
   save(); return true; }
 
+/* ---- who reads the Deck in Book Two (36b visReader, 21's captions, 47c's readings) ----
+   Marrow, the Napan healer (a temple of Soliel taught her the cards before she left it for the army), while she is with the squad.
+   Without her (the Silanda since Chapter 4, the Fist's rearguard since the split, or fallen), Yedda the ropemaker's widow reads,
+   if she came out of Hissar with the squad (S.f.b2_yedda); otherwise an old Kanese card-reader who walks in the squad's stretch,
+   whose name nobody has. {id, name, he, mid}: mid is the name in the middle of a sentence. */
+VISREADER = () => {
+  if (S && Array.isArray(S.squad) && S.squad.includes('marrow') && !(S.dead && S.dead.marrow)) return {id:'marrow', name:'Marrow', he:false};
+  if (S && S.f && S.f.b2_yedda) return {id:'yedda', name:'Yedda', he:false};
+  return {id:'kanese', name:'The old Kanese', mid:'the old Kanese', he:true};
+};
+
 /* Book Two's chapters register in start() (90), after Book One's */

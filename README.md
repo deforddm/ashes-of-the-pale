@@ -47,6 +47,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.7.0 — The Deck of Dragons in Book Two: a reading every chapter (Marrow, or a reader in the column), four new High House cards, and seven visions through canon eyes.
 - v4.6.1 — Book Two's sergeant gets their own figure and portrait; Ramin is redrawn to stand apart from the other Red Blades.
 - v4.6.0 — Book Two, Chapter Seven: Aren Way, and the end of Book Two (the Barrow, the walls, the sortie, the harbour, three roads out, and the finale). Book Two is complete.
 - v4.5.0 — Book Two, Chapter Six: Sanimon (the Khundryl, Dojal Spring, the split on the Geleen Plain). Squadmates who stay with Coltaine are gone for good; their last stand comes in Chapter Seven.

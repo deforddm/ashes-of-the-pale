@@ -263,7 +263,10 @@ Behind the column, every evening, dust. Not riders on the skyline any more, not 
 
 ${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('The Odhan · toward the Vathar'),
-    ch:[{t:'On, to the river.', go:'b2_vathar_arrive'}]}),
+    ch:[b2DeckChoice(4), {t:'On, to the river.', go:'b2_vathar_arrive'}]}),
+  /* the reading at the evening halt (47c) */
+  b2_c4_deck:()=>b2DeckOffer(4, 'b2_c4_card'),
+  b2_c4_card:()=>b2DeckCard(4),
 
   b2_vathar_arrive:()=>({sp:'The Vathar · afternoon', scene:'b2_vathar', fx:()=>{ S.f.b2_vathar = 1; }, txt:
 `The river is wide and brown and slow, and on the far side of it there are trees. Real trees, old ones, a whole dark wall of them, the first in a thousand leagues. The column comes down to the near bank in the afternoon and stops, and looks at them, the way you would look at a coast.

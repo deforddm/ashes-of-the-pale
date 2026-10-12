@@ -277,7 +277,10 @@ ${b2Away() ? `You count the squad at the first halt, out of habit, and get to th
 
 ${b2In('tangle') ? `"${b2Count()}," Tangle says, to the satchel. "Nobody's touched it. Nobody look at it."` : ''}${b2In('marrow') ? ` Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('Vathar Forest · south of the river'),
-    ch:[{t:'On, under the trees.', go:'b2_forest_arrive'}]}),
+    ch:[b2DeckChoice(5), {t:'On, under the trees.', go:'b2_forest_arrive'}]}),
+  /* the reading at the first halt under the trees (47c) */
+  b2_c5_deck:()=>b2DeckOffer(5, 'b2_c5_card'),
+  b2_c5_card:()=>b2DeckCard(5),
 
   b2_forest_arrive:()=>({sp:'Vathar Forest', scene:'b2_forest', fx:()=>{ S.f.b2_forest = 1; }, txt:
 `The column halts at midday in a long clearing, because the Fist has said halt, and spreads out among the trees to rest, and nobody rests.

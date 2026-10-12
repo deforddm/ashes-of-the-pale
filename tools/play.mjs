@@ -56,9 +56,11 @@ const BOT = () => {
           else if (typeof c.go === 'function') w = 3;
           else w = 0.6; // leave / close
           if (c.check) w *= 1.2;
+          if (c.deck) w = 60; // a Book Two reading (47c): the bot nearly always sits down for it, so the card screen and its effects get played
           return { b, w }; });
         let r = Math.random() * opts.reduce((a, o) => a + o.w, 0); const o = opts.find(o => (r -= o.w) <= 0) || opts[0];
         this.hist.push(`${S.node} [${view}${G.sceneKind ? ':' + G.sceneKind : ''}] -> ${o.b.textContent.slice(0, 50)}`); this.hist = this.hist.slice(-8);
+        const oc = curCh[+o.b.dataset.i]; if (oc && oc.deck && /draw\.$/.test(o.b.textContent)) this.ev(`deck: ${o.b.textContent} (${S.node})`);
         this.choices++; o.b.click(); return 'choice';
       }
       if (view === 'intro') { const g = $('#bGo'); if (g && !g.disabled) { g.click(); return 'intro-go'; } return 'intro-wait'; }

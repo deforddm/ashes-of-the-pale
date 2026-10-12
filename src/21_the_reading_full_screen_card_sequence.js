@@ -1,5 +1,7 @@
 /* ============ the reading: full-screen card sequence ============ */
 let cardAnim = null;
+/* a later book's reading (47c): CARDBOOK = {txt(id), cap(t, self, second)}, its reader's words for the card and the captions. Book One's reading is Tuft's, as written below */
+let CARDBOOK = null;
 /* opt.card: show that card and leave S.card alone. opt.self: Tuft draws for herself; the flanking cards never turn. */
 function cardSequence(done, opt = {}){
   const el = $('#cardfx'); el.hidden = false;
@@ -7,12 +9,13 @@ function cardSequence(done, opt = {}){
   const cid = opt.card || S.card, self = !!opt.self;
   const picks = ['crown','sceptre','orb'].filter(k => k !== cid).sort(() => Math.random() - .5);
   const c = CARDS[cid] || {name:'?', fx:'', txt:'', hue:'#888'};
+  const BK = CARDBOOK && S && S.book && S.book !== 'gotm' ? CARDBOOK : null, ctxt = BK ? BK.txt(cid) : c.txt;
   /* Tattersail's Fold: once a chapter, the turned card goes back and another comes up from the same pool; keep either */
   const second = opt.second, foldPool = (S.cardPool || []).filter(k => k !== cid && CARDS[k]), canFold = !self && !opt.card && !second && foldPool.length && typeof trickLeft === 'function' && trickLeft('fold') > 0;
   const pc = second ? CARDS[second.prev] : null;
   /* Through the Deck: a card with a vision this chapter can be looked into (not Tuft's own draw, a shown card, or the Fold's second card) */
   const vis = !self && !opt.card && !second && typeof visionFor === 'function' ? visionFor(S.chapter, cid) : null;
-  el.innerHTML = `<canvas id="ccv"></canvas><div class="cf" id="cfText"><div class="cn">${esc(c.name)}</div><div class="cfx">${esc(c.fx || '')}</div><div class="ct">${smartq(esc(c.txt || '').replace(/&quot;/g,'"'))}</div>
+  el.innerHTML = `<canvas id="ccv"></canvas><div class="cf" id="cfText"><div class="cn">${esc(c.name)}</div><div class="cfx">${esc(c.fx || '')}</div><div class="ct">${smartq(esc(ctxt || '').replace(/&quot;/g,'"'))}</div>
     ${pc ? `<div class="cfold"><span class="fold">✦ Tattersail's Fold: or keep the first card,</span> <b>${esc(pc.name)}</b> <span>${esc(pc.fx || '')}</span></div>` : ''}
     <div class="row cfrow"><button class="btn primary" id="cfGo">${second ? `Keep ${esc(c.name)}` : self ? 'Put the card away' : S.chapter ? "Put the cards away" : "Descend"}</button>${vis ? `<button class="btn vis" id="cfVis">✦ Look into the card</button>` : ''}${second ? `<button class="btn" id="cfKeep">Keep ${esc(pc.name)}</button>` : ''}${canFold ? `<button class="btn trk" id="cfFold">✦ Draw again · Tattersail's Fold</button>` : ''}</div></div>`;
   const cv = $('#ccv'), ctx = cv.getContext('2d'); const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -58,7 +61,7 @@ function cardSequence(done, opt = {}){
     });
     // captions
     ctx.fillStyle = '#9c8c78'; ctx.textAlign = 'center'; ctx.font = `italic ${Math.round(Math.min(20, W*.045))}px 'IM Fell English', serif`;
-    const cap = self ? (t < 1500 ? 'Tuft shuffles. Her hands are not steady.' : t < 2900 ? 'One card. For herself. The first time.' : t < 4900 ? 'The cards on either side stay face down.' : t < 5800 ? 'She turns it over.' : '')
+    const cap = BK ? BK.cap(t, self, second) : self ? (t < 1500 ? 'Tuft shuffles. Her hands are not steady.' : t < 2900 ? 'One card. For herself. The first time.' : t < 4900 ? 'The cards on either side stay face down.' : t < 5800 ? 'She turns it over.' : '')
       : second ? (t < 1500 ? 'Tuft folds the card back into the spread, the way Tattersail did it.' : t < 2900 ? 'Three again. The Deck lets her, mostly.' : t < 4900 ? '' : t < 5800 ? 'Another comes up.' : '')
       : t < 1500 ? 'Tuft shuffles without looking at her hands.' : t < 2900 ? 'Three cards. She never draws for herself.' : t < 3900 ? 'The first card refuses her.' : t < 4900 ? 'The second card refuses her.' : t < 5800 ? 'The third does not.' : '';
     if (cap) ctx.fillText(cap, cx, H*.74);

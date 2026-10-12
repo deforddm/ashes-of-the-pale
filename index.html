@@ -592,7 +592,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '4.6.1';
+const VERSION = '4.7.0';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -2650,6 +2650,8 @@ window.addEventListener('keydown', e => { if (!artViewOpen()) return; e.stopImme
 artWarm();
 
 /* ============ Deck of Dragons card art ============ */
+/* later books' cards: CARDART[id](ctx, {px, py, pw, ph, cx, gy, t, hue}) paints the picture panel (57b); a painted deck/ face, where there is one, still comes first */
+const CARDART = {};
 function drawCard(ctx, id, W, H, face, t = 0){
   ctx.save();
   // card body
@@ -2678,6 +2680,7 @@ function drawCard(ctx, id, W, H, face, t = 0){
   ctx.fillStyle = '#0a0807'; ctx.fillRect(px, gy, pw, ph); // ground
   const AI = artImg('deck/' + id); // the painted face from the artwork canvas, where it has one
   if (AI) { artCover(ctx, AI, px, py, pw, ph); glow(ctx, cx, py + ph*.45, pw*.45, hue, .06 + Math.sin(t/900)*.04); }
+  else if (CARDART[id]) CARDART[id](ctx, {px, py, pw, ph, cx, gy, t, hue});
   else switch (id) {
     case 'oponn': { // twin masks back to back, a coin above
       const my = py + ph*.5, mr = pw*.2;
@@ -2806,13 +2809,15 @@ function inlineCard(cv, id, refuse){
     ctx.clearRect(0,0,240,360); drawCardFlip(ctx, id, 0, 0, 240, 360, k, t);
     if (!played && k > .5) { played = true; AUDIO.play('flip'); }
     if (refuse && t > 1300) { const a = clamp((t - 1300) / 900, 0, .75); ctx.fillStyle = `rgba(6,5,4,${a})`; ctx.fillRect(0,0,240,360); for (let i=0;i<8;i++){ const yy = 360 - ((t/6 + i*47) % 400); ell(ctx, 120 + Math.sin(t/400 + i)*60, yy, 40, 14, `rgba(60,50,45,${a*.5})`); } }
-    if (k < 1 || (refuse && t < 2400) || ['oponn','chains','crown','blank','knight','raven','hounds','magi'].includes(id)) requestAnimationFrame(fr); }
+    if (k < 1 || (refuse && t < 2400) || ['oponn','chains','crown','blank','knight','raven','hounds','magi'].includes(id) || CARDART[id]) requestAnimationFrame(fr); }
   requestAnimationFrame(fr);
 }
 
 
 /* ============ the reading: full-screen card sequence ============ */
 let cardAnim = null;
+/* a later book's reading (47c): CARDBOOK = {txt(id), cap(t, self, second)}, its reader's words for the card and the captions. Book One's reading is Tuft's, as written below */
+let CARDBOOK = null;
 /* opt.card: show that card and leave S.card alone. opt.self: Tuft draws for herself; the flanking cards never turn. */
 function cardSequence(done, opt = {}){
   const el = $('#cardfx'); el.hidden = false;
@@ -2820,12 +2825,13 @@ function cardSequence(done, opt = {}){
   const cid = opt.card || S.card, self = !!opt.self;
   const picks = ['crown','sceptre','orb'].filter(k => k !== cid).sort(() => Math.random() - .5);
   const c = CARDS[cid] || {name:'?', fx:'', txt:'', hue:'#888'};
+  const BK = CARDBOOK && S && S.book && S.book !== 'gotm' ? CARDBOOK : null, ctxt = BK ? BK.txt(cid) : c.txt;
   /* Tattersail's Fold: once a chapter, the turned card goes back and another comes up from the same pool; keep either */
   const second = opt.second, foldPool = (S.cardPool || []).filter(k => k !== cid && CARDS[k]), canFold = !self && !opt.card && !second && foldPool.length && typeof trickLeft === 'function' && trickLeft('fold') > 0;
   const pc = second ? CARDS[second.prev] : null;
   /* Through the Deck: a card with a vision this chapter can be looked into (not Tuft's own draw, a shown card, or the Fold's second card) */
   const vis = !self && !opt.card && !second && typeof visionFor === 'function' ? visionFor(S.chapter, cid) : null;
-  el.innerHTML = `<canvas id="ccv"></canvas><div class="cf" id="cfText"><div class="cn">${esc(c.name)}</div><div class="cfx">${esc(c.fx || '')}</div><div class="ct">${smartq(esc(c.txt || '').replace(/&quot;/g,'"'))}</div>
+  el.innerHTML = `<canvas id="ccv"></canvas><div class="cf" id="cfText"><div class="cn">${esc(c.name)}</div><div class="cfx">${esc(c.fx || '')}</div><div class="ct">${smartq(esc(ctxt || '').replace(/&quot;/g,'"'))}</div>
     ${pc ? `<div class="cfold"><span class="fold">✦ Tattersail's Fold: or keep the first card,</span> <b>${esc(pc.name)}</b> <span>${esc(pc.fx || '')}</span></div>` : ''}
     <div class="row cfrow"><button class="btn primary" id="cfGo">${second ? `Keep ${esc(c.name)}` : self ? 'Put the card away' : S.chapter ? "Put the cards away" : "Descend"}</button>${vis ? `<button class="btn vis" id="cfVis">✦ Look into the card</button>` : ''}${second ? `<button class="btn" id="cfKeep">Keep ${esc(pc.name)}</button>` : ''}${canFold ? `<button class="btn trk" id="cfFold">✦ Draw again · Tattersail's Fold</button>` : ''}</div></div>`;
   const cv = $('#ccv'), ctx = cv.getContext('2d'); const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -2871,7 +2877,7 @@ function cardSequence(done, opt = {}){
     });
     // captions
     ctx.fillStyle = '#9c8c78'; ctx.textAlign = 'center'; ctx.font = `italic ${Math.round(Math.min(20, W*.045))}px 'IM Fell English', serif`;
-    const cap = self ? (t < 1500 ? 'Tuft shuffles. Her hands are not steady.' : t < 2900 ? 'One card. For herself. The first time.' : t < 4900 ? 'The cards on either side stay face down.' : t < 5800 ? 'She turns it over.' : '')
+    const cap = BK ? BK.cap(t, self, second) : self ? (t < 1500 ? 'Tuft shuffles. Her hands are not steady.' : t < 2900 ? 'One card. For herself. The first time.' : t < 4900 ? 'The cards on either side stay face down.' : t < 5800 ? 'She turns it over.' : '')
       : second ? (t < 1500 ? 'Tuft folds the card back into the spread, the way Tattersail did it.' : t < 2900 ? 'Three again. The Deck lets her, mostly.' : t < 4900 ? '' : t < 5800 ? 'Another comes up.' : '')
       : t < 1500 ? 'Tuft shuffles without looking at her hands.' : t < 2900 ? 'Three cards. She never draws for herself.' : t < 3900 ? 'The first card refuses her.' : t < 4900 ? 'The second card refuses her.' : t < 5800 ? 'The third does not.' : '';
     if (cap) ctx.fillText(cap, cx, H*.74);
@@ -5571,6 +5577,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.7.0', ['The Deck of Dragons comes to Book Two. Marrow reads it for the squad at the first halt of every chapter; if she is gone, someone in the column reads instead.', 'Four new cards: the King, the Mason and the Soldier of High House Death, and the Queen of High House Life, each with its own effect, beside the Hounds, Oponn, the Obelisk, the Knight, the Assassin and the Herald.', 'Seven visions, one a chapter, through the eyes of people the squad never meets: Lostara Yil in the Holy Desert, Felisin at a fouled spring, Minala in the Imperial Warren, Mappo on the road to the Deadhouse, Leoman in the Whirlwind\'s camp, Fiddler at Tremorlor, and Kalam in Mock\'s Hold. Look into the card when it turns, or watch them from the journal.']],
   ['4.6.1', ['Book Two\'s sergeant has a face of their own: six summers of the Holy Desert, a scarf against the sand, the iron cap hung at the belt, and a shield with three regiments\' paint showing through. Book One\'s sergeant is unchanged.', 'Ramin looks like himself now: a red head-wrap instead of the helm, his lance cut down and held short, spurs and a saddle-cloth for a horse he no longer has, and his father\'s toll seal on a cord. The other Red Blades keep the spiked helms.']],
   ['4.6.0', ['Book Two, Chapter Seven: Aren Way, and the end of Book Two. Balahn, the run down Aren Way, the Barrow, the walls of Aren, the High Fist\'s sortie, and the harbour.', 'Whoever stayed with Coltaine at the split fights the last stand on the Barrow. The sergeant is on the walls.', 'A squadmate sent down the river on the Silanda comes back in Aren. Ramin goes with his company.', 'If you brought a finished Book One sergeant who took the empire road home, a ship from Genabaris is in the harbour, and one of the Fourth comes ashore.', 'Three roads out of Aren, a page for every one of the squad, and the end of Book Two.', 'A last trick, from an old bowman on the wall: Squint\'s Breath.']],
   ['4.5.0', ['Book Two, Chapter Six: Sanimon. Every tribe on the Odhan at the same water, the Khundryl, forty hours of running retreat, Dojal Spring, and the Geleen Plain at dusk.', 'The split: Coltaine sends the refugees on with the historian, and the Seventh turns back. The sergeant goes with the column. Each of the squad decides whether to go with you or stay with the Fist, and you have a voice in it. Whoever stays does not come back.', 'Haddat and her brother, at last.', 'A new trick from the Khundryl: the Khundryl Paint. It is not sorcery and never sputters.']],
@@ -6646,22 +6653,33 @@ The last thing she feels is the easing: a small, tired thing, like taking off he
     {sp:'Tuft', fig:'tuft', bg:'deck', txt:
 `Tuft lets the card go. "She was *afraid*," she says at last. "The whole time. I didn't know she could be." Her hands are cold.`}]},
 };
-const VISION_IDS = Object.keys(VISIONS);
+const VISION_IDS = Object.keys(VISIONS); // Book One's (later books' visions load after this line and are listed by visIds)
+/* the visions of the book being played: entries carry book:'dg' etc.; Book One's carry none */
+const visIds = () => Object.keys(VISIONS).filter(k => (VISIONS[k].book || 'gotm') === ((S && S.book) || 'gotm'));
+/* later books' vision backdrops: VISBG[key](ctx, W, H, T, v, t) draws the place and may return {fx, fy, fs, air} for the figure */
+const VISBG = {};
+/* who reads the Deck: Tuft in Book One; a later book names its own reader (VISREADER(): {id, name, he}) */
+let VISREADER = null;
+const visReader = () => (VISREADER && S && S.book && S.book !== 'gotm' ? VISREADER() : null) || {id:'tuft', name:'Tuft', he:false};
+/* the reader's name in the middle of a sentence ("the old Kanese"); and the node a reading's card screen comes back to: c4_card in Book One, b2_c4_card in Book Two */
+const visMid = () => { const r = visReader(); return r.mid || r.name; };
+const cardNodeName = () => (S && S.book === 'dg' ? 'b2_c' : 'c') + (S ? S.chapter : 0) + '_card';
 /* which vision the turned card opens this chapter: Ch4 keys its four by card; every other chapter has one, for any card */
 function visionFor(ch, card){
   if (!ch || !card || card === 'blank') return null;
-  const vs = VISION_IDS.filter(k => VISIONS[k].ch === ch);
+  const vs = visIds().filter(k => VISIONS[k].ch === ch);
   return vs.find(k => VISIONS[k].cards && VISIONS[k].cards.includes(card)) || vs.find(k => !VISIONS[k].cards) || null;
 }
 let VIS = null; // the vision playing: {id, done, ret, resume, bg, fig}
 /* watched again from the journal: the closing beat is Tuft in the present, so it changes; without her, the card just goes dark */
-const visAgain = st => !!(VIS && VIS.replay && st.sp === 'Tuft');
-const visTuftHere = () => !!(S && S.squad && S.squad.includes('tuft') && !(S.dead && S.dead.tuft));
+const visAgain = st => !!(VIS && VIS.replay && st.sp === visReader().name);
+const visTuftHere = () => { const r = visReader(); return !TPL[r.id] ? !!r.name : !!(S && S.squad && S.squad.includes(r.id) && !(S.dead && S.dead[r.id])); };
 function visNodes(id){
   const V = VISIONS[id], n = V.steps.length;
   V.steps.forEach((st, i) => { DLG[`vis_${id}_${i}`] = () => { const last = i === n - 1, nx = last ? () => visEnd() : `vis_${id}_${i + 1}`;
-    if (visAgain(st)) return {sp:visTuftHere() ? 'Tuft' : 'The Deck of Dragons', onshow:() => visStep(id, i), ch:[{t:'Put the cards away.', go:nx}],
-      txt:visTuftHere() ? (VIS.again ? `Tuft lets the card go. She has watched this one before. It doesn't get any easier, and she doesn't say anything. Her hands are cold.` : `Tuft lets the card go. She doesn't say anything for a long time. Her hands are cold.`) : `The card goes still, and dark, and is only paint and wood again.`};
+    if (visAgain(st)) { const r = visReader(), sh = r.he ? 'He' : 'She', hs = r.he ? 'His' : 'Her';
+      return {sp:visTuftHere() ? r.name : 'The Deck of Dragons', onshow:() => visStep(id, i), ch:[{t:'Put the cards away.', go:nx}],
+      txt:visTuftHere() ? (VIS.again ? `${r.name} lets the card go. ${sh} has watched this one before. It doesn't get any easier, and ${sh.toLowerCase()} doesn't say anything. ${hs} hands are cold.` : `${r.name} lets the card go. ${sh} doesn't say anything for a long time. ${hs} hands are cold.`) : `The card goes still, and dark, and is only paint and wood again.`}; }
     return {sp:st.sp || V.who, txt:typeof st.txt === 'function' ? st.txt() : st.txt, onshow:() => visStep(id, i),
       ch:st.ch ? st.ch.map(c => ({t:c.t, fx:() => { S.f[c.set[0]] = c.set[1]; }, go:nx})) : [{t:st.go || (last ? 'Put the cards away.' : 'Go on.'), go:nx}]}; }; });
 }
@@ -6679,7 +6697,7 @@ function playVision(id, done){
   S.seenVisions = S.seenVisions || []; const again = S.seenVisions.includes(id); if (!again) S.seenVisions.push(id);
   /* v3.16: only a vision Tuft looked into at a reading is hers (S.tuftVisions, which the chapters' seenVis() reads); a journal replay is listed, not counted as hers */
   if (done) { S.tuftVisions = S.tuftVisions || []; if (!S.tuftVisions.includes(id)) S.tuftVisions.push(id); }
-  const ret = {view, kind:G.sceneKind, bg:S.bg, node:S.node}, cardNode = 'c' + S.chapter + '_card';
+  const ret = {view, kind:G.sceneKind, bg:S.bg, node:S.node}, cardNode = cardNodeName();
   VIS = {id, ret, replay:!done, again, done:done || (() => { if (ret.node && DLG[ret.node]) talk(ret.node); }), resume:done ? (DLG[cardNode] ? cardNode : ret.node) : ret.node, bg:V.bg, fig:V.fig, t0:performance.now()};
   $('#sheet').hidden = true; $('#modal').hidden = true; routeAnim = null;
   document.body.classList.add('vision');
@@ -6691,7 +6709,7 @@ function playVision(id, done){
 }
 function visEnd(){
   const v = VIS; VIS = null; document.body.classList.remove('vision'); const sh = $('#sheet'); if (sh) sh.classList.remove('vsheet');
-  if (!v) { const n = 'c' + S.chapter + '_card'; if (DLG[n]) talk(n); else startExplore(); return; }
+  if (!v) { const n = cardNodeName(); if (DLG[n]) talk(n); else startExplore(); return; }
   const r = v.ret; S.bg = r.bg; G.sceneKind = null; S.node = null;
   if (r.view === 'explore') startExplore(); else if (r.view === 'scene' && r.kind && r.kind !== 'vision') sceneShell(r.kind);
   save(); v.done();
@@ -6709,7 +6727,9 @@ function drawVision(cv, v, t){
   const lamps = (y, n) => { for (let i=0;i<n;i++){ const x = hash(i,7)*W, yy = y + hash(i,8)*(H - y)*.8; glow(ctx, x, yy, 18, '#6aa0ff', .35 + Math.sin(T/400 + i)*.05); ctx.fillStyle = '#bcd6ff'; ctx.fillRect(x - .8, yy - .8, 1.6, 1.6); } };
   const spawnRock = (x, y, s) => { poly(ctx, [[x - s, y],[x - s*.6, y - s*.25],[x, y - s*.32],[x + s*.7, y - s*.2],[x + s, y],[x + s*.4, y + s*.45],[x - s*.2, y + s*.6],[x - s*.6, y + s*.3]], '#050408'); };
   let fx = W*.32, fy = H*.86, fs = 2.4, air = false;
-  if (k === 'gate') { ground(H*.7, '#5e5a6a', 2); ctx.fillStyle = '#ece8f2'; ctx.fillRect(W*.6, H*.3, 7, H*.42); ctx.fillRect(W*.74, H*.3, 7, H*.42); ctx.fillRect(W*.59, H*.27, W*.16, 6);
+  const vbx = VISBG[k] ? VISBG[k](ctx, W, H, T, v, t) : null; if (vbx) { if (vbx.fx != null) fx = vbx.fx; if (vbx.fy != null) fy = vbx.fy; if (vbx.fs != null) fs = vbx.fs; if (vbx.air != null) air = vbx.air; }
+  if (VISBG[k]) {}
+  else if (k === 'gate') { ground(H*.7, '#5e5a6a', 2); ctx.fillStyle = '#ece8f2'; ctx.fillRect(W*.6, H*.3, 7, H*.42); ctx.fillRect(W*.74, H*.3, 7, H*.42); ctx.fillRect(W*.59, H*.27, W*.16, 6);
     drawFigure(ctx, 'stone', W*.82, H*.74, 2.6, t, {still:true, dir:-1, alpha:.55}); }
   else if (k === 'plainfire' || k === 'plainnight' || k === 'camp') { stars(40); ground(H*.72, '#120e14', 3, 1);
     if (k === 'plainfire') { const fl = .8 + Math.sin(T/70)*.1 + Math.sin(T/23)*.05; glow(ctx, W*.64, H*.6, W*.5, '#ff7a30', .35*fl); const pg = ctx.createLinearGradient(0, 0, 0, H*.72); pg.addColorStop(0, 'rgba(255,220,150,0)'); pg.addColorStop(.3, `rgba(255,180,90,${.7*fl})`); pg.addColorStop(1, 'rgba(255,240,200,.95)'); ctx.fillStyle = pg; ctx.fillRect(W*.64 - 9 - Math.sin(T/90)*2, 0, 18 + Math.sin(T/90)*4, H*.72); }
@@ -6747,9 +6767,9 @@ function drawVision(cv, v, t){
 function visionsHTML(){
   /* every vision of every chapter the squad has reached; unseen ones are marked and can be watched for the first time */
   const ch = S ? S.chapter || 0 : 0, seen = (S && S.seenVisions) || [];
-  const ids = VISION_IDS.filter(k => VISIONS[k].ch <= ch); if (!ids.length) return '';
+  const ids = visIds().filter(k => VISIONS[k].ch <= ch); if (!ids.length) return '';
   const can = (view === 'explore' || view === 'scene') && !VIS && !document.body.classList.contains('vision');
-  return `<h4 class="jh">Visions</h4><p class="fine">What the Deck can show Tuft when she looks into the card: a glimpse through someone else's eyes. Look into the card when she reads for you, or watch them here.${can ? '' : ' (Watch from the map, or a conversation.)'}</p><ul class="jl vlist">${ids.map(k => { const V = VISIONS[k], s = seen.includes(k);
+  return `<h4 class="jh">Visions</h4><p class="fine">What the Deck can show ${esc(visMid())} when ${visReader().he ? 'he looks' : 'she looks'} into the card: a glimpse through someone else's eyes. Look into the card when ${visReader().he ? 'he reads' : 'she reads'} for you, or watch them here.${can ? '' : ' (Watch from the map, or a conversation.)'}</p><ul class="jl vlist">${ids.map(k => { const V = VISIONS[k], s = seen.includes(k);
     return `<li><span class="vnm"><em>Chapter ${V.ch}</em> · ${esc(V.who)} · ${esc(V.where)}${s ? '' : ' <b class="vnew">unseen</b>'}</span>${can ? ` <button class="btn sm vis" data-vision="${k}">✦ ${s ? 'Watch again' : 'Watch'}</button>` : ''}</li>`; }).join('')}</ul>`;
 }
 function bindVisions(m){ m.querySelectorAll('[data-vision]').forEach(b => b.onclick = () => { AUDIO.play('click'); m.hidden = true; playVision(b.dataset.vision, null); }); }
@@ -19723,6 +19743,17 @@ function b2OldHand(id){ if (!TPL[id] || S.squad.includes(id) || S.squad.includes
   if (S.lvl >= 5 && !S.picks[id].includes('iron')) S.picks[id].push('iron'); if (S.lvl >= 7 && !S.picks[id].includes('keen')) S.picks[id].push('keen');
   save(); return true; }
 
+/* ---- who reads the Deck in Book Two (36b visReader, 21's captions, 47c's readings) ----
+   Marrow, the Napan healer (a temple of Soliel taught her the cards before she left it for the army), while she is with the squad.
+   Without her (the Silanda since Chapter 4, the Fist's rearguard since the split, or fallen), Yedda the ropemaker's widow reads,
+   if she came out of Hissar with the squad (S.f.b2_yedda); otherwise an old Kanese card-reader who walks in the squad's stretch,
+   whose name nobody has. {id, name, he, mid}: mid is the name in the middle of a sentence. */
+VISREADER = () => {
+  if (S && Array.isArray(S.squad) && S.squad.includes('marrow') && !(S.dead && S.dead.marrow)) return {id:'marrow', name:'Marrow', he:false};
+  if (S && S.f && S.f.b2_yedda) return {id:'yedda', name:'Yedda', he:false};
+  return {id:'kanese', name:'The old Kanese', mid:'the old Kanese', he:true};
+};
+
 /* Book Two's chapters register in start() (90), after Book One's */
 
 /* ============ Book Two art: figures, portraits, ground and backdrops for Deadhouse Gates ============ */
@@ -20294,6 +20325,185 @@ SCENEX.b2_basin = (cv, t) => { const {ctx, W, H} = sceneFit(cv), mo = REDUCE() ?
   ctx.fillStyle = 'rgba(220,200,190,.18)'; for (let i=0;i<12;i++){ const k = ((t*mo/7000 + hash(i,3)) % 1); ell(ctx, hash(i,4)*W + k*40, H*(.6 + hash(i,5)*.3), 20, 2, `rgba(220,200,190,${.08*Math.sin(k*Math.PI)})`); } // ground mist, burning off
   const sq = sceneSquad(); sq.forEach((id, i) => drawFigure(ctx, id, W*.1 + i*Math.min(32, W*.45/sq.length), H*.93 - (i%2)*2, 2, t, {phase:i, dir:1}));
   vign(ctx, W, H, .7, .5); };
+
+/* ============ Book Two: the Deck of Dragons on the Chain ============
+   A reading in every chapter, at the chapter's first halt (Chapter 1: first light at the wagons, before the march). The reader is
+   VISREADER (47): Marrow, else Yedda, else the old Kanese. The start node offers b2DeckChoice(n) → b2_cN_deck (the offer, in the
+   reader's voice) → "Let her draw" sets the flags b2_cN_drawn and b2_cN_reader, deals from B2POOL[n] → cardSequence → b2_cN_card
+   (the card inline, as Book One's c1_card) → back to where the start node was going. "Not now" sets b2_cN_noCard.
+   A vision (56) opens from the card screen like Book One's and comes back to b2_cN_card (36b cardNodeName).
+   Cards are only the canon Deck as Deadhouse Gates has it: no House of Chains, no Great Raven, no Wain. Book One's cards keep their
+   effects, which are engine-wide (16, 31): Oponn, Obelisk, Knight, Assassin, Hounds, Herald. Book Two adds four of High Houses Death
+   and Life (b2c_*), with their effects below. */
+
+const B2CARDS = {
+  b2c_king:{name:'King of High House Death', house:'High House Death', hue:'#b8c0b0',
+    txt:'A hooded figure on a grey seat with no back to it, hands folded, and behind it a gate the size of the world with the dead walking through it, unhurried, as if every one of them had been invited.',
+    fx:'The squad\'s blows do +2 damage to an enemy already at half its health or less.'},
+  b2c_queen:{name:'Queen of High House Life', house:'High House Life', hue:'#d8b4c4',
+    txt:'A woman seated in a garden at night, her face veiled, a cup overflowing in her lap, and the water running away from her feet into dry ground that goes green where it touches.',
+    fx:'Every healing in a fight heals 2 more this chapter.'},
+  b2c_mason:{name:'Mason of High House Death', house:'High House Death', hue:'#c0a07a',
+    txt:'A broad, bent figure in a dusty apron with a mallet and a chisel, cutting a long stone to fit a long hole. The hole is a barrow. The stone is its door.',
+    fx:'Munitions the squad throws do +2 damage to every enemy they catch.'},
+  b2c_soldier:{name:'Soldier of High House Death', house:'High House Death', hue:'#9aa6ae',
+    txt:'A soldier in grey armour with no badge on it, standing at a gate with the shield up, and behind the visor something that is not quite a face.',
+    fx:'Every squadmate wears +1 armour this chapter.'},
+};
+Object.assign(CARDS, B2CARDS);
+
+/* each chapter's pool leans to one card, as Book One's do (the Hounds in its Chapter 1) */
+const B2POOL = {
+  1:['hounds', 'hounds', 'hounds', 'oponn', 'obelisk', 'b2c_mason'],          // Hissar burns: Shadow's dogs are loose in Seven Cities
+  2:['b2c_queen', 'b2c_queen', 'b2c_queen', 'oponn', 'hounds', 'knight'],     // the Odhan: water, fever, and a Red Blade's queen
+  3:['b2c_mason', 'b2c_mason', 'b2c_mason', 'oponn', 'assassin', 'obelisk'],  // the Ridge: sappers in the ramp, a roof dropped
+  4:['herald', 'herald', 'herald', 'b2c_soldier', 'oponn', 'knight'],         // the Vathar: a door held open for someone near
+  5:['obelisk', 'obelisk', 'obelisk', 'b2c_queen', 'hounds', 'oponn'],        // the Dry March: something endures
+  6:['b2c_soldier', 'b2c_soldier', 'b2c_soldier', 'herald', 'oponn', 'assassin'], // Sanimon and the split: the rearguard
+  7:['b2c_king', 'b2c_king', 'b2c_king', 'herald', 'b2c_soldier', 'oponn'],   // Aren Way and the Barrow
+};
+
+/* ---- the effects: engine-wide, keyed on S.card, so they hold in any fight of the chapter ---- */
+/* Queen of High House Life: every healing on the squad's side heals 2 more */
+{ const _heal = heal; heal = function(u, n){ return _heal(u, S && S.card === 'b2c_queen' && u && u.side === 'p' && n > 0 ? n + 2 : n); }; }
+/* Mason of High House Death: a blast the squad sets off hits every enemy in it for 2 more */
+{ const _blast = blast;
+  blast = function(pt, dice, col){
+    if (!(S && S.card === 'b2c_mason' && B && B.cur && B.cur.side === 'p' && !B.cur.ally)) return _blast(pt, dice, col);
+    const _hurt = hurt; hurt = function(u, n, crit){ return _hurt(u, u && u.side === 'e' ? n + 2 : n, crit); };
+    try { return _blast(pt, dice, col); } finally { hurt = _hurt; } }; }
+/* Soldier of High House Death: +1 armour for every squadmate */
+{ const _atkCalc = atkCalc;
+  atkCalc = function(a, t, o = {}){ const c = _atkCalc(a, t, o); if (S && S.card === 'b2c_soldier' && t && t.side === 'p' && !t.ally) c.ac += 1; return c; }; }
+/* King of High House Death: the squad's blows on an enemy at half health or less do +2 */
+{ const _attack = attack;
+  attack = function(a, t, o = {}){
+    if (S && S.card === 'b2c_king' && a && a.side === 'p' && t && t.side === 'e' && t.hp > 0 && t.hp * 2 <= t.maxhp) { const dd = o.dmg || a.dmg; o = Object.assign({}, o, {dmg:[dd[0], dd[1], dd[2] + 2]}); }
+    return _attack(a, t, o); }; }
+/* a fight opens with the card's word in the log, so the player can see it working */
+{ const _startBattle = startBattle;
+  startBattle = function(id, opt = {}){ const r = _startBattle(id, opt);
+    if (S && S.book === 'dg' && B && B.log && CARDS[S.card] && S.card.startsWith('b2c_')) blog(`<em>${CARDS[S.card].name}:</em> ${CARDS[S.card].fx}`);
+    return r; }; }
+
+/* ---- the readers ---- */
+const b2Rd = () => visReader();
+const b2RdShe = (cap) => { const he = b2Rd().he; return cap ? (he ? 'He' : 'She') : (he ? 'he' : 'she'); };
+const b2RdHer = (cap) => { const he = b2Rd().he; return cap ? (he ? 'His' : 'Her') : (he ? 'his' : 'her'); };
+const b2RdObj = () => b2Rd().he ? 'him' : 'her';
+const B2RD_DECK = {
+  marrow:`Marrow has her Deck out: a temple deck from Nap, old, the paint gone soft at the corners from other people's fingers. She learned it from Soliel's priests, who read for the sick before they touched them, and she has kept it through twelve years of the army and never once explained why.`,
+  yedda:`Yedda has a Deck out of her apron, wrapped in a square of rope-walk sacking: the cheap kind they sold by the south gate in Hissar, the paint bright and the wood thin. She reads the way the rope-walk women read, fast, and for money, except that she has never once asked the squad for any.`,
+  kanese:`The old Kanese from the squad's stretch has his Deck out, wrapped in a faded prayer-cloth. Nobody knows his name. He walks by the carts, and reads for anyone who asks, and for nothing, and says his prayers in Kanese over every card he turns.`,
+};
+/* per chapter: the scene, where it is laid out, where the start node was going (back/backT), and the reader's own words */
+const B2DECK = {
+  1:{scene:'b2_odhan_day', on:'the tailboard of a water-cart', back:()=>{ startExplore(); talk('b2_march'); }, backT:'Back to the wagons.', // b2_march is a map node: back on the map, not a backdrop
+    set:'First light, grey over the Odhan, and the wagons loading.',
+    marrow:`"Soliel's priests read for the sick before they put a hand on them," she says. "I read for the squad before it walks. Sit, child. One card. For the road."`,
+    yedda:`"My husband never let me read for him," she says. "Said it was asking for trouble. He's dead, so." She shuffles. "One card. For the road."`,
+    kanese:`"For the road," he says, in Kanese, and then in a Malazan with most of the corners knocked off. "One card. No money."`},
+  2:{scene:'b2_odhan_day', on:'a cloak spread in the shade of the cart', back:'b2_c2_start2', backT:'On toward Dryj.',
+    set:'The noon halt, under a cloak on two spears, with the column lying in every shadow it can find.',
+    marrow:`"Three weeks and nobody's asked me," she says. "I'm offended. The warren won't talk to me today, child. Perhaps the Deck will."`,
+    yedda:`"You've the face of someone who's been told it's two days to water," she says. "Sit. One card. It's cheaper than hoping."`,
+    kanese:`He has laid his cloth in the shade of a cart and is waiting beside it with the Deck, the way a man waits at a well. "One card," he says. "Before the water."`},
+  3:{scene:'b2_odhan_dusk', on:'the lid of the squad\'s water-cask, by torchlight', back:()=>startExplore(), backT:'Make camp.',
+    set:'Night on the long flat nothing, and the sound of the herders at the cattle all down the column.',
+    marrow:`"Nobody's sleeping through that," she says, meaning the cattle. "We may as well read."`,
+    yedda:`"They're saying the nobles are eating children," she says. "I don't believe it. Let's see what the Deck believes."`,
+    kanese:`He has spread his cloth by the dry streambed with a candle-end stuck on a stone. "Bad night," he says. "Good night for cards."`},
+  4:{scene:'b2_odhan_dusk', on:'a flat stone at the halt, with the dust behind', back:'b2_vathar_arrive', backT:'On, to the river.',
+    set:'The evening halt, west of Gelor, with the dust behind the column that does not settle.',
+    marrow:`"There's a river ahead, the Wickans say," she says. "Rivers make me want to know things. One card, child."`,
+    yedda:`"Dust behind us every evening," she says. "I'd like to know whose. One card."`,
+    kanese:`"A river soon," he says. "My mother crossed a river once, and never told anyone what was on the other side." He holds out the Deck. "One card."`},
+  5:{scene:'b2_forest', on:'the leaf-litter at the side of the track', back:'b2_forest_arrive', backT:'On, under the trees.',
+    set:'The first halt under the trees, in green shade nobody has seen since Hissar.',
+    marrow:`She is sitting on a root with her back against a trunk, the first thing she has leaned on in weeks. "Trees," she says. "I'd forgotten. One card, child, while I remember how to sit in the shade."`,
+    yedda:`"Leaf-litter," she says, scuffing it. "You can't read on leaf-litter. The cards slide." She reads on it anyway.`,
+    kanese:`He has found a flat place by the track and wiped it with his sleeve. "A forest for the dead," he says. "We ask them, then. One card."`},
+  6:{scene:'b2_odhan_dusk', on:'a shelf of rock above the seep', back:()=>startExplore(), backT:'Look round.',
+    set:'The halt in the hills above Sanimon, with fires on every ridge for a league round.',
+    marrow:`"Everyone's here," she says, looking at the ridges. "Every army in Seven Cities. Let's see who the Deck thinks is winning."`,
+    yedda:`"Water out of a rock," she says. "My husband would have sold them rope to let a bucket down into it." She shuffles. "One card."`,
+    kanese:`He is sitting by the seep, watching it fill a cup a drop at a time. "Long wait," he says. "Long enough for a card."`},
+  7:{scene:'b2_aren_walls', on:'a cloth against Balahn\'s mud wall', back:()=>startExplore(), backT:'Look round.',
+    set:'Dusk in Balahn, three leagues from Aren, and the village an island of mud walls in a sea of carts.',
+    marrow:`"Three leagues," she says. "I've read for this squad since Hissar, child. Let me read for the end of it."`,
+    yedda:`"Aren tomorrow," she says. "I said in Hissar I'd read for you at the gate. This is near enough."`,
+    kanese:`He has spread his cloth against the mud wall. "Last road," he says. "Last card, maybe. Sit."`},
+};
+/* each card, said by each reader (Book Two's words for Book One's cards too: Tuft's lines are Tuft's) */
+const B2SAY = {
+  hounds:{d:'Seven shapes running under a moon that isn\'t there.',
+    marrow:`"Shadow's dogs," Marrow says. "They're loose in Seven Cities this summer. The Wickans have seen the tracks." She doesn't put it back. "Walk quick, child."`,
+    yedda:`"Dogs," Yedda says, and looks at Hackle. "Not that kind of dog." She taps the card. "It means keep moving. Everything means keep moving this summer."`,
+    kanese:`The old Kanese breathes in through his teeth. "In Itko Kan they came through a village once," he says. "Every door open after. We walk fast now, yes?"`},
+  oponn:{d:'The jesters of chance, back to back, and a coin in the air between them.',
+    marrow:`"The Twins," Marrow says. "The Lady's pulling, for now." She looks at the coin a long moment. "Don't thank her, child. She hears."`,
+    yedda:`"Luck," says Yedda, with contempt. "My husband had luck. Thirty years and never a rope broke on him, and then one did." She leaves the card face up anyway.`,
+    kanese:`"The Twins," he says, and smiles with no teeth. "Good card, bad card. Same card. Today, good."`},
+  obelisk:{d:'A standing stone, unaligned and older than anyone\'s gods.',
+    marrow:`"Something endures," Marrow says. "The priests used to say that one meant the patient would live, and not to be too pleased about it."`,
+    yedda:`"A stone," says Yedda. "It means you'll last. It doesn't say how well."`,
+    kanese:`"Old stone," he says. "Older than Kan. It stays. We stay." He nods, as if that were settled.`},
+  knight:{d:'A tall figure with a black sword, turned away.',
+    marrow:`"High House Dark," Marrow says. "He's a long way from here. Genabackis, the soldiers say." She puts it down gently. "Somebody's watching something, child. It isn't us."`,
+    yedda:`"A tall one with a sword," Yedda says. "Turned away. Good. I've had enough of men with swords turning round."`,
+    kanese:`"Dark," he says. "Not for us. He looks the other way. Let him."`},
+  assassin:{d:'A figure half in shadow, rope and knives.',
+    marrow:`"The Rope," Marrow says, and makes a small sign with two fingers that the temple never taught her. "Shadow's knife. He's been busy in Seven Cities, they say."`,
+    yedda:`"Knives," says Yedda. "And a rope." She sniffs. "That's a ropemaker's card. Somebody bought good rope."`,
+    kanese:`The old man touches the card's edge and takes his finger back fast. "Shadow," he says. "Quick hands. Quick ends." He grins, suddenly. "Ours, today."`},
+  herald:{d:'A grey figure with its face turned away, holding a door open for somebody you cannot see.',
+    marrow:`Marrow looks at it a long time. "Hood's door," she says. "Held open. Not for us, child. For someone near us." She turns it face down. "I've had a great deal of near us this summer."`,
+    yedda:`"Hood's man," Yedda says, flat. "Holding the door." She looks down the column. "Plenty of takers."`,
+    kanese:`He covers it with his hand. "The door," he says. "Not you. Someone near you walks through it, and you stay." He takes his hand away. "That is the good reading."`},
+  b2c_king:{d:B2CARDS.b2c_king.txt,
+    marrow:`"Hood himself," Marrow says. She has gone grey round the mouth. "The King of High House Death. I've never drawn him. The priests said you only did when he was busy near you." She looks up the column, toward the Fist's tent, and does not say anything else.`,
+    yedda:`"Him," Yedda says. Just that. Then: "He took my husband off a rope-walk. He's welcome to the ones who come at us." She leaves it face up.`,
+    kanese:`The old Kanese takes off his cap, which he has not done for anything since Hissar. "The King," he says. "He walks with the column now. Be polite to him. He finishes what is started."`},
+  b2c_queen:{d:B2CARDS.b2c_queen.txt,
+    marrow:`Marrow laughs, short and surprised. "High House Life," she says. "A healer's card. Soliel's priests kept that one on the altar." She touches the cup with one finger. "The warren's going to like me better for a while, child. Don't get used to it."`,
+    yedda:`"The Queen," says Yedda, and something goes out of her shoulders. "The rope-walk women prayed to her for the babies. It means things mend. A bit better than you'd think."`,
+    kanese:`"Life," he says, surprised, as if he had forgotten the Deck had a card for it. "High House Life. The Queen." He smiles. "Good card. Good card."`},
+  b2c_mason:{d:B2CARDS.b2c_mason.txt,
+    marrow:`"The Mason," Marrow says. "High House Death's builder. He makes the barrows." She taps the mallet. "A sapper's card, if any card is. Tell Tangle."`,
+    yedda:`"A stonecutter," says Yedda, "building something for Hood." She turns it to the light. "My aunt said that one meant the things you throw land heavy. She was wrong about most things."`,
+    kanese:`"The Mason," he says. "He builds the house for the dead." He points with his chin at the dark beyond the fires. "Today he builds it for them."`},
+  b2c_soldier:{d:B2CARDS.b2c_soldier.txt,
+    marrow:`"Hood's soldier," Marrow says. "He stands at the gate and keeps it." She looks round the squad. "It means you'll be harder to send through. Not impossible, child. Harder."`,
+    yedda:`"A soldier," Yedda says. "Hood's." She looks at you. "He'd like you to keep your shield up. So would I."`,
+    kanese:`"Grey soldier," he says. "He guards the door from the wrong side. Today he guards it for you. Shields up, he says."`},
+};
+const b2CardSay = id => { const s = B2SAY[id], r = b2Rd().id; return s ? `${s.d}\n\n${s[r] || ''}`.trim() : ((CARDS[id] && CARDS[id].txt) || ''); };
+/* the card screen in Book Two: the reader's captions, and the card's words without Tuft in them (21) */
+CARDBOOK = {
+  txt:id => { const s = B2SAY[id]; return s ? s.d : ((CARDS[id] && CARDS[id].txt) || ''); },
+  cap(t, self, second){ const r = b2Rd(), n = r.name, she = b2RdShe(), her = b2RdHer(), Her = b2RdHer(true);
+    const first = {marrow:'Marrow shuffles sitting down, the way she does everything.', yedda:'Yedda shuffles like a rope-walker paying out line.', kanese:'The old Kanese shuffles with his eyes shut.'}[r.id] || `${n} shuffles.`;
+    const three = {marrow:'Three cards. She reads for the squad, never for herself.', yedda:'Three cards, and she doesn\'t charge you.', kanese:'Three cards. He says something over them in Kanese.'}[r.id] || 'Three cards.';
+    if (second) return t < 1500 ? `${n} folds the card back into the spread.` : t < 2900 ? `Three again. The Deck lets ${b2RdObj()}, mostly.` : t < 4900 ? '' : t < 5800 ? 'Another comes up.' : '';
+    return t < 1500 ? first : t < 2900 ? three : t < 3900 ? `The first card refuses ${b2RdObj()}.` : t < 4900 ? `The second card refuses ${b2RdObj()}.` : t < 5800 ? 'The third does not.' : ''; },
+};
+
+/* ---- the chapter's reading: a choice on the chapter's first halt, the offer, and the card ---- */
+function b2DeckChoice(n){ const r = b2Rd();
+  return {t:`Sit with ${r.mid || r.name} and the Deck.`, deck:true, req:()=>!S.f[`b2_c${n}_drawn`] && !S.f[`b2_c${n}_noCard`], go:`b2_c${n}_deck`}; }
+function b2DeckOffer(n, card = `b2_c${n}_card`){ const D = B2DECK[n], r = b2Rd();
+  return {sp:r.name === 'Yedda' ? 'Yedda · a ropemaker\'s widow' : r.name, scene:D.scene, txt:
+`${B2RD_DECK[r.id] || ''}
+
+${D.set} ${D[r.id] || ''}`,
+    ch:[{t:`Let ${b2RdObj()} draw.`, deck:true, fx:()=>{ S.f[`b2_c${n}_drawn`] = 1; S.f[`b2_c${n}_reader`] = r.id; S.card = dealCard(B2POOL[n]); }, go:()=>cardSequence(()=>talk(card))},
+        {t:'"Not now."', fx:()=>{ S.f[`b2_c${n}_noCard`] = 1; }, go:D.back}]}; }
+function b2DeckCard(n){ const D = B2DECK[n], r = b2Rd(), id = S.card && CARDS[S.card] ? S.card : B2POOL[n][0], c = CARDS[id];
+  return {sp:'The Deck of Dragons', scene:D.scene, txt:
+`${r.name} lays the reading out on ${D.on}. Two cards refuse ${b2RdObj()}. The third does not.`,
+    html:`<div class="cardinline"><canvas id="icard" width="240" height="360"></canvas></div><div class="note">${esc(c.name)}${c.fx ? ` · ${esc(c.fx)}` : ''}</div>`, oncard:[id, false],
+    after:`${b2CardSay(id)}${id === 'b2c_queen' && typeof b2In === 'function' && b2In('redblade') ? `\n\nRamin, watching over ${r.he ? 'his' : 'her'} shoulder, says the Ehrlitan prayer to the Queen of Dreams under his breath, the one his mother said at the toll-gate.` : ''}`,
+    ch:[{t:D.backT, go:D.back}]}; }
 
 /* ============ Book Two, Chapter 1: Hissar Burns ============ */
 /* The squad's night in Hissar, the Seventh's camp before dawn, and Bat'rol in the Vin'til Basin.
@@ -21041,8 +21251,12 @@ ${S.f.b2_key === 'carts' ? `You ask about the quarters. The water-sellers'. Two 
 
 Behind you Hissar is a smudge of smoke on the horizon. Ahead is the Vin'til Basin, south-west, a day and a half.`,
       html:chainHTML('The road south-west · first light'),
-      ch:[{t:'March.', go:()=>{ startExplore('b2_basin'); talk('b2_basin_arrive'); }},
+      ch:[b2DeckChoice(1),
+          {t:'March.', go:()=>{ startExplore('b2_basin'); talk('b2_basin_arrive'); }},
           {t:'Not yet.'}]},
+    /* the reading: Marrow (or whoever reads, 47) at the wagons, first light (47c) */
+    b2_c1_deck:()=>b2DeckOffer(1, 'b2_c1_card'),
+    b2_c1_card:()=>b2DeckCard(1),
     /* ---- the Vin'til Basin: the march, and Reloe's army ---- */
     b2_basin_arrive:()=>({sp:'The Vin\'til Basin', scene:'b2_basin', fx:()=>{ S.f.b2_basinIn = 1; }, txt:
 `A day and a half south-west, the ground drops away into the Vin'til Basin: a wide pan of cracked clay under a white sky, with scrub round its rim and dry washes cut across its floor like old knife-cuts. The heat comes up off it into your face. The column goes down into it because the column goes where it's told.
@@ -21410,8 +21624,12 @@ One less. An old man from the dyers' street, who sat down at noon in the shade o
 
 ${b2In('tangle') ? `Tangle counts the satchel at every halt. "${b2Count()}," he says. Nobody asks him to. ` : ''}${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('The Odhan · three weeks out of the basin'),
-    ch:[{t:'"Bult says Dryj. How far?"', go:'b2_c2_start2'},
+    ch:[b2DeckChoice(2),
+        {t:'"Bult says Dryj. How far?"', go:'b2_c2_start2'},
         {t:'"Water. Slowly. The way I showed you."', go:'b2_c2_start2'}]}),
+  /* the reading at the noon halt (47c) */
+  b2_c2_deck:()=>b2DeckOffer(2, 'b2_c2_card'),
+  b2_c2_card:()=>b2DeckCard(2),
   b2_c2_start2:()=>({sp:'The Odhan', scene:'b2_odhan_day', txt:
 `${b2In('sathi') ? `"Two days," Sathi says. "Hackle says one. Hackle is a liar about water. He always thinks it is closer." The dog, trotting beside her horse with his tongue out, does not dispute it.
 
@@ -22876,7 +23094,10 @@ There are stories going up and down the column now, the way there are when peopl
 
 ${b2Tg() ? `"${b2Count()}," Tangle says at the halt. Then, because nobody asked: "Still." ` : ''}${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('The Odhan · nine days east of the P\'atha'),
-    ch:[{t:'Make camp.', go:()=>startExplore()}]}),
+    ch:[b2DeckChoice(3), {t:'Make camp.', go:()=>startExplore()}]}),
+  /* the reading at the night camp (47c) */
+  b2_c3_deck:()=>b2DeckOffer(3, 'b2_c3_card'),
+  b2_c3_card:()=>b2DeckCard(3),
 
   /* ---- Captain Lull ---- */
   b2_lull:()=>({sp:'Captain Lull · Sialk Marines', fx:()=>{ S.f.b2_lull = 1; }, txt:
@@ -24148,7 +24369,10 @@ Behind the column, every evening, dust. Not riders on the skyline any more, not 
 
 ${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('The Odhan · toward the Vathar'),
-    ch:[{t:'On, to the river.', go:'b2_vathar_arrive'}]}),
+    ch:[b2DeckChoice(4), {t:'On, to the river.', go:'b2_vathar_arrive'}]}),
+  /* the reading at the evening halt (47c) */
+  b2_c4_deck:()=>b2DeckOffer(4, 'b2_c4_card'),
+  b2_c4_card:()=>b2DeckCard(4),
 
   b2_vathar_arrive:()=>({sp:'The Vathar · afternoon', scene:'b2_vathar', fx:()=>{ S.f.b2_vathar = 1; }, txt:
 `The river is wide and brown and slow, and on the far side of it there are trees. Real trees, old ones, a whole dark wall of them, the first in a thousand leagues. The column comes down to the near bank in the afternoon and stops, and looks at them, the way you would look at a coast.
@@ -25451,7 +25675,10 @@ ${b2Away() ? `You count the squad at the first halt, out of habit, and get to th
 
 ${b2In('tangle') ? `"${b2Count()}," Tangle says, to the satchel. "Nobody's touched it. Nobody look at it."` : ''}${b2In('marrow') ? ` Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('Vathar Forest · south of the river'),
-    ch:[{t:'On, under the trees.', go:'b2_forest_arrive'}]}),
+    ch:[b2DeckChoice(5), {t:'On, under the trees.', go:'b2_forest_arrive'}]}),
+  /* the reading at the first halt under the trees (47c) */
+  b2_c5_deck:()=>b2DeckOffer(5, 'b2_c5_card'),
+  b2_c5_card:()=>b2DeckCard(5),
 
   b2_forest_arrive:()=>({sp:'Vathar Forest', scene:'b2_forest', fx:()=>{ S.f.b2_forest = 1; }, txt:
 `The column halts at midday in a long clearing, because the Fist has said halt, and spreads out among the trees to rest, and nobody rests.
@@ -26784,7 +27011,10 @@ There is also everyone else.
 
 ${b2Away() ? `You count the squad at the halt and get to ${NAME(b2Away())} and stop. Aren, by now. Or not. ` : ''}${b2Hurt() ? `${NAME(b2Hurt())} sits down carefully at the halt and gets up carefully, the Vathar wound bound tight under the kit, and says it is better. It is not better. ` : ''}${b2In('tangle') ? `"${b2Count()}," Tangle says, to the satchel. ` : ''}${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('The hills above Sanimon · the end of the Nenoth'),
-    ch:[{t:'Look round.', go:()=>startExplore()}]}),
+    ch:[b2DeckChoice(6), {t:'Look round.', go:()=>startExplore()}]}),
+  /* the reading at the halt above Sanimon (47c) */
+  b2_c6_deck:()=>b2DeckOffer(6, 'b2_c6_card'),
+  b2_c6_card:()=>b2DeckCard(6),
 
   /* ---- Bult: the dawn ---- */
   b2_bult9:()=>({sp:'Bult', fx:()=>{ S.f.b2_bult9 = 1; }, txt:
@@ -28153,7 +28383,10 @@ The Kherahn will go home in the morning. They have brought the column to where t
 
 ${rg.length ? `You count the squad at the halt, out of habit. You get to the end and keep counting: ${b2And(rg)}, ${rg.length === 1 ? 'a day back' : 'a day back, all of them'}, with the Fist.${rg.includes('sathi') ? ' There is no dog at the squad\'s fire. You keep looking for him under the cart.' : ''} ` : 'You count the squad at the halt, out of habit, and get the right number, and count again anyway. '}${b2Away() ? `And ${NAME(b2Away())}, in Aren, if the ship got there. ` : ''}${b2Hurt() ? `${NAME(b2Hurt())} sits down at the halt carefully, the Vathar wound bound tight, and says Aren will have clean healers. ` : ''}${b2In('tangle') ? `"${b2Count()}," Tangle says, to the satchel. ` : ''}${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('Balahn · the head of Aren Way'),
-    ch:[{t:'Look round.', go:()=>startExplore()}]}; },
+    ch:[b2DeckChoice(7), {t:'Look round.', go:()=>startExplore()}]}; },
+  /* the reading at Balahn, the last halt before Aren (47c) */
+  b2_c7_deck:()=>b2DeckOffer(7, 'b2_c7_card'),
+  b2_c7_card:()=>b2DeckCard(7),
 
   /* ---- Duiker: the column's story ---- */
   b2_duiker12:()=>({sp:'Duiker', fx:()=>{ S.f.b2_duiker12 = 1; S.f.b2_duiker = 1; }, txt:
@@ -29803,6 +30036,624 @@ POR.redblade = (ctx) => { const F = {cy:-75, w:12.2, h:20.6, jaw:.8, chin:4.6, s
   ctx.beginPath(); ctx.moveTo(-F.w - 4.6, cy - 6.4); ctx.bezierCurveTo(-F.w - 9, cy + 6, -F.w - 6, -54, -F.w - 12, -44); ctx.lineTo(-F.w - 6.4, -44); ctx.bezierCurveTo(-F.w - 3, -54, -F.w - 4, cy + 4, -F.w - 1.4, cy - 6); ctx.closePath(); ctx.fillStyle = PR.lin(ctx, -F.w - 12, 0, -F.w, 0, [[0,'#e86a50'], [.6,'#a8362a'], [1,'#4a0e08']]); ctx.fill(); // the tail
   ctx.fillStyle = '#d8a84a'; ctx.fillRect(-F.w - 12, -45, 5.8, 1.2); // its fringed end, a brass bead in it
   return F; };
+
+/* ============ Book Two: Through the Deck, the seven visions of Deadhouse Gates ============
+   One per chapter, played when the Book Two reader (visReader(), 36b) turns a card and looks into it. Each is a scene somewhere the
+   squad cannot see, at the same point of the story, through the eyes of a canon character the squad never meets. Choices change words,
+   never outcomes (S.f.b2v*_ keys; nothing else reads them). The last step of each is the reader, back at the column's fire: its sp, fig
+   and txt are getters/functions of visReader(), so visAgain (36b) still matches it on a replay. Canon basis and sources: docs/dg-canon.md,
+   "Visions". The backdrops are VISBG entries (36b's drawVision lays the figure, the motes and the Deck's violet over them); the new
+   figures are FIGX kinds (18). Loads after Book Two's art (47b..55b). */
+
+/* ---------------- the reader, at the end of each vision ---------------- */
+const b2vP = r => r.he ? {S:'He', s:'he', H:'His', h:'his'} : {S:'She', s:'she', H:'Her', h:'her'};
+const b2vWho = r => /marrow/i.test(r.id || '') ? 'marrow' : /yedda/i.test(`${r.id || ''} ${r.name || ''}`) ? 'yedda' : /kanese/i.test(r.id || '') ? 'kanese' : 'other';
+const b2vFig = () => { const r = visReader(); return FIGX[r.id] || r.id === 'tuft' ? r.id : r.he ? 'hissari_m' : 'hissari_w'; };
+/* o = {marrow:(r, p) => text, yedda:..., kanese:..., other:...}: Marrow, Yedda and the old Kanese are 47's readers; other is the fallback */
+const b2vEnd = o => ({get sp(){ return visReader().name; }, get fig(){ return b2vFig(); }, bg:'b2deck',
+  txt:() => { const r = visReader(), p = b2vP(r); return (o[b2vWho(r)] || o.other)(r, p); }});
+
+Object.assign(VISIONS, {
+  /* ---- Chapter 1: Hissar burns. Far to the west, at dawn, the Red Blades kill the prophetess. ---- */
+  b2v1:{book:'dg', ch:1, who:'Lostara Yil', where:'The Holy Desert', fig:'lostara', bg:'raraku', cap:'Raraku before dawn: sand, a fold of rock, and a fire that has burned down to nothing.', steps:[
+    {go:'Wait for the light.', txt:
+`Lostara Yil lies on her belly in a fold of the Holy Desert with sand in her teeth and a loaded crossbow under her cheek, and she has not moved since the stars came out.
+
+Below her, in a hollow among the rocks, a small fire has gone to ash. Three people sit by it. Two are guards, and she has spent the night learning them. A lean man with a scarf wound over a peaked iron helm, two morning stars through his belt and a crossbow of his own, who never once puts his back to the dark. And a giant, seven feet of him, with a tattooed face, who does not seem to need to sit at all.
+
+The third is a small woman, honey-skinned and black-haired, plain, deeply lined, nobody you would look at twice in a market. The prophetess of the Holy Desert. Sha'ik. Across her knees, wrapped in cloth, lies a book.`},
+    {txt:
+`The Red Blades followed a man here. A big man, dark, desert-born, with a killer's way of being where you weren't looking, and that book in his pack. Halfway across Seven Cities they followed him. At a keep on the coast road Lostara sat in the same common room as him, close enough to touch, while a merchant's wife spilled a Deck of Dragons across a table and told the whole room what he carried, if anyone knew how to read it. She knew. And when he had gone, she and the man with her made sure that nobody in that keep would ever tell anyone anything. She does not think about the keep.
+
+Last night he gave the woman the book, and rode out east with something walking at his stirrup that was not a dog.
+
+Two bodies along, Captain Tene Baralta lies as still as she does. Behind them, down in the rocks, the troop and the horses. Red Blades: Seven Cities born and sworn to the Empire. *Malazan lapdogs*, the markets call them, and spit. Lostara is Pardu, and tattooed, and has been spat at by better.`},
+    {txt:
+`The sky goes grey, then pale, then a thin clean gold along the eastern rim, and the cold goes out of the sand under her.
+
+Down in the hollow the small woman sits cross-legged between her two guards and unwraps the book. She waits, very still, with her face turned to the east. She is waiting for the sun. The whole country has been waiting with her, for years: the day the Book is opened, the Whirlwind rises.
+
+The first of the light comes over the rocks and touches her. She opens the Book.`,
+     ch:[{t:'Breathe out, slowly, and loose.', set:['b2v1_shot','breath']},
+         {t:'Say a word to whatever is listening, and loose.', set:['b2v1_shot','word']}]},
+    {txt:()=>`${S.f.b2v1_shot === 'word' ? `She says it under her breath. It is not a prayer, exactly. Nobody she knows of is listening at this hour. Then she looses.` : `She lets her breath go, all of it, the way she was taught, and at the bottom of it, where everything is still, she looses.`}
+
+The quarrel takes the prophetess in the head. She goes over sideways, and the Book slides off her knees into the sand, and the light comes on over the desert exactly as it was always going to.
+
+Then the Red Blades are up out of the rocks and running, and it goes wrong faster than Lostara would have believed. The lean man has his flails out before the first of them reaches the hollow, and they sing. The giant simply walks into the troop as if it were weather. Tene Baralta is shouting the recall. She is on her feet, the crossbow empty, her sword half drawn, and the giant is in front of her; and then the world is a hand the size of a shield, and the sand comes up to meet her.`},
+    {bg:'canyon', go:'Ride.', txt:
+`She wakes face down across a saddle in a small canyon, with blood in her mouth and her ribs on fire, and Tene Baralta crouching by her head.
+
+"Your shot," he says. "Yours, Lostara." He is pleased, in the careful way he is pleased about anything. Then he gives her the next order, because he is that kind of captain: the troop rides for Pan'potsun; she is to go back and pick up the big man's trail, alone, hurt as she is.
+
+She says yes. It is the only word she has ever had for him.
+
+The guards did not follow. The last thing she saw before the hand was the lean man kneeling in the sand by the small body, and the giant standing over them both, looking at nothing. Nobody came after the Red Blades at all. She thinks about that, riding, more than she likes.
+
+Behind her, over the Holy Desert, the wind is getting up. She does not look round.`},
+    b2vEnd({
+      marrow:() => `Marrow lets the card go and sits back on her heels, the way she sits whenever she can. "Well, child," she says. "Somebody shot the prophetess." She looks back east, where Hissar is still a red smear on the dark. "And the whole country got up anyway. As if it had only been waiting for someone to try and stop it." She puts the cards away. Her hands are cold, in all this heat.`,
+      yedda:() => `Yedda lets the card go and wipes her fingers on her skirt, as if it had been greasy. "A girl with a crossbow," she says. "Thirty years my man made rope in Hissar, and I sold it, and never once asked who'd be hanging off the end of it." She looks back at the glow where the city was. Her hands are cold.`,
+      kanese:(r) => `${r.name} lets the card go and says something over it in Kanese, a prayer by the sound of it. "Red Blades," he says. "Desert people, the Empress's people. They shoot the holy woman." He shakes his head. "Shoot her, and the country gets up anyway." His hands are cold.`,
+      other:(r, p) => `${r.name} lets the card go. "They killed her," ${p.s} says, "and it didn't stop anything. Look." ${p.S} nods back east, at the glow where Hissar was. ${p.H} hands are cold.`})]},
+
+  /* ---- Chapter 2: the Odhan. Out on the otataral island, six days out of Skullcup, a god is pulled down into the world. ---- */
+  b2v2:{book:'dg', ch:2, who:'Felisin', where:'The Fouled Spring', fig:'felisin', bg:'otataral', cap:'Red dust under starlight, a green stone finger taller than a temple, and a spring that stinks.', steps:[
+    {txt:
+`Felisin has been out of Skullcup six days, and the desert has not yet decided whether to kill her.
+
+Everything here is red: the dust, the rocks, the sky at evening, the inside of her eyelids. Otataral, the guards called it in the mines, as if it were a joke. Sorcery dies on it. Bloodflies don't. Her face is a map of their bites, healing ugly. She does not look at it. There is nothing out here to look at it in.
+
+Ahead walks Baudin, big and silent and ugly, carrying everything, whom she has decided to hate. Behind, falling further behind every hour, comes Heboric: an old priest of the Boar with no hands, who was a historian once, and who has not stopped talking since the lake.`},
+    {txt:
+`Two days back they passed a finger. Green stone, jade, standing up out of the dust taller than a temple, with a knuckle and a nail. Heboric went and laid the stump of one wrist against it, like a man greeting an old friend. Now the stump is swollen and dark and hot to the touch, and he is dying of it, and he knows it, and keeps making jokes.
+
+She thinks about Skullcup as little as she can, which is still often. About a man there called Beneth, and what she bought from him, and what she paid, and the durhang that made the paying easy. She would kill for a pinch of it now. She would kill for a mouthful of water.
+
+At dusk they find a spring. It is fouled: scum on it, something dead in it, a smell like a privy in summer. Baudin kneels and sniffs it and says nothing at all, and that is worse than if he had said it.
+
+That night, Heboric's breath goes short and fast.`,
+     ch:[{t:'Sit with the priest.', set:['b2v2_fel','sit']},
+         {t:'Turn your back. Let Baudin see to him.', set:['b2v2_fel','back']}]},
+    {txt:()=>`${S.f.b2v2_fel === 'back' ? `She lies down with her back to them and pulls her blanket over her head and listens anyway, because there is nothing else in the whole red world to listen to.` : `She sits by him. Nobody else is going to, she tells herself, and Baudin doesn't count. The old man turns his hot face toward her and says something about the First Empire, very politely, as if she had asked.`}
+
+Some time after the moon goes down, Baudin kneels over him in the dark. The priest's chest is bare, and over his heart is the mark of his god, the Boar. Baudin has the swollen wrist in one big hand, and the stump is pressed to the mark, and whether Baudin put it there or the old man did, she will never afterwards be sure.
+
+Then something gives.`},
+    {txt:
+`It is not a sound. It is the feeling of a sound, in her teeth and in the ground under her hip: a door that has been shut for longer than there have been doors, opened from the wrong side, all at once.
+
+The stars over the dunes slip, the way a reflection slips in water when a stone goes in. For a heartbeat the sky looks torn. She will never be sure she saw that either.
+
+Then nothing. The stars are stars. Baudin is sitting back on his heels, breathing hard, looking at his own hand as if it belonged to someone else.
+
+Somewhere, Felisin thinks, without knowing why she thinks it, something very large has just fallen a very long way, and is lying where it fell, and is not used to the ground.`},
+    {go:'Walk.', txt:
+`In the morning Heboric is sitting up.
+
+The fever is gone. The stump is only a stump again. He keeps rubbing the ends of his arms together and frowning, and when she asks what is wrong he tells her, quite mildly, that his hands itch. The hands he has not had for years. Then he wonders aloud what last night has done to the Deck of Dragons, as if anyone out here cared.
+
+He lifts his face into the wind and says he can smell water.
+
+Felisin walks behind them both. She has dreamed it every night since the mines: of the three of them, only she comes through. She believes it the way she once believed somebody would come for her.`},
+    b2vEnd({
+      marrow:() => `Marrow lets the card go and lays her hand flat over it, the way you'd lay a hand on a child with a fever. "Something fell," she says. "Somewhere a long way off. A god, by the weight of it." She takes her hand away and looks at the palm. "Soliel keep that girl. Nobody else is going to." Her hands are cold.`,
+      yedda:() => `Yedda lets the card go. "That poor girl," she says, and then, because she is Yedda, "and that poor old man, with no hands to hold his own cup." She looks at her grandsons asleep under the cart. Her hands are cold.`,
+      kanese:(r) => `${r.name} lets the card go and touches his forehead, his mouth, his chest. "Something fell," he says. "Big. A god, maybe. I feel it in my knees, like rain coming." He doesn't laugh. His hands are cold.`,
+      other:(r, p) => `${r.name} lets the card go. "Something fell," ${p.s} says. "Did you feel it? No." ${p.S} looks at the sky over the Odhan for a long time, as if to see if it has a tear in it. ${p.H} hands are cold.`})]},
+
+  /* ---- Chapter 3: the Ridge. Under Gelor Ridge's sky and no sky at all, Kalam walks Keneb's family across the Imperial Warren to Aren. ---- */
+  b2v3:{book:'dg', ch:3, who:'Minala', where:'The Imperial Warren', fig:'minala', bg:'impwarren', cap:'Ash to every horizon, under a sky the colour of old pewter.', steps:[
+    {txt:
+`Minala has walked across ash for three days, or for one long day that will not end. There is no sun here to tell by.
+
+A plain of it, grey and soft and ankle-deep, under a sky the colour of old pewter. Broken walls stand up out of it here and there like teeth in a burned jaw. Nothing grows. Nothing moves, except them: her sister Selv with the two boys, her sister's husband Keneb with his sword out at nothing, the horses; and out in front, the big dark man who brought them here by breaking a stone against a rock.
+
+Kalam. He gave that name the way other men admit to being tired.
+
+"You're lost," she tells him, for the third time. "Get us out."
+
+"Not yet," says Kalam.`},
+    {txt:
+`There is something wrong with the way he walks here. He keeps turning his head like a hound that has lost the scent. Something is in the way, he says, and will not say what.
+
+Then: clouds, low on the horizon, where there should be none. Kalam stops and tastes the air, and his face shuts like a door. Wood spice, he says. Company. He has the crossbow off his back before she sees him reach for it.
+
+The company does not come. Instead the ground drops away in front of them into a pit. Its sides are layer on layer: ash, and bone, and broken stone, and ash again, fire after fire after fire, older than she can think about. At the bottom, half buried, the ruin of a machine: rings inside rings, bronze gone green, teeth along their rims like a mill-wheel's.
+
+Keneb goes very quiet. A seer at the garrison in Orbal once read the Deck for him, he says, and put a name out in the Pan'potsun hills, a Jhag's name out of the old stories, a builder of wheels that count the years. He says the name. Nobody wants to stay.`},
+    {txt:
+`They camp in a sunken road that runs south. Out on the plain things are moving in the dusk, big things and swarming things, all of them going north past the road and none of them toward it, like water toward a drain. Kalam watches them go and says nothing.
+
+By the fire Keneb talks to him, low, the way men talk about a woman who is near enough to hear. About her husband. About the colonel at Orbal, and the garrison healer who was paid to hide what the colonel did to her. The colonel is dead now. Somebody saw to it, the first night of the rising. Keneb has never asked her who.
+
+Minala looks into the fire and lets them talk. She has learned a great deal about letting men talk.`,
+     ch:[{t:'Look up. Let Kalam see that you heard.', set:['b2v3_heard','look']},
+         {t:'Keep your eyes on the fire.', set:['b2v3_heard','fire']}]},
+    {txt:()=>`${S.f.b2v3_heard === 'fire' ? `She keeps her eyes on the fire. She doesn't need to look. She knows where he is, the way you know where the edge of a roof is in the dark.` : `She looks up. Kalam is already looking at her across the fire, and he doesn't look away, which is a thing no man has done in a long time.`}
+
+She knows something about him that Keneb doesn't. He walks like a man with nothing in his hands, and he is never, ever unarmed. Daggers unseen, she thinks. She has watched him reach for them in his sleep.
+
+In the morning there is a dome, copper, green with age, sunk to its shoulders in the ash, with a mark cut over its door: a crown, stylised and cruel. Kalam gets down off his horse and stands in front of it a long time. He was in a war once, he says, half to himself, across the sea, against a warlord and a lord of a black mountain, and there was a man in that war who wore this crown. A High King.
+
+"Of what?" she asks.
+
+"Of nothing, any more," says Kalam. "Kallor."`},
+    {bg:'aren', go:'Pack.', txt:
+`Then he decides they have been here long enough, and opens a door in the air, and they step through it into a city of tombs at night, with the sea close by and lamps beyond the walls. Aren.
+
+At an inn by the harbour he sits down across the table from a stranger, and gets up again a ship's passenger, bound for Unta. He doesn't say goodbye properly. He tells her a ship is leaving and he is on it, and then he is gone, down to the quay with the ship's captain, and the door of the inn is swinging.
+
+He isn't a subtle man. She finds she does not mind.
+
+When Keneb comes looking for her she is packing. She tells him she is going after him. "And don't talk about him," she says. "Ever. Promise me." Keneb, who is a good man and has never once asked her the question he ought to, promises.`},
+    b2vEnd({
+      marrow:() => `Marrow lets the card go. "Aren," she says. "It showed me Aren, child. Lamps on the walls, and a woman packing a bag." She thinks about that for a while under her hat. "So there's an Aren at the end of this. That's worth knowing." Her hands are cold.`,
+      yedda:() => `Yedda lets the card go. "She'll catch him," she says, with great satisfaction. "That kind always does." Then, more quietly: "Aren. It's still there, then." Her hands are cold.`,
+      kanese:(r) => `${r.name} lets the card go. "Aren," he says. "Walls. Lamps. Still there." He nods several times, as if somebody had argued. His hands are cold.`,
+      other:(r, p) => `${r.name} lets the card go. "Aren," ${p.s} says. "It's still standing. There were lamps on the walls." ${p.S} says it twice, as if to make sure of it. ${p.H} hands are cold.`})]},
+
+  /* ---- Chapter 4: the Vathar. Far off in the Holy Desert, on the road to Tremorlor, a Trell stops lying to his friend. ---- */
+  b2v4:{book:'dg', ch:4, who:'Mappo', where:'The Road to Tremorlor', fig:'mappo', bg:'roots', cap:'A torn piece of some other world: roots to the horizon, and a sky that cannot settle on a colour.', steps:[
+    {txt:
+`Mappo Runt lies on his back on a plain of roots with his club beside him and his eyes shut, and does not sleep, and listens.
+
+This is not a real place, or not wholly: a torn piece of some old warren, a forest at its edge and then this, roots to every horizon, knotted and humped like the backs of buried animals, under a sky that cannot settle on a colour. Somewhere ahead is the House. Tremorlor. An Azath, which takes what it wants and keeps it.
+
+Mappo is a Trell, and big even for a Trell. His braids are full of small fetishes that click when he turns his head, so he does not turn it. Round the fire the humans sleep: the sapper, the boy, the girl's old father, the little priest of Shadow muttering in his dreams. Two are awake. Icarium sits with his back to Mappo, his long grey hands loose on his knees, and across the fire from him the girl, Apsalar, is talking.`},
+    {txt:
+`She talks quietly, the way people do at night. About the sea. About her father's nets, on a coast a long way west. About an old woman on a road, a candle witch, who had lost a husband and children to the Empire and who hid a frightened girl somewhere deep inside her while a god wore her. About the god, too, and that is the strangest part: she speaks of him as if she had learned something from him that she would rather not have known, and was not sorry to know.
+
+Icarium listens. Then he says something, very low, about a weight, and how he would carry it gladly.
+
+"Don't tell Mappo," she says. "It would break his heart."
+
+Mappo lies very still. His eyes are wet. Across the fire, he can hear that Icarium's are too.`,
+     ch:[{t:'Keep still. Let them think you sleep.', set:['b2v4_mappo','still']},
+         {t:'Turn over, heavily, so they know.', set:['b2v4_mappo','turn']}]},
+    {txt:()=>`${S.f.b2v4_mappo === 'turn' ? `He turns over, heavily, grunting, the way a sleeping Trell turns. The talking stops. Nobody says anything for a long while, and that is a kindness in both directions.` : `He keeps still. He has kept still for a very long time. He is good at it.`}
+
+He was set to this road by the Nameless Ones, longer ago than most nations have lasted: walk at the Jhag's side; keep him searching, and never finding; and never, ever let him learn what he does when he is angry. Lie to him if you must. Mappo has. Every day, gently, for centuries.
+
+In the morning, on the roots, with the House somewhere ahead, he stops lying.
+
+He tells Icarium about the rage. Not all of it. Enough. That there is something in him that wakes when he is pushed too far; that it has killed more people than anyone has counted; that it will again; and that the House ahead was made for things like that.`},
+    {txt:
+`Icarium listens the way he listens to everything: as if it were a mechanism he might, with patience, come to understand. When Mappo has finished he is quiet a long while. Then he says that if it is true, the House should have him. That it would be just. He says it gently, as if he were the one breaking bad news.
+
+Mappo finds he has no answer. He had a thousand, and they have all gone.
+
+The boy, Crokus, afraid of what the Jhag might do to the House, or the House to him, makes the little priest call on his master; and his master answers. Out of the shadows among the roots come Hounds: five of them, big as horses, padding in to sit at a polite distance. The boy goes white. The sapper swears.
+
+Ahead, the roots knot themselves into walls, into a maze; and beyond the maze, somewhere, a House waits with its door shut.
+
+Mappo picks up his club and his bag, and goes to stand at Icarium's shoulder, where he has always stood.`},
+    b2vEnd({
+      marrow:() => `Marrow lets the card go. "He told him," she says. "After all that time." She is quiet under her hat. "Some kindnesses look exactly like lies for a hundred years, child. Then one morning they don't." Her hands are cold.`,
+      yedda:() => `Yedda lets the card go and blows her nose, hard. "Big lump," she says. "Lying to his friend all that while. My husband was the same about his chest." She doesn't say what happened to him. Her hands are cold.`,
+      kanese:(r) => `${r.name} lets the card go. "The girl," he says. "Kan girl. A fisher's girl, from my coast. I know how they talk about the sea, those girls." He says a prayer for her in Kanese, quietly, to the card. His hands are cold.`,
+      other:(r, p) => `${r.name} lets the card go. "He told him the truth," ${p.s} says, "and the truth was worse than the lie." ${p.S} doesn't say anything else. ${p.H} hands are cold.`})]},
+
+  /* ---- Chapter 5: the Dry March. At the Holy Desert's oasis, the prophetess comes back, and calls the tribes to war. ---- */
+  b2v5:{book:'dg', ch:5, who:'Leoman', where:"Sha'ik's Camp", fig:'leoman', bg:'oasis', cap:'A ruined city round an oasis, palms and tents and forty thousand riders, and a platform of planks in the middle of it.', steps:[
+    {txt:
+`Leoman of the Flails walks a step behind a girl in a dead woman's clothes, and keeps his face as still as a well.
+
+He waited weeks for her. He and the Toblakai sat in the desert beside a small body wrapped in a blanket, and a book, and the words the prophetess had said before the quarrel took her: that at dawn she would open the Book, and the Whirlwind would rise, and she would come out of it renewed. They waited until they were as gaunt as old dogs. The Toblakai began to talk of leaving.
+
+Then the dust parted, and a young woman and an old man walked out of it.
+
+"You are reborn," Leoman told her.
+
+"So I am," she said.`},
+    {txt:
+`Now she wears the robes he gave her, and the rings, and carries the Book. Her face under the hood is young and pitted with old bites, and her eyes are not young at all. On the road she spoke to him once in a voice that was not her own, and he knew that voice: he served it for years.
+
+The old man walks beside her with his arms folded where his hands should be. She calls him her wisdom. He does not look as if he enjoys it. The Toblakai walks ahead, and the desert gets out of his way.
+
+The camp is a ruined city round an oasis, and it has grown since Leoman left it: tents and cookfires and horse lines out past the broken walls, eleven tribes, forty thousand riders, and every one of them waiting for something. At its edge a sentry steps out of the shade: an orphan girl with a spear taller than she is. The Toblakai tells her to kneel. She kneels, looking up at the one in Sha'ik's clothes with her whole face.`,
+     ch:[{t:'Believe.', set:['b2v5_leo','believe']},
+         {t:'Watch.', set:['b2v5_leo','watch']}]},
+    {txt:()=>`${S.f.b2v5_leo === 'watch' ? `He watches. Faith is for the ones who kneel. Somebody has to keep his eyes open, and it has always been him.` : `He lets himself believe it, for the space of a breath. It is easier than he expected, and that frightens him more than doubt ever has.`}
+
+They walk her through the camp to the parade ground before the great tent, and the people come, thousands of them, and she climbs up onto the platform, though he told her not to. She stands there a long moment with her eyes shut, as if listening to someone speaking a long way off, and agreeing to something.
+
+Then the Toblakai roars at the crowd to kneel, and the crowd kneels, wave on wave, out to the palms.
+
+The High Mages come last, as High Mages do. Bidithal, old and dry as a stick. Febryl. L'oric. Leoman watches each of them look up at the girl and weigh her; and each of them, willing or not, goes down on one knee.`},
+    {go:'Look up.', txt:
+`She speaks. The time of waiting is over, she tells them. War, now, against the Empire. Every Holy City in Seven Cities is the Whirlwind's, she says, but one. She doesn't need to name it. Every rider on that ground knows which one still flies the Empire's colours, and who is marching for it across the Odhan with a column of the half-dead at his back.
+
+Then she lifts her arms, and the sky goes.
+
+It comes up out of the desert all round the oasis: a wall of sand, turning, higher than towers, higher than he can tip his head back to see, with a sound like the whole world drawing breath. At its top, against the last of the blue, the banner of the Apocalypse stands out on the wind.
+
+Leoman stands below the platform with his flails in his belt and looks up at her. She is smiling. It is not a smile he has seen on that face before, and he does not think it is meant for anyone here.`},
+    b2vEnd({
+      marrow:() => `Marrow lets the card go. "One city left," she says. "One." She doesn't say which. She doesn't need to. After a while she pulls her hat back down over her face. "Well. We were going there anyway, child." Her hands are cold.`,
+      yedda:() => `Yedda lets the card go. "She's no older than the girls who sold water in the square at home," she says. She looks at the dark to the west, where Aren is. Her hands are cold.`,
+      kanese:(r) => `${r.name} lets the card go. "One city," he says. "Everybody there knows which." He looks west, toward Aren, a long time. His hands are cold.`,
+      other:(r, p) => `${r.name} lets the card go. "One city left," ${p.s} says. "Ours." ${p.S} looks west, toward Aren, for a long time. ${p.H} hands are cold.`})]},
+
+  /* ---- Chapter 6: Sanimon. In the Holy Desert, the Azath House will not open; and a carriage the column knows comes calling. ---- */
+  b2v6:{book:'dg', ch:6, who:'Fiddler', where:'Tremorlor', fig:'fiddler', bg:'tremorlor', cap:'An Azath House in a yard of roots, its door shut, and something humming in the sky behind.', steps:[
+    {txt:
+`Fiddler has his shoulder against the door of an Azath House, and the door is not interested.
+
+Behind him is the yard. Not grass: roots, humped and knotted, a lawn of buried shoulders, and every one of them restless. Behind the yard, the maze they have just fought their way through; and above the maze, a cloud. It is coming. It hums. Bloodflies, more than he has ever seen in one place, and every one of them the same mind: a D'ivers, wearing a swarm.
+
+The priest of Shadow has tried the door. The Trell has tried the door. Fiddler has tried it with a knife in the jamb, a sapper's word, and his shoulder, in that order. Tremorlor. It does not open for anyone it has not decided on.`},
+    {txt:
+`The Hounds come back out of the maze at a run, all five, and put themselves between the humans and the cloud, and for the first time since he met them Fiddler is glad of them.
+
+Then the Jhag wakes up.
+
+Icarium comes up off the roots where the Trell laid him with his face gone somewhere else entirely, and the Trell is on him at once, both arms round him, talking into his ear, low and steady, the way you talk to a horse in a burning stable. And the yard moves. The roots heave up and take hold, of a Hound's leg, of the trailing edge of the swarm, and pull them down, into the ground, into the House's keeping.`,
+     ch:[{t:'Try the door again.', set:['b2v6_fid','door']},
+         {t:'Put your back to it. Face the yard.', set:['b2v6_fid','yard']}]},
+    {txt:()=>`${S.f.b2v6_fid === 'yard' ? `He puts his back to the door and faces the yard with his crossbow up, because if he is going to be eaten he would like to see what by.` : `He tries the door again. It is like trying to push over a cliff.`}
+
+Something climbs down his arm.
+
+Moby. The boy's little bhok'aral, which has come and gone all the way across Seven Cities, and smells of spice when it comes. It goes down Fiddler's sleeve like a squirrel down a tree, and for a moment its outline blurs, the way a thing blurs through heat over a road, and looks a great deal bigger than it ought to. It lays one small hand flat on the door.
+
+The door opens.`},
+    {bg:'azath', txt:
+`Inside, it is quiet.
+
+Dust, and old wood, and a hallway that goes back further than the House is wide. The Jhag goes still in the Trell's arms the moment he is over the threshold, as if he had walked out of a storm into a library. The Hounds do not come in. Gone, says the priest, slipped off, cowards, and pretends not to be relieved. The yard has the D'ivers. Fiddler can hear it being had, out there, and chooses not to listen.
+
+In a room off the hall they find the last keeper of the House, sitting where it died, dried thin as paper. Something not human, and not anything Fiddler has a name for.`},
+    {bg:'azath', go:'Grin.', txt:
+`Then somebody rings a bell.
+
+A merchant's bell, brass, at the door of an Azath House in the middle of the Holy Desert. Fiddler opens the door on it, because nobody else will. On the step stands a huge man in silks, sweating, with gold in his teeth and a parcel in his arms, and behind him in the yard something big and scorched stands steaming among the roots.
+
+The parcel is from Quick Ben. It is heavy the way only one thing is heavy: Moranth munitions, packed in straw, enough to put a hole in a small town. The fat man hands it over, bows, and does not stay. Nobody sane would.
+
+Fiddler stands in the doorway with his arms full of a Bridgeburner's idea of a present, and grins until his face hurts.`},
+    b2vEnd({
+      marrow:() => `Marrow lets the card go, and laughs, which nobody expected, least of all Marrow. "The fat man," she says. "The carriage. He went there too, after us. Child, that man gets about." She wipes her eyes. Her hands are cold.`,
+      yedda:() => `Yedda lets the card go. "That fat merchant," she says. "The one with the carriage, who brought the water. Well." She seems to find it a comfort that somebody is still making deliveries. Her hands are cold.`,
+      kanese:(r) => `${r.name} lets the card go and laughs with no teeth. "The fat man!" he says. "Carriage man. Water man. He goes everywhere. Good business." His hands are cold.`,
+      other:(r, p) => `${r.name} lets the card go. "The carriage," ${p.s} says. "The one that brought the water. It went on, after us. Somewhere stranger." ${p.H} hands are cold.`})]},
+
+  /* ---- Chapter 7: Aren. The other side of the sea, in Malaz City, the assassin keeps his appointment with the Empress. ---- */
+  b2v7:{book:'dg', ch:7, who:'Kalam', where:"Mock's Hold", fig:'kalam', bg:'malaz', cap:'Malaz City by night: wet cobbles, a shut town, and an old keep on the cliff above the harbour.', steps:[
+    {txt:
+`Kalam Mekhar is bleeding in an alley in Malaz City, the Claw are hunting him, and he is enjoying it rather less than he had expected to.
+
+He came home by the wrong road. A ship that went where it pleased; a friend who turned out to be no friend; a knife in the side, and the harbour closing over his head. Now the island where the Empire was born is dark and wet and very quiet, the way a city is quiet when somebody has told everyone to stay indoors, and there are Hands in the dark of it, hunting in threes.
+
+He took two of the first three. The third he lost. He binds the wound, badly, in a doorway that smells of fish, and somewhere close a ratter starts barking at him and will not stop.`},
+    {txt:
+`That is the end of waiting. He goes for the next Hand before it can come for him, and there is another behind it, and that is one more than he has left in him.
+
+Hooves. A horse comes up the alley at a dead run, and the woman on its back has a marine's crossbow at her shoulder; she shoots the Hand off him, and reaches down her free arm.
+
+Minala. From Aren. He left her in an inn by the harbour at the other end of the world without a proper goodbye. She swam a horse ashore after him, she says, as if it were a reasonable thing to have done. She has known about him, it turns out, all along.`,
+     ch:[{t:'"I\'m not a subtle man."', set:['b2v7_kal','subtle']},
+         {t:'Say nothing. Climb up behind her.', set:['b2v7_kal','climb']}]},
+    {txt:()=>`${S.f.b2v7_kal === 'subtle' ? `"I'm not a subtle man," he says. She laughs at him, which he supposes he has earned, and tells him to get up.` : `He says nothing, because there is nothing he could say that she doesn't know already, and climbs up behind her.`}
+
+The Empress is at Mock's Hold, she says. The old fortress on the cliff over the harbour. He felt something there from the ship, the night they came in: somebody important, waiting.
+
+They ride up the cliff road. Halfway up the night swallows them, a warren, cold and close, and when it lets go they are in the Old Keep, in a passage he has not walked in years. There is a door. Beyond it, a dark room.
+
+Out of the dark, a woman's voice. Level. Unhurried. A voice used to being obeyed.
+
+"Come in, Kalam," says the Empress. "Tell me why you have come to kill me."`},
+    {bg:'darkroom', txt:
+`He tells her. He has had a long voyage to put the list in order. Onearm outlawed. Whiskeyjack and his people sent to die. Dassem. The old Emperor. The waste of it, the stupidity, the betrayals, one after another, all the way down.
+
+She answers. Not all of it, and never once raising her voice. Some of the answers he has heard before, in other mouths, and does not believe any better for hearing them in hers. Two of them are not what he climbed the cliff expecting, and he will not repeat them to anyone. Not yet.
+
+At the end she asks him a question of her own. Would Dassem Ultor have let a man with a knife come this close, to talk?`,
+     ch:[{t:'"No. He wouldn\'t."', set:['b2v7_ans','no']},
+         {t:'Don\'t answer. Put the knife away.', set:['b2v7_ans','quiet']}]},
+    {bg:'malaz', go:'Ride.', txt:()=>`${S.f.b2v7_ans === 'quiet' ? `He doesn't answer. He puts the knife away instead, which is an answer.` : `"No," he says. "He wouldn't have." And he puts the knife away.`}
+
+She tells him, almost kindly, that she cannot call the Claw off. Not tonight. He tells her he knows: the Claw see to their own. Then he turns his back on the Empress of Malaz, in the dark, and walks out, and nothing stops him.
+
+Minala is waiting in the courtyard with the horse. At the gate, the Claw come for them out of every shadow there is, twenty of them; and out of a darker shadow, with a demon at his heel and a girl beside him, comes a sapper Kalam last saw on the far side of an ocean.
+
+"Well?" says Fiddler.
+
+"Didn't do it," says Kalam.`},
+    b2vEnd({
+      marrow:() => `Marrow lets the card go. "He didn't kill her," she says. "All that way, and he didn't." She looks out over Aren, at the harbour, at the Way and what is on it. "There's something in that, child. I'm too tired tonight to work out what." Her hands are cold.`,
+      yedda:() => `Yedda lets the card go. "Well, I'm glad," she says, quite fiercely. "Somebody in this whole summer went home and didn't kill anybody." She looks at the Way, and then doesn't. Her hands are cold.`,
+      kanese:(r) => `${r.name} lets the card go. "Knife out," he says. "Knife away." He puts his palms together. "Hardest walk there is." His hands are cold.`,
+      other:(r, p) => `${r.name} lets the card go. "He had the knife out," ${p.s} says, "and he put it away." ${p.S} looks out at the Way, at what is on it, and away again. ${p.H} hands are cold.`})]},
+});
+
+/* ---------------- figures ---------------- */
+Object.assign(FIGX, {
+  /* Lostara Yil: Pardu, tattooed, a Red Blade's red-lacquered scale and slit helm left off; a crossbow */
+  lostara(ctx, h, t, o){ h.legs('#2a1a14'); ctx.fillStyle = '#4a2a1c'; ctx.fillRect(-4.5, 9, 3.4, 4); ctx.fillRect(1.1, 9, 3.4, 4);
+    h.torso('#9a2a22', '#3a0e0a', 6); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = .5; ctx.beginPath(); for (let i=0;i<5;i++){ ctx.moveTo(-5.6, -4.6 + i*2.2); ctx.lineTo(5.6, -4.6 + i*2.2); } ctx.stroke(); // red scale
+    ctx.fillStyle = '#2a1810'; ctx.fillRect(-6, 3.4, 12, 1.2); poly(ctx, [[-6,-6],[-9.6,4],[-6.6,6]], '#7a1c16'); // belt; a cloak's edge
+    h.head('#8a5a3c', 4.3, -11.3); h.look('rgba(16,8,4,.9)', -11.6); ctx.strokeStyle = 'rgba(30,40,60,.6)'; ctx.lineWidth = .45; ctx.beginPath(); ctx.moveTo(-1.6, -9.6); ctx.lineTo(.4, -8.2); ctx.moveTo(3.6, -9.8); ctx.lineTo(2.2, -8); ctx.stroke(); // Pardu tattoos
+    B2F.cap(ctx, '#0c0806', 4.6, -12.7); ctx.fillStyle = '#0c0806'; ctx.fillRect(-4.6, -12.7, 1.6, 6); // black hair, tied back
+    ctx.strokeStyle = '#4a3220'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(2, -1); ctx.lineTo(12, -3); ctx.stroke(); ctx.strokeStyle = '#8d8a86'; ctx.lineWidth = .9; ctx.beginPath(); ctx.moveTo(9.4, -7.4); ctx.quadraticCurveTo(11, -3, 9.4, 1.4); ctx.stroke(); }, // the crossbow
+  /* Felisin: a girl in a convict's rags, thin, the bites on her face */
+  felisin(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, .9, .94);
+    h.legs('#4a3a30'); B2F.robe(ctx, h, '#7a5e48', '#2e2018', 5.4, 6.6); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(-3, 2, 1, 8); ctx.fillRect(2, -2, .8, 9); // rags, torn
+    h.head('#c09a80', 4.2, -11.3); h.look('rgba(20,10,8,.85)', -11.6);
+    ctx.fillStyle = 'rgba(140,50,40,.55)'; [[-1.8,-9.6],[1.4,-8.8],[3.2,-10.2],[-.6,-12.6],[2.4,-12]].forEach(([x, y]) => ctx.fillRect(x, y, .8, .8)); // the bloodflies' marks
+    ctx.fillStyle = '#100a08'; ctx.beginPath(); ctx.arc(0, -12.4, 4.7, Math.PI*.9, Math.PI*2.1); ctx.fill(); ctx.fillRect(-4.8, -12.4, 1.8, 9); ctx.fillRect(3.4, -12.4, 1.4, 6); // black hair, hacked short and grown out wild
+    ctx.restore(); },
+  /* Heboric: old, bald, no hands; the Boar's mark over his heart */
+  heboric(ctx, h, t, o){ h.legs('#3a3028'); h.torso('#7a6a56', '#2a2218', 6.4); ell(ctx, 0, -2.4, 2.2, 1.6, 'rgba(40,30,60,.55)'); // the mark
+    ctx.fillStyle = '#9a7a5e'; ctx.fillRect(-8.4, -4, 2.4, 6); ctx.fillRect(6, -4, 2.4, 6); ell(ctx, -7.2, 2.4, 1.4, 1.2, '#7a5a42'); ell(ctx, 7.2, 2.4, 1.4, 1.2, '#7a5a42'); // arms ending at the wrist
+    h.head('#a8866a', 4.5, -11); ctx.fillStyle = 'rgba(255,240,220,.18)'; ctx.fillRect(-2, -15, 3, 1); h.look('rgba(30,20,14,.7)', -11.4); ctx.fillStyle = 'rgba(200,196,186,.6)'; ctx.fillRect(-2.6, -8.4, 6.4, 1.6); },
+  /* Baudin: big, plain, a sailor's build */
+  baudin(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, 1.12, 1.06); h.legs('#2a2420'); h.torso('#5a4a3a', '#1e1810', 7); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(-9.4, -4, 4, 8); // a pack
+    h.head('#a07e62', 4.8, -11); h.look(); ctx.fillStyle = '#5a3a24'; ctx.beginPath(); ctx.arc(0, -12.6, 4.9, Math.PI*1.05, Math.PI*1.95); ctx.fill(); ctx.restore(); },
+  /* Minala: iron-streaked hair, a good rider's coat, a marine's crossbow */
+  minala(ctx, h, t, o){ h.legs('#2a2622'); ctx.fillStyle = '#4a3a2a'; ctx.fillRect(-4.5, 8, 3.4, 5); ctx.fillRect(1.1, 8, 3.4, 5); // riding boots
+    poly(ctx, [[-6,-6],[6,-6],[7.4,10.4],[-7.4,10.4]], h.armor('#4a5664', '#161c24')); ctx.fillStyle = '#2a2018'; ctx.fillRect(-6, 2.6, 12, 1.2);
+    h.head('#c8a488', 4.2, -11.3); ctx.fillStyle = 'rgba(220,230,240,.75)'; ctx.fillRect(-.9, -11.6, 1.2, 1); ctx.fillRect(2, -11.6, 1.2, 1); // grey eyes
+    ctx.fillStyle = '#3a3230'; ctx.beginPath(); ctx.arc(0, -12.4, 4.8, Math.PI*.95, Math.PI*2.05); ctx.fill(); ctx.fillRect(-4.8, -12.4, 1.8, 7); ctx.fillStyle = 'rgba(200,200,205,.6)'; ctx.fillRect(-3.4, -16, .7, 3.6); ctx.fillRect(1, -16.6, .6, 3); ctx.fillRect(-4.6, -11, .6, 4); // iron-streaked
+    ctx.strokeStyle = '#4a3220'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(1.6, 1); ctx.lineTo(10.6, -.8); ctx.stroke(); ctx.strokeStyle = '#8d8a86'; ctx.lineWidth = .9; ctx.beginPath(); ctx.moveTo(8.6, -4.6); ctx.lineTo(8.6, 3); ctx.stroke(); },
+  /* Mappo: a Trell, huge, deep brown, braids full of fetishes, leather over hide, the bag over his shoulder and the bone club */
+  mappo(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, 1.3, 1.26);
+    h.legs('#3a2a1c'); poly(ctx, [[-7.6,-6.4],[7.6,-6.4],[8,8],[-8,8]], h.armor('#6a5038', '#22160c')); ctx.fillStyle = '#3a2614'; ctx.fillRect(-8, 3.6, 16, 1.4);
+    B2F.line(ctx, '#2a1a0e', 1.4, [[-6, -6], [5, 5]], 'butt'); ell(ctx, 6.4, 6.4, 4, 3.4, '#4a321c'); ell(ctx, 6.4, 5.6, 3.6, 1.2, 'rgba(255,220,170,.12)'); // the bag
+    h.head('#6a4630', 5, -11); ctx.fillStyle = 'rgba(232,212,160,.8)'; ctx.fillRect(-.8, -11.6, 1.1, 1); ctx.fillRect(2.2, -11.6, 1.1, 1); ctx.fillStyle = '#efe6cc'; ctx.fillRect(-1.4, -7.8, .9, 1.6); ctx.fillRect(2.4, -7.8, .9, 1.6); // sand-coloured eyes; the big canines
+    B2F.cap(ctx, '#0e0a08', 5.2, -12.6); B2F.braids(ctx, '#0e0a08', 10, -12.6); ctx.fillStyle = '#c8a24a'; ctx.fillRect(-5.8, -6, 2.2, 1); ctx.fillRect(3.6, -4, 2.2, 1); ctx.fillStyle = '#d8ccb0'; ctx.fillRect(-5.8, -8.4, 2.2, .8); // fetishes in the braids
+    ctx.strokeStyle = '#c8a870'; ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-8, 8); ctx.lineTo(-11.6, -6); ctx.stroke(); ctx.lineCap = 'butt'; ell(ctx, -11.8, -7, 2.4, 2.6, '#d8b878'); ctx.fillStyle = '#efe6cc'; for (let i=0;i<4;i++) ctx.fillRect(-14 + i*1.4, -9.6, .7, 1.2); // the bone club
+    ctx.restore(); },
+  /* Icarium: tall, lean, grey, long grey braid, the antler bow */
+  icarium(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, 1.02, 1.24); h.legs('#2a2a2a'); h.torso('#5a5a52', '#1e1e1a', 5.8); ctx.fillStyle = '#3a3226'; ctx.fillRect(-5.8, 3.4, 11.6, 1.2);
+    h.head('#8a9088', 4.2, -11.4); h.look('rgba(230,230,200,.6)', -11.6); B2F.cap(ctx, '#9a9a94', 4.4, -12.8); ctx.fillStyle = '#9a9a94'; ctx.fillRect(-4.6, -12.8, 1.4, 14);
+    ctx.strokeStyle = '#8a6a44'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-8, -12); ctx.quadraticCurveTo(-11, -2, -8, 8); ctx.stroke(); ctx.restore(); },
+  /* Leoman: lean, dark, light-blue eyes, a scarf over a peaked iron helm, two morning stars at his belt */
+  leoman(ctx, h, t, o){ h.legs('#2a2218'); B2F.robe(ctx, h, '#8a7a5e', '#2e281c', 6, 7.6); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(-6, 2.6, 12, 1.4);
+    h.head('#6a4630', 4.3, -11.2); ctx.fillStyle = 'rgba(170,210,240,.9)'; ctx.fillRect(-.9, -11.5, 1.2, 1); ctx.fillRect(2, -11.5, 1.2, 1); // the pale eyes
+    poly(ctx, [[-5.2,-12.6],[0,-19.4],[5.2,-12.6]], h.armor('#8a8680', '#2a2826')); ctx.fillStyle = '#c8bca4'; ctx.fillRect(-5.6, -13.2, 11.2, 1.6); poly(ctx, [[-5.6,-12],[-2.4,-12],[-3.6,-4],[-7,-5]], '#c8bca4'); // the peaked helm, the scarf wound round it
+    const sw = o.still ? 0 : Math.sin(t/300 + (o.phase||0))*.8;
+    [[-5.6, 4], [5.6, 4]].forEach(([x, y], i) => { B2F.line(ctx, '#4a3220', 1.1, [[x, y], [x + (i ? 1.4 : -1.4), y + 4]]); B2F.line(ctx, '#7a7670', .5, [[x + (i ? 1.4 : -1.4), y + 4], [x + (i ? 2 : -2) + sw, y + 7]]); ell(ctx, x + (i ? 2 : -2) + sw, y + 7.6, 1.3, 1.3, '#5a5650'); }); }, // the morning stars, hung at the belt
+  /* the Toblakai: a giant, a tattooed face, a wooden sword */
+  toblakai(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, 1.34, 1.42); h.legs('#2a1e16'); h.torso('#6a5a46', '#221a12', 7.2); h.head('#7a6450', 4.8, -11.2); h.look('rgba(20,12,8,.85)', -11.4);
+    ctx.strokeStyle = 'rgba(30,40,60,.55)'; ctx.lineWidth = .5; ctx.beginPath(); ctx.moveTo(-3, -13); ctx.lineTo(-.6, -8); ctx.moveTo(1, -14); ctx.lineTo(3.4, -9); ctx.moveTo(-2, -10.4); ctx.lineTo(3, -10); ctx.stroke(); B2F.cap(ctx, '#1a1210', 5, -12.6, 1, 2); ctx.restore(); },
+  /* the prophetess, small and seated is how the vision sees her; stood up, a small woman in a dark robe with silver on her hand */
+  shaik(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, .86, .86); B2F.robe(ctx, h, '#4a3a3a', '#1a1214', 5.6, 7.6); h.head('#b08a64', 4.2, -11.2); h.look('rgba(20,10,8,.85)', -11.6);
+    B2F.cap(ctx, '#0c0808', 4.5, -12.6); ctx.fillStyle = '#0c0808'; ctx.fillRect(-4.6, -12.6, 1.6, 8); ctx.fillStyle = '#c8c8d0'; ctx.fillRect(-7, 1, 1.2, 1.2); ctx.restore(); },
+  /* a bhok'aral, small, crouched */
+  moby(ctx, h, t, o){ ell(ctx, 0, 8, 4, 4.6, '#5a4a3a'); ell(ctx, 0, 2.6, 3, 2.8, '#6a5a48'); ctx.fillStyle = 'rgba(255,220,150,.8)'; ctx.fillRect(.4, 2, .8, .8); ctx.fillRect(2, 2, .8, .8); poly(ctx, [[-3,6],[-8,1],[-4,8]], '#4a3a2a'); poly(ctx, [[3,6],[8,1],[4,8]], '#4a3a2a'); },
+});
+
+/* ---------------- backdrops ---------------- */
+const B2VB = {
+  sky(ctx, W, H, top, bot, y = H){ ctx.fillStyle = vgrad(ctx, 0, y, [[0, top], [1, bot]]); ctx.fillRect(0, 0, W, y + 1); },
+  stars(ctx, W, H, T, n, ymax = .55, a = .7){ for (let i=0;i<n;i++){ ctx.globalAlpha = a*(.4 + .6*Math.abs(Math.sin(T/900 + i))); ctx.fillStyle = '#e8e0ff'; ctx.fillRect(hash(i,1)*W, hash(i,2)*H*ymax, 1.2, 1.2); } ctx.globalAlpha = 1; },
+  /* a band of dunes: soft humps, lit from one side */
+  dunes(ctx, W, H, y, c, amp, seed, rim){ ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(0, H); for (let x=0;x<=W + 8;x+=8) ctx.lineTo(x, y - Math.abs(Math.sin(x/W*3.1 + seed))*amp - hash(Math.round(x/8), seed)*amp*.12); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    if (rim) { ctx.strokeStyle = rim; ctx.lineWidth = 1; ctx.beginPath(); for (let x=0;x<=W + 8;x+=8){ const yy = y - Math.abs(Math.sin(x/W*3.1 + seed))*amp - hash(Math.round(x/8), seed)*amp*.12; x ? ctx.lineTo(x, yy) : ctx.moveTo(x, yy); } ctx.stroke(); } },
+  rock(ctx, x, y, s, c){ poly(ctx, [[x - s, y],[x - s*.8, y - s*.5],[x - s*.2, y - s*.7],[x + s*.5, y - s*.55],[x + s, y - s*.1],[x + s*.9, y]], c); },
+  palm(ctx, x, y, s, c, T){ B2F.line(ctx, c, 1.6*s, [[x, y], [x + 2*s, y - 10*s], [x + 3*s, y - 20*s]]); for (let i=0;i<6;i++){ const a = -Math.PI*.95 + i*Math.PI/5.4 + Math.sin(T/900 + i + x)*.06; B2F.line(ctx, c, 1.2*s, [[x + 3*s, y - 20*s], [x + 3*s + Math.cos(a)*6*s, y - 20*s + Math.sin(a)*3*s - 2*s], [x + 3*s + Math.cos(a)*10*s, y - 20*s + Math.sin(a)*2*s + 3*s]]); } },
+  tent(ctx, x, y, s, c){ poly(ctx, [[x - 8*s, y],[x - 2*s, y - 7*s],[x + 1*s, y - 8*s],[x + 8*s, y]], c); },
+  roots(ctx, W, H, y0, T, n, c){ ctx.strokeStyle = c; ctx.lineCap = 'round'; for (let i=0;i<n;i++){ const yy = y0 + hash(i, 61)*(H - y0), d = (yy - y0)/(H - y0), x = hash(i, 62)*W, w = 20 + d*90; ctx.lineWidth = 1 + d*4; ctx.beginPath(); ctx.moveTo(x - w, yy); ctx.quadraticCurveTo(x, yy - 4 - d*14 - hash(i, 63)*6, x + w, yy + (hash(i, 64) - .5)*6); ctx.stroke(); } ctx.lineCap = 'butt'; },
+  fire(ctx, x, y, T, k = 1){ const f = REDUCE() ? 1 : .86 + Math.sin(T/120)*.07 + Math.sin(T/47)*.05; glow(ctx, x, y - 4*k, 46*k, '#ff8a30', .28*f); poly(ctx, [[x - 5*k, y],[x - 2*k, y - 10*k*f],[x, y - 4*k],[x + 2*k, y - 13*k*f],[x + 5*k, y]], '#e8642a'); poly(ctx, [[x - 2.4*k, y],[x, y - 7*k*f],[x + 2.4*k, y]], '#ffc060'); },
+};
+Object.assign(VISBG, {
+  /* the Holy Desert before dawn; at the shot, dawn; the hollow with the dead fire and the three by it */
+  raraku(ctx, W, H, T, v){ const s = v.step || 0, dawn = s >= 2 ? Math.min(1, (s - 1)*.55) : 0;
+    B2VB.sky(ctx, W, H, dawn ? '#3a3c5e' : '#090a1a', dawn ? '#e8b878' : '#1c1a34', H*.6); if (dawn < 1) B2VB.stars(ctx, W, H, T, 60, .5, 1 - dawn); if (dawn) glow(ctx, W*.86, H*.58, W*.5, '#ffd890', .3*dawn);
+    B2VB.dunes(ctx, W, H, H*.6, dawn ? '#8a6a4a' : '#221a22', 10, 1, dawn ? 'rgba(255,220,160,.35)' : null); B2VB.dunes(ctx, W, H, H*.72, dawn ? '#6a4a32' : '#18121a', 14, 2.4);
+    const hx = W*.66, hy = H*.74; ell(ctx, hx, hy + 4, 18, 3, 'rgba(255,120,60,.18)'); ctx.fillStyle = 'rgba(255,140,60,.55)'; ctx.fillRect(hx - 2, hy + 2, 4, 1.2); // the dead fire, a few embers
+    if (s <= 2) drawFigure(ctx, 'shaik', hx + 10, hy, 1.4, T, {still:true, dir:-1}); else ell(ctx, hx + 12, hy + 10, 7, 2.2, '#140c0c');
+    drawFigure(ctx, 'leoman', hx - 12, hy, 1.4, T, {still:s < 3, dir:1, phase:1}); drawFigure(ctx, 'toblakai', hx + 30, hy, 1.4, T, {still:s < 3, dir:-1, phase:2});
+    B2VB.rock(ctx, W*.2, H, W*.24, dawn ? '#3a2418' : '#0c080c'); B2VB.rock(ctx, W*.42, H, W*.1, dawn ? '#2a1a12' : '#0a070a');
+    if (s === 3) for (let i=0;i<5;i++) drawFigure(ctx, 'redblade', W*(.36 + i*.05) + Math.sin(T/400 + i)*3, H*.8, 1.5, T, {phase:i, dir:1});
+    return {fx:W*.18, fy:H*.8, fs:2.2}; },
+  /* the canyon, after: red walls, a strip of morning sky, a horse */
+  canyon(ctx, W, H, T){ B2VB.sky(ctx, W, H, '#5a6a8a', '#e8c89a', H*.5); ctx.fillStyle = vgrad(ctx, H*.5, H, [[0, '#8a5a3a'], [1, '#4a2a1a']]); ctx.fillRect(0, H*.5, W, H*.5);
+    poly(ctx, [[0,0],[W*.36,0],[W*.3,H*.3],[W*.38,H*.6],[W*.28,H],[0,H]], '#5a2a1a'); poly(ctx, [[W,0],[W*.66,0],[W*.72,H*.34],[W*.62,H*.62],[W*.74,H],[W,H]], '#4a2214');
+    ctx.fillStyle = 'rgba(255,200,140,.18)'; ctx.fillRect(W*.3, 0, W*.06, H*.6); ctx.fillStyle = '#6a4a30'; ctx.fillRect(0, H*.88, W, H*.12);
+    drawFigure(ctx, 'redblade', W*.58, H*.84, 2, T, {still:true, dir:-1});
+    return {fx:W*.42, fy:H*.82, fs:2.3}; },
+  /* the otataral desert by night: red dust, the jade finger, the fouled spring; then the tear; then morning */
+  otataral(ctx, W, H, T, v){ const s = v.step || 0, morn = s >= 4;
+    B2VB.sky(ctx, W, H, morn ? '#4a3a4a' : '#0c0610', morn ? '#e8906a' : '#3a141a', H*.62); if (!morn) B2VB.stars(ctx, W, H, T, 70, .55);
+    if (s === 3) { const p = REDUCE() ? 1 : .7 + Math.sin(T/160)*.3; ctx.strokeStyle = `rgba(255,236,210,${.75*p})`; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(W*.18, H*.08); ctx.lineTo(W*.32, H*.16); ctx.lineTo(W*.38, H*.1); ctx.lineTo(W*.52, H*.22); ctx.lineTo(W*.6, H*.14); ctx.lineTo(W*.78, H*.2); ctx.stroke(); glow(ctx, W*.48, H*.16, W*.3, '#ffd0a0', .16*p); }
+    const jx = W*.84; poly(ctx, [[jx - 7, H*.66],[jx - 6, H*.2],[jx - 3, H*.14],[jx + 3, H*.14],[jx + 6, H*.2],[jx + 7, H*.66]], b2vGrad(ctx, jx, '#3a8a6a', '#0e2a20', H)); ctx.fillStyle = 'rgba(160,230,200,.35)'; ctx.fillRect(jx - 5, H*.2, 1.4, H*.4); ctx.fillStyle = 'rgba(10,30,20,.5)'; ctx.fillRect(jx - 7, H*.36, 14, 1.4); ell(ctx, jx, H*.15, 4.6, 2.2, 'rgba(200,240,220,.4)'); // the finger: knuckle and nail
+    B2VB.dunes(ctx, W, H, H*.66, morn ? '#a0522e' : '#3a1612', 8, 3.2); B2VB.dunes(ctx, W, H, H*.8, morn ? '#7a3a20' : '#2a0e0c', 10, 1.4);
+    ell(ctx, W*.56, H*.86, 26, 5, morn ? '#4a5a2a' : '#1e2614'); ell(ctx, W*.56, H*.855, 20, 3, 'rgba(120,150,60,.4)'); // the fouled spring
+    if (!morn) { ell(ctx, W*.66, H*.94, 12, 3, '#1a0c0a'); drawFigure(ctx, 'baudin', W*.7, H*.92, 1.7, T, {still:true, dir:-1}); } else { drawFigure(ctx, 'heboric', W*.64, H*.9, 1.8, T, {dir:1, phase:1}); drawFigure(ctx, 'baudin', W*.76, H*.9, 1.8, T, {dir:1, phase:2}); }
+    return {fx:W*.3, fy:H*.82, fs:2.2}; },
+  /* the Imperial Warren: ash and pewter; the pit and its machine; then Kallor's dome */
+  impwarren(ctx, W, H, T, v){ const s = v.step || 0;
+    B2VB.sky(ctx, W, H, '#5a5a62', '#8a8884', H*.58); for (let i=0;i<3;i++) cloud(ctx, W*(.2 + i*.3), H*(.16 + i*.05), W*.3, 3, s === 1 ? '#3a3a40' : '#a8a6a2', .14);
+    ctx.fillStyle = '#6e6a66'; ctx.fillRect(0, H*.58, W, H); for (let i=0;i<60;i++) ell(ctx, hash(i,21)*W, H*(.6 + hash(i,22)*.4), 6 + hash(i,23)*20, 1.2, 'rgba(40,38,36,.18)');
+    for (let i=0;i<5;i++){ const x = W*(.08 + i*.2 + hash(i,24)*.06), h = H*(.06 + hash(i,25)*.1); ctx.fillStyle = '#4a4644'; ctx.fillRect(x, H*.58 - h, 6 + hash(i,26)*10, h); ctx.fillRect(x + 3, H*.58 - h - 4, 3, 4); }
+    if (s === 1) { ell(ctx, W*.6, H*.8, W*.2, H*.1, '#3a3634'); for (let k=0;k<4;k++) ell(ctx, W*.6, H*(.8 + k*.012), W*(.18 - k*.03), H*(.08 - k*.014), k%2 ? '#4a4440' : '#2e2a28');
+      ctx.strokeStyle = '#4a7a6a'; ctx.lineWidth = 1.4; for (let k=0;k<3;k++){ ctx.beginPath(); ctx.ellipse(W*.6, H*.82, 10 + k*7, 3 + k*2, 0, Math.PI, Math.PI*2); ctx.stroke(); } }
+    if (s >= 3) { const dx = W*.66, dy = H*.62; ctx.beginPath(); ctx.arc(dx, dy, 26, Math.PI, 0); ctx.fillStyle = b2vGrad(ctx, dx, '#6a9a7a', '#2a4a3a', H); ctx.fill(); ctx.fillStyle = '#6e6a66'; ctx.fillRect(dx - 30, dy - 2, 60, 6); ctx.fillStyle = '#1a2a22'; ctx.fillRect(dx - 5, dy - 12, 10, 12);
+      ctx.strokeStyle = '#d8c070'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(dx - 6, dy - 15); ctx.lineTo(dx - 6, dy - 19); ctx.lineTo(dx - 3, dy - 16); ctx.lineTo(dx, dy - 20); ctx.lineTo(dx + 3, dy - 16); ctx.lineTo(dx + 6, dy - 19); ctx.lineTo(dx + 6, dy - 15); ctx.closePath(); ctx.stroke(); } // the crown over its door
+    if (s < 3) { drawFigure(ctx, 'kalam', W*.78, H*.8, 1.7, T, {dir:1, phase:1}); drawFigure(ctx, 'keneb', W*.5, H*.86, 1.8, T, {dir:1, phase:2}); drawFigure(ctx, 'child', W*.56, H*.88, 1.8, T, {dir:1, phase:3}); drawFigure(ctx, 'child', W*.6, H*.88, 1.8, T, {dir:1, phase:4}); drawFigure(ctx, 'hissari_w', W*.64, H*.88, 1.8, T, {dir:1, phase:5}); }
+    else drawFigure(ctx, 'kalam', W*.5, H*.82, 1.8, T, {still:true, dir:1});
+    if (s === 2) B2VB.fire(ctx, W*.48, H*.9, T, .8);
+    return {fx:W*.26, fy:H*.82, fs:2.3}; },
+  /* Aren from its city of tombs: night, lamps on the walls, the sea */
+  aren(ctx, W, H, T){ B2VB.sky(ctx, W, H, '#0a0c1e', '#2a2a44', H*.6); B2VB.stars(ctx, W, H, T, 40, .45);
+    ctx.fillStyle = '#16141e'; ctx.fillRect(0, H*.5, W, H*.1); for (let i=0;i<14;i++){ const x = W*(.3 + i*.05); ctx.fillRect(x, H*(.42 - hash(i,31)*.08), 6 + hash(i,32)*8, H*.12); }
+    for (let i=0;i<8;i++){ const x = W*(.32 + i*.08), y = H*(.46 + hash(i,33)*.04); glow(ctx, x, y, 12, '#e8b060', .35 + Math.sin(T/500 + i)*.05); ctx.fillStyle = '#ffd890'; ctx.fillRect(x - .7, y - .7, 1.4, 1.4); }
+    ctx.fillStyle = '#121a2a'; ctx.fillRect(0, H*.6, W*.3, H*.06); ctx.fillStyle = 'rgba(160,190,230,.15)'; ctx.fillRect(0, H*.62, W*.3, 1);
+    ctx.fillStyle = '#0c0a10'; ctx.fillRect(0, H*.66, W, H); for (let i=0;i<9;i++){ const x = W*(.06 + i*.11), h = H*(.08 + hash(i,34)*.1); ctx.fillStyle = '#1a1820'; ctx.fillRect(x, H*.78 - h, 14, h); poly(ctx, [[x - 2, H*.78 - h],[x + 7, H*.78 - h - 8],[x + 16, H*.78 - h]], '#1a1820'); } // tombs
+    return {fx:W*.3, fy:H*.82, fs:2.3}; },
+  /* the root plain under a sky that cannot settle on a colour; the fire; the Jhag; the girl; at the end, the Hounds */
+  roots(ctx, W, H, T, v){ const s = v.step || 0, hue = REDUCE() ? 0 : Math.sin(T/3000);
+    B2VB.sky(ctx, W, H, `rgb(${40 + hue*16|0},${30 + hue*-10|0},${60 + hue*20|0})`, `rgb(${70 + hue*30|0},${80 - hue*20|0},${70 + hue*10|0})`, H*.56);
+    ctx.fillStyle = '#1c1a14'; ctx.fillRect(0, H*.56, W, H); B2VB.roots(ctx, W, H, H*.56, T, 46, 'rgba(70,56,38,.85)'); B2VB.roots(ctx, W, H, H*.6, T, 20, 'rgba(110,90,60,.35)');
+    if (s >= 3) { poly(ctx, [[W*.62, H*.56],[W*.7, H*.38],[W*.74, H*.46],[W*.8, H*.32],[W*.86, H*.46],[W*.92, H*.36],[W, H*.5],[W, H*.56]], '#14120e'); // the maze, ahead
+      for (let i=0;i<5;i++){ ctx.save(); ctx.translate(W*(.34 + i*.11), H*(.72 + (i%2)*.06)); ctx.scale(-.85, .85); drawHound(ctx, {gait:REDUCE() ? 0 : Math.sin(T/260 + i)*.3, rim:'#c9bbff'}); ctx.restore(); } }
+    else if (s <= 1) { B2VB.fire(ctx, W*.56, H*.82, T, 1); drawFigure(ctx, 'icarium', W*.48, H*.84, 1.9, T, {still:true, dir:1}); drawFigure(ctx, 'sorry', W*.66, H*.84, 1.8, T, {still:true, dir:-1});
+      for (let i=0;i<3;i++) ell(ctx, W*(.72 + i*.08), H*(.92 + hash(i,41)*.03), 9, 2.6, '#0c0a08'); }
+    else { ell(ctx, W*.56, H*.84, 8, 2, 'rgba(40,30,20,.8)'); drawFigure(ctx, 'icarium', W*.5, H*.9, 2.1, T, {still:true, dir:-1}); } // morning: the fire out, the Jhag standing, listening
+    return {fx:W*.22, fy:H*.82, fs:2.2}; },
+  /* the oasis camp: palms, tents, ruins, the platform; the crowd; the whirlwind */
+  oasis(ctx, W, H, T, v){ const s = v.step || 0, storm = s >= 3;
+    B2VB.sky(ctx, W, H, storm ? '#6a5a4a' : '#5a86b0', storm ? '#c8a070' : '#e8d8b0', H*.56);
+    if (storm) { const sw = REDUCE() ? 0 : T/400, cx = W*.6; ctx.fillStyle = 'rgba(150,110,70,.6)'; ctx.beginPath(); ctx.moveTo(cx - W*.08, H*.6); ctx.quadraticCurveTo(cx - W*.14, H*.3, cx - W*.4, 0); ctx.lineTo(cx + W*.4, 0); ctx.quadraticCurveTo(cx + W*.14, H*.3, cx + W*.08, H*.6); ctx.fill();
+      for (let i=0;i<14;i++){ const k = i/14, y = H*.6*(1 - k), w = W*(.08 + k*k*.32 + k*.04), wv = Math.sin(sw + i)*W*.012; ctx.strokeStyle = `rgba(230,190,140,${.18 + k*.12})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(cx + wv, y, w, 2 + k*4, 0, 0, Math.PI*2); ctx.stroke(); }
+      ctx.fillStyle = '#1a1210'; ctx.fillRect(cx, 4, 1, 18); ctx.fillStyle = '#7a2a1a'; ctx.fillRect(cx + 1, 4, 10 + Math.sin(T/200)*1.5, 6); } // the banner
+    ctx.fillStyle = '#b89a70'; ctx.fillRect(0, H*.56, W, H);
+    for (let i=0;i<6;i++){ ctx.fillStyle = '#9a7e58'; ctx.fillRect(W*(.04 + i*.17), H*(.48 + hash(i,51)*.04), W*.05, H*.1); } // broken walls
+    for (let i=0;i<7;i++) B2VB.palm(ctx, W*(.08 + i*.14 + hash(i,52)*.04), H*.62, .9 + hash(i,53)*.3, '#2e3a1e', T);
+    for (let i=0;i<10;i++) B2VB.tent(ctx, W*(.04 + i*.1), H*(.66 + hash(i,54)*.04), .9, hash(i,55) > .5 ? '#d8c8a8' : '#8a6a4a');
+    if (s >= 2) { for (let i=0;i<260;i++){ const x = hash(i,56)*W, y = H*(.74 + hash(i,57)*.24), d = (y - H*.74)/(H*.26); ell(ctx, x, y, 1.2 + d*1.6, .8 + d*.8, `rgba(${40 + hash(i,58)*30|0},${28 + hash(i,59)*20|0},20,.8)`); } // the crowd, kneeling
+      ctx.fillStyle = '#5a4430'; ctx.fillRect(W*.54, H*.7, W*.12, H*.04); drawFigure(ctx, 'felisin', W*.6, H*.69, 1.3, T, {still:true, dir:-1});
+      for (let i=0;i<3;i++) drawFigure(ctx, 'hissari_m', W*(.48 + i*.04), H*.8, 1.3, T, {still:true, dir:1, phase:i + 1}); drawFigure(ctx, 'toblakai', W*.7, H*.82, 1.4, T, {still:true, dir:-1}); }
+    else { drawFigure(ctx, 'felisin', W*.5, H*.86, 1.9, T, {dir:1}); drawFigure(ctx, 'heboric', W*.58, H*.86, 1.9, T, {dir:1, phase:1}); drawFigure(ctx, 'toblakai', W*.7, H*.86, 1.9, T, {dir:1, phase:2}); }
+    return {fx:W*.26, fy:H*.82, fs:2.3}; },
+  /* Tremorlor's yard: roots, the squat House and its door; the swarm; the door opening */
+  tremorlor(ctx, W, H, T, v){ const s = v.step || 0, open = s >= 2;
+    B2VB.sky(ctx, W, H, '#1e2a24', '#5a6a4a', H*.5); ctx.fillStyle = '#2a2418'; ctx.fillRect(0, H*.5, W, H); B2VB.roots(ctx, W, H, H*.52, T, 40, 'rgba(60,46,30,.9)');
+    const hx = W*.6, hw = W*.3, hy = H*.66; ctx.fillStyle = '#1a1612'; ctx.fillRect(hx - hw/2, hy - H*.34, hw, H*.34); poly(ctx, [[hx - hw/2 - 6, hy - H*.34],[hx, hy - H*.5],[hx + hw/2 + 6, hy - H*.34]], '#141008'); ctx.fillRect(hx + hw*.3, hy - H*.56, 12, H*.2); // the House, and its tower
+    ctx.fillStyle = open ? '#e8c890' : '#0a0806'; ctx.fillRect(hx - 8, hy - 24, 16, 24); if (open) glow(ctx, hx, hy - 12, 50, '#ffd090', .3); ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 1.4; ctx.strokeRect(hx - 8, hy - 24, 16, 24);
+    for (let i=0;i<3;i++){ ctx.fillStyle = 'rgba(200,180,120,.25)'; ctx.fillRect(hx - hw*.4 + i*hw*.3, hy - H*.26, 5, 7); }
+    if (s <= 1) { for (let i=0;i<220;i++){ const a = hash(i,71)*6.28 + T/(600 + hash(i,72)*400), r = 10 + hash(i,73)*W*.12; ctx.fillStyle = 'rgba(20,10,10,.85)'; ctx.fillRect(W*.2 + Math.cos(a)*r*1.6, H*.24 + Math.sin(a)*r*.5, 1.4, 1.2); } // the swarm
+      for (let i=0;i<5;i++){ ctx.save(); ctx.translate(W*(.12 + i*.07), H*(.82 + (i%2)*.06)); ctx.scale(.6, .6); drawHound(ctx, {gait:REDUCE() ? 0 : Math.sin(T/200 + i)*.4, rim:'#c9bbff'}); ctx.restore(); }
+      if (s === 1) { drawFigure(ctx, 'mappo', W*.4, H*.9, 1.7, T, {dir:-1}); drawFigure(ctx, 'icarium', W*.37, H*.9, 1.7, T, {dir:1, phase:1}); } }
+    if (s === 2) drawFigure(ctx, 'moby', hx + 2, hy - 4, 1.6, T, {dir:-1});
+    return {fx:hx - 22, fy:hy, fs:2.1}; },
+  /* inside the House: a long hall, dust in the light; at the door, the bell and the carriage */
+  azath(ctx, W, H, T, v){ const s = v.step || 0;
+    B2VB.sky(ctx, W, H, '#1a140e', '#3a2a1a', H); ctx.fillStyle = '#2a2016'; ctx.fillRect(0, H*.76, W, H);
+    poly(ctx, [[0, 0],[W*.36, H*.3],[W*.36, H*.7],[0, H]], '#22180e'); poly(ctx, [[W, 0],[W*.64, H*.3],[W*.64, H*.7],[W, H]], '#1e160c'); ctx.fillStyle = '#0a0806'; ctx.fillRect(W*.36, H*.3, W*.28, H*.4); // the hall going back too far
+    glow(ctx, W*.5, H*.3, W*.3, '#e8c890', .12); for (let i=0;i<22;i++){ ctx.fillStyle = 'rgba(230,210,170,.4)'; ctx.fillRect((hash(i,81)*W + T*.004*(1 + hash(i,82))) % W, H*(.1 + hash(i,83)*.6), 1, 1); }
+    if (s === 3) { ctx.fillStyle = '#1a1410'; ctx.fillRect(W*.78, H*.5, 18, 24); drawFigure(ctx, 'mappo', W*.24, H*.92, 1.6, T, {still:true, dir:1}); drawFigure(ctx, 'icarium', W*.18, H*.92, 1.6, T, {still:true, dir:1}); ell(ctx, W*.8 + 9, H*.5, 6, 7, '#5a4a3a'); } // the dead keeper in its chair
+    if (s === 4) { ctx.fillStyle = '#4a5a3a'; ctx.fillRect(W*.62, H*.36, W*.34, H*.4); ctx.fillStyle = '#e8d0a0'; ctx.globalAlpha = .25; ctx.fillRect(W*.62, H*.36, W*.34, H*.4); ctx.globalAlpha = 1; // the open door, daylight outside
+      ctx.fillStyle = '#2a1a10'; ctx.fillRect(W*.82, H*.46, W*.12, H*.2); ell(ctx, W*.84, H*.68, 5, 5, '#1a120a'); ell(ctx, W*.92, H*.68, 5, 5, '#1a120a'); for (let i=0;i<4;i++) ell(ctx, W*(.82 + i*.03), H*(.42 - (REDUCE() ? 0 : ((T/900 + i*.3) % 1))*.1), 4, 2, 'rgba(220,210,190,.3)'); // the scorched carriage, steaming
+      drawFigure(ctx, 'karpolan', W*.72, H*.8, 2.1, T, {dir:-1}); }
+    return {fx:W*.44, fy:H*.82, fs:2.2}; },
+  /* Malaz City at night: wet cobbles, shut shutters, the keep on the cliff */
+  malaz(ctx, W, H, T, v){ const s = v.step || 0;
+    B2VB.sky(ctx, W, H, '#06070e', '#1e2030', H*.6); B2VB.stars(ctx, W, H, T, 30, .3, .5);
+    poly(ctx, [[W*.56, H*.6],[W*.6, H*.26],[W*.7, H*.2],[W*.84, H*.22],[W*.9, H*.36],[W, H*.4],[W, H*.6]], '#0e0d12'); ctx.fillStyle = '#16141c'; ctx.fillRect(W*.66, H*.1, W*.14, H*.12); ctx.fillRect(W*.68, H*.04, 8, H*.08); ctx.fillRect(W*.76, H*.06, 8, H*.06); // Mock's Hold on its cliff
+    glow(ctx, W*.72, H*.16, 14, '#e8b060', .3); ctx.fillStyle = '#ffd890'; ctx.fillRect(W*.72 - 1, H*.16 - 1, 2, 2);
+    ctx.fillStyle = '#121a26'; ctx.fillRect(0, H*.56, W*.56, H*.08); ctx.fillStyle = 'rgba(140,170,210,.12)'; for (let i=0;i<6;i++) ctx.fillRect(hash(i,91)*W*.5, H*(.58 + hash(i,92)*.05), 12, 1); // the harbour
+    ctx.fillStyle = '#0a090e'; ctx.fillRect(0, 0, W*.16, H); ctx.fillRect(W*.86, H*.4, W*.14, H); ctx.fillStyle = '#16141a'; ctx.fillRect(0, H*.84, W, H); // alley walls; the cobbles
+    for (let i=0;i<12;i++) ell(ctx, hash(i,93)*W, H*(.86 + hash(i,94)*.12), 8, 1.2, 'rgba(120,140,180,.12)'); if (s !== 2) { glow(ctx, W*.2, H*.44, 70, '#e8b060', .28); ctx.fillStyle = '#ffd890'; ctx.fillRect(W*.2 - 1.5, H*.44, 3, 5); } // one shuttered lamp left burning
+    if (s === 1) drawFigure(ctx, 'minala', W*.6, H*.84, 2, T, {dir:-1}); if (s === 4) { drawFigure(ctx, 'minala', W*.42, H*.84, 2, T, {dir:-1}); drawFigure(ctx, 'fiddler', W*.7, H*.84, 2, T, {dir:-1, phase:1}); drawFigure(ctx, 'sorry', W*.76, H*.84, 1.9, T, {dir:-1, phase:2, still:true}); }
+    if (s <= 1) for (let i=0;i<2;i++) drawFigure(ctx, 'clawknife', W*(.78 + i*.08), H*.86, 1.8, T, {dir:-1, phase:i, alpha:.55});
+    return {fx:W*.28, fy:H*.82, fs:2.3}; },
+  /* the room in the Old Keep: dark, one slit of night, a chair that might hold someone */
+  darkroom(ctx, W, H, T){ B2VB.sky(ctx, W, H, '#040406', '#0c0b10', H); ctx.fillStyle = '#16182a'; ctx.fillRect(W*.7, H*.14, 6, H*.24); glow(ctx, W*.7 + 3, H*.26, 30, '#6a7aa0', .12);
+    ctx.fillStyle = '#0a090c'; ctx.fillRect(W*.6, H*.5, W*.12, H*.34); ctx.fillRect(W*.6, H*.36, 4, H*.16); ctx.fillRect(W*.6 + W*.12 - 4, H*.36, 4, H*.16); // a chair, or something sitting in one
+    return {fx:W*.3, fy:H*.82, fs:2.3}; },
+  /* the reader, back at the column's fire: desert stars, a cart, a blanket, the card */
+  b2deck(ctx, W, H, T){ B2VB.sky(ctx, W, H, '#050408', '#1a1418', H*.7); B2VB.stars(ctx, W, H, T, 50, .5, .6); ctx.fillStyle = '#120e0c'; ctx.fillRect(0, H*.72, W, H);
+    ctx.fillStyle = '#0a0806'; ctx.fillRect(W*.66, H*.56, W*.24, H*.12); ell(ctx, W*.7, H*.7, 7, 7, '#0a0806'); ell(ctx, W*.86, H*.7, 7, 7, '#0a0806'); // a handcart
+    B2VB.fire(ctx, W*.64, H*.86, T, 1.8); ctx.fillStyle = '#3a2a22'; ctx.fillRect(W*.4, H*.88, W*.14, H*.06);
+    ctx.save(); ctx.translate(W*.47, H*.86); ctx.rotate(-.08); ctx.fillStyle = '#d8ccb0'; ctx.fillRect(-9, -13, 18, 26); ctx.fillStyle = 'rgba(150,120,220,.5)'; ctx.fillRect(-7, -11, 14, 22); ctx.restore();
+    return {fx:W*.3, fy:H*.82, fs:2.4}; },
+});
+/* a vertical gradient helper for the stone and copper (x is unused; kept so calls read like the h.armor ones) */
+function b2vGrad(ctx, x, c1, c2, H){ return vgrad(ctx, 0, H*.7, [[0, c1], [1, c2]]); }
+
+/* ============ Book Two's cards: the picture panels (20 drawCard calls CARDART[id] when there is no painted deck/ face) ============
+   Each paints inside the card's picture panel {px, py, pw, ph}; gy is the ground line, t the time for the slow movement. */
+{
+  const frame = (P) => { const X = x => P.px + x / 100 * P.pw, Y = y => P.py + y / 100 * P.ph, u = P.pw / 100; return {X, Y, u}; };
+
+  /* King of High House Death: a hooded figure on a backless grey seat, and behind it a gate the size of the world, the dead walking in */
+  CARDART.b2c_king = (ctx, P) => { const {X, Y, u} = frame(P), t = P.t;
+    const sky = ctx.createLinearGradient(0, P.py, 0, P.gy); sky.addColorStop(0, '#d8dcd2'); sky.addColorStop(1, '#8e948a'); ctx.fillStyle = sky; ctx.fillRect(P.px, P.py, P.pw, P.gy - P.py); // a white sky, no sun
+    ctx.fillStyle = '#5e6158'; ctx.fillRect(P.px, P.gy - 6*u, P.pw, P.ph); // a grey plain
+    // the gate: two posts and a lintel of bodies, slowly moving
+    const post = (x0) => { ctx.fillStyle = '#3c3e38'; ctx.fillRect(X(x0), Y(10), 12*u, P.gy - Y(10) - 6*u);
+      for (let i = 0; i < 9; i++) ell(ctx, X(x0 + 3 + hash(i, x0) * 6) + Math.sin(t/1400 + i + x0) * u, Y(14 + i * 7.4), 3.4*u, 2.2*u, 'rgba(150,154,144,.55)', Math.sin(t/1800 + i) * .6); };
+    post(10); post(78);
+    ctx.fillStyle = '#3c3e38'; ctx.fillRect(X(10), Y(6), 80*u, 9*u);
+    for (let i = 0; i < 12; i++) ell(ctx, X(14 + i * 6.4) + Math.sin(t/1500 + i) * u, Y(10.5), 2.8*u, 1.8*u, 'rgba(150,154,144,.5)', .4 + Math.sin(t/1700 + i) * .5);
+    const thru = ctx.createLinearGradient(X(22), 0, X(78), 0); thru.addColorStop(0, '#f2f4ee'); thru.addColorStop(.5, '#ffffff'); thru.addColorStop(1, '#f2f4ee'); ctx.fillStyle = thru; ctx.fillRect(X(22), Y(15), 56*u, P.gy - Y(15) - 6*u); // the light through it, from nowhere
+    // the dead, walking in, unhurried
+    for (let i = 0; i < 9; i++) { const k = ((t / 9000) + i / 9) % 1, x = X(24 + hash(i, 3) * 52), y = P.gy - 6*u - k * 26*u, s = (1 - k * .7) * u, a = .75 * (1 - k);
+      if (a < .05) continue; ctx.fillStyle = `rgba(70,74,66,${a})`; ctx.fillRect(x - 1.6*s, y - 9*s, 3.2*s, 9*s); ell(ctx, x, y - 10.4*s, 1.6*s, 1.7*s, `rgba(70,74,66,${a})`); }
+    // the seat, and the King on it
+    const sx = P.cx, sy = P.gy - 2*u; poly(ctx, [[sx - 16*u, sy], [sx - 14*u, sy - 13*u], [sx + 14*u, sy - 13*u], [sx + 16*u, sy]], '#2a2c27');
+    poly(ctx, [[sx - 13*u, sy - 12*u], [sx - 11*u, sy - 38*u], [sx - 6*u, sy - 50*u], [sx, sy - 54*u], [sx + 6*u, sy - 50*u], [sx + 11*u, sy - 38*u], [sx + 13*u, sy - 12*u], [sx + 18*u, sy + 1*u], [sx - 18*u, sy + 1*u]], '#1b1d19'); // the robe, the hood
+    ell(ctx, sx, sy - 45*u, 4.4*u, 5.2*u, '#050605'); // no face in the hood
+    ctx.fillStyle = `rgba(200,214,190,${.35 + Math.sin(t/900) * .2})`; ctx.fillRect(sx - 2.4*u, sy - 46*u, 1.2*u, .8*u); ctx.fillRect(sx + 1.2*u, sy - 46*u, 1.2*u, .8*u);
+    ell(ctx, sx - 3*u, sy - 22*u, 4*u, 2.6*u, '#a8ab9f'); ell(ctx, sx + 3*u, sy - 21.4*u, 4*u, 2.6*u, '#9a9d92'); // hands folded, grey
+    glow(ctx, sx, sy - 30*u, P.pw * .4, P.hue, .08 + Math.sin(t/1200) * .03); };
+
+  /* Queen of High House Life: a veiled woman in a night garden, a cup overflowing in her lap, the water greening the dry ground */
+  CARDART.b2c_queen = (ctx, P) => { const {X, Y, u} = frame(P), t = P.t;
+    const sky = ctx.createLinearGradient(0, P.py, 0, P.gy); sky.addColorStop(0, '#0a0c18'); sky.addColorStop(1, '#1a1a2c'); ctx.fillStyle = sky; ctx.fillRect(P.px, P.py, P.pw, P.gy - P.py);
+    for (let i = 0; i < 26; i++) { ctx.fillStyle = `rgba(230,220,240,${.3 + Math.sin(t/700 + i * 2) * .25})`; ctx.fillRect(X(hash(i, 61) * 100), Y(hash(i, 62) * 40), 1.2, 1.2); } // stars
+    ell(ctx, X(78), Y(14), 7*u, 7*u, '#e8e4d8'); ell(ctx, X(81), Y(12.6), 6.4*u, 6.4*u, '#0c0e1a'); glow(ctx, X(78), Y(14), 20*u, '#e8e4f0', .18); // a thin moon
+    ctx.fillStyle = '#16120e'; ctx.fillRect(P.px, P.gy - 4*u, P.pw, P.ph); // the dry ground
+    // trees of the garden, dark against the sky
+    [[8, 30, 14], [92, 34, 12], [20, 40, 9]].forEach(([x, y, r], i) => { ctx.fillStyle = '#0b100c'; ctx.fillRect(X(x) - u, Y(y), 2*u, P.gy - Y(y)); ell(ctx, X(x), Y(y), r*u, r*.8*u, '#0d140f'); ell(ctx, X(x) + 3*u, Y(y) - 3*u, r*.6*u, r*.5*u, '#111a13'); });
+    // the queen, seated, veiled
+    const qx = P.cx, qy = P.gy - 6*u;
+    poly(ctx, [[qx - 20*u, qy + 4*u], [qx - 14*u, qy - 20*u], [qx - 8*u, qy - 34*u], [qx, qy - 40*u], [qx + 8*u, qy - 34*u], [qx + 14*u, qy - 20*u], [qx + 20*u, qy + 4*u]], '#3a2a3a'); // the gown
+    poly(ctx, [[qx - 7*u, qy - 33*u], [qx - 6*u, qy - 46*u], [qx, qy - 50*u], [qx + 6*u, qy - 46*u], [qx + 7*u, qy - 33*u], [qx, qy - 30*u]], 'rgba(226,214,226,.85)'); // the veil
+    ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = .7; for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(qx + i * 1.6*u, qy - 48*u); ctx.lineTo(qx + i * 2.6*u, qy - 32*u); ctx.stroke(); }
+    // the cup in her lap, overflowing
+    const cx = qx, cy = qy - 14*u; poly(ctx, [[cx - 5*u, cy - 4*u], [cx + 5*u, cy - 4*u], [cx + 3*u, cy + 1*u], [cx + 1*u, cy + 2*u], [cx + 1*u, cy + 5*u], [cx + 3*u, cy + 6*u], [cx - 3*u, cy + 6*u], [cx - 1*u, cy + 5*u], [cx - 1*u, cy + 2*u], [cx - 3*u, cy + 1*u]], '#c9a04a');
+    ell(ctx, cx, cy - 4*u, 5*u, 1.2*u, '#8ec8e8'); glow(ctx, cx, cy - 4*u, 10*u, '#bfe6ff', .3 + Math.sin(t/600) * .1);
+    // the water running down and away, and green where it touches
+    ctx.strokeStyle = 'rgba(160,214,240,.75)'; ctx.lineWidth = 1.4*u; ctx.beginPath(); ctx.moveTo(cx + 5*u, cy - 4*u); ctx.quadraticCurveTo(cx + 14*u, cy + 8*u, cx + 10*u, P.gy - 3*u); ctx.quadraticCurveTo(cx + 18*u, P.gy + 2*u, X(96), P.gy + 1*u); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - 5*u, cy - 4*u); ctx.quadraticCurveTo(cx - 13*u, cy + 10*u, cx - 12*u, P.gy - 3*u); ctx.quadraticCurveTo(cx - 22*u, P.gy + 2*u, X(4), P.gy + 2*u); ctx.stroke();
+    for (let i = 0; i < 9; i++) { const k = ((t / 1600) + i / 9) % 1; ell(ctx, cx + (i % 2 ? 1 : -1) * (5 + k * 8)*u, cy - 3*u + k * 18*u, .9*u, 1.3*u, `rgba(190,230,255,${.8 * (1 - k)})`); } // drops
+    for (let i = 0; i < 16; i++) { const x = X(4 + hash(i, 71) * 92), h = (3 + hash(i, 72) * 6) * u * (.8 + Math.sin(t/1100 + i) * .2); ctx.strokeStyle = '#4f9a5a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, P.gy + 1*u); ctx.lineTo(x + (hash(i, 73) - .5) * 3*u, P.gy + 1*u - h); ctx.stroke(); if (i % 3 === 0) ell(ctx, x, P.gy + 1*u - h, 1.3*u, 1.3*u, '#e8b4c8'); } // shoots, a flower or two
+    glow(ctx, qx, qy - 20*u, P.pw * .45, P.hue, .1); };
+
+  /* Mason of High House Death: a bent figure with mallet and chisel, cutting a long stone to fit the door of a barrow */
+  CARDART.b2c_mason = (ctx, P) => { const {X, Y, u} = frame(P), t = P.t;
+    const sky = ctx.createLinearGradient(0, P.py, 0, P.gy); sky.addColorStop(0, '#120e0a'); sky.addColorStop(1, '#3a2c1e'); ctx.fillStyle = sky; ctx.fillRect(P.px, P.py, P.pw, P.gy - P.py); // a dusk the colour of dust
+    // the barrow, a long mound with a black door in it
+    poly(ctx, [[X(40), P.gy], [X(52), Y(52)], [X(70), Y(44)], [X(92), Y(48)], [X(104), P.gy]], '#241b12'); ctx.strokeStyle = 'rgba(192,160,122,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(40), P.gy); ctx.lineTo(X(52), Y(52)); ctx.lineTo(X(70), Y(44)); ctx.lineTo(X(92), Y(48)); ctx.stroke();
+    poly(ctx, [[X(64), P.gy], [X(64), Y(62)], [X(70), Y(57)], [X(80), Y(57)], [X(86), Y(62)], [X(86), P.gy]], '#030202'); // the doorway
+    poly(ctx, [[X(62), Y(62)], [X(70), Y(55)], [X(80), Y(55)], [X(88), Y(62)], [X(86), Y(63)], [X(80), Y(58)], [X(70), Y(58)], [X(64), Y(63)]], '#6a5c4c'); // the lintel stones
+    ctx.fillStyle = '#0d0a07'; ctx.fillRect(P.px, P.gy, P.pw, P.ph);
+    // the long stone, lying on rollers, nearly cut
+    const st = ctx.createLinearGradient(0, Y(74), 0, Y(82)); st.addColorStop(0, '#a89a86'); st.addColorStop(1, '#5a5046'); poly(ctx, [[X(8), Y(82)], [X(12), Y(74)], [X(58), Y(72)], [X(60), Y(80)]], st);
+    ctx.strokeStyle = 'rgba(0,0,0,.35)'; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(X(16 + i * 9), Y(74.5)); ctx.lineTo(X(15 + i * 9), Y(81)); ctx.stroke(); } // the chisel lines
+    ell(ctx, X(18), Y(83), 2.4*u, 2.4*u, '#3a2e22'); ell(ctx, X(50), Y(82), 2.4*u, 2.4*u, '#3a2e22');
+    // the mason, bent over it, mallet up, lit from the west
+    glow(ctx, X(34), Y(58), 26*u, '#e0b070', .22);
+    const mx = X(34), my = Y(71), sw = Math.sin(t/260); const lift = Math.max(0, sw);
+    poly(ctx, [[mx - 9*u, my], [mx - 10*u, my - 12*u], [mx - 4*u, my - 22*u], [mx + 5*u, my - 24*u], [mx + 9*u, my - 18*u], [mx + 7*u, my]], '#6a523a'); // back, bent
+    poly(ctx, [[mx - 6*u, my - 8*u], [mx + 6*u, my - 10*u], [mx + 5*u, my], [mx - 5*u, my]], '#a08a66'); // the apron, dusty
+    ell(ctx, mx + 8*u, my - 22*u, 3.6*u, 3.8*u, '#54402c'); // the head, bowed
+    ctx.strokeStyle = '#6a523a'; ctx.lineWidth = 2.4*u; ctx.beginPath(); ctx.moveTo(mx + 4*u, my - 16*u); ctx.lineTo(mx + 12*u, my - 6*u); ctx.stroke(); // the chisel arm
+    ctx.strokeStyle = '#8a8a90'; ctx.lineWidth = 1.2*u; ctx.beginPath(); ctx.moveTo(mx + 12*u, my - 6*u); ctx.lineTo(mx + 13*u, my + 1*u); ctx.stroke(); // the chisel
+    const ha = -.5 - lift * 1.1, hx = mx - 2*u, hy = my - 18*u, ex = hx + Math.cos(ha) * 14*u, ey = hy + Math.sin(ha) * 14*u;
+    ctx.strokeStyle = '#6a523a'; ctx.lineWidth = 2.4*u; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(ex, ey); ctx.stroke(); // the mallet arm
+    ctx.save(); ctx.translate(ex, ey); ctx.rotate(ha + Math.PI / 2); ctx.fillStyle = '#8a6a44'; ctx.fillRect(-4*u, -2.4*u, 8*u, 4.8*u); ctx.restore(); // the mallet
+    if (sw < -.85) for (let i = 0; i < 6; i++) ell(ctx, mx + 13*u + (hash(i, Math.floor(t/260)) - .5) * 8*u, my - hash(i, 9) * 6*u, .8*u, .8*u, 'rgba(232,210,170,.8)'); // chips fly
+    for (let i = 0; i < 18; i++) { const k = ((t / 7000) + hash(i, 81)) % 1; ell(ctx, X(hash(i, 82) * 100), Y(80 - k * 70), .7*u, .7*u, `rgba(192,160,122,${.35 * (1 - k)})`); } // dust in the air
+    glow(ctx, X(75), Y(70), P.pw * .3, P.hue, .07); };
+
+  /* Soldier of High House Death: a grey soldier at a grey gate, shield up, and behind the visor not quite a face */
+  CARDART.b2c_soldier = (ctx, P) => { const {X, Y, u} = frame(P), t = P.t;
+    const sky = ctx.createLinearGradient(0, P.py, 0, P.gy); sky.addColorStop(0, '#2a2e30'); sky.addColorStop(1, '#5a6064'); ctx.fillStyle = sky; ctx.fillRect(P.px, P.py, P.pw, P.gy - P.py);
+    ctx.fillStyle = '#3a3e40'; ctx.fillRect(P.px, P.gy - 3*u, P.pw, P.ph);
+    // the gate behind: two great dark posts, a white nothing between them
+    ctx.fillStyle = '#16191b'; ctx.fillRect(X(6), Y(4), 16*u, P.gy - Y(4)); ctx.fillRect(X(78), Y(4), 16*u, P.gy - Y(4)); ctx.fillRect(X(6), Y(2), 88*u, 8*u);
+    const w = ctx.createLinearGradient(0, Y(10), 0, P.gy); w.addColorStop(0, '#e8ecec'); w.addColorStop(1, '#aeb6b8'); ctx.fillStyle = w; ctx.fillRect(X(22), Y(10), 56*u, P.gy - Y(10) - 3*u);
+    for (let i = 0; i < 5; i++) { const k = ((t / 6000) + i / 5) % 1; ell(ctx, X(30 + hash(i, 91) * 40), Y(60 - k * 40), (6 + k * 10)*u, 2*u, `rgba(255,255,255,${.25 * (1 - k)})`); } // mist going through
+    // the soldier, front on
+    const sx = P.cx, gy = P.gy - 2*u, br = Math.sin(t/1600) * .4*u;
+    ctx.fillStyle = '#2a2f33'; ctx.fillRect(sx - 7*u, gy - 18*u, 5*u, 18*u); ctx.fillRect(sx + 2*u, gy - 18*u, 5*u, 18*u); // legs, greaves
+    poly(ctx, [[sx - 11*u, gy - 16*u], [sx - 12*u, gy - 40*u + br], [sx, gy - 44*u + br], [sx + 12*u, gy - 40*u + br], [sx + 11*u, gy - 16*u]], '#5d666c'); // grey mail, no badge
+    ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = .6; for (let i = 0; i < 7; i++) { ctx.beginPath(); ctx.moveTo(sx - 11*u, gy - 18*u - i * 3.4*u + br); ctx.lineTo(sx + 11*u, gy - 18*u - i * 3.4*u + br); ctx.stroke(); }
+    // the helm, the visor, and behind it not quite a face
+    poly(ctx, [[sx - 6*u, gy - 44*u + br], [sx - 6.5*u, gy - 54*u + br], [sx, gy - 58*u + br], [sx + 6.5*u, gy - 54*u + br], [sx + 6*u, gy - 44*u + br]], '#6f787e');
+    ctx.fillStyle = '#060707'; ctx.fillRect(sx - 4.6*u, gy - 52*u + br, 9.2*u, 1.8*u);
+    ctx.fillStyle = `rgba(210,226,230,${.25 + Math.sin(t/700) * .2})`; ctx.fillRect(sx - 3.4*u, gy - 51.6*u + br, 1.2*u, 1*u); ctx.fillRect(sx + 2.2*u, gy - 51.6*u + br, 1.2*u, 1*u);
+    // the spear, upright
+    ctx.strokeStyle = '#2a241c'; ctx.lineWidth = 1.6*u; ctx.beginPath(); ctx.moveTo(sx + 14*u, gy + 1*u); ctx.lineTo(sx + 14*u, Y(14)); ctx.stroke(); poly(ctx, [[sx + 14*u, Y(8)], [sx + 16*u, Y(14)], [sx + 12*u, Y(14)]], '#9aa6ae');
+    // the shield, up, a grey round with nothing painted on it
+    const shx = sx - 6*u, shy = gy - 28*u + br; ell(ctx, shx, shy, 11*u, 13*u, '#4a5258'); ctx.strokeStyle = '#9aa6ae'; ctx.lineWidth = 1.2*u; ctx.beginPath(); ctx.ellipse(shx, shy, 11*u, 13*u, 0, 0, 7); ctx.stroke(); ell(ctx, shx, shy, 2.6*u, 2.6*u, '#8a949a');
+    glow(ctx, sx, gy - 30*u, P.pw * .4, P.hue, .08 + Math.sin(t/1100) * .03); };
+}
 
 /* ============ resume & boot ============ */
 function resume(){

@@ -262,8 +262,12 @@ One less. An old man from the dyers' street, who sat down at noon in the shade o
 
 ${b2In('tangle') ? `Tangle counts the satchel at every halt. "${b2Count()}," he says. Nobody asks him to. ` : ''}${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('The Odhan · three weeks out of the basin'),
-    ch:[{t:'"Bult says Dryj. How far?"', go:'b2_c2_start2'},
+    ch:[b2DeckChoice(2),
+        {t:'"Bult says Dryj. How far?"', go:'b2_c2_start2'},
         {t:'"Water. Slowly. The way I showed you."', go:'b2_c2_start2'}]}),
+  /* the reading at the noon halt (47c) */
+  b2_c2_deck:()=>b2DeckOffer(2, 'b2_c2_card'),
+  b2_c2_card:()=>b2DeckCard(2),
   b2_c2_start2:()=>({sp:'The Odhan', scene:'b2_odhan_day', txt:
 `${b2In('sathi') ? `"Two days," Sathi says. "Hackle says one. Hackle is a liar about water. He always thinks it is closer." The dog, trotting beside her horse with his tongue out, does not dispute it.
 

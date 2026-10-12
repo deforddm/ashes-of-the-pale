@@ -1,4 +1,6 @@
 /* ============ Deck of Dragons card art ============ */
+/* later books' cards: CARDART[id](ctx, {px, py, pw, ph, cx, gy, t, hue}) paints the picture panel (57b); a painted deck/ face, where there is one, still comes first */
+const CARDART = {};
 function drawCard(ctx, id, W, H, face, t = 0){
   ctx.save();
   // card body
@@ -27,6 +29,7 @@ function drawCard(ctx, id, W, H, face, t = 0){
   ctx.fillStyle = '#0a0807'; ctx.fillRect(px, gy, pw, ph); // ground
   const AI = artImg('deck/' + id); // the painted face from the artwork canvas, where it has one
   if (AI) { artCover(ctx, AI, px, py, pw, ph); glow(ctx, cx, py + ph*.45, pw*.45, hue, .06 + Math.sin(t/900)*.04); }
+  else if (CARDART[id]) CARDART[id](ctx, {px, py, pw, ph, cx, gy, t, hue});
   else switch (id) {
     case 'oponn': { // twin masks back to back, a coin above
       const my = py + ph*.5, mr = pw*.2;
@@ -155,7 +158,7 @@ function inlineCard(cv, id, refuse){
     ctx.clearRect(0,0,240,360); drawCardFlip(ctx, id, 0, 0, 240, 360, k, t);
     if (!played && k > .5) { played = true; AUDIO.play('flip'); }
     if (refuse && t > 1300) { const a = clamp((t - 1300) / 900, 0, .75); ctx.fillStyle = `rgba(6,5,4,${a})`; ctx.fillRect(0,0,240,360); for (let i=0;i<8;i++){ const yy = 360 - ((t/6 + i*47) % 400); ell(ctx, 120 + Math.sin(t/400 + i)*60, yy, 40, 14, `rgba(60,50,45,${a*.5})`); } }
-    if (k < 1 || (refuse && t < 2400) || ['oponn','chains','crown','blank','knight','raven','hounds','magi'].includes(id)) requestAnimationFrame(fr); }
+    if (k < 1 || (refuse && t < 2400) || ['oponn','chains','crown','blank','knight','raven','hounds','magi'].includes(id) || CARDART[id]) requestAnimationFrame(fr); }
   requestAnimationFrame(fr);
 }
 

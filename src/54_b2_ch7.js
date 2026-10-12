@@ -312,7 +312,10 @@ The Kherahn will go home in the morning. They have brought the column to where t
 
 ${rg.length ? `You count the squad at the halt, out of habit. You get to the end and keep counting: ${b2And(rg)}, ${rg.length === 1 ? 'a day back' : 'a day back, all of them'}, with the Fist.${rg.includes('sathi') ? ' There is no dog at the squad\'s fire. You keep looking for him under the cart.' : ''} ` : 'You count the squad at the halt, out of habit, and get the right number, and count again anyway. '}${b2Away() ? `And ${NAME(b2Away())}, in Aren, if the ship got there. ` : ''}${b2Hurt() ? `${NAME(b2Hurt())} sits down at the halt carefully, the Vathar wound bound tight, and says Aren will have clean healers. ` : ''}${b2In('tangle') ? `"${b2Count()}," Tangle says, to the satchel. ` : ''}${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
     html:chainHTML('Balahn · the head of Aren Way'),
-    ch:[{t:'Look round.', go:()=>startExplore()}]}; },
+    ch:[b2DeckChoice(7), {t:'Look round.', go:()=>startExplore()}]}; },
+  /* the reading at Balahn, the last halt before Aren (47c) */
+  b2_c7_deck:()=>b2DeckOffer(7, 'b2_c7_card'),
+  b2_c7_card:()=>b2DeckCard(7),
 
   /* ---- Duiker: the column's story ---- */
   b2_duiker12:()=>({sp:'Duiker', fx:()=>{ S.f.b2_duiker12 = 1; S.f.b2_duiker = 1; }, txt:
