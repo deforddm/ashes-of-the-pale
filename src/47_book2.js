@@ -267,4 +267,38 @@ const b2Wounded = id => !!(S && S.book === 'dg' && S.f && S.f.b2_woundWho === id
         if (c.length) S.f.b2_hurtMost = c[0].id; } }
     return _win(); }; }
 
+/* ---- heat (v4.4, Chapter 5: the Dry March) ----
+   A fight marked def.heat is fought at midday. From round 4 (round 2 on a fight's second ground, the squad already cooked by the first),
+   a squadmate in heavy armour (B2_HEAVY: mail or scale) loses a step of movement every turn, unless they drank before the fight.
+   b2Drink(id) spends a skin so the squad drinks before fight id (S.f.b2_drank = id; S.f.b2_drankSkip = a squadmate who would not drink);
+   b2Drink(id, true) is the free version, for a squad whose water was already given out to it.
+   S.f.b2_dry: the squad gave its water to the column, so it cannot drink, and starts a heat fight parched (−3 health).
+   A squadmate marked u.cooled (the Tower's Breath, Chapter 5) has shed the heat for the rest of the fight. */
+const B2_HEAVY = id => ['haddat', 'redblade'].includes(id) || Object.values(((S && S.gear) || {})[id] || {}).some(g => ITEMS[g] && ITEMS[g].heavy);
+function b2Drink(id, free){ if (!S || S.f.b2_dry) return false;
+  if (!free) { if (chainW() <= 0) return false; chain(-1, 0, 'A skin before the fight'); }
+  S.f.b2_drank = id; return true; }
+const b2Drank = (id, who) => !!(S && S.f.b2_drank === id && S.f.b2_drankSkip !== who);
+const b2HeatFrom = () => B && B.def && B.def.isStage2 ? 2 : 4;
+{ const _mkParty = mkParty;
+  mkParty = function(id, x, y){ const u = _mkParty(id, x, y);
+    if (S && S.book === 'dg' && S.f.b2_dry && B && B.def && B.def.heat && !u.parched) { u.hp = Math.max(1, u.hp - 3); u.parched = true; }
+    return u; }; }
+{ const _startBattle = startBattle;
+  startBattle = function(id, opt = {}){ const r = _startBattle(id, opt);
+    if (S && S.book === 'dg' && B && B.def && B.def.heat) {
+      const sq = B.units.filter(u => u.side === 'p' && !u.ally), heavy = sq.filter(u => B2_HEAVY(u.id) && !b2Drank(id, u.id)).map(u => u.name);
+      blog(`<em>Midday. The sun is a hand on the back of every neck.</em>`);
+      if (S.f.b2_dry) blog(`<em>The squad's water went to the column. Every mouth is dust: everyone starts a little hurt.</em>`);
+      else if (S.f.b2_drank === id) blog(`The squad drank before it came on. The heat will wait a while.`);
+      if (heavy.length) blog(`<em>${heavy.join(' and ')} ${heavy.length > 1 ? 'are' : 'is'} in mail with nothing to drink: from round ${b2HeatFrom()}, one step fewer every turn.</em>`); }
+    return r; }; }
+{ const _squadTurnStart = squadTurnStart;
+  squadTurnStart = function(u){ const r = _squadTurnStart(u);
+    if (S && S.book === 'dg' && B && B.def && B.def.heat && u && u.side === 'p' && !u.ally && u.hp > 0 && !u.cooled && B.round >= b2HeatFrom()
+        && B2_HEAVY(u.id) && !b2Drank(B.id, u.id) && (B.mvLeft ?? u.mv) > 0) {
+      B.mvLeft = Math.max(0, (B.mvLeft ?? u.mv) - 1); float(u, 'the heat', '#e0b060');
+      if (!u.heatSaid) { u.heatSaid = true; blog(`<em>The heat has ${u.name}. The mail is an oven: one step fewer every turn.</em>`); } }
+    return r; }; }
+
 /* Book Two's chapters register in start() (90), after Book One's */
