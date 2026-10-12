@@ -122,7 +122,11 @@ function updChain(){ const el = typeof document !== 'undefined' && document.getE
   if (!S || S.book !== 'dg' || !S.chain) { el.textContent = ''; return; }
   el.innerHTML = `<span class="chainpill"><span class="${S.chain.water <= 0 ? 'dry' : ''}">Water <b>${S.chain.water}</b></span><span>Column <b>${S.chain.column}</b></span></span>`; }
 /* a full rest on the march costs a skin of water; with none, no rest */
+/* the Water-Seller's Measure (Ch1 trick): a rest or a pre-fight drink that costs no water, while charges last */
+function b2Measure(what){ if (!S || typeof trickLeft !== 'function' || trickLeft('b2_measure') <= 0) return false; spendTrick('b2_measure');
+  const w = trickBy('b2_measure'); note(`${w && w !== 'sgt' ? NAME(w) : 'The sergeant'} shares the skin out the water-sellers' way: ${what === 'rest' ? 'the rest' : 'the drink'} costs no water (The Water-Seller's Measure).`, 'good'); return true; }
 function dgRest(t){ S.chain ??= {water:8, column:0};
+  if (b2Measure('rest')) { rest(t || 'The squad rests in what shade there is. Wounds close, mostly.'); return true; }
   if (S.chain.water <= 0) { note('No water to spare: the squad sits in the shade it can find, and gets up no better.', 'bad'); return false; }
   chain(-1, 0, 'Rest'); rest(t || 'The squad rests in what shade there is. Wounds close, mostly.'); return true; }
 
@@ -276,7 +280,7 @@ const b2Wounded = id => !!(S && S.book === 'dg' && S.f && S.f.b2_woundWho === id
    A squadmate marked u.cooled (the Tower's Breath, Chapter 5) has shed the heat for the rest of the fight. */
 const B2_HEAVY = id => ['haddat', 'redblade'].includes(id) || Object.values(((S && S.gear) || {})[id] || {}).some(g => ITEMS[g] && ITEMS[g].heavy);
 function b2Drink(id, free){ if (!S || S.f.b2_dry) return false;
-  if (!free) { if (chainW() <= 0) return false; chain(-1, 0, 'A skin before the fight'); }
+  if (!free && !b2Measure('drink')) { if (chainW() <= 0) return false; chain(-1, 0, 'A skin before the fight'); }
   S.f.b2_drank = id; return true; }
 const b2Drank = (id, who) => !!(S && S.f.b2_drank === id && S.f.b2_drankSkip !== who);
 const b2HeatFrom = () => B && B.def && B.def.isStage2 ? 2 : 4;

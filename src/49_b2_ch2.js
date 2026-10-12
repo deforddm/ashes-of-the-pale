@@ -99,7 +99,7 @@ const B2CH2 = {
       quest:()=> !S.f.b2_mincer ? 'Tangle wants you to meet his captain. Down at the water.' : !S.f.b2_fordWork ? 'Tangle is in the river with the sappers.' : 'The ford. The squad\'s stretch crosses when it is called.',
       npcs:[
         {id:'mincer', name:'Captain Mincer', kind:'mincer', x:8, y:7, node:()=>S.f.b2_mincer ? 'b2_mincer_again' : 'b2_mincer', fresh:()=>!S.f.b2_mincer},
-        {id:'sapper', name:'A sapper', kind:'sapper', x:11, y:8, node:()=>'b2_ford_work', fresh:()=>!!S.f.b2_mincer && !S.f.b2_fordWork},
+        {id:'sapper', name:'A sapper', kind:'sapper', x:11, y:8, node:()=>S.f.b2_cusser || S.f.b2_cusserKept || (S.f.b2_fordWork && !b2In('tangle')) ? 'b2_ford_after' : 'b2_ford_work', fresh:()=>!!S.f.b2_mincer && !S.f.b2_fordWork},
         {id:'nil', name:'Nil', kind:'nil', x:3, y:5, node:()=>'b2_nil', fresh:()=>!S.f.b2_nil},
         {id:'nether', name:'Nether', kind:'nether', x:4, y:6, node:()=>'b2_nil', show:()=>!S.f.b2_nil || /^b2_nil/.test(S.node || '')},
         {id:'ramin1', name:'A Red Blade', kind:'redblade', x:12, y:3, node:()=>'b2_ramin_first', fresh:()=>!S.f.b2_raminFirst},
@@ -776,7 +776,16 @@ ${by({tangle:`Tangle has gone red to the ears. "Sir," he says. It is the most he
 
 ${b2In('tangle') ? `"Sir," says Tangle. He has already taken his boots off.` : ''}`,
     ch:[{t:'On.', go:()=>startExplore()}]}),
-  b2_mincer_again:()=>({sp:'Captain Mincer', txt:`Mincer is counting something on the slate, lips moving. "${S.f.b2_cusser ? 'Fifty-five,' : 'Fifty-four,'}" he says, to nobody. He doesn't look up.`, ch:[{t:'Leave him.', go:()=>startExplore()}]}),
+  b2_mincer_again:()=>({sp:'Captain Mincer', txt: S.f.b2_cusser ?
+`Mincer looks up from the slate when he sees you, which he did not do the first time.
+
+"Fifty-five," he says. "Your sapper's. I wrote his name next to it." He taps the slate: there it is, *Tangle*, in a careful hand, beside the last mark. "When Cuttle lights it, that's the one that goes under the far end, where they'll bunch. I'll tell him whose it was. Cuttle likes to know." He goes back to his counting, and then, without looking up again: "Sergeant. Thank you. That one cost him. I could see it."` : S.f.b2_cusserKept ?
+`Mincer is counting something on the slate, lips moving. "Fifty-four," he says, to nobody, and then, to you, without heat: "I'll find one. Some fool's kit, some dead wagon. I always find one." He doesn't look up again.` :
+`Mincer is counting something on the slate, lips moving. "Fifty-four," he says, to nobody. He doesn't look up.`,
+    ch:[{t:'"How do your people get flat so fast when the fuse is lit?"', check:['wits',16], trick:'b2_drop', req:()=>!S.f.b2_dropTried, fx:()=>{ S.f.b2_dropTried = 1; },
+          edges:id=>[id === 'tangle' && ['his own captain', 2], id === 'sathi' && ['she fights from a saddle, not a ditch', -1]],
+          go:'b2_mincer_drop', fail:'b2_mincer_miss'},
+        {t:'Leave him.', go:()=>startExplore()}]}),
 
   /* ---- Tangle in the river, and the last cusser ---- */
   b2_ford_work:()=>({sp:'The ford', fx:()=>{ S.f.b2_fordWork = 1; }, txt: b2In('tangle') ?
@@ -788,9 +797,19 @@ When they come out he is blue-lipped and grinning. Then the grin goes.
 
 "Fifty-four," he says to you, low. "The captain's one short. One cusser short of the count, for the far end, where the peasants will bunch." He doesn't look at the satchel. He doesn't have to. "${b2Count()}. I said I'd throw it for the right thing, Sergeant. I said you'd tell me which thing was the right one." He waits.` :
 `A sapper waist-deep in the river, laying stones under the water by feel. He comes up spitting and looks at you. "Captain's one cusser short of his count," he says. "Don't suppose you've got one." He doesn't wait for an answer. He goes back under.`,
-    ch:[{t:'"Give it to Mincer."', tag:'uses 1 cusser', req:()=>b2In('tangle') && S.inv.cusser > 0, fx:()=>{ S.inv.cusser--; S.f.b2_cusser = 1; loy('tangle', 1); }, go:'b2_cusser_give'},
-        {t:'"Keep it. We\'ll need it."', req:()=>b2In('tangle'), fx:()=>{ S.f.b2_cusserKept = 1; }, go:'b2_cusser_keep'},
-        {t:'On.', req:()=>!b2In('tangle'), go:()=>startExplore()}]}),
+    ch:[{t:'"Give it to Mincer."', tag:'uses 1 cusser', req:()=>b2In('tangle') && S.inv.cusser > 0 && !S.f.b2_cusser && !S.f.b2_cusserKept, fx:()=>{ S.inv.cusser--; S.f.b2_cusser = 1; loy('tangle', 1); }, go:'b2_cusser_give'},
+        {t:'"Keep it. We\'ll need it."', req:()=>b2In('tangle') && !S.f.b2_cusser && !S.f.b2_cusserKept, fx:()=>{ S.f.b2_cusserKept = 1; }, go:'b2_cusser_keep'},
+        {t:'On.', req:()=>!b2In('tangle') || !!(S.f.b2_cusser || S.f.b2_cusserKept), go:()=>startExplore()}]}),
+  /* after the last cusser is settled: the sappers in the river know which way it went */
+  b2_ford_after:()=>({sp:'The ford', txt: S.f.b2_cusser ?
+`The sappers are still in the river, laying the last stones by feel. One of them comes up spitting, sees ${b2In('tangle') ? 'Tangle' : 'the squad'}, and knocks a knuckle on his helmet: the sappers' salute, the one officers aren't supposed to see.
+
+"Fifty-five," he says. "The far end's ours now. Captain wrote your sapper's name on the slate next to it." He goes back under.` : S.f.b2_cusserKept ?
+`The sappers are still in the river. One of them comes up, looks at Tangle's satchel, and doesn't say anything at all, which in a sapper is a speech. Then he goes back under.
+
+"Captain'll find one," Tangle says, to nobody.` :
+`The sappers are still in the river, laying stones under the brown water by feel. Nobody looks up.`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
   b2_cusser_give:()=>({sp:'Tangle', txt:
 `He takes the cusser out of the satchel with both hands, the way ${b2In('marrow') ? 'Marrow' : 'a priest'} holds a thing that matters, and wades back out with it, and gives it to Mincer at the water's edge. Mincer looks at it, and at Tangle, and writes on his slate.
 

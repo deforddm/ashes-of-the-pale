@@ -12,6 +12,17 @@ const B2 = {elder:'Imra', younger:'Dessi', widow:'Yedda'};
 /* the water and the column, as a sentence for the end screen and the journal */
 const b2Chain = () => `${numw(chainW(), true)} skin${chainW() === 1 ? '' : 's'} of water, and ${chainC()} ${chainC() === 1 ? 'soul' : 'souls'} in the squad's stretch of the column`;
 
+/* the water-sellers' trick (v4.7.1): earned from Ressan at his well; spent in dgRest and b2Drink (47) */
+Object.assign(TRICKS, {
+  b2_measure:{name:'The Water-Seller\'s Measure', ch:1, use:'chapter', n:2, where:'Ressan\'s well, the night Hissar burned',
+    notWhy:{sathi:'won\'t sit still for an old man\'s lesson tonight'},
+    lore:'Forty years of selling water by the cup in a city that never has enough: wet the mouth, not the throat; drink in the shade, never in the sun; a mouthful before the work, not after. A water-seller can walk a man three days on one skin, and charge him for four.',
+    get fx(){ return `${trickTimes('b2_measure')} a chapter: a rest, or a drink before a midday fight, costs no water. The bearer shares the skin out the water-sellers' way. One more use from level 5.`; }},
+});
+const b2MeasureCh = () => ({t:'"Teach me what you know about making a skin last."', check:['wits',15], trick:'b2_measure', req:()=>!S.f.b2_measureTried, fx:()=>{ S.f.b2_measureTried = 1; },
+  edges:id=>[id === 'haddat' && ['a water-seller\'s daughter: she grew up on it', 2], id === 'sgt' && ['a winter in his house', 1], id === 'marrow' && ['a healer knows thirst', 1], id === 'tangle' && ['he is watching the fire, not the old man', -1]],
+  go:'b2_measure_ok', fail:'b2_measure_miss'});
+
 const B2CH1 = {
   title:'Hissar Burns', number:'One',
   intro:{loc:'Hissar', sub:'Seven Cities · the night the city rose', scene:'b2_hissar_burning', cap:'The city from the garrison wall: roofs on fire in a ring, and the ring closing.',
@@ -272,7 +283,8 @@ His daughters are in the doorway behind him. ${B2.elder}, the elder, is nineteen
             near:{t:'He gives his word for the girls. But he gives it to the fire, not to you, and his hand on the stick does not open.'},
             clean:{t:'He closes your fingers round something brass, and does not let go for a long breath.', fx:()=>{ gain('b2_dipper'); S.f.b2_dipper = 1; }},
             go:'b2_ressan_promise', fail:'b2_ressan_argue'},
-          {t:'Sit down on the well-cover beside him.', fx:()=>{ S.f.b2_sat = 1; if (b2In('haddat')) loy('haddat', 1); }, go:'b2_ressan_promise'}]}),
+          {t:'Sit down on the well-cover beside him.', fx:()=>{ S.f.b2_sat = 1; if (b2In('haddat')) loy('haddat', 1); }, go:'b2_ressan_promise'},
+          b2MeasureCh()]}),
     b2_ressan_argue:()=>({sp:'Ressan', scene:'b2_well', txt:
 `He listens to all of it. He was always a good listener; you told him a great many things that winter, with the fever in you, that you have never told anyone since.
 
@@ -297,6 +309,18 @@ Under his hand, on your knee, the brass of the dipper is still warm.` : ''}`,
 
 "The lane is quiet," he says. "You did that. ${B2.elder} says the gate. Go to the gate, soldier. You have been standing in my court long enough to be charged for the water."` :
 `He is still on the well-cover. "The gate, soldier," he says, without looking round. "My daughter has given you your orders. She gives very good orders. I have been taking them for nineteen years."`,
+      ch:[b2MeasureCh(), {t:'Leave him to his well.', go:()=>startExplore()}]}),
+    b2_measure_ok:()=>({sp:'Ressan', scene:'b2_well', txt:
+`Ressan looks at ${by({sgt:'you', haddat:'Haddat', _:'{who}'})} for a long moment, the way he used to look at a coin before he took it.
+
+"Everyone asks how to find water," he says. "Nobody asks how to keep it." He takes the brass cup off its hook on the well-post and holds it up. "The mouth, not the throat. You wet the mouth, the throat believes you. In the shade, never the sun: the sun drinks half of what you swallow. A mouthful before the work, never after, because after the work you will drink the whole skin and still want it." He fills the cup, and drinks a third of it, and holds it out. "Three of these is a day. Four if you are carrying something. Five if you are a fool."
+
+${by({haddat:`Haddat takes the cup and drinks exactly a third of it, and Ressan laughs out loud, for the first time tonight. "Somebody's daughter," he says. "I know the hand."`, sgt:`You drink a third and hand it back. "You remember," he says. "Good. Fever is a long lesson."`, _:`{who} drinks a third and hands it back, and Ressan nods as if a sale had gone through.`})}`,
+      ch:[{t:'Thank him.', go:()=>startExplore()}]}),
+    b2_measure_miss:()=>({sp:'Ressan', scene:'b2_well', txt:
+`Ressan begins to tell ${by({sgt:'you', _:'{who}'})}, and a roof falls in two streets over, and the whole court flinches, and when it is quiet again he has lost the thread and is looking at the burning door.
+
+"Another time," he says. "There will be another time. There is always more thirst." He does not believe it, and neither do you.`,
       ch:[{t:'Leave him to his well.', go:()=>startExplore()}]}),
     b2_imra:()=>({sp:B2.elder, scene:'b2_well', fx:()=>{ S.f.b2_imra = 1; }, txt:
 `She doesn't move from the doorway. Behind her ${B2.younger} still has the jar in both arms.
