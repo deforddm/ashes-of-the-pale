@@ -49,6 +49,7 @@ function start(){
   if (typeof CH7 !== 'undefined') registerChapter(7, CH7);
   if (typeof B2CH1 !== 'undefined') registerChapter(1, B2CH1, 'dg'); // Book Two: Deadhouse Gates (47, 48)
   if (typeof B2CH2 !== 'undefined') registerChapter(2, B2CH2, 'dg'); // Book Two, Chapter 2: The Odhan (49)
+  if (typeof B2CH3 !== 'undefined') registerChapter(3, B2CH3, 'dg'); // Book Two, Chapter 3: The Ridge (50)
   showTitle();
   requestAnimationFrame(loop);
 }

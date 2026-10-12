@@ -231,4 +231,13 @@ SORC.push('sbolt');
   atkCalc = function(a, t, o = {}){ const c = _atkCalc(a, t, o);
     if (t && t.flatUntil >= B.round && cheb(o.from || a, t) > 1) c.ac += t.flatAc || 3; return c; }; }
 
+/* a squadmate who is somewhere else for one fight (v4.2, Chapter 3: Tangle in the ramp's banks with Mincer's sappers):
+   a fight with def.away = ['tangle'] is fought without them. They are still in the squad; they are just not on this map. */
+{ const _startBattle = startBattle;
+  startBattle = function(id, opt = {}){ const d = S && S.book === 'dg' ? BATTLES[id] : null, away = d && (d.away || (opt.stage === 2 && d.stage2 && d.stage2.away));
+    if (!away || !away.some(k => S.squad.includes(k))) return _startBattle(id, opt);
+    const sq = S.squad; S.squad = sq.filter(k => !away.includes(k));
+    try { return _startBattle(id, opt); }
+    finally { S.squad = sq; if (B && B.snap) { const o = JSON.parse(B.snap); o.squad = sq.slice(); B.snap = JSON.stringify(o); } save(); } }; } // a retry starts from the snapshot: it keeps them
+
 /* Book Two's chapters register in start() (90), after Book One's */

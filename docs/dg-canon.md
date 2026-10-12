@@ -132,3 +132,30 @@ Read for Chapter 2 (Dryj Spring to the Sekala). The Reactor re-read pages came b
 - Name check for the recruit: **Ramin** (of Ehrlitan) clashes with no canon name found.
 
 Sources: malazan.fandom.com/wiki/Battle_of_Sekala_Crossing, /Deadhouse_Gates/Chapter_7, /Chapter_8, /Chapter_10, /Chapter_12, /Duiker, /Red_Blades.
+
+## Chapter 3 re-check (Sun Oct 11, 2026 9:02 PM PDT)
+
+Read for Chapter 3 (the night raid to Gelor Ridge). Sources: the Malazan Wiki pages *Deadhouse Gates/Chapter 12*, *Chapter 13* and *Battle of Gelor Ridge*. The Reactor re-read was not fetched. Marks as above.
+
+**Confirmed or added**
+- **The raid** is "nine days east of the River P'atha". The party: Lull, four of his marines, Duiker ("volunteered"), Nil and another young warlock, and three squads of sappers. List was on the south guard and is not placed on the raid. The sappers set off charges to the north-east as a diversion; a warlock's fog and a water-logged tunnel took the party into the Tithansi camp unseen. [1]
+- **Correction to §1.** The marines' crossbows killed the Tithansi warleader and two others. The possessed one was a **Semk tribesman**, "the true warleader". He tore apart an earth spirit the warlocks raised, and the other young warlock was killed by sorcery. Nil fell into a catatonic state. The sappers reported the Semk "just got back up" after two explosions. The raid did **not** kill him. A female marine carried Nil out, and the cattle-dog Bent pulled him to the healers on a travois. [1]
+- **Claw weapons.** Duiker found Claw throwing stars and knives in Tithansi bodies and told Lull "a Claw was present". Coltaine was rattled. Sormo said a piece of the Semk god had survived the Sekala inside the tribesman. [1]
+- **Water.** Duiker reported water just below the surface in the warlocks' tunnel. By dawn the camp was digging pits all through it. [1]
+- **The eve.** Coltaine says they will "go through". The Foolish Dog are formed into heavy cavalry, and Duiker doubts it. Lull and List say they will be at the rear. Chenned and Sulmar report that the sappers have deserted, and Lull doubts it. [1]
+- **The field.** A dry lake bed about 2,000 by 4,000 paces with the P'atha through it. Reloe's sappers cut the ridge into a single sandy ramp with high banks and cliffs either side. Three groups, each larger than Coltaine's army:
+  - at the top, Reloe with elite Semk and Guran heavy infantry and Can'eld archers;
+  - in the northern lake bed, Ubari legions with Sialk and Tepasi cavalry;
+  - in the southern lake bed, Tithansi archers, Debrahl cavalry, Halafan and Sialk infantry;
+  - hidden behind the lines, Tithansi cavalry under the Semk godling.
+  
+  Coltaine's "spear": marines at the point, Crow riders as the barbs, about 5,000 Foolish Dog, infantry round the wounded wagons, and the Hissar Guard and the Seventh's cavalry at the rear. **About 50,000 refugees and the cattle stayed on "the Shallows", guarded by the Weasel Clan.** [1]
+- **The battle.** The marines hit Reloe's elite and Bult cleared the archers. Nil and Nether led a horse forward, and its life fuelled the uphill charge. The sappers came up out of the ramp's banks, and the charge passed over them while they lay under their shields; most lived. On the lake bed the ring bent under the Ubari legions, the wagons rolled south, and the Hissar Guard lost heavily to the Tepasi and Sialk cavalry. The Weasel Clan and their cattle-dogs then came from the east, destroyed that cavalry and turned on the Ubari. The Foolish Dog charged down the ramp into the southern group. [1]
+- **The Shallows.** Earlier that day the Semk godling and his Tithansi lancers attacked the Weasels and the refugees. The Wickans had set the trap, using the refugees as bait. Earth spirits tore the godling apart. Hundreds of refugees were killed or wounded, and the Tithan tribe "ceased to exist". [1]
+- **Lull** came back with his face badly wounded by a mace. The eye and the nose are from §1. [1 / H]
+
+**How the game uses it.** In the game's version of the raid, the squad escorts one of the three sapper squads through a smaller cut to the north. This squad makes the diversion. The god-ridden Semk comes after it and gets back up; the squad only holds it off while the sappers drop the roof, and never kills it. Sathi finds a Claw star; Lull's and Duiker's finds stay theirs, and Duiker reports the water. At Gelor the squad's stretch is on the Shallows. Tangle is in the ramp's bank with Mincer's company, and both the charge and the trap belong to others. The godling dies to the earth spirits, seen from a distance.
+
+**Open:** whether Nether was on the raid (the wiki says "Nil and another young warlock", unnamed; the game leaves the second warlock unnamed, ungendered and offstage when they die). Whether Nil and Nether are siblings is not checked, so the game never says so. Korbolo Dom's takeover is told by Bult only.
+
+Sources: malazan.fandom.com/wiki/Deadhouse_Gates/Chapter_12, /Chapter_13, /Battle_of_Gelor_Ridge.
