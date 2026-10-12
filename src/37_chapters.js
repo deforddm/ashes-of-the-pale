@@ -145,6 +145,13 @@ function showChapterIntro(){
 }
 /* ============ the finale: the road taken, a page per squadmate, the sergeant, and the end of the book ============ */
 const FIN_IDS = ['brisk','kettle','tuft','ohl','ellis','vell'];
+/* the finale's words that name the book and its squad. Book One's are these; a later book's CH7.finale.labels overrides them
+   (Book Two, 54: "The squad", "End of Book Two"), and its finale.ids() names the squadmates who can have a page when they are gone */
+const FIN_L = {epi:'Epilogue', squad:'The Fourth', fallen:'The fallen', away:'Gone their own way', sgtRole:'Sergeant · Fourth Squad, Seventh Company', road:'The Fourth\'s road', prologue:true,
+  list:()=>['Ohl\'s list', `${listCount()} names`], noDead:'None of the Fourth. Every one of them came up out of the dark.', paper:true, endline:'The End of <em>Gardens of the Moon</em>',
+  credit:'The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. With thanks to Steven Erikson for the book, the Bridgeburners, and the long road, and to Ian C. Esslemont for the world they built together; the Fourth only walked beside it.'};
+const finL = () => Object.assign({}, FIN_L, (CHAPTERS[7] && CHAPTERS[7].finale && CHAPTERS[7].finale.labels) || {});
+const finIds = () => { const F = CHAPTERS[7] && CHAPTERS[7].finale; return (F && F.ids && finCall(F.ids)) || FIN_IDS; };
 let finAnim = null;
 function finKey(){ return S.chapters[7] || S.f.c7_key || 'outlaw'; }
 function finCall(f, ...a){ try { return f ? f(...a) : null; } catch(e) { console.warn('finale', e); return null; } }
@@ -153,36 +160,36 @@ function finGone(id, key){ const F = CHAPTERS[7] && CHAPTERS[7].finale; if (F &&
 function finPages(){
   const key = finKey(), P = [{k:'road'}];
   S.squad.filter(id => id !== 'sgt').forEach(id => P.push({k:'fate', id}));
-  FIN_IDS.filter(id => !S.squad.includes(id)).forEach(id => { const g = finGone(id, key); if (g) P.push({k:'gone', id, g}); });
+  finIds().filter(id => !S.squad.includes(id)).forEach(id => { const g = finGone(id, key); if (g) P.push({k:'gone', id, g}); });
   P.push({k:'fate', id:'sgt'}, {k:'end'}); return P;
 }
 function showFinale(i = 0){
   const P = finPages(); i = clamp(i|0, 0, P.length - 1); const pg = P[i], key = finKey(), F = (CHAPTERS[7] && CHAPTERS[7].finale) || {};
   S.scene = 'finale'; S.finPage = i; S.node = null; save();
   view = 'finale'; $('#sheet').hidden = true; B = null; titleAnim = null; finAnim = null; AUDIO.setScene('end');
-  const E7 = (CHEND[7] || {})[key] || ['The road', ''];
+  const E7 = (CHEND[7] || {})[key] || ['The road', ''], L = finL();
   let body = '';
   if (pg.k === 'road') { const E = (F.endings && F.endings[key]) || {title:E7[0], scene:(CHAPTERS[7] && CHAPTERS[7].endScene) || 'quorl_hill', paras:[E7[1]].filter(Boolean)};
     G.sceneKind = E.scene || 'quorl_hill';
-    body = `${ARTON() && ART['roads/' + key] ? artScene('roads/' + key) : '<div class="scene"><canvas id="scv" width="560" height="240"></canvas></div>'}<div class="fin-k">Epilogue</div><h1 class="fin-title">${E.title || E7[0]}</h1><div class="narr">${(E.paras || []).map(p => fmt(p)).join('')}</div>`; }
+    body = `${ARTON() && ART['roads/' + key] ? artScene('roads/' + key) : '<div class="scene"><canvas id="scv" width="560" height="240"></canvas></div>'}<div class="fin-k">${L.epi}</div><h1 class="fin-title">${E.title || E7[0]}</h1><div class="narr">${(E.paras || []).map(p => fmt(p)).join('')}</div>`; }
   else if (pg.k === 'fate' || pg.k === 'gone') { const id = pg.id, sgt = id === 'sgt', dead = pg.k === 'gone' && S.dead && S.dead[id];
     const f = pg.k === 'gone' ? pg.g : (finCall(F.fate, id, key) || {title: sgt ? 'The sergeant' : TPL[id].role, txt: sgt ? TPL.sgt.quest : TPL[id].quest});
     const where = dead ? [S.dead[id].where, CHAPTERS[S.dead[id].ch] ? `Chapter ${CHAPTERS[S.dead[id].ch].number}` : ''].filter(Boolean).join(' · ') : '';
-    body = `<div class="fin-k">${sgt ? 'The sergeant' : pg.k === 'gone' ? (dead ? 'The fallen' : 'Gone their own way') : 'The Fourth'}</div>
+    body = `<div class="fin-k">${sgt ? 'The sergeant' : pg.k === 'gone' ? (dead ? L.fallen : (pg.g && pg.g.label) || L.away) : L.squad}</div>
       <div class="fin-card"><div class="fin-por ${pg.k === 'gone' ? 'gone' : ''}"><canvas id="fpc" width="400" height="520" aria-hidden="true"></canvas>${pg.k === 'gone' ? `<span class="fin-mark ${dead ? '' : 'away'}">${dead ? '†' : 'gone'}</span>` : ''}</div>
-        <div class="fin-who"><h2>${esc(NAME(id))}</h2><div class="r">${sgt ? 'Sergeant · Fourth Squad, Seventh Company' : TPL[id].role}</div>${sgt ? '' : pg.k === 'gone' ? (where ? `<div class="pips">${esc(where)}</div>` : '') : `<div class="pips">${loyLabel(S.loy[id] || 0)}</div>`}</div></div>
+        <div class="fin-who"><h2>${esc(NAME(id))}</h2><div class="r">${sgt ? L.sgtRole : TPL[id].role}</div>${sgt ? '' : pg.k === 'gone' ? (where ? `<div class="pips">${esc(where)}</div>` : '') : `<div class="pips">${loyLabel(S.loy[id] || 0)}</div>`}</div></div>
       <h3 class="fin-h">${f.title || ''}</h3><div class="narr fin-txt">${fmt(f.txt || '')}</div>`;
     finAnim = t => { const cv = $('#fpc'); if (!cv) { finAnim = null; return; } drawPortrait(cv.getContext('2d'), id, 400, 520, t); }; }
   else { const coda = finCall(F.coda, key) || [];
-    const road = [`<li><span>Prologue</span><b>${((CHEND[0] || {})[S.chapters[0]] || ['—'])[0]}</b></li>`].concat([1,2,3,4,5,6,7].map(n => `<li><span>Chapter ${n} · ${CHAPTERS[n] ? CHAPTERS[n].title : '—'}</span><b>${((CHEND[n] || {})[S.chapters[n]] || ['—'])[0]}</b></li>`)).join('');
+    const road = (L.prologue ? [`<li><span>Prologue</span><b>${((CHEND[0] || {})[S.chapters[0]] || ['—'])[0]}</b></li>`] : []).concat([1,2,3,4,5,6,7].map(n => `<li><span>Chapter ${n} · ${CHAPTERS[n] ? CHAPTERS[n].title : '—'}</span><b>${((CHEND[n] || {})[S.chapters[n]] || ['—'])[0]}</b></li>`)).join('');
     const dead = Object.keys(S.dead || {});
     body = `<div class="fin-k">The end</div>${coda.length ? `<div class="narr">${coda.map(p => fmt(p)).join('')}</div>` : ''}
-      <div class="fin-sum"><h3>The Fourth's road</h3><ol class="fin-road">${road}</ol>
-        <h3>The dead</h3>${dead.length ? `<ul class="fin-dead">${dead.map(id => `<li><b>${esc(NAME(id))}</b>${S.dead[id].where ? ` — ${esc(S.dead[id].where)}` : ''}</li>`).join('')}</ul>` : `<p class="fine">None of the Fourth. Every one of them came up out of the dark.</p>`}
-        <div class="kv"><span>Ohl's list</span><span>${listCount()} names</span><span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.diff && S.diff !== 'soldier' ? `<span>Played as</span><span>${DIFF().name}</span>` : ''}</div>
+      <div class="fin-sum"><h3>${L.road}</h3><ol class="fin-road">${road}</ol>
+        <h3>The dead</h3>${dead.length ? `<ul class="fin-dead">${dead.map(id => `<li><b>${esc(NAME(id))}</b>${S.dead[id].where ? ` — ${esc(S.dead[id].where)}` : ''}</li>`).join('')}</ul>` : `<p class="fine">${L.noDead}</p>`}
+        <div class="kv">${(lst => lst ? `<span>${lst[0]}</span><span>${lst[1]}</span>` : '')(finCall(L.list))}<span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.diff && S.diff !== 'soldier' ? `<span>Played as</span><span>${DIFF().name}</span>` : ''}</div>
         <h3>The count</h3>${statsHTML(S)}<p class="fine">Every chapter can be played again from the Deeds page (Squad, then Deeds).</p></div>
-      ${ARTON() ? `<div class="jpapers fin-paper"><div class="paper p-proclamation">${ART['paper/proclamation']}</div></div>` : ''}<div class="fin-endline">The End of <em>Gardens of the Moon</em></div>
-      <p class="fine fin-credit">The Malazan world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. With thanks to Steven Erikson for the book, the Bridgeburners, and the long road, and to Ian C. Esslemont for the world they built together; the Fourth only walked beside it.</p>`; }
+      ${ARTON() && L.paper ? `<div class="jpapers fin-paper"><div class="paper p-proclamation">${ART['paper/proclamation']}</div></div>` : ''}<div class="fin-endline">${L.endline}</div>
+      <p class="fine fin-credit">${L.credit}</p>`; }
   const last = i === P.length - 1;
   toTop(); $('#app').innerHTML = `<div class="fin" id="fin">${body}
     <div class="fin-nav ${last ? 'last' : ''}"><button class="btn" id="fBack">Back</button><span class="fin-pg">${i + 1} / ${P.length}</span>${last ? `<button class="btn" id="fSq">The squad</button><button class="btn primary" id="fTitle">Title</button>` : `<button class="btn primary" id="fNext">Next</button>`}</div></div>`;

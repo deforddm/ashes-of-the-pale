@@ -327,4 +327,27 @@ function b2LastStandEnd(){ if (!Array.isArray(S.f.b2_wallSquad)) return false; c
   if (S.f.b2_wallInv) S.inv = Object.assign({}, S.f.b2_wallInv);
   S.f.b2_wallSquad = null; S.f.b2_wallInv = null; S.f.b2_barrowFell = 1; S.trail = S.trail.slice(0, Math.max(1, S.squad.length - 1)); save(); return true; }
 
+/* ---- the Barrow and the end of the book (v4.6, Chapter 7) ----
+   A fight marked def.lastStand is the rearguard's: a hold-out it cannot win. Held or broken, it goes on to def.after, with the
+   experience either way; there is no god to ask and nothing to retry, because the ones fighting it are already dead in every
+   version of the story. S.f.b2_barrowHeld = 1 if they held to the end of the rounds, 0 if they went down first. */
+{ const _lose = lose;
+  lose = function(){ if (!S || S.book !== 'dg' || !B || !B.def || !B.def.lastStand) return _lose();
+    AUDIO.play('lose'); const xp = Math.round((B.def.xp || 0) * XPK), up = gainXP(xp); S.f.b2_barrowHeld = 0; S.f.b2_barrowRounds = B.round;
+    note(`They went down on the mound. +${xp} experience.`, 'bad'); if (up) note(lvlNote(), 'good');
+    S.scene = 'talk'; save(); updBattleUI(); talk(B.def.after); }; }
+{ const _win = win;
+  win = function(){ if (S && S.book === 'dg' && B && B.def && B.def.lastStand) { S.f.b2_barrowHeld = 1; S.f.b2_barrowRounds = B.round; } return _win(); }; }
+{ const _endBeat = endBeat;
+  endBeat = function(won){ const r = _endBeat(won); if (S && S.book === 'dg' && B && B.banner && !won) B.banner.txt = B.def && B.def.lastStand ? 'The Barrow' : 'The squad is down'; return r; }; }
+/* an Old Hand of the Fourth (an imported Book One save on the empire road: dgOldHands()) joins in Aren for the last of the book,
+   in the recruit's place. They come with Book One's own habits: their first level-3 talent is theirs to pick, and the veterans'
+   Iron and Keen if the squad is that far on. S.f.b2_oldHand = their id. */
+const b2OldHandPick = () => { const h = dgOldHands(), i = S && S.imported; if (!h.length) return null;
+  return h.slice().sort((a, b) => ((i.loy || {})[b] || 0) - ((i.loy || {})[a] || 0))[0]; };
+function b2OldHand(id){ if (!TPL[id] || S.squad.includes(id) || S.squad.includes('redblade')) return false;
+  recruit(id); S.f.b2_oldHand = id; S.picks[id] ??= [];
+  if (S.lvl >= 5 && !S.picks[id].includes('iron')) S.picks[id].push('iron'); if (S.lvl >= 7 && !S.picks[id].includes('keen')) S.picks[id].push('keen');
+  save(); return true; }
+
 /* Book Two's chapters register in start() (90), after Book One's */

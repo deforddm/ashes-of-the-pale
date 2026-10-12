@@ -124,8 +124,21 @@ const SYNTH_DG = (n) => {
     if (f.b2_key === 'daughters') f.b2_jar = pick(['poured', 'kept']); else { f.b2_jarboy = pick(['took', 'cart']); f.b2_girlsRode = 1; } f.b2_knots = 8; f.b2_sputters = 2; }
   migrate(S); Object.keys(S.loy).forEach(k => { S.loy[k] = Math.floor(Math.random() * 5) - 1; });
   S.chain = {water:8, column:20 + Math.floor(Math.random() * 10)}; S.inv = {sharper:1, burner:1, cusser:1, salve:2, smoker:1}; S.silver = 20;
-  S.picksDue = []; if (S.lvl >= 3) S.squad.forEach(id => { const o = PICKS[3][id]; if (o) S.picks[id].push(o[0][0]); });
-  if (S.lvl >= 5) S.squad.forEach(id => S.picks[id].push('iron')); if (S.lvl >= 7) S.squad.forEach(id => S.picks[id].push('keen'));
+  if (n > 6) { // the split on the Geleen, as Chapter 6 leaves it: nobody, everybody (sometimes the sergeant alone), or a random few stay with the Fist (47)
+    Object.assign(f, {b2_listWar:1, b2_bottleThrown:1, b2_duiker11:1, b2_kherahn:1, b2_geleen:1, b2_retreat:1, b2_retreatLost:3, b2_silverDone:1, b2_warchief:1, b2_sathiClan:pick(['yes', 'no'])});
+    if (coin()) f.b2_paid = 5; if (S.squad.includes('haddat')) f.b2_ilhar = pick(['came', 'parted', 'fell', 'lost']);
+    const here = ['haddat', 'sathi', 'tangle', 'marrow', 'redblade'].filter(k => S.squad.includes(k)), r = Math.random();
+    const stay = r < .25 ? [] : r < .4 ? here.slice() : here.filter(() => coin());
+    f.b2_split = {}; f.b2_splitHow = {}; here.forEach(k => { f.b2_split[k] = stay.includes(k) ? 'stay' : 'go'; f.b2_splitHow[k] = pick(['own', 'asked', 'talked']); });
+    if (stay.includes('tangle')) { f.b2_satchel6 = pick(['went', 'left']); if (f.b2_satchel6 === 'went') { f.b2_stayInv = {}; ['sharper', 'burner', 'cusser', 'smoker'].forEach(m => { f.b2_stayInv[m] = S.inv[m]; S.inv[m] = 0; }); } }
+    stay.forEach(k => b2StayBehind(k)); stay.forEach(k => gain({haddat:'b2_bluethread', sathi:'b2_whistle', tangle:'b2_bead', marrow:'b2_knotstring', redblade:'b2_sash'}[k]));
+    f.b2_stayCount = stay.length; f.b2_c6_key = !stay.length ? 'whole' : stay.length >= 2 && stay.length * 2 >= here.length ? 'many' : 'some'; S.chapters[6] = f.b2_c6_key;
+    if (coin()) { const all = ['brisk', 'kettle', 'tuft', 'ohl', 'ellis', 'vell'], mates = all.filter(() => coin()); if (!mates.length) mates.push(pick(all));
+      S.imported = {from:'Kell', sid:'synth', road:'empire', lvl:8, follow:{}, mates, dead:[], loy:Object.fromEntries(mates.map(k => [k, Math.floor(Math.random() * 7) - 3]))}; }
+  }
+  const all = [...S.squad, ...(n > 6 ? b2Rearguard() : [])]; // the ones who stayed at the split fight the Barrow with their own picks
+  S.picksDue = []; if (S.lvl >= 3) all.forEach(id => { const o = PICKS[3][id]; S.picks[id] ??= []; if (o) S.picks[id].push(o[0][0]); });
+  if (S.lvl >= 5) all.forEach(id => S.picks[id].push('iron')); if (S.lvl >= 7) all.forEach(id => S.picks[id].push('keen'));
   save(); startChapter(n);
 };
 

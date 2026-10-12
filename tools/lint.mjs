@@ -162,13 +162,13 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
   for (const [bid, b] of Object.entries(BATTLES)) {
     if (b.map.length !== 10 || b.map.some(r => r.length !== 8)) err(`battle ${bid}: map is not 8x10`);
     if (!DLG[b.after]) err(`battle ${bid}: after -> missing node ${b.after}`); else refd.add(b.after);
-    (b.party || []).forEach(([x, y], i) => { if ((b.map[y] || '')[x] !== '.' && (b.map[y] || '')[x] !== ',') warn(`battle ${bid}: party slot ${i} at ${x},${y} is '${(b.map[y] || '')[x]}'`); });
+    (b.party || []).forEach(([x, y], i) => { if ((b.map[y] || '')[x] !== '.' && (b.map[y] || '')[x] !== ',' && !(b.style === 'barrow' && (b.map[y] || '')[x] === 'm')) warn(`battle ${bid}: party slot ${i} at ${x},${y} is '${(b.map[y] || '')[x]}'`); });
     if ((b.party || []).length < 6) warn(`battle ${bid}: only ${(b.party || []).length} party slots (Ellis makes 6)`);
     const chkFoe = (f, where) => { if (!FOES[f[0]]) err(`battle ${bid}: ${where} foe ${f[0]} missing`); else { const k = FOES[f[0]].kind || f[0]; if (!spriteKinds.includes(k)) warn(`battle ${bid}: foe ${f[0]} kind ${k} has no sprite case`); } if ((b.map[f[2]] || '')[f[1]] === '#') err(`battle ${bid}: ${where} foe ${f[0]} placed on wall ${f[1]},${f[2]}`); };
     b.foes.forEach(f => chkFoe(f, 'start'));
     (b.waves || []).forEach(w => w.foes.forEach(f => chkFoe(f, 'wave' + w.round)));
     (b.allies || []).forEach(f => { if (!FOES[f[0]]) err(`battle ${bid}: ally ${f[0]} missing`); });
-    if (b.style && !['city', 'terrace', 'garden', 'storm', 'cellar', 'roof', 'plain', 'hills', 'estate', 'lake', 'dock', 'street', 'hissar', 'odhan', 'odhan_night', 'river', 'ridge', 'b2tunnel', 'vathar', 'forest', 'jaghut', 'geleen'].includes(b.style)) warn(`battle ${bid}: style ${b.style}`);
+    if (b.style && !['city', 'terrace', 'garden', 'storm', 'cellar', 'roof', 'plain', 'hills', 'estate', 'lake', 'dock', 'street', 'hissar', 'odhan', 'odhan_night', 'river', 'ridge', 'b2tunnel', 'vathar', 'forest', 'jaghut', 'geleen', 'aren', 'barrow'].includes(b.style)) warn(`battle ${bid}: style ${b.style}`);
   }
   // items, cards
   const itemIds = Object.keys(ITEMS);

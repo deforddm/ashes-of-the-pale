@@ -1,6 +1,6 @@
 # Ashes of the Pale
 
-A non-commercial Malazan Book of the Fallen fan RPG for personal play, told from the ranks in books that each play on their own. **Book One** follows an original marine squad, the Fourth, beside the events of *Gardens of the Moon* in the aftermath of the Pale. **Book Two** (in progress) follows a new squad of the Seventh Army on the Chain of Dogs in *Deadhouse Gates*. Turn-based tactical combat, dialogue skill checks, warren strain, Moranth munitions and a Deck of Dragons reading.
+A non-commercial Malazan Book of the Fallen fan RPG for personal play, told from the ranks in books that each play on their own. **Book One** follows an original marine squad, the Fourth, beside the events of *Gardens of the Moon* in the aftermath of the Pale. **Book Two**, complete, follows a new squad of the Seventh Army on the Chain of Dogs in *Deadhouse Gates*. Turn-based tactical combat, dialogue skill checks, warren strain, Moranth munitions and a Deck of Dragons reading.
 
 Play: https://deforddm.github.io/ashes-of-the-pale/ (installable as an app).
 
@@ -47,6 +47,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.6.0 — Book Two, Chapter Seven: Aren Way, and the end of Book Two (the Barrow, the walls, the sortie, the harbour, three roads out, and the finale). Book Two is complete.
 - v4.5.0 — Book Two, Chapter Six: Sanimon (the Khundryl, Dojal Spring, the split on the Geleen Plain). Squadmates who stay with Coltaine are gone for good; their last stand comes in Chapter Seven.
 - v4.4.0 — Book Two, Chapter Five: The Dry March (Vathar Forest, the Jaghut tower, the Nenoth, the Trygalle). Heat at midday; the Tower's Breath trick.
 - v4.3.0 — Book Two, Chapter Four: The Day of Pure Blood (the Vathar crossing). The *Silanda*; Stormy's Way In. Later chapters can no longer register an id over an earlier chapter's: the lint fails on it.

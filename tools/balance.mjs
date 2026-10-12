@@ -280,7 +280,7 @@ const INIT = () => {
     }
     if (W.open && B === b0) closeTurn();
     const sqU = b0.units.filter(u => u.side === 'p' && !u.ally);
-    const won = end === 'over' && !!b0.banner && b0.banner.txt !== 'The Fourth is down';
+    const won = end === 'over' && !!b0.banner && !['The Fourth is down', 'The squad is down', 'The Barrow'].includes(b0.banner.txt);
     const ob = b0.def.objective, held = won && ob && ob.type === 'survive' && b0.round > ob.rounds;
     const res = { won, end, stages, rounds: rounds0 + (held ? ob.rounds : b0.round), ms: Math.round(performance.now() - t0), // a held fight lasted its rounds (the engine's counter is one past)
       hpLost: won ? sqU.reduce((s, u) => s + (u.maxhp - Math.max(0, u.hp)), 0) / squadMax : 1,

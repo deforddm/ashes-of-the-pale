@@ -53,6 +53,7 @@ function start(){
   if (typeof B2CH4 !== 'undefined') registerChapter(4, B2CH4, 'dg'); // Book Two, Chapter 4: The Day of Pure Blood (51)
   if (typeof B2CH5 !== 'undefined') registerChapter(5, B2CH5, 'dg'); // Book Two, Chapter 5: The Dry March (52)
   if (typeof B2CH6 !== 'undefined') registerChapter(6, B2CH6, 'dg'); // Book Two, Chapter 6: Sanimon (53)
+  if (typeof B2CH7 !== 'undefined') registerChapter(7, B2CH7, 'dg'); // Book Two, Chapter 7: Aren Way, and the end of Book Two (54)
   showTitle();
   requestAnimationFrame(loop);
 }
