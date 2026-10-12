@@ -598,7 +598,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '4.7.3';
+const VERSION = '4.7.4';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -4001,7 +4001,6 @@ function startExplore(areaId){
   toTop(); $('#app').innerHTML = `<header class="hud"><div>${kick ? `<div class="kick">${kick}</div>` : ''}<div class="loc">${ttl}</div><div class="sub qline"><span id="quest"></span><span id="silver"></span><span id="chainp"></span></div></div>
     <div class="hudr">${hudButtons()}</div></header>
     <div class="cvwrap"><canvas id="cv" aria-label="Map"></canvas></div>
-    <div class="wayrow" id="ways" aria-label="Ways on"></div>
     <div class="maprow"><p class="hint">${tapWord(a.hint || 'Tap ground to move · tap a figure to talk')}</p><button class="btn mini" id="bMap"></button></div>
     <p class="hint keys" aria-hidden="true"><kbd>\u2190</kbd><kbd>\u2191</kbd><kbd>\u2192</kbd><kbd>\u2193</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> talk to whoever is beside you · <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>Esc</kbd> settings</p>
     <div class="log" id="elog"></div>`;
@@ -4055,7 +4054,7 @@ function waysOf(){
     return {c, node:tr[c], tiles, at, exit:EXITCH.includes(c), label:wayLabel(tr[c], c, a)}; });
 }
 function updWays(){
-  const el = $('#ways'); if (!el || !S) return; WAYS = waysOf();
+  if (!S) return; WAYS = waysOf(); const el = $('#ways'); // (v4.7.4: the Ways on button row was removed; the rings on the map stay)
   /* the way the quest line or the hint names comes first, and is lit: "the overturned wagon, when the squad is ready" */
   const a = AREA(); let said = ''; try { said = ((a.quest ? a.quest() : '') + ' ' + (a.hint || '')).toLowerCase(); } catch(e) {}
   const score = w => w.label.toLowerCase().split(/[^a-z']+/).filter(x => x.length > 3 && !['look', 'here', 'onward'].includes(x)).filter(x => said.includes(x)).length;
@@ -4065,6 +4064,7 @@ function updWays(){
   /* only a way the line names outright is lit, and only once nobody new is waiting to be talked to (they come first) */
   const fresh = (a.npcs || []).some(n => (!n.show || n.show()) && n.fresh && n.fresh());
   WAYS.forEach(w => { w.score = score(w) * 2 + told(w) * .5; }); WAYS.sort((p, q) => q.score - p.score); WAYS.forEach((w, i) => { w.lead = i === 0 && score(w) > 0 && !fresh; });
+  if (!el) return;
   el.innerHTML = WAYS.length ? `<span class="wk">Ways on</span>${WAYS.map((w, i) => `<button class="btn mini way${w.lead ? ' lead' : ''}" data-way="${i}">${w.exit ? '➜' : '◆'} ${esc(w.label)}</button>`).join('')}` : '';
   el.hidden = !WAYS.length;
   el.querySelectorAll('[data-way]').forEach(b => b.onclick = () => { AUDIO.play('click'); goWay(WAYS[+b.dataset.way]); });
@@ -5644,6 +5644,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.7.4', ['The Ways on buttons under the map are gone too. What stays: a brass ring on the ground under anything you can walk to and use, and an arrow at the edge of the view when it is off screen.']],
   ['4.7.3', ['The names floating over things on the map are gone. The brass rings and markers stay, and the Ways on buttons under the map still name each one and walk the squad there.']],
   ['4.7.2', ['Finding the way on is easier, in both books. Everything on a map that you can walk to and use (a cart, a gate, a dead tree, the edge of the map) now has a brass ring on the ground and its name above it, and an arrow at the edge of the view when it is off screen.', 'A new row of buttons under the map, Ways on, lists them by name. Tap one and the squad walks there and opens it. When the quest line names one, and there is nobody new left to talk to, that one is lit and listed first.']],
   ['4.7.1', ['Book Two, Chapter One has a trick now: ask Ressan at his well how a water-seller makes a skin last. The Water-Seller\'s Measure lets a rest, or a drink before a midday fight, cost no water, twice a chapter (three times from level 5).', 'At the Sekala ford, the last cusser for Mincer can only be given (or kept) once. The sappers in the river and Mincer himself now remember which way it went, and Mincer thanks you if Tangle gave it. You can still ask Mincer about Mincer\'s Drop when you come back to him.']],

@@ -9,7 +9,6 @@ function startExplore(areaId){
   toTop(); $('#app').innerHTML = `<header class="hud"><div>${kick ? `<div class="kick">${kick}</div>` : ''}<div class="loc">${ttl}</div><div class="sub qline"><span id="quest"></span><span id="silver"></span><span id="chainp"></span></div></div>
     <div class="hudr">${hudButtons()}</div></header>
     <div class="cvwrap"><canvas id="cv" aria-label="Map"></canvas></div>
-    <div class="wayrow" id="ways" aria-label="Ways on"></div>
     <div class="maprow"><p class="hint">${tapWord(a.hint || 'Tap ground to move · tap a figure to talk')}</p><button class="btn mini" id="bMap"></button></div>
     <p class="hint keys" aria-hidden="true"><kbd>\u2190</kbd><kbd>\u2191</kbd><kbd>\u2192</kbd><kbd>\u2193</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> talk to whoever is beside you · <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>Esc</kbd> settings</p>
     <div class="log" id="elog"></div>`;
@@ -63,7 +62,7 @@ function waysOf(){
     return {c, node:tr[c], tiles, at, exit:EXITCH.includes(c), label:wayLabel(tr[c], c, a)}; });
 }
 function updWays(){
-  const el = $('#ways'); if (!el || !S) return; WAYS = waysOf();
+  if (!S) return; WAYS = waysOf(); const el = $('#ways'); // (v4.7.4: the Ways on button row was removed; the rings on the map stay)
   /* the way the quest line or the hint names comes first, and is lit: "the overturned wagon, when the squad is ready" */
   const a = AREA(); let said = ''; try { said = ((a.quest ? a.quest() : '') + ' ' + (a.hint || '')).toLowerCase(); } catch(e) {}
   const score = w => w.label.toLowerCase().split(/[^a-z']+/).filter(x => x.length > 3 && !['look', 'here', 'onward'].includes(x)).filter(x => said.includes(x)).length;
@@ -73,6 +72,7 @@ function updWays(){
   /* only a way the line names outright is lit, and only once nobody new is waiting to be talked to (they come first) */
   const fresh = (a.npcs || []).some(n => (!n.show || n.show()) && n.fresh && n.fresh());
   WAYS.forEach(w => { w.score = score(w) * 2 + told(w) * .5; }); WAYS.sort((p, q) => q.score - p.score); WAYS.forEach((w, i) => { w.lead = i === 0 && score(w) > 0 && !fresh; });
+  if (!el) return;
   el.innerHTML = WAYS.length ? `<span class="wk">Ways on</span>${WAYS.map((w, i) => `<button class="btn mini way${w.lead ? ' lead' : ''}" data-way="${i}">${w.exit ? '➜' : '◆'} ${esc(w.label)}</button>`).join('')}` : '';
   el.hidden = !WAYS.length;
   el.querySelectorAll('[data-way]').forEach(b => b.onclick = () => { AUDIO.play('click'); goWay(WAYS[+b.dataset.way]); });

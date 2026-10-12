@@ -47,6 +47,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.7.4 — The Ways on button row is removed; the brass rings on the map and the edge arrows stay.
 - v4.7.3 — The floating names over the map's ways on are removed; the rings, edge arrows and Ways on buttons stay.
 - v4.7.2 — Ways on: every trigger on a map is marked and named, pointed at from the edge of the view, and listed in a row of buttons under the map that walk the squad there.
 - v4.7.1 — Book Two, Chapter One gets a trick (the Water-Seller's Measure, from Ressan). Fixed: Mincer's last cusser could be given over and over, and nobody remembered it.
