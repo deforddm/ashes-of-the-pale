@@ -47,6 +47,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.7.2 — Ways on: every trigger on a map is marked and named, pointed at from the edge of the view, and listed in a row of buttons under the map that walk the squad there.
 - v4.7.1 — Book Two, Chapter One gets a trick (the Water-Seller's Measure, from Ressan). Fixed: Mincer's last cusser could be given over and over, and nobody remembered it.
 - v4.7.0 — The Deck of Dragons in Book Two: a reading every chapter (Marrow, or a reader in the column), four new High House cards, and seven visions through canon eyes.
 - v4.6.1 — Book Two's sergeant gets their own figure and portrait; Ramin is redrawn to stand apart from the other Red Blades.

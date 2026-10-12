@@ -9,6 +9,7 @@ function startExplore(areaId){
   toTop(); $('#app').innerHTML = `<header class="hud"><div>${kick ? `<div class="kick">${kick}</div>` : ''}<div class="loc">${ttl}</div><div class="sub qline"><span id="quest"></span><span id="silver"></span><span id="chainp"></span></div></div>
     <div class="hudr">${hudButtons()}</div></header>
     <div class="cvwrap"><canvas id="cv" aria-label="Map"></canvas></div>
+    <div class="wayrow" id="ways" aria-label="Ways on"></div>
     <div class="maprow"><p class="hint">${tapWord(a.hint || 'Tap ground to move · tap a figure to talk')}</p><button class="btn mini" id="bMap"></button></div>
     <p class="hint keys" aria-hidden="true"><kbd>\u2190</kbd><kbd>\u2191</kbd><kbd>\u2192</kbd><kbd>\u2193</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Space</kbd> talk to whoever is beside you · <kbd>J</kbd> journal · <kbd>P</kbd> pack · <kbd>C</kbd> squad · <kbd>Esc</kbd> settings</p>
     <div class="log" id="elog"></div>`;
@@ -43,8 +44,71 @@ function drawFeteLanterns(ctx, T, x, y, t, street){
     ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.moveTo(-T*.035, T*.13); ctx.lineTo(T*.035, T*.13); ctx.stroke(); ctx.restore(); });
   glow(ctx, px + T*.5, py + T*.35, T*2.2, '#e8a050', .07);
 }
+/* v4.7.2 ways on: every trigger on the map (a cart, a gate, a tree, the edge of the map) is marked where it stands with a
+   brass beacon and its name, pointed at from the edge of the view when it is off screen, and listed as a row of buttons under
+   the map that walk the squad there. The name is the speaker line of the conversation the trigger opens. */
+const EXITCH = '<>^v';
+let WAYS = [];
+function wayLabel(node, ch, a){
+  if (a.trigNames && a.trigNames[ch]) return a.trigNames[ch];
+  let sp = ''; try { const n = DLG[node] && DLG[node](); sp = n && typeof n.sp === 'string' ? n.sp : ''; } catch(e) {}
+  sp = sp.split(' · ')[0].trim();
+  return sp || (EXITCH.includes(ch) ? 'Onward' : 'Look here');
+}
+function waysOf(){
+  const a = AREA(), tr = a.triggers || {}, groups = {};
+  a.map.forEach((r, y) => [...r].forEach((c, x) => { if (tr[c] && DLG[tr[c]]) (groups[c] ||= []).push({x, y}); }));
+  return Object.entries(groups).map(([c, tiles]) => { const mx = tiles.reduce((s, p) => s + p.x, 0) / tiles.length, my = tiles.reduce((s, p) => s + p.y, 0) / tiles.length;
+    const at = tiles.slice().sort((p, q) => Math.hypot(p.x - mx, p.y - my) - Math.hypot(q.x - mx, q.y - my))[0];
+    return {c, node:tr[c], tiles, at, exit:EXITCH.includes(c), label:wayLabel(tr[c], c, a)}; });
+}
+function updWays(){
+  const el = $('#ways'); if (!el || !S) return; WAYS = waysOf();
+  /* the way the quest line or the hint names comes first, and is lit: "the overturned wagon, when the squad is ready" */
+  const a = AREA(); let said = ''; try { said = ((a.quest ? a.quest() : '') + ' ' + (a.hint || '')).toLowerCase(); } catch(e) {}
+  const score = w => w.label.toLowerCase().split(/[^a-z']+/).filter(x => x.length > 3 && !['look', 'here', 'onward'].includes(x)).filter(x => said.includes(x)).length;
+  const STOP = ['where','there','their','squad','sergeant','when','ready','which','going','goes','toward','towards','about','after','before','still','wants','looking','water','column'];
+  const sw = said.split(/[^a-z']+/).filter(x => x.length > 4 && !STOP.includes(x));
+  const told = w => { let t = ''; try { const n = DLG[w.node](); t = ((n.sp || '') + ' ' + String(typeof n.txt === 'function' ? n.txt() : n.txt || '').slice(0, 240)).toLowerCase(); } catch(e) {} return sw.filter(x => t.includes(x)).length; };
+  /* only a way the line names outright is lit, and only once nobody new is waiting to be talked to (they come first) */
+  const fresh = (a.npcs || []).some(n => (!n.show || n.show()) && n.fresh && n.fresh());
+  WAYS.forEach(w => { w.score = score(w) * 2 + told(w) * .5; }); WAYS.sort((p, q) => q.score - p.score); WAYS.forEach((w, i) => { w.lead = i === 0 && score(w) > 0 && !fresh; });
+  el.innerHTML = WAYS.length ? `<span class="wk">Ways on</span>${WAYS.map((w, i) => `<button class="btn mini way${w.lead ? ' lead' : ''}" data-way="${i}">${w.exit ? '➜' : '◆'} ${esc(w.label)}</button>`).join('')}` : '';
+  el.hidden = !WAYS.length;
+  el.querySelectorAll('[data-way]').forEach(b => b.onclick = () => { AUDIO.play('click'); goWay(WAYS[+b.dataset.way]); });
+}
+/* walk to the nearest reachable tile of a way, then open it */
+function goWay(w){
+  if (!w || walking || !$('#sheet').hidden) return;
+  const m = reachMap(S.pos.x, S.pos.y, palePass, 99), t = w.tiles.filter(p => p.x === S.pos.x && p.y === S.pos.y || m.has(K(p.x, p.y)))
+    .sort((p, q) => cheb(S.pos, p) - cheb(S.pos, q))[0];
+  if (!t) { elog(`No way through to ${w.label.toLowerCase()} from here.`); return; }
+  if (t.x === S.pos.x && t.y === S.pos.y) { talk(w.node); return; }
+  if (G.cam) G.cam.pan = false;
+  walk(pathFrom(m, t.x, t.y), () => talk(w.node));
+}
+/* the beacon on the map: a slow brass ring on the ground and the way's name above it */
+function drawWays(ctx, T, t){
+  const ws = WAYS || [], mo = REDUCE() ? 0 : 1, placed = [], W = G.cols*T;
+  ws.forEach(w => {
+    const p = (Math.sin(t/420 + w.at.x) + 1) * .5 * mo, cx = w.at.x*T + T/2, cy = w.at.y*T + T*.62;
+    w.tiles.forEach(q => { if (!onCam(q.x, q.y, 1)) return; ctx.fillStyle = `rgba(232,192,115,${.05 + p*.05})`; ctx.fillRect(q.x*T + 2, q.y*T + 2, T - 4, T - 4); });
+    if (!onCam(w.at.x, w.at.y, 2)) return;
+    glow(ctx, cx, cy, T*(w.lead ? 1.3 : .9), '#e8c073', (w.lead ? .2 : .12) + p*.1);
+    ctx.strokeStyle = `rgba(232,192,115,${.45 + p*.4})`; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(cx, cy, T*.36 + p*2, T*.15 + p*.8, 0, 0, 7); ctx.stroke();
+    const by = cy - T*.95 - p*2; ctx.fillStyle = '#e8c073'; ctx.beginPath(); ctx.moveTo(cx - T*.12, by); ctx.lineTo(cx + T*.12, by); ctx.lineTo(cx, by + T*.16); ctx.closePath(); ctx.fill();
+    const fs = Math.max(9, Math.round(T*.32)); ctx.font = `600 ${fs}px "Alegreya Sans SC", "Alegreya Sans", sans-serif`; const tw = ctx.measureText(w.label).width, bw = tw + 10, bh = fs*1.2;
+    const c0 = G.pannable && G.cam ? G.cam.x : 0, c1 = G.pannable && G.cam ? G.cam.x + G.vw : W, r0 = G.pannable && G.cam ? G.cam.y : 0;
+    let lx = clamp(cx, c0 + bw/2 + 2, c1 - bw/2 - 2), ly = by - fs*.5 - 3; // kept inside the map, and lifted clear of any name already drawn
+    for (let k = 0; k < 4 && placed.some(r => Math.abs(r.x - lx) < (r.w + bw)/2 && Math.abs(r.y - ly) < bh); k++) ly -= bh + 2;
+    if (ly - fs*.8 < r0 + 2) ly = r0 + fs*.8 + 2; placed.push({x:lx, y:ly, w:bw});
+    ctx.fillStyle = w.lead ? 'rgba(40,28,10,.85)' : 'rgba(10,8,6,.72)'; ctx.fillRect(lx - bw/2, ly - fs*.8, bw, bh); ctx.strokeStyle = w.lead ? 'rgba(255,214,140,.9)' : 'rgba(232,192,115,.5)'; ctx.lineWidth = 1; ctx.strokeRect(lx - bw/2 + .5, ly - fs*.8 + .5, bw - 1, bh - 1);
+    ctx.fillStyle = w.lead ? '#ffe7b0' : '#f1dfb4'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(w.label, lx, ly - fs*.2); ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+  });
+}
 function updExplore(){
   if (!$('#quest')) return;
+  updWays();
   const a = AREA();
   $('#quest').textContent = a.quest ? a.quest() : (typeof QUESTS !== 'undefined' && QUESTS[a.id]) ? QUESTS[a.id]() : (a.sub || '');
   updSilver();
@@ -145,6 +209,8 @@ function drawExplore(t){
   }
   // a mouse over the map: the tile it would walk to, brighter over someone to talk to
   const hv = G.hover; if (hv && !walking && $('#sheet').hidden) { const n = npcAt(hv.x, hv.y); if (n || palePass(hv.x, hv.y)) { ctx.strokeStyle = n ? 'rgba(232,192,115,.85)' : 'rgba(232,192,115,.38)'; ctx.lineWidth = 1.5; ctx.strokeRect(hv.x*T + 1.5, hv.y*T + 1.5, T - 3, T - 3); } }
+  // ways on: a beacon and a name on every trigger
+  drawWays(ctx, T, t);
   // NPCs
   a.npcs.forEach(n => { if (n.show && !n.show()) return; drawFigure(ctx, n.kind, n.x*T + T/2, n.y*T + T*.6, T/32, t, {phase:n.x + n.y*3, still:!!n.still});
     if (n.fresh && n.fresh()) { const by = Math.sin(t/300)*2; ctx.fillStyle = '#e8c073'; const cx = n.x*T+T/2, cy = n.y*T - T*.15 + by; ctx.beginPath(); ctx.moveTo(cx, cy-T*.16); ctx.lineTo(cx+T*.1, cy); ctx.lineTo(cx, cy+T*.12); ctx.lineTo(cx-T*.1, cy); ctx.fill(); } });
@@ -165,6 +231,7 @@ function drawExplore(t){
   // off-screen: someone new to talk to (a brass diamond at the edge of the view, pointing their way)
   const off = [];
   if (G.pannable) a.npcs.forEach(n => { if ((n.show && !n.show()) || !(n.fresh && n.fresh())) return; const nx = n.x*T + T/2 - cam.x, ny = n.y*T + T*.4 - cam.y; if (nx < 0 || nx > G.vw || ny < 0 || ny > G.vh) off.push([nx, ny]); });
+  if (G.pannable) (WAYS || []).forEach(w => { const nx = w.at.x*T + T/2 - cam.x, ny = w.at.y*T + T*.4 - cam.y; if (nx < 0 || nx > G.vw || ny < 0 || ny > G.vh) off.push([nx, ny]); });
   ctx.restore();
   // darkness at the edges (deeper at night), on the view: the same shape the whole map always had
   const vw = G.vw, vh = G.vh, hd = Math.hypot(vw, vh) / 2;

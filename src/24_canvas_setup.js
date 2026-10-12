@@ -5,9 +5,9 @@
    size in CSS px, G.cam the camera's top-left in map px; in a battle the viewport is the whole map and the camera 0. */
 const mapClose = () => SET.map !== 'whole';
 function exploreRoom(wrap){ // the height left for the map once the HUD, the hint row and a few log lines have theirs
-  const app = $('#app'), hint = $('.maprow'), keys = $('.hint.keys'), top = wrap.getBoundingClientRect().top + window.scrollY;
+  const app = $('#app'), hint = $('.maprow'), keys = $('.hint.keys'), ways = $('#ways'), top = wrap.getBoundingClientRect().top + window.scrollY;
   const pb = parseFloat(getComputedStyle(app).paddingBottom) || 24, logMin = 3 * 1.45 * .9 * 16 * (SET.fs || 1);
-  return Math.floor(window.innerHeight - top - (hint ? hint.offsetHeight : 20) - (keys && keys.offsetHeight ? keys.offsetHeight + 10 : 0) - logMin - 20 - pb - 2);
+  return Math.floor(window.innerHeight - top - (hint ? hint.offsetHeight : 20) - (ways && !ways.hidden ? ways.offsetHeight + 6 : 0) - (keys && keys.offsetHeight ? keys.offsetHeight + 10 : 0) - logMin - 20 - pb - 2);
 }
 function fitCanvas(cols, rows){
   const cv = $('#cv'); if (!cv) return;
