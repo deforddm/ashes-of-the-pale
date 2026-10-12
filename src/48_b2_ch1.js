@@ -499,7 +499,7 @@ ${b2In('tangle') ? `Tangle looks at the gate, and up at the gatehouse over it, a
 ${b2In('marrow') ? `Marrow, beside you, very quietly: "That's a great deal of water, child."` : `It is a great deal of water.`}
 
 And then, across the square, somebody is shouting your name.`,
-      ch:[{t:'Turn round.', go:'b2_runner'}]}),
+      ch:[{t:'Turn round.', go:'b2_runner'}, {t:'Not yet.', go:()=>startExplore()}]}),
     b2_runner:()=>({sp:'A boy from the quarter', txt:
 `A boy from the quarter, ten years old, barefoot, soot to the eyebrows. You know his face; he used to carry Ressan's jars. He runs straight into you and holds on to your belt with both hands while he gets his breath.
 
@@ -843,7 +843,11 @@ ${b2In('marrow') ? `Marrow doesn't say anything. She ties a knot in her string, 
     /* ---- the wash: Bat'rol ---- */
     b2_wash:()=> S.f.b2_batrolDone ? {sp:'The dry wash', txt:`The wash is full of what the green army left in it. The dead tree's still there. Nobody sits under it.`, ch:[{t:'Leave it.', go:()=>startExplore()}]} : !S.f.b2_duikerBasin ? {sp:'The dry wash', txt:
 `A dry wash cut across the basin floor, with a dead tree hanging over the lip of it. Down in the channel the clay is cracked into plates. Nothing moves in it yet. The dust on the far rim is getting closer.`,
-      ch:[{t:'Back to the column.', go:()=>startExplore()}]} : {sp:'Bat\'rol · the flank', scene:'b2_basin', fx:()=>{ S.f.b2_batrolStart = 1; }, txt:
+      ch:[{t:'Back to the column.', go:()=>startExplore()}]} : {sp:'The dry wash', txt:
+`The dry wash, and the dead tree over it, and the dust that was on the far rim and isn't any more. Once the squad is down in the flank, it stays there until it's over.`,
+      ch:[{t:'Down into the flank.', go:'b2_wash_hit'}, {t:'Not yet.', go:()=>startExplore()}]},
+    /* the green army's charge, once the squad has taken the flank */
+    b2_wash_hit:()=>({sp:'Bat\'rol · the flank', scene:'b2_basin', fx:()=>{ S.f.b2_batrolStart = 1; }, txt:
 `It comes all at once, the way weather comes in the Odhan.
 
 Out on the basin floor the green army charges the column, a long ragged wave of horsemen and men on foot, and the Wickans are not where they were. They were never where they were. The Weasels and the Crows come out of the scrub on both sides and the charge goes into them, and the dust goes up over all of it so thick you can't see the head of the column.
@@ -854,7 +858,7 @@ ${S.f.b2_washRead ? `They come out by the dead tree, all at once, the way ${by({
 
 Behind you, the squad's people. ${chainC()} of them. ${b2In('haddat') ? `Haddat has her shield up and her feet set and is saying, in Hissari, a prayer to no god she will name.` : ''}`,
       ch:[{t:'"Hold the flank."', go:()=>startBattle('b2_batrol', S.f.b2_washRead ? {surprise:'p'} : {})},
-          {t:'Tangle\'s sharper, in the broken bank, before they reach it.', tag:'uses 1 sharper', req:()=>b2In('tangle') && S.inv.sharper > 0 && !!S.f.b2_washRead, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('b2_batrol', {pre:true, surprise:'p'})}]},
+          {t:'Tangle\'s sharper, in the broken bank, before they reach it.', tag:'uses 1 sharper', req:()=>b2In('tangle') && S.inv.sharper > 0 && !!S.f.b2_washRead, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('b2_batrol', {pre:true, surprise:'p'})}]}),
     b2_after_batrol:()=>({sp:'The dry wash', scene:'b2_basin', fx:()=>{ S.f.b2_batrolDone = 1; S.f.b2_reloe = 1; gain('b2_lancehead'); }, txt:
 `The warleader goes down in the wash with a Wickan cattle-dog on his lance-arm and ${b2In('haddat') ? 'Haddat\'s tulwar' : 'a Malazan blade'} in him, and the young men behind him look at him lying there and stop being an army. They stop all at once, the way a crowd stops. Then they run.
 

@@ -525,10 +525,14 @@ The Seventh.`,
 `An old stone at the side of the road with a word cut in it in a script nobody uses any more. The gate is close. But behind you the column has stopped: something on the road, a cart down, and a hundred people standing round it looking south.` :
 `An old stone at the side of the road with a word cut in it in a script nobody uses any more, and beyond it the last of the barrows, and beyond that the gate.
 
-The riders have reached the road. Behind you, among the barrows, Dom's horse are coming down onto the paving from the south, on foot some of them, leading their horses up the barrow-sides to get round the Wickan children, and coming at the carts.
+Dust on the barrows to the south. Riders. Once the squad turns to hold the road here, it holds it.`,
+    ch: !S.f.b2_wcart ? [{t:'Back to the cart.', go:()=>startExplore()}] : [{t:'Turn. Hold the road.', go:'b2_wstone_hold'}, {t:'Not yet.', go:()=>startExplore()}]}),
+  /* Dom's riders at the milestone, once the squad has turned to hold the road */
+  b2_wstone_hold:()=>({sp:'The last milestone', txt:
+`The riders have reached the road. Behind you, among the barrows, Dom's horse are coming down onto the paving from the south, on foot some of them, leading their horses up the barrow-sides to get round the Wickan children, and coming at the carts.
 
 Your stretch is the last of the column. Everything between the riders and the people is you.`,
-    ch: !S.f.b2_wcart ? [{t:'Back to the cart.', go:()=>startExplore()}] : [
+    ch:[
       {t:'Hold the road. Let the stretch run past.', go:()=>startBattle('b2_runway', {})},
       {t:'Tangle: a smoker across the road behind the carts, so their bows are blind.', tag:'uses 1 smoker', req:()=>b2In('tangle') && S.inv.smoker > 0, fx:()=>{ S.inv.smoker--; },
         go:()=>startBattle('b2_runway', {pre:'Tangle lobs a smoker into the road behind the last cart, and the paving goes white from barrow to barrow, and the riders in it are shooting at nothing.'})},

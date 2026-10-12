@@ -598,7 +598,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '4.7.4';
+const VERSION = '4.7.5';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -1510,7 +1510,8 @@ function talk(id){
   const sh = $('#sheet'); sh.hidden = false;
   const noteHtml = notes.map(x => `<div class="note ${x.c}">${esc(x.t)}</div>`).join(''); notes = [];
   curCh = n.ch.filter(c => !c.req || c.req());
-  sh.innerHTML = `<div class="sp">${esc(n.sp || '')}</div>${noteHtml}<div class="txt">${fmt(n.txt)}</div>${n.html || ''}${n.after ? `<div class="txt">${fmt(n.after)}</div>` : ''}
+  let unspoken = ''; try { unspoken = unspokenLine(id, curCh); } catch(e) { console.warn('unspoken', e); } // somebody here still has something to say (30)
+  sh.innerHTML = `<div class="sp">${esc(n.sp || '')}</div>${noteHtml}<div class="txt">${fmt(n.txt)}</div>${n.html || ''}${n.after ? `<div class="txt">${fmt(n.after)}</div>` : ''}${unspoken ? `<div class="txt unspoken">${fmt(unspoken)}</div>` : ''}
     <div class="choices">${curCh.map((c,i) => {
       const tag = c.check ? checkTag(c) : c.tag ? `<span class="tagk">${esc(c.tag)}</span>` : '';
       return `<button class="choice" id="ch${i}" data-i="${i}">${tag}${smartq(esc(c.t).replace(/&quot;/g,'"'))}</button>`; }).join('')}</div>`;
@@ -4101,6 +4102,32 @@ function updExplore(){
   $('#elog').innerHTML = S.log.map(l => `<div>${l}</div>`).join('');
   const hud = $('.hud'); if (G.cv && G.hudH != null && hud && hud.offsetHeight !== G.hudH) fitCanvas(ACOLS(), AROWS()); // a quest line that wraps differently moves the map: give it the room that's left
 }
+/* v4.8 the unspoken-to: when a conversation offers a way off this map (another area, a fight, the end of the chapter) beside a
+   way to stay, and somebody here still has something to say (a figure with its ◆ lit), one of the squad says so under the
+   text. Never on a node that only stays, and never about whoever is talking. */
+const ONWARD_RE = /\b(startBattle|chapterEnd|startChapter|finish)\s*\(/;
+function goesOn(g, d = 0){
+  if (!g) return false;
+  if (typeof g === 'function') { const t = String(g); if (ONWARD_RE.test(t)) return true;
+    for (const m of t.matchAll(/\bstartExplore\s*\(\s*'([^']+)'/g)) if (m[1] !== S.area) return true; return false; }
+  if (typeof g !== 'string' || d > 2 || !DLG[g]) return false; // a talk that goes on: on only if every way out of it goes on
+  let n; try { n = DLG[g](); } catch(e) { return false; }
+  if (n.fx && goesOn(n.fx, 9)) return true;
+  const vis = (n.ch || []).filter(c => { try { return !c.req || c.req(); } catch(e) { return false; } });
+  return vis.length > 0 && vis.every(c => !staysHere(c)) && vis.some(c => choiceOn(c, d + 1));
+}
+const choiceOn = (c, d = 0) => !!c.onward || goesOn(c.go, d) || (!!c.check && goesOn(c.fail, d));
+const staysHere = c => !c.check && !c.onward && (c.go === undefined || (typeof c.go === 'function' && !ONWARD_RE.test(String(c.go)) && !/\btalk\s*\(/.test(String(c.go)) && /^\(\)\s*=>\s*\{?\s*startExplore\(\s*\)/.test(String(c.go))));
+function unspokenLine(id, ch){
+  if (!S || !AREAS[S.area] || !ch.some(c => choiceOn(c)) || !ch.some(staysHere)) return '';
+  const waiting = (AREA().npcs || []).filter(n => { try { return (!n.show || n.show()) && n.fresh && !/^\(\)\s*=>\s*true$/.test(String(n.fresh)) && n.fresh() && n.node() !== id; } catch(e) { return false; } });
+  if (!waiting.length) return '';
+  const talks = new Set(waiting.map(n => n.node())); // two figures, one conversation (Hedge and Fiddler at the bones) are one somebody
+  const named = waiting.filter(n => !/^(a|an|the|something|someone)\b/i.test(n.name || '')), mates = SQUAD().filter(k => k !== 'sgt' && TPL[k] && !(S.dead && S.dead[k]));
+  const who = talks.size === 1 && named.length ? `${named[0].name}'s` : 'Somebody here\'s';
+  const k = [...id].reduce((h, ch) => h + ch.charCodeAt(0), 0), mate = mates.length ? NAME(mates[k % mates.length]) : '';
+  return mate ? `${mate}, low: "${who} still waiting on a word, Sergeant."` : `${who.replace(/'s$/, ' is')} still waiting on a word.`;
+}
 const npcAt = (x,y) => AREA().npcs.find(n => n.x === x && n.y === y && (!n.show || n.show()));
 const tileAt = (x,y) => { const m = AREA().map; return (y >= 0 && y < m.length && x >= 0 && x < m[0].length) ? m[y][x] : '#'; };
 const palePass = (x,y) => { const a = AREA(), ch = tileAt(x,y); return ch !== '#' && (a.walk.includes(ch) || !!(a.triggers && a.triggers[ch])) && !npcAt(x,y); };
@@ -5644,6 +5671,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.7.5', ['Nothing on a map moves the story on by surprise any more. Every way into the next place, the next fight or the next chapter now offers "Not yet." (or a way to stay), in both books, and opening it changes nothing until you choose to go on.', 'If someone on the map still has something to say when you are about to leave, one of the squad mentions it.']],
   ['4.7.4', ['The Ways on buttons under the map are gone too. What stays: a brass ring on the ground under anything you can walk to and use, and an arrow at the edge of the view when it is off screen.']],
   ['4.7.3', ['The names floating over things on the map are gone. The brass rings and markers stay, and the Ways on buttons under the map still name each one and walk the squad there.']],
   ['4.7.2', ['Finding the way on is easier, in both books. Everything on a map that you can walk to and use (a cart, a gate, a dead tree, the edge of the map) now has a brass ring on the ground and its name above it, and an arrow at the edge of the view when it is off screen.', 'A new row of buttons under the map, Ways on, lists them by name. Tap one and the squad walks there and opens it. When the quest line names one, and there is nobody new left to talk to, that one is lit and listed first.']],
@@ -7059,7 +7087,7 @@ const QUESTS = {
   roofs_daru:()=> S.f.c4_key ? 'Down, west. The street.' : S.f.c4_meet ? 'The parapet' : 'Kalam\'s roof. Watch.',
   daru_lane:()=> S.f.c3_inn ? 'Back down the alley, to the crossing' : 'The Phoenix. The door with the painted bird.',
   daru_street:()=> S.f.c3_key ? 'Back west, to the dig' : S.f.c3_madryn ? 'The dye-shop. Decide.' : S.f.c3_guards ? 'The dye-shop. The outside stair.' : 'The dye-shop. The Watch is on the corner.',
-  pale_night:()=> S.f.c1_done ? 'Get some sleep. Somebody should.' : S.f.c1_hounds ? 'Hounds in the tent lines' : !S.f.c1_reported ? 'Report to Whiskeyjack at the Bridgeburners\' fire (east)' : !S.f.c1_tent ? 'Tattersail\'s tent, cadre row (north)' : 'Walk the lines. Something is coming.',
+  pale_night:()=> S.f.c1_done ? 'Get some sleep. Somebody should.' : S.f.c1_hounds ? 'Hounds in the tent lines' : !S.f.c1_reported ? 'Report to Whiskeyjack at the Bridgeburners\' fire (east)' : !S.f.c1_tent ? 'Tattersail\'s tent, cadre row (north)' : 'Walk the lines. Something is coming. Back to the fire past Pell\'s wagon, when the squad is ready.',
 };
 /* ability picks: shown before the next conversation after a level 3/5/7 */
 function openPicks(done){
@@ -7567,6 +7595,9 @@ const c1DownLine = (id, claw) => { const d = c1Downs(id); if (!d.n) return '';
 const c1Hounds = () => startBattle(S.f.c1_key === 'claw' ? 'hounds_claw' : 'hounds_line', {surprise:'e'});
 /* once Whiskeyjack and Tattersail are both done, the night goes on: Pell's wagon on the way back, two hours' sleep, then the Hounds */
 const c1Late = () => talk(S.f.c1_raid ? 'c1_night' : 'c1_raid');
+/* both reports made: the night is ready to go wrong, but only when the squad heads back to its fire (never on a plain leave) */
+const c1Ready = () => !!(S.f.c1_wj && S.f.c1_tent && !S.f.c1_hounds);
+const c1Home = {t:'Back to the Fourth\'s fire.', req:c1Ready, onward:true, go:()=>c1Late()};
 /* who the raiders at Pell's wagon are, by what the north tunnels did with Moreau's section */
 const c1Raiders = () => S.f.p_garrowCrossed ? `One of them you've seen before, by lamplight, forty paces into the north tunnels, running for the surface with Garrow's name. He's stopped running. He's found something worth stopping for.` :
   S.f.garrowWord ? `None of them is Moreau. Moreau's section heard Garrow's word two nights ago and went deeper. These ones never heard it.` :
@@ -7830,12 +7861,12 @@ Quick Ben has looked up from the coals. "Interesting deck," he says, and means t
 "Sleep if you can. Report to the quartermaster in the morning for the wagon." ${S.f.c1_paran ? `A glance down the lines. "The captain's been round yours, I hear. Good. He's new, and he's trying, and the ones who try are the ones you get to keep."` : `"If the captain walks your lines tonight, be a marine at him; he's new, and he's trying, and the ones who try are the ones you get to keep."`} He looks at the cadre row, where the one lamp is still lit. ${S.f.c1_tent ? `"And you've seen Tattersail. Good. She doesn't ask twice. She just stops asking."` : `"And if Tattersail asks for you, go. She doesn't ask twice. She just stops asking."`}
 
 ${S.f.wjRegard > 0 ? `"Sergeant." As you turn. "All five. Keep doing that."` : S.f.wjRegard < 0 ? `He doesn't say anything as you turn. Kalam does, to nobody: "Fourth Squad."` : `Quick Ben lifts two fingers from his knee, which might be a farewell and might be a ward.`}`,
-      ch:[{t:'Walk the lines.', go:()=>{ if (S.f.c1_tent) c1Late(); else startExplore(); }}]}),
+      ch:[c1Home, {t:'Walk the lines.', go:()=>startExplore()}]}),
     c1_wj_again:()=>({sp:'Whiskeyjack', txt:
 `"Sergeant." He doesn't look up from the fire. "You've got your orders. They don't get better with repeating."
 
 ${S.f.c1_qbTuft ? `Quick Ben, to the coals: "Tell your mage she can stop pretending I'm not here. I'm very good at being here."` : S.f.c1_qbCaught ? `Quick Ben, without looking up from the coals: "Still staring?"` : S.f.c1_kalamWary ? `Kalam isn't at the fire. You didn't see him go, and Whiskeyjack doesn't say where, and you find you would rather not ask.` : `Kalam is exactly where he was. You'd swear he's been somewhere.`}`,
-      ch:[{t:'Leave', go:()=>startExplore()}]}),
+      ch:[c1Home, {t:'Leave', go:()=>startExplore()}]}),
 
     /* ---- Captain Paran walks the lines ---- */
     c1_paran:()=>({sp:'Captain Paran', fx:()=>{S.f.c1_paran=1;}, txt:
@@ -7993,11 +8024,12 @@ ${S.ending === 'told' || S.ending === 'given' ? `Tattersail puts something in yo
 
 She's back to her cards before you reach the flap. "Sergeant. If you hear dogs tonight, they aren't."`,
       // with Whiskeyjack already seen, leaving the tent starts the Hounds: one last chance at Pell's wagon first
-      ch:[{t:'Leave the tent', go:()=>{ if (S.f.c1_wj) c1Late(); else startExplore(); }},
-          {t:'Stop at Pell\'s wagon on the way.', req:()=>!!S.f.c1_wj && S.silver >= 5, go:()=>{ sceneShell('camp_night'); talk('c1_pell'); }}]}),
+      ch:[{t:'Leave the tent', req:()=>!c1Ready(), go:()=>startExplore()}, c1Home,
+          {t:'Stop at Pell\'s wagon on the way.', req:()=>!!S.f.c1_wj && S.silver >= 5, go:()=>{ sceneShell('camp_night'); talk('c1_pell'); }},
+          {t:'Not yet. Walk the lines.', req:c1Ready, go:()=>startExplore()}]}),
     c1_tent_again:()=>({sp:'Tattersail', txt:
 `"Sergeant." She doesn't look up. "The cards haven't got better. Neither has the puppet. Go and sleep, or go and pretend to."`,
-      ch:[{t:'Leave', go:()=>startExplore()}]}),
+      ch:[c1Home, {t:'Leave', go:()=>startExplore()}]}),
 
     /* ---- Pell's wagon ---- */
     c1_pell:()=>({sp:'Quartermaster Pell', txt:
@@ -8010,7 +8042,7 @@ You carry ${S.silver} silver.`,
         {t:'Healing salve, 5 silver', tag:`have ${S.inv.salve}`, req:()=>S.silver>=5, fx:()=>{S.silver-=5;S.inv.salve++;note('Bought a salve.','good');AUDIO.play('coin');}, go:'c1_pell'},
         {t:'Cusser, 14 silver', tag:`have ${S.inv.cusser}`, req:()=>S.silver>=14 && !S.f.c1_cusserSold, fx:()=>{S.silver-=14;S.inv.cusser++;S.f.c1_cusserSold=1;note('Bought a cusser. Pell looks at Kettle the way a man looks at weather.','good');AUDIO.play('coin');}, go:'c1_pell_cusser'},
         {t:'"You\'ve got a cusser."', req:()=>S.silver<14 && !S.f.c1_cusserSold && !S.f.c1_askedCusser, fx:()=>S.f.c1_askedCusser=1, go:'c1_pell_broke'},
-        {t:'Leave', go:()=>{ if (S.f.c1_wj && S.f.c1_tent && !S.f.c1_hounds) c1Late(); }}]}), // on the way back from the tent: the wagon, a little sleep, then the night goes wrong
+        {t:'Leave', req:()=>!c1Ready()}, c1Home, {t:'Not yet.', req:c1Ready, go:()=>startExplore()}]}), // on the way back to the fire: the wagon, a little sleep, then the night goes wrong
     c1_pell_cusser:()=>({sp:'Quartermaster Pell', txt:
 `Kettle takes it in both hands like an infant she has been told is hers. She turns it once to the light.
 
@@ -8449,6 +8481,9 @@ const c2Moreau = () => !!(S.f.garrowWord && !S.f.p_garrowCrossed);
 /* the watch Kettle's bones are played for: Ellis takes the first herself when she is with the Fourth (c2_ridge_arrive) */
 /* Kettle's sharper in the barrow (the engine's opening line, replaced): from the passage mouth, or from the far wall if she went in first alone */
 const c2BarrowPre = () => S.f.c2_barrowMissWho && !S.f.c2_kettleOut ? 'Kettle, against the far wall, lets a sharper go along the floor between their feet and gets her arms over her head. In a stone room it is the loudest thing that has happened in a thousand years.' : 'Kettle rolls a sharper in from the passage mouth. In a stone room it is the loudest thing that has happened in a thousand years.';
+/* Sethand heard and the Deck settled: the light comes when the squad sits down at the fire for the night, never on a plain leave */
+const c2Ready = () => !!((S.f.c2_drawn || S.f.c2_noCard) && S.f.c2_sethNight && !S.f.c2_light);
+const c2Sit = {t:'Sit the night out at the fire.', req:c2Ready, onward:true, go:()=>talk('c2_light')};
 const c2Watch = () => SQUAD().includes('ellis') ? 'second watch' : 'first watch';
 const c2Count = () => SQUAD().includes('ellis') ? 'Fifteen days, six' : 'Eighteen days, five';
 /* the outriders' answers: the talk (Guile), the ✦ song (Wits 16), Sethand's word, shields. Offered again if the song goes wrong. */
@@ -8524,7 +8559,7 @@ const CH2 = {
             "#,,....,....r,,#",
             "################" ],
       walk:'.,', triggers:{F:'c2_fire', '=':'c2_tent', W:'c2_wagon_night', '>':'c2_to_hills'}, start:{x:5,y:9},
-      quest:()=> S.f.c2_lightDone ? 'Dawn. East, and the hills.' : S.f.c2_light ? 'There is a light in the west.' : !S.f.c2_sethNight ? 'The fourth camp. Sethand is at the fire, which is new.' : !(S.f.c2_drawn || S.f.c2_noCard) ? 'Night. Tuft is at the fire with the Deck in her hand.' : 'Night. Nobody is sleeping yet.',
+      quest:()=> S.f.c2_lightDone ? 'Dawn. East, and the hills.' : S.f.c2_light ? 'There is a light in the west.' : !S.f.c2_sethNight ? 'The fourth camp. Sethand is at the fire, which is new.' : !(S.f.c2_drawn || S.f.c2_noCard) ? 'Night. Tuft is at the fire with the Deck in her hand.' : 'Night. Nobody is sleeping yet. The fire, when the squad is ready.',
       npcs:[ {id:'sethand', name:'Sethand', kind:'rhivi', x:8, y:7, node:()=>S.f.c2_sethNight ? 'c2_ridge_seth_again' : 'c2_ridge_seth', fresh:()=>!S.f.c2_sethNight} ] },
 
     { id:'hills_edge', title:'The edge of the Gadrobi Hills', sub:'The last morning', hint:'Tap ground to move · tap a figure to talk · the hills are east', decor:'plain',
@@ -9243,14 +9278,14 @@ After a long time he reaches into the sheepskin by his knee and takes out a bow.
 `Sethand stays where he is. He has said what he came to say and will say the rest, if there is a rest, when the plain says it first.
 
 ${S.f.c2_drawn || S.f.c2_noCard ? `Tuft is still at the fire. She has put the Deck away, and her hands are in her lap where you can see them, and she is looking west.` : `Tuft is at the fire with the Deck in her hand. She hasn't drawn. She's waiting for something, and it might be you.`}`,
-      ch:[{t:'The camp.', go:()=>{ if (S.f.c2_drawn || S.f.c2_noCard) talk('c2_light'); else startExplore(); }}]}),
+      ch:[c2Sit, {t:'The camp.', req:()=>!c2Ready(), go:()=>startExplore()}, {t:'Not yet. Walk the camp.', req:c2Ready, go:()=>startExplore()}]}),
     c2_ridge_seth_again:()=> S.f.c2_lightDone ? {sp:'Sethand', txt:
 `He has his horse saddled and his back to the ridge. "The hills, Malazan. Two days. I will not talk on the way. I have talked more on this road than in the year before it, and I would like to stop."`,
       ch:[{t:'Leave him.'}]} : {sp:'Sethand', txt:
 `He hasn't moved from the fire. "Malazan. You have already sat. Sit again or do not."
 
 ${!(S.f.c2_drawn || S.f.c2_noCard) ? `He nods, very slightly, at Tuft, and the Deck in her hand.` : `He is looking west. He has been looking west for some time.`}`,
-      ch:[{t:'Leave him.', go:()=>{ if (S.f.c2_drawn || S.f.c2_noCard) talk('c2_light'); else startExplore(); }}]},
+      ch:[c2Sit, {t:'Leave him.', go:()=>startExplore()}]},
 
     /* ---- the fire: Tuft's Deck ---- */
     c2_fire:()=> S.f.c2_lightDone ? {sp:'The fire', txt:
@@ -9262,7 +9297,7 @@ ${S.f.c2_noCard ? `Tuft has the Deck in her sleeve and is not touching it. She h
 
 ${SQUAD().includes('kettle') && !S.f.c2_bones ? `Kettle has two knucklebones out and is throwing them against her own knee, left hand against right, keeping score in the dirt with a stick. "Hedge taught me," she says, without looking up. "Well. Hedge took four silver off me and I watched how." She holds them up. "Loser takes ${c2Watch()}, Sergeant?${SQUAD().includes('ellis') ? ` Ellis has the first. She took it before anyone could lose it.` : ''}"` : S.f.c2_bones === 'won' ? (SQUAD().includes('ellis') ? `Kettle is lying by the wagon with her crossbow across her chest, waiting for second watch, counting stars under her breath and losing count on purpose.` : `Kettle is on first watch, out by the stakes, counting stars under her breath and losing count on purpose.`) : S.f.c2_bones === 'lost' ? `Kettle is asleep already, curled round her satchel, with the bones in her fist.` : ''}`,
       ch:[{t:`"Loser takes ${c2Watch()}. Throw."`, tag:'Bones', req:()=>SQUAD().includes('kettle') && !S.f.c2_bones, go:()=>playBones({opp:'kettle', chat:SQUAD().includes('brisk') ? 'brisk' : null, stakes:null, stakeText:c2Watch(), place:'c2', after:r => { if (r.games) S.f.c2_bones = r.last === 'me' ? 'won' : 'lost'; talk('c2_bones_after'); }})},
-          {t:'Leave the fire.'}]} : {sp:'The fire', fx:()=>{S.f.c2_fireSeen=1;}, txt:
+          {...c2Sit, t:'Sit the night out.'}, {t:'Leave the fire.'}]} : {sp:'The fire', fx:()=>{S.f.c2_fireSeen=1;}, txt:
 `Tuft has the Deck out. She has it face-down on her knee, one hand flat on it, the way you'd hold a door shut.
 
 "One card, Sergeant. I don't want to. I think I have to." She doesn't look at Sethand, who is not looking at her with great skill. "Something's happening tonight. I can feel it in the warren like a draught under a door, and the Deck's warm, and it's never warm."
@@ -9277,7 +9312,7 @@ ${SQUAD().includes('ellis') ? `Ellis, from the dark beyond the stakes, not loudl
       after:`${c.txt}
 
 Sethand has not looked at the card. He has looked at Tuft's face while she looked at it, which is where a Rhivi reads a Deck.`,
-      ch:[{t:'Put the cards away.', go:()=>{ if (S.f.c2_sethNight) talk('c2_light'); else startExplore(); }}]}; },
+      ch:[{t:'Put the cards away.', req:()=>!c2Ready(), go:()=>startExplore()}, {...c2Sit, t:'Put the cards away. Sit the night out.'}, {t:'Put the cards away. Walk the camp.', req:c2Ready, go:()=>startExplore()}]}; },
     c2_bones_after:()=>({sp:'The fire', txt: S.f.c2_bones === 'won' ?
 `Kettle stares at the bones for a while as if they might explain themselves. Then she gets up, picks up her crossbow, and ${SQUAD().includes('ellis') ? 'lies down by the wagon with it across her chest, to be ready for second watch,' : 'goes out to the stakes for first watch'} without a word, which from Kettle is a speech.
 
@@ -9293,7 +9328,7 @@ The stars over the Rhivi Plain are very large and very many, and there is a long
 "Yes, Sergeant."
 
 ${S.f.noCard && S.f.c1_noCard ? `"That's three times." Not an accusation. An observation, filed.` : S.f.noCard || S.f.c1_noCard ? `"That's twice." Not an accusation. An observation, filed.` : `Kettle, to the fire: "It'd have been the Raven. It's always the Raven out here. You can hear them at night."`}`,
-      ch:[{t:'The camp.', go:()=>{ if (S.f.c2_sethNight) talk('c2_light'); else startExplore(); }}]}),
+      ch:[c2Sit, {t:'The camp.', go:()=>startExplore()}]}),
 
     /* ---- the tents and the wagon at night ---- */
     c2_tent:()=>({sp:'The tents', txt:
@@ -13264,7 +13299,8 @@ Tuft is sitting with her back against a barrow-stone on the lip of the ridge, wh
 
 "It's down there," she says, before you ask. "Whatever the Adjunct carries. I can feel it from here. It's like — Sergeant, it's like standing at the edge of a well at night and knowing the well goes all the way through the world and out the other side. Meanas doesn't *fade* near it. It *stops*. There's a hole." She swallows. "I want one card before we go down. One. So I'll know I can still see *something*."`,
       ch:[{t:'Let her draw.', fx:()=>{ S.f.c5_drawn=1; S.card = dealCard(['herald','herald','obelisk','hounds','knight','oponn']); S.f.c5_drawnCard = S.card; }, go:()=>cardSequence(()=>talk('c5_card'))},
-          {t:'"No readings. Not this close to her."', fx:()=>{ S.f.c5_noCard=1; loy('tuft',-1); if (SQUAD().includes('brisk')) loy('brisk',1); }, go:'c5_card_no'}]} : {sp:'The east edge', txt:
+          {t:'"No readings. Not this close to her."', fx:()=>{ S.f.c5_noCard=1; loy('tuft',-1); if (SQUAD().includes('brisk')) loy('brisk',1); }, go:'c5_card_no'},
+          {t:'Not yet.', go:()=>startExplore()}]} : {sp:'The east edge', txt:
 `${S.f.c5_valeSeen ? `The steep brown fall into the vale, and the long barrow, and the smoke.` : `The steep brown fall into the vale. Dusk is coming up out of it like water into a footprint.`}`,
       ch:[{t:'Down into the vale.', go:()=>{ startExplore('barrow_vale'); if (!S.f.c5_valeSeen) talk('c5_vale_arrive'); }},
           {t:'Not yet.'}]},
@@ -13422,7 +13458,10 @@ ${C5H.wardsPre() ? `That is the whole of the Adjunct's opinion of the Fourth. Yo
       ch:[{t:'Leave her be.'}]}),
 
     /* ---- the T'lan Imass: the wards ---- */
-    c5_tool:()=>({sp:'The long barrow', scene:'hills_dusk', txt:
+    c5_tool:()=>({sp:'The long barrow', txt:
+`The thing from the dig is standing in the ring of stones at the near end of the long barrow, very still, the way a stone stands. The Adjunct is watching it. Whatever it came up to do, it hasn't started.`,
+      ch:[{t:'Down in the grass. Watch.', go:'c5_tool_watch'}, {t:'Not yet.', go:()=>startExplore()}]}),
+    c5_tool_watch:()=>({sp:'The long barrow', scene:'hills_dusk', txt:
 `You don't go to it. You stay where you are among the small barrows, with the squad flat in the grass round you, and you watch, and it begins.
 
 It comes up out of the dig. Slowly, the way a man climbs out of a ditch at the end of a long day, one hand on the lip, then the other. It stands. It's not tall. You'd thought it would be tall. It's shorter than Brisk and broader, and it stands the way a stone stands, with its weight all the way down in the ground. Dun hide stretched over bone. Hair, what's left of it, in a lank dark rope down its back. A face you can see now in the dusk, and would rather not: hide dried to the skull, the lips gone back from the teeth, and where the eyes were, two pits, and in each pit, very small, something that isn't light but is where light would be.
@@ -13637,7 +13676,8 @@ He looks at the split stones steaming in the dusk.
 
 ${SQUAD().includes('tuft') ? `Tuft, behind you, has gone completely still.` : ''}`,
       ch:[{t:'"You look like a man who\'s been ill, sir."', req:()=>!S.f.c5_paranDied, go:'c5_paran_died'},
-          {t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'}]}),
+          {t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'},
+          {t:'Not yet.', go:()=>startExplore()}]}),
     c5_paran_died:()=>({sp:'Captain Paran', fx:()=>{ S.f.c5_paranDied=1; }, txt:
 `"No," he says. "I've been dead."
 
@@ -13651,7 +13691,8 @@ He turns back to the barrow.
 
 ${SQUAD().includes('ohl') ? `Ohl has been standing a pace behind you, listening. He looks at Paran for a long time, the way he looks at a wound. "I believe you, sir," he says at last. "You've got the look. I've seen it twice. Both times the man went on to do something the rest of us talked about for years." A pause. "Neither of them enjoyed it."` : `Nobody says anything. There isn't anything to say to that. You find you believe him completely.`}`,
       ch:[{t:'"What is she letting out of that hill, sir?"', req:()=>!S.f.c5_paranHill, go:'c5_paran_hill'},
-          {t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'}]}),
+          {t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'},
+          {t:'Not yet.', go:()=>startExplore()}]}),
     c5_paran_again:()=>({sp:'Captain Paran', txt:
 `He's looking at the barrow. He doesn't turn round. "Sergeant."`,
       ch:[{t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'},
@@ -13768,7 +13809,8 @@ ${SQUAD().includes('tuft') ? `Behind you, very quietly, Tuft: "Sergeant. Don't l
             near:{t:()=> S.f.c5_digPaid ? 'Yes, but the big man wants something for his trouble: five silver.' : `Yes, but ${NAME(ROLL().who || 'sgt')} had to stand at the lip of that hole to say it, and comes away rattled: −1 on the next check.`,
               fx:()=>{ if (S.silver >= 5) { S.silver -= 5; S.f.c5_digPaid=1; AUDIO.play('coin'); } else { S.rattled ??= {}; S.rattled[ROLL().who || 'sgt'] = 1; } }},
             go:'c5_dig_told', fail:'c5_dig_laugh'},
-          {t:'Stand aside. It\'s their neck.', go:'c5_dig_let'}]} : S.f.c5_night ? {sp:'East · the far hill', scene:'hills_night', txt:
+          {t:'Stand aside. It\'s their neck.', go:'c5_dig_let'},
+          {t:'Not yet.', go:()=>startExplore()}]} : S.f.c5_night ? {sp:'East · the far hill', scene:'hills_night', txt:
 `Past the east end of the long barrow, where the dig is a black mouth breathing frost, and round the flank of the far hill, and down to a fold with a spring in it and a fire. Toc's fire. Paran is sitting by it with his sword across his knees. Toc is seeing to the horses.
 
 The stars are very bright. There's no moon. Somewhere to the west, behind you, under the long barrow, the ground goes *thud*, and a long time later, *thud*.
@@ -15210,14 +15252,15 @@ Then she walks on up the street to her place at the end of the line, where a sco
     /* ---- the gate: Tuft's draw, the steward, the ring ---- */
     c6_gate:()=> S.f.c6_gateDone ? {sp:'Lady Simtal\'s gate', txt:
 `The gate is behind you now. The Fete is ahead.`,
-      ch:[{t:'On.', go:'c6_terrace_arrive'}]} : (SQUAD().includes('tuft') && !S.f.c6_drawn && !S.f.c6_noCard) ? {sp:'Tuft', scene:'fete_street', txt:
+      ch:[{t:'On.', go:'c6_terrace_arrive'}, {t:'Not yet.', go:()=>startExplore()}]} : (SQUAD().includes('tuft') && !S.f.c6_drawn && !S.f.c6_noCard) ? {sp:'Tuft', scene:'fete_street', txt:
 `At the gate, under a lantern pole hung with paper moons, Tuft stops. She has the Deck out of her sleeve before you've seen her reach for it, face down in both hands.
 
 "One," she says. "For the squad. Before we go in." She isn't looking at the gate. She's looking up at the lanterns, all those candles in all that paper, swinging over a street full of people who have decided not to be afraid tonight. "Quick Ben's right. Everybody's going to be looking at everything. I'd like to look first."
 
 ${S.f.c5_noCard || S.f.c4_noCard ? `She doesn't mention the other times. She's past mentioning them.` : S.f.c5_drawn ? `"The last one was on the ridge," she says, "with the hole in the world at the bottom of the vale. I'd like one with nothing in the way."` : ''}`,
       ch:[{t:'Let her draw.', fx:()=>{ S.f.c6_drawn=1; S.card = dealCard(['chains','chains','knight','hounds','obelisk','oponn']); }, go:()=>cardSequence(()=>talk('c6_card'))},
-          {t:'"Not here. Not in front of the whole Fete."', fx:()=>{ S.f.c6_noCard=1; if (SQUAD().includes('tuft')) loy('tuft',-1); if (SQUAD().includes('brisk')) loy('brisk',1); }, go:'c6_card_no'}]} : {sp:'Lady Simtal\'s gate', txt:
+          {t:'"Not here. Not in front of the whole Fete."', fx:()=>{ S.f.c6_noCard=1; if (SQUAD().includes('tuft')) loy('tuft',-1); if (SQUAD().includes('brisk')) loy('brisk',1); }, go:'c6_card_no'},
+          {t:'Not yet.', go:()=>startExplore()}]} : {sp:'Lady Simtal\'s gate', txt:
 `The iron gate of Lady Simtal's estate, twelve feet high, standing open, with a steward at it holding two lists and the Fete going past him in both directions like a river past a post.`,
       ch:[{t:'Up to the steward.', go:'c6_steward'},
           {t:'Not yet.'}]},
@@ -15889,7 +15932,10 @@ ${S.f.c6_gardenSeen ? `The Adjunct went out through it an hour ago. You can stil
       ch:[{t:'Leave it.'}]}),
 
     /* ---- the Hound ---- */
-    c6_hound:()=>({sp:'The east wall', scene:'fete_garden', txt:
+    c6_hound:()=>({sp:'The east wall', txt:
+`Something is crouched on the top of the east wall, where the lanterns don't reach. Long and low and darker than the wall. It hasn't moved. Nobody on the terrace has looked up.`,
+      ch:[{t:'Go to the wall.', go:'c6_hound_down'}, {t:'Not yet.', go:()=>startExplore()}]}),
+    c6_hound_down:()=>({sp:'The east wall', scene:'fete_garden', txt:
 `It comes down off the wall in one long pour, like ink off the edge of a table, and lands on the lawn without a sound, and stands.
 
 A Hound of Shadow. You saw them at Pale, in the tent lines, with the sky on fire. You saw two of them in the hills, come out of a hole in the air and go past you like weather. This one is smaller than those, or it's hunched, and it's hurt. Something has opened it along the flank, shoulder to haunch, in one long clean cut, and the cut isn't bleeding. It's smoking, faintly, like a wick someone has pinched out.
@@ -16249,7 +16295,10 @@ She hasn't left the squad. She'll walk back to the crossing with you in the morn
       ch:[{t:'Back to the lawn.', go:()=>startExplore()}]}),
 
     /* ---- the Tyrant ---- */
-    c6_tyrant:()=>{ const kn = S.f.c6_mammotKnown, eye = C6H.here(S.f.c6_mammotEye) ? S.f.c6_mammotEye : null, nm = id => C6H.nm(id, 'you');
+    c6_tyrant:()=>({sp:'The old priest', txt:
+`The old priest in the Jaghut mask stands apart from the dancing with his hands folded in his sleeves. He isn't watching the dancers. He's watching the sapling, the way a man watches a pot he has been told not to.`,
+      ch:[{t:'Wait for it.', go:'c6_tyrant_rise'}, {t:'Not yet.', go:()=>startExplore()}]}),
+    c6_tyrant_rise:()=>{ const kn = S.f.c6_mammotKnown, eye = C6H.here(S.f.c6_mammotEye) ? S.f.c6_mammotEye : null, nm = id => C6H.nm(id, 'you');
       return {sp:'The old priest', scene:'garden_storm', fx:()=>{ if (!S.f.c6_tuft) S.f.c6_tuft = S.f.c6_badgeCold ? 'dark' : C6H.here('tuft') ? 'kept' : 'gone'; /* v3.16: 'kept' only if Tuft is alive and here; 'gone' keeps the garden gates shut and matches no fate */ S.f.c6_tyrantUp=1; }, txt:
 `${kn ? `You're watching the white steps when it starts, because of what ${nm(kn)} saw on the terrace; which is why you see the rest.` : `You're looking at the sky when it starts, which is why you miss the rest.`}
 
@@ -21081,7 +21130,7 @@ ${b2In('tangle') ? `Tangle looks at the gate, and up at the gatehouse over it, a
 ${b2In('marrow') ? `Marrow, beside you, very quietly: "That's a great deal of water, child."` : `It is a great deal of water.`}
 
 And then, across the square, somebody is shouting your name.`,
-      ch:[{t:'Turn round.', go:'b2_runner'}]}),
+      ch:[{t:'Turn round.', go:'b2_runner'}, {t:'Not yet.', go:()=>startExplore()}]}),
     b2_runner:()=>({sp:'A boy from the quarter', txt:
 `A boy from the quarter, ten years old, barefoot, soot to the eyebrows. You know his face; he used to carry Ressan's jars. He runs straight into you and holds on to your belt with both hands while he gets his breath.
 
@@ -21425,7 +21474,11 @@ ${b2In('marrow') ? `Marrow doesn't say anything. She ties a knot in her string, 
     /* ---- the wash: Bat'rol ---- */
     b2_wash:()=> S.f.b2_batrolDone ? {sp:'The dry wash', txt:`The wash is full of what the green army left in it. The dead tree's still there. Nobody sits under it.`, ch:[{t:'Leave it.', go:()=>startExplore()}]} : !S.f.b2_duikerBasin ? {sp:'The dry wash', txt:
 `A dry wash cut across the basin floor, with a dead tree hanging over the lip of it. Down in the channel the clay is cracked into plates. Nothing moves in it yet. The dust on the far rim is getting closer.`,
-      ch:[{t:'Back to the column.', go:()=>startExplore()}]} : {sp:'Bat\'rol · the flank', scene:'b2_basin', fx:()=>{ S.f.b2_batrolStart = 1; }, txt:
+      ch:[{t:'Back to the column.', go:()=>startExplore()}]} : {sp:'The dry wash', txt:
+`The dry wash, and the dead tree over it, and the dust that was on the far rim and isn't any more. Once the squad is down in the flank, it stays there until it's over.`,
+      ch:[{t:'Down into the flank.', go:'b2_wash_hit'}, {t:'Not yet.', go:()=>startExplore()}]},
+    /* the green army's charge, once the squad has taken the flank */
+    b2_wash_hit:()=>({sp:'Bat\'rol · the flank', scene:'b2_basin', fx:()=>{ S.f.b2_batrolStart = 1; }, txt:
 `It comes all at once, the way weather comes in the Odhan.
 
 Out on the basin floor the green army charges the column, a long ragged wave of horsemen and men on foot, and the Wickans are not where they were. They were never where they were. The Weasels and the Crows come out of the scrub on both sides and the charge goes into them, and the dust goes up over all of it so thick you can't see the head of the column.
@@ -21436,7 +21489,7 @@ ${S.f.b2_washRead ? `They come out by the dead tree, all at once, the way ${by({
 
 Behind you, the squad's people. ${chainC()} of them. ${b2In('haddat') ? `Haddat has her shield up and her feet set and is saying, in Hissari, a prayer to no god she will name.` : ''}`,
       ch:[{t:'"Hold the flank."', go:()=>startBattle('b2_batrol', S.f.b2_washRead ? {surprise:'p'} : {})},
-          {t:'Tangle\'s sharper, in the broken bank, before they reach it.', tag:'uses 1 sharper', req:()=>b2In('tangle') && S.inv.sharper > 0 && !!S.f.b2_washRead, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('b2_batrol', {pre:true, surprise:'p'})}]},
+          {t:'Tangle\'s sharper, in the broken bank, before they reach it.', tag:'uses 1 sharper', req:()=>b2In('tangle') && S.inv.sharper > 0 && !!S.f.b2_washRead, fx:()=>{ S.inv.sharper--; }, go:()=>startBattle('b2_batrol', {pre:true, surprise:'p'})}]}),
     b2_after_batrol:()=>({sp:'The dry wash', scene:'b2_basin', fx:()=>{ S.f.b2_batrolDone = 1; S.f.b2_reloe = 1; gain('b2_lancehead'); }, txt:
 `The warleader goes down in the wash with a Wickan cattle-dog on his lance-arm and ${b2In('haddat') ? 'Haddat\'s tulwar' : 'a Malazan blade'} in him, and the young men behind him look at him lying there and stop being an army. They stop all at once, the way a crowd stops. Then they run.
 
@@ -22153,7 +22206,7 @@ ${S.f.b2_ubaryd ? '' : `You tell her: west. A long way west. On the sea. She nod
 
 ${!S.f.b2_roadRest ? 'The squad has not rested. ' : ''}You get your people moving: carts, the lame, the sleeping children lifted onto anything with wheels. And then, from behind, out of the dark, Hackle growls.`,
     ch:[{t:'"Turn round. Shields."', go:'b2_tail_start'},
-        {t:'Not yet.', req:()=>!S.f.b2_roadRest, go:()=>startExplore()}]},
+        {t:'Not yet.', go:()=>startExplore()}]},
   b2_tail_start:()=>({sp:'The tail of the column', txt:
 `Riders. Not many: a dozen, two dozen, Tithansi on small horses, coming out of the dark at the tail where the carts are slowest, the way wolves come at the back of a herd. They are not here to fight. They are here to cut off the last cart, and the one after, and be gone before the Wickan rearguard comes back from wherever it has gone.
 
@@ -22396,7 +22449,7 @@ The Red Blades are already riding along the front of the line toward them, red s
 He looks north, at the three square blocks of Guran in the sun. "And them. They're waiting to see who wins. They'll send a file down the bank to find out if we're soft. Don't be soft."
 
 ${b2In('redblade') ? '' : `He's already turning away. Then, over his shoulder: "The Red Blades lost a great many people getting into position this morning. Don't let them lose any more for want of a squad behind them."`}`,
-    ch:[{t:'"Hold the bank."', go:'b2_west_fight'}]}),
+    ch:[{t:'"Hold the bank."', go:'b2_west_fight'}, {t:'Not yet.', go:()=>startExplore()}]}),
   b2_west_fight:()=>({sp:'The west bank', txt:
 `The Red Blades go in at the gallop, lances down, and hit the Semk on the rise like a hammer hitting a pot, and the Semk break, and then they don't. Something on the rise lifts its arms, and the air bends, and two Red Blade horses go down screaming with nothing touching them.
 
@@ -22506,7 +22559,7 @@ He looks at the river.
 "Ubaryd has fallen. A rider came over this morning, a Wickan who went to look. The city's taken, and the fleet's gone out of it, and there is nobody there to put us on ships." He takes his feet out of the bucket. "So. No Ubaryd. Aren." He says the name the way you'd say the length of a road you have to walk on a bad leg. "All the way to Aren."
 
 Then, the grin coming back, a little: "Count them, Sergeant. It's further than it was this morning."`,
-    ch:[{t:'"Sir."', go:'b2_night'}]},
+    ch:[{t:'"Sir."', go:'b2_night'}, {t:'Not yet.', go:()=>startExplore()}]},
 
   /* ---- the night: the spirits and the Semk god ---- */
   b2_night:()=>({sp:'The west bank · night', scene:'b2_spirits', fx:()=>{ S.f.b2_spirits = 1; }, txt:
@@ -23699,7 +23752,8 @@ ${b2In('sathi') ? `Sathi stops. Then she goes on, in the same flat voice. "When 
 He waits. ${b2In('sathi') ? `He is not looking at you now. He is looking at Sathi.` : ''}`,
     ch:[{t:'"How many?"', req:()=>!S.f.b2_orderAsked, fx:()=>{ S.f.b2_orderAsked = 1; }, go:'b2_weasel_ask'},
         {t:'"We\'ll do it." Herd your people out into the open.', fx:()=>{ S.f.b2_c3_key = 'bait'; if (b2In('sathi')) loy('sathi', 1); if (b2In('redblade')) loy('redblade', 1); if (b2In('haddat')) loy('haddat', -1); if (b2In('marrow')) loy('marrow', -1); }, go:'b2_key_bait'},
-        {t:'"No. My people go under the wagons." Pull them back.', fx:()=>{ S.f.b2_c3_key = 'pull'; if (b2In('haddat')) loy('haddat', 1); if (b2In('marrow')) loy('marrow', 1); if (b2In('sathi')) loy('sathi', -1); }, go:'b2_key_pull'}]}),
+        {t:'"No. My people go under the wagons." Pull them back.', fx:()=>{ S.f.b2_c3_key = 'pull'; if (b2In('haddat')) loy('haddat', 1); if (b2In('marrow')) loy('marrow', 1); if (b2In('sathi')) loy('sathi', -1); }, go:'b2_key_pull'},
+        {t:'Not yet.', go:()=>startExplore()}]}),
   b2_weasel_ask:()=>({sp:'The Weasel captain', txt:
 `${b2In('sathi') ? `He answers before she has finished asking it. Sathi listens, and for a moment does not translate.
 
@@ -23709,7 +23763,8 @@ ${b2In('haddat') ? `Haddat, behind you, has not moved. Her face is the face she 
 
 Ramin, very straight: "It is an order, Sergeant. From the people who will close the trap." He does not say whether he likes it. "In Ehrlitan, the company held the market the same way. With people in it." He stops there.` : ''}`,
     ch:[{t:'"We\'ll do it." Herd your people out into the open.', fx:()=>{ S.f.b2_c3_key = 'bait'; if (b2In('sathi')) loy('sathi', 1); if (b2In('redblade')) loy('redblade', 1); if (b2In('haddat')) loy('haddat', -1); if (b2In('marrow')) loy('marrow', -1); }, go:'b2_key_bait'},
-        {t:'"No. My people go under the wagons." Pull them back.', fx:()=>{ S.f.b2_c3_key = 'pull'; if (b2In('haddat')) loy('haddat', 1); if (b2In('marrow')) loy('marrow', 1); if (b2In('sathi')) loy('sathi', -1); }, go:'b2_key_pull'}]}),
+        {t:'"No. My people go under the wagons." Pull them back.', fx:()=>{ S.f.b2_c3_key = 'pull'; if (b2In('haddat')) loy('haddat', 1); if (b2In('marrow')) loy('marrow', 1); if (b2In('sathi')) loy('sathi', -1); }, go:'b2_key_pull'},
+        {t:'Not yet.', go:()=>startExplore()}]}),
 
   /* ---- the bait ---- */
   b2_key_bait:()=>({sp:'The Shallows', txt:
@@ -24851,7 +24906,7 @@ ${b2In('haddat') ? `Haddat reads one over your shoulder. She reads it twice. "An
 `Lull is on the bank above the carriages with two of his marines, as if he had been waiting there for some time to see what the carriages would do. He reads the paper by firelight with the one eye, slowly, all of it.
 
 "Hood's breath." He says it without any heat at all. He folds the paper and puts it inside his jerkin. "With me. Now. The Fist will want to see your face when he hears it."`,
-    ch:[{t:'With him.', go:'b2_too_late'}]}),
+    ch:[{t:'With him.', go:'b2_too_late'}, {t:'"A moment, sir."', go:()=>startExplore()}]}),
   b2_too_late:()=>({sp:'The bank · the dark before dawn', fx:()=>{ S.f.b2_tooLate = 1; }, txt:
 `You never get to the Fist's tent.
 
@@ -25138,7 +25193,7 @@ ${b2In('haddat') ? 'Haddat looks at them, and at you, and does not say anything.
 He picks up a stone and turns it over. "The Council lived. Most of it. Nethpara. Pullyk. The ones who made the deal walked over on Dom's paper and his archers let them by." He puts the stone down. "The Fist knows. He will do nothing, because there is nothing to do that does not lose us the rest of the column, and he is a Fist, and that is what a Fist is for." He looks at you at last. "I'm his uncle. I'm allowed to hate it."
 
 "Count your own, Sergeant. Then sleep. The forest tomorrow. Dom won't come into the trees after us tonight. He doesn't need to."`,
-    ch:[{t:'Count them.', go:'b2_c4_end'}]}),
+    ch:[{t:'Count them.', go:'b2_c4_end'}, {t:'Not yet.', go:()=>startExplore()}]}),
   b2_c4_end:()=>({sp:'The far bank of the Vathar · night', scene:'b2_after', txt:
 `You count them.
 
@@ -26171,7 +26226,8 @@ ${B2.younger} is standing behind her, watching the jar, the way she watched it o
 
 ${b2In('haddat') ? `Haddat is standing very still, looking at the stretch. ` : ''}${b2In('marrow') ? `Marrow is sitting on the tailboard with her eyes shut. ` : ''}${b2In('tangle') ? `Tangle is looking at the squad. ` : ''}${b2In('sathi') ? `Sathi is looking at the horses. ` : ''}${b2In('redblade') ? `Ramin is looking at nobody, very straight.` : ''}`,
       ch:[{t:'"The squad drinks. If we can\'t fight, nobody in the stretch lives to drink anything."', fx:()=>b2KeySquad(), go:'b2_key_squad'},
-          {t:'"The stretch drinks. The squad will fight dry."', fx:()=>b2KeyColumn(), go:'b2_key_column'}]}; },
+          {t:'"The stretch drinks. The squad will fight dry."', fx:()=>b2KeyColumn(), go:'b2_key_column'},
+          {t:'Not yet.', go:()=>startExplore()}]}; },
   b2_key_squad:()=>({sp:'The squad\'s cart · dusk', txt:
 `You say it. Nobody argues. That is the worst of it.
 
@@ -26363,7 +26419,7 @@ ${b2In('tangle') ? 'Tangle listens to it a while. It is not his four notes. He h
 "Sergeant. Drink?" He holds up the cup. "No. You've got water. Water's better. I'm an old man, I'm allowed the worse thing." He drinks. "The hills tomorrow. Water in them, the guides say, and this time I believe them, because the Bhilard believe them, and they're all going there too. And the Tregyn. And Dom, behind." He considers the dark. "And these Khundryl, whoever they are. Everybody's going to the same water. That's how battles happen."
 
 He looks at you sidelong. ${S.f.b2_c5_key === 'column' ? `"I heard where your skins went. You fought the Tregyn with dust in your mouths, and won." He drinks. "The Fist heard too. He said one word." He does not say which. He doesn't have to. "Count your own. Then sleep."` : `"I heard what you did with your skins. Don't look at me like that. It was right, and you'll never be sure it was, and that's how you know it was a sergeant's choice and not a priest's." He drinks. "Count your own. Then sleep."`}`,
-    ch:[{t:'Count them.', go:'b2_c5_end'}]}),
+    ch:[{t:'Count them.', go:'b2_c5_end'}, {t:'Not yet.', go:()=>startExplore()}]}),
   b2_c5_end:()=>({sp:'The Nenoth · night', scene:'b2_trygalle', txt:
 `You count them.
 
@@ -28714,10 +28770,14 @@ The Seventh.`,
 `An old stone at the side of the road with a word cut in it in a script nobody uses any more. The gate is close. But behind you the column has stopped: something on the road, a cart down, and a hundred people standing round it looking south.` :
 `An old stone at the side of the road with a word cut in it in a script nobody uses any more, and beyond it the last of the barrows, and beyond that the gate.
 
-The riders have reached the road. Behind you, among the barrows, Dom's horse are coming down onto the paving from the south, on foot some of them, leading their horses up the barrow-sides to get round the Wickan children, and coming at the carts.
+Dust on the barrows to the south. Riders. Once the squad turns to hold the road here, it holds it.`,
+    ch: !S.f.b2_wcart ? [{t:'Back to the cart.', go:()=>startExplore()}] : [{t:'Turn. Hold the road.', go:'b2_wstone_hold'}, {t:'Not yet.', go:()=>startExplore()}]}),
+  /* Dom's riders at the milestone, once the squad has turned to hold the road */
+  b2_wstone_hold:()=>({sp:'The last milestone', txt:
+`The riders have reached the road. Behind you, among the barrows, Dom's horse are coming down onto the paving from the south, on foot some of them, leading their horses up the barrow-sides to get round the Wickan children, and coming at the carts.
 
 Your stretch is the last of the column. Everything between the riders and the people is you.`,
-    ch: !S.f.b2_wcart ? [{t:'Back to the cart.', go:()=>startExplore()}] : [
+    ch:[
       {t:'Hold the road. Let the stretch run past.', go:()=>startBattle('b2_runway', {})},
       {t:'Tangle: a smoker across the road behind the carts, so their bows are blind.', tag:'uses 1 smoker', req:()=>b2In('tangle') && S.inv.smoker > 0, fx:()=>{ S.inv.smoker--; },
         go:()=>startBattle('b2_runway', {pre:'Tangle lobs a smoker into the road behind the last cart, and the paving goes white from barrow to barrow, and the riders in it are shooting at nothing.'})},

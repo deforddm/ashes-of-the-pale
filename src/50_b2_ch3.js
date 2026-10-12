@@ -768,7 +768,8 @@ ${b2In('sathi') ? `Sathi stops. Then she goes on, in the same flat voice. "When 
 He waits. ${b2In('sathi') ? `He is not looking at you now. He is looking at Sathi.` : ''}`,
     ch:[{t:'"How many?"', req:()=>!S.f.b2_orderAsked, fx:()=>{ S.f.b2_orderAsked = 1; }, go:'b2_weasel_ask'},
         {t:'"We\'ll do it." Herd your people out into the open.', fx:()=>{ S.f.b2_c3_key = 'bait'; if (b2In('sathi')) loy('sathi', 1); if (b2In('redblade')) loy('redblade', 1); if (b2In('haddat')) loy('haddat', -1); if (b2In('marrow')) loy('marrow', -1); }, go:'b2_key_bait'},
-        {t:'"No. My people go under the wagons." Pull them back.', fx:()=>{ S.f.b2_c3_key = 'pull'; if (b2In('haddat')) loy('haddat', 1); if (b2In('marrow')) loy('marrow', 1); if (b2In('sathi')) loy('sathi', -1); }, go:'b2_key_pull'}]}),
+        {t:'"No. My people go under the wagons." Pull them back.', fx:()=>{ S.f.b2_c3_key = 'pull'; if (b2In('haddat')) loy('haddat', 1); if (b2In('marrow')) loy('marrow', 1); if (b2In('sathi')) loy('sathi', -1); }, go:'b2_key_pull'},
+        {t:'Not yet.', go:()=>startExplore()}]}),
   b2_weasel_ask:()=>({sp:'The Weasel captain', txt:
 `${b2In('sathi') ? `He answers before she has finished asking it. Sathi listens, and for a moment does not translate.
 
@@ -778,7 +779,8 @@ ${b2In('haddat') ? `Haddat, behind you, has not moved. Her face is the face she 
 
 Ramin, very straight: "It is an order, Sergeant. From the people who will close the trap." He does not say whether he likes it. "In Ehrlitan, the company held the market the same way. With people in it." He stops there.` : ''}`,
     ch:[{t:'"We\'ll do it." Herd your people out into the open.', fx:()=>{ S.f.b2_c3_key = 'bait'; if (b2In('sathi')) loy('sathi', 1); if (b2In('redblade')) loy('redblade', 1); if (b2In('haddat')) loy('haddat', -1); if (b2In('marrow')) loy('marrow', -1); }, go:'b2_key_bait'},
-        {t:'"No. My people go under the wagons." Pull them back.', fx:()=>{ S.f.b2_c3_key = 'pull'; if (b2In('haddat')) loy('haddat', 1); if (b2In('marrow')) loy('marrow', 1); if (b2In('sathi')) loy('sathi', -1); }, go:'b2_key_pull'}]}),
+        {t:'"No. My people go under the wagons." Pull them back.', fx:()=>{ S.f.b2_c3_key = 'pull'; if (b2In('haddat')) loy('haddat', 1); if (b2In('marrow')) loy('marrow', 1); if (b2In('sathi')) loy('sathi', -1); }, go:'b2_key_pull'},
+        {t:'Not yet.', go:()=>startExplore()}]}),
 
   /* ---- the bait ---- */
   b2_key_bait:()=>({sp:'The Shallows', txt:

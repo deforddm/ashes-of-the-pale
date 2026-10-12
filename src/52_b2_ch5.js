@@ -655,7 +655,8 @@ ${B2.younger} is standing behind her, watching the jar, the way she watched it o
 
 ${b2In('haddat') ? `Haddat is standing very still, looking at the stretch. ` : ''}${b2In('marrow') ? `Marrow is sitting on the tailboard with her eyes shut. ` : ''}${b2In('tangle') ? `Tangle is looking at the squad. ` : ''}${b2In('sathi') ? `Sathi is looking at the horses. ` : ''}${b2In('redblade') ? `Ramin is looking at nobody, very straight.` : ''}`,
       ch:[{t:'"The squad drinks. If we can\'t fight, nobody in the stretch lives to drink anything."', fx:()=>b2KeySquad(), go:'b2_key_squad'},
-          {t:'"The stretch drinks. The squad will fight dry."', fx:()=>b2KeyColumn(), go:'b2_key_column'}]}; },
+          {t:'"The stretch drinks. The squad will fight dry."', fx:()=>b2KeyColumn(), go:'b2_key_column'},
+          {t:'Not yet.', go:()=>startExplore()}]}; },
   b2_key_squad:()=>({sp:'The squad\'s cart · dusk', txt:
 `You say it. Nobody argues. That is the worst of it.
 
@@ -847,7 +848,7 @@ ${b2In('tangle') ? 'Tangle listens to it a while. It is not his four notes. He h
 "Sergeant. Drink?" He holds up the cup. "No. You've got water. Water's better. I'm an old man, I'm allowed the worse thing." He drinks. "The hills tomorrow. Water in them, the guides say, and this time I believe them, because the Bhilard believe them, and they're all going there too. And the Tregyn. And Dom, behind." He considers the dark. "And these Khundryl, whoever they are. Everybody's going to the same water. That's how battles happen."
 
 He looks at you sidelong. ${S.f.b2_c5_key === 'column' ? `"I heard where your skins went. You fought the Tregyn with dust in your mouths, and won." He drinks. "The Fist heard too. He said one word." He does not say which. He doesn't have to. "Count your own. Then sleep."` : `"I heard what you did with your skins. Don't look at me like that. It was right, and you'll never be sure it was, and that's how you know it was a sergeant's choice and not a priest's." He drinks. "Count your own. Then sleep."`}`,
-    ch:[{t:'Count them.', go:'b2_c5_end'}]}),
+    ch:[{t:'Count them.', go:'b2_c5_end'}, {t:'Not yet.', go:()=>startExplore()}]}),
   b2_c5_end:()=>({sp:'The Nenoth · night', scene:'b2_trygalle', txt:
 `You count them.
 

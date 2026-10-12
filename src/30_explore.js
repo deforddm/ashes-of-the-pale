@@ -109,6 +109,32 @@ function updExplore(){
   $('#elog').innerHTML = S.log.map(l => `<div>${l}</div>`).join('');
   const hud = $('.hud'); if (G.cv && G.hudH != null && hud && hud.offsetHeight !== G.hudH) fitCanvas(ACOLS(), AROWS()); // a quest line that wraps differently moves the map: give it the room that's left
 }
+/* v4.8 the unspoken-to: when a conversation offers a way off this map (another area, a fight, the end of the chapter) beside a
+   way to stay, and somebody here still has something to say (a figure with its ◆ lit), one of the squad says so under the
+   text. Never on a node that only stays, and never about whoever is talking. */
+const ONWARD_RE = /\b(startBattle|chapterEnd|startChapter|finish)\s*\(/;
+function goesOn(g, d = 0){
+  if (!g) return false;
+  if (typeof g === 'function') { const t = String(g); if (ONWARD_RE.test(t)) return true;
+    for (const m of t.matchAll(/\bstartExplore\s*\(\s*'([^']+)'/g)) if (m[1] !== S.area) return true; return false; }
+  if (typeof g !== 'string' || d > 2 || !DLG[g]) return false; // a talk that goes on: on only if every way out of it goes on
+  let n; try { n = DLG[g](); } catch(e) { return false; }
+  if (n.fx && goesOn(n.fx, 9)) return true;
+  const vis = (n.ch || []).filter(c => { try { return !c.req || c.req(); } catch(e) { return false; } });
+  return vis.length > 0 && vis.every(c => !staysHere(c)) && vis.some(c => choiceOn(c, d + 1));
+}
+const choiceOn = (c, d = 0) => !!c.onward || goesOn(c.go, d) || (!!c.check && goesOn(c.fail, d));
+const staysHere = c => !c.check && !c.onward && (c.go === undefined || (typeof c.go === 'function' && !ONWARD_RE.test(String(c.go)) && !/\btalk\s*\(/.test(String(c.go)) && /^\(\)\s*=>\s*\{?\s*startExplore\(\s*\)/.test(String(c.go))));
+function unspokenLine(id, ch){
+  if (!S || !AREAS[S.area] || !ch.some(c => choiceOn(c)) || !ch.some(staysHere)) return '';
+  const waiting = (AREA().npcs || []).filter(n => { try { return (!n.show || n.show()) && n.fresh && !/^\(\)\s*=>\s*true$/.test(String(n.fresh)) && n.fresh() && n.node() !== id; } catch(e) { return false; } });
+  if (!waiting.length) return '';
+  const talks = new Set(waiting.map(n => n.node())); // two figures, one conversation (Hedge and Fiddler at the bones) are one somebody
+  const named = waiting.filter(n => !/^(a|an|the|something|someone)\b/i.test(n.name || '')), mates = SQUAD().filter(k => k !== 'sgt' && TPL[k] && !(S.dead && S.dead[k]));
+  const who = talks.size === 1 && named.length ? `${named[0].name}'s` : 'Somebody here\'s';
+  const k = [...id].reduce((h, ch) => h + ch.charCodeAt(0), 0), mate = mates.length ? NAME(mates[k % mates.length]) : '';
+  return mate ? `${mate}, low: "${who} still waiting on a word, Sergeant."` : `${who.replace(/'s$/, ' is')} still waiting on a word.`;
+}
 const npcAt = (x,y) => AREA().npcs.find(n => n.x === x && n.y === y && (!n.show || n.show()));
 const tileAt = (x,y) => { const m = AREA().map; return (y >= 0 && y < m.length && x >= 0 && x < m[0].length) ? m[y][x] : '#'; };
 const palePass = (x,y) => { const a = AREA(), ch = tileAt(x,y); return ch !== '#' && (a.walk.includes(ch) || !!(a.triggers && a.triggers[ch])) && !npcAt(x,y); };

@@ -692,7 +692,7 @@ ${S.f.b2_ubaryd ? '' : `You tell her: west. A long way west. On the sea. She nod
 
 ${!S.f.b2_roadRest ? 'The squad has not rested. ' : ''}You get your people moving: carts, the lame, the sleeping children lifted onto anything with wheels. And then, from behind, out of the dark, Hackle growls.`,
     ch:[{t:'"Turn round. Shields."', go:'b2_tail_start'},
-        {t:'Not yet.', req:()=>!S.f.b2_roadRest, go:()=>startExplore()}]},
+        {t:'Not yet.', go:()=>startExplore()}]},
   b2_tail_start:()=>({sp:'The tail of the column', txt:
 `Riders. Not many: a dozen, two dozen, Tithansi on small horses, coming out of the dark at the tail where the carts are slowest, the way wolves come at the back of a herd. They are not here to fight. They are here to cut off the last cart, and the one after, and be gone before the Wickan rearguard comes back from wherever it has gone.
 
@@ -935,7 +935,7 @@ The Red Blades are already riding along the front of the line toward them, red s
 He looks north, at the three square blocks of Guran in the sun. "And them. They're waiting to see who wins. They'll send a file down the bank to find out if we're soft. Don't be soft."
 
 ${b2In('redblade') ? '' : `He's already turning away. Then, over his shoulder: "The Red Blades lost a great many people getting into position this morning. Don't let them lose any more for want of a squad behind them."`}`,
-    ch:[{t:'"Hold the bank."', go:'b2_west_fight'}]}),
+    ch:[{t:'"Hold the bank."', go:'b2_west_fight'}, {t:'Not yet.', go:()=>startExplore()}]}),
   b2_west_fight:()=>({sp:'The west bank', txt:
 `The Red Blades go in at the gallop, lances down, and hit the Semk on the rise like a hammer hitting a pot, and the Semk break, and then they don't. Something on the rise lifts its arms, and the air bends, and two Red Blade horses go down screaming with nothing touching them.
 
@@ -1045,7 +1045,7 @@ He looks at the river.
 "Ubaryd has fallen. A rider came over this morning, a Wickan who went to look. The city's taken, and the fleet's gone out of it, and there is nobody there to put us on ships." He takes his feet out of the bucket. "So. No Ubaryd. Aren." He says the name the way you'd say the length of a road you have to walk on a bad leg. "All the way to Aren."
 
 Then, the grin coming back, a little: "Count them, Sergeant. It's further than it was this morning."`,
-    ch:[{t:'"Sir."', go:'b2_night'}]},
+    ch:[{t:'"Sir."', go:'b2_night'}, {t:'Not yet.', go:()=>startExplore()}]},
 
   /* ---- the night: the spirits and the Semk god ---- */
   b2_night:()=>({sp:'The west bank · night', scene:'b2_spirits', fx:()=>{ S.f.b2_spirits = 1; }, txt:

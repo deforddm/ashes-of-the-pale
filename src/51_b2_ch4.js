@@ -627,7 +627,7 @@ ${b2In('haddat') ? `Haddat reads one over your shoulder. She reads it twice. "An
 `Lull is on the bank above the carriages with two of his marines, as if he had been waiting there for some time to see what the carriages would do. He reads the paper by firelight with the one eye, slowly, all of it.
 
 "Hood's breath." He says it without any heat at all. He folds the paper and puts it inside his jerkin. "With me. Now. The Fist will want to see your face when he hears it."`,
-    ch:[{t:'With him.', go:'b2_too_late'}]}),
+    ch:[{t:'With him.', go:'b2_too_late'}, {t:'"A moment, sir."', go:()=>startExplore()}]}),
   b2_too_late:()=>({sp:'The bank · the dark before dawn', fx:()=>{ S.f.b2_tooLate = 1; }, txt:
 `You never get to the Fist's tent.
 
@@ -914,7 +914,7 @@ ${b2In('haddat') ? 'Haddat looks at them, and at you, and does not say anything.
 He picks up a stone and turns it over. "The Council lived. Most of it. Nethpara. Pullyk. The ones who made the deal walked over on Dom's paper and his archers let them by." He puts the stone down. "The Fist knows. He will do nothing, because there is nothing to do that does not lose us the rest of the column, and he is a Fist, and that is what a Fist is for." He looks at you at last. "I'm his uncle. I'm allowed to hate it."
 
 "Count your own, Sergeant. Then sleep. The forest tomorrow. Dom won't come into the trees after us tonight. He doesn't need to."`,
-    ch:[{t:'Count them.', go:'b2_c4_end'}]}),
+    ch:[{t:'Count them.', go:'b2_c4_end'}, {t:'Not yet.', go:()=>startExplore()}]}),
   b2_c4_end:()=>({sp:'The far bank of the Vathar · night', scene:'b2_after', txt:
 `You count them.
 

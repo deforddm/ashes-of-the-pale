@@ -35,6 +35,9 @@ const c1DownLine = (id, claw) => { const d = c1Downs(id); if (!d.n) return '';
 const c1Hounds = () => startBattle(S.f.c1_key === 'claw' ? 'hounds_claw' : 'hounds_line', {surprise:'e'});
 /* once Whiskeyjack and Tattersail are both done, the night goes on: Pell's wagon on the way back, two hours' sleep, then the Hounds */
 const c1Late = () => talk(S.f.c1_raid ? 'c1_night' : 'c1_raid');
+/* both reports made: the night is ready to go wrong, but only when the squad heads back to its fire (never on a plain leave) */
+const c1Ready = () => !!(S.f.c1_wj && S.f.c1_tent && !S.f.c1_hounds);
+const c1Home = {t:'Back to the Fourth\'s fire.', req:c1Ready, onward:true, go:()=>c1Late()};
 /* who the raiders at Pell's wagon are, by what the north tunnels did with Moreau's section */
 const c1Raiders = () => S.f.p_garrowCrossed ? `One of them you've seen before, by lamplight, forty paces into the north tunnels, running for the surface with Garrow's name. He's stopped running. He's found something worth stopping for.` :
   S.f.garrowWord ? `None of them is Moreau. Moreau's section heard Garrow's word two nights ago and went deeper. These ones never heard it.` :
@@ -298,12 +301,12 @@ Quick Ben has looked up from the coals. "Interesting deck," he says, and means t
 "Sleep if you can. Report to the quartermaster in the morning for the wagon." ${S.f.c1_paran ? `A glance down the lines. "The captain's been round yours, I hear. Good. He's new, and he's trying, and the ones who try are the ones you get to keep."` : `"If the captain walks your lines tonight, be a marine at him; he's new, and he's trying, and the ones who try are the ones you get to keep."`} He looks at the cadre row, where the one lamp is still lit. ${S.f.c1_tent ? `"And you've seen Tattersail. Good. She doesn't ask twice. She just stops asking."` : `"And if Tattersail asks for you, go. She doesn't ask twice. She just stops asking."`}
 
 ${S.f.wjRegard > 0 ? `"Sergeant." As you turn. "All five. Keep doing that."` : S.f.wjRegard < 0 ? `He doesn't say anything as you turn. Kalam does, to nobody: "Fourth Squad."` : `Quick Ben lifts two fingers from his knee, which might be a farewell and might be a ward.`}`,
-      ch:[{t:'Walk the lines.', go:()=>{ if (S.f.c1_tent) c1Late(); else startExplore(); }}]}),
+      ch:[c1Home, {t:'Walk the lines.', go:()=>startExplore()}]}),
     c1_wj_again:()=>({sp:'Whiskeyjack', txt:
 `"Sergeant." He doesn't look up from the fire. "You've got your orders. They don't get better with repeating."
 
 ${S.f.c1_qbTuft ? `Quick Ben, to the coals: "Tell your mage she can stop pretending I'm not here. I'm very good at being here."` : S.f.c1_qbCaught ? `Quick Ben, without looking up from the coals: "Still staring?"` : S.f.c1_kalamWary ? `Kalam isn't at the fire. You didn't see him go, and Whiskeyjack doesn't say where, and you find you would rather not ask.` : `Kalam is exactly where he was. You'd swear he's been somewhere.`}`,
-      ch:[{t:'Leave', go:()=>startExplore()}]}),
+      ch:[c1Home, {t:'Leave', go:()=>startExplore()}]}),
 
     /* ---- Captain Paran walks the lines ---- */
     c1_paran:()=>({sp:'Captain Paran', fx:()=>{S.f.c1_paran=1;}, txt:
@@ -461,11 +464,12 @@ ${S.ending === 'told' || S.ending === 'given' ? `Tattersail puts something in yo
 
 She's back to her cards before you reach the flap. "Sergeant. If you hear dogs tonight, they aren't."`,
       // with Whiskeyjack already seen, leaving the tent starts the Hounds: one last chance at Pell's wagon first
-      ch:[{t:'Leave the tent', go:()=>{ if (S.f.c1_wj) c1Late(); else startExplore(); }},
-          {t:'Stop at Pell\'s wagon on the way.', req:()=>!!S.f.c1_wj && S.silver >= 5, go:()=>{ sceneShell('camp_night'); talk('c1_pell'); }}]}),
+      ch:[{t:'Leave the tent', req:()=>!c1Ready(), go:()=>startExplore()}, c1Home,
+          {t:'Stop at Pell\'s wagon on the way.', req:()=>!!S.f.c1_wj && S.silver >= 5, go:()=>{ sceneShell('camp_night'); talk('c1_pell'); }},
+          {t:'Not yet. Walk the lines.', req:c1Ready, go:()=>startExplore()}]}),
     c1_tent_again:()=>({sp:'Tattersail', txt:
 `"Sergeant." She doesn't look up. "The cards haven't got better. Neither has the puppet. Go and sleep, or go and pretend to."`,
-      ch:[{t:'Leave', go:()=>startExplore()}]}),
+      ch:[c1Home, {t:'Leave', go:()=>startExplore()}]}),
 
     /* ---- Pell's wagon ---- */
     c1_pell:()=>({sp:'Quartermaster Pell', txt:
@@ -478,7 +482,7 @@ You carry ${S.silver} silver.`,
         {t:'Healing salve, 5 silver', tag:`have ${S.inv.salve}`, req:()=>S.silver>=5, fx:()=>{S.silver-=5;S.inv.salve++;note('Bought a salve.','good');AUDIO.play('coin');}, go:'c1_pell'},
         {t:'Cusser, 14 silver', tag:`have ${S.inv.cusser}`, req:()=>S.silver>=14 && !S.f.c1_cusserSold, fx:()=>{S.silver-=14;S.inv.cusser++;S.f.c1_cusserSold=1;note('Bought a cusser. Pell looks at Kettle the way a man looks at weather.','good');AUDIO.play('coin');}, go:'c1_pell_cusser'},
         {t:'"You\'ve got a cusser."', req:()=>S.silver<14 && !S.f.c1_cusserSold && !S.f.c1_askedCusser, fx:()=>S.f.c1_askedCusser=1, go:'c1_pell_broke'},
-        {t:'Leave', go:()=>{ if (S.f.c1_wj && S.f.c1_tent && !S.f.c1_hounds) c1Late(); }}]}), // on the way back from the tent: the wagon, a little sleep, then the night goes wrong
+        {t:'Leave', req:()=>!c1Ready()}, c1Home, {t:'Not yet.', req:c1Ready, go:()=>startExplore()}]}), // on the way back to the fire: the wagon, a little sleep, then the night goes wrong
     c1_pell_cusser:()=>({sp:'Quartermaster Pell', txt:
 `Kettle takes it in both hands like an infant she has been told is hers. She turns it once to the light.
 

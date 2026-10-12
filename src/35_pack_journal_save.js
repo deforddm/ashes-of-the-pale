@@ -172,6 +172,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.7.5', ['Nothing on a map moves the story on by surprise any more. Every way into the next place, the next fight or the next chapter now offers "Not yet." (or a way to stay), in both books, and opening it changes nothing until you choose to go on.', 'If someone on the map still has something to say when you are about to leave, one of the squad mentions it.']],
   ['4.7.4', ['The Ways on buttons under the map are gone too. What stays: a brass ring on the ground under anything you can walk to and use, and an arrow at the edge of the view when it is off screen.']],
   ['4.7.3', ['The names floating over things on the map are gone. The brass rings and markers stay, and the Ways on buttons under the map still name each one and walk the squad there.']],
   ['4.7.2', ['Finding the way on is easier, in both books. Everything on a map that you can walk to and use (a cart, a gate, a dead tree, the edge of the map) now has a brass ring on the ground and its name above it, and an arrow at the edge of the view when it is off screen.', 'A new row of buttons under the map, Ways on, lists them by name. Tap one and the squad walks there and opens it. When the quest line names one, and there is nobody new left to talk to, that one is lit and listed first.']],

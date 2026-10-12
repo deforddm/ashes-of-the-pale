@@ -391,7 +391,8 @@ Tuft is sitting with her back against a barrow-stone on the lip of the ridge, wh
 
 "It's down there," she says, before you ask. "Whatever the Adjunct carries. I can feel it from here. It's like — Sergeant, it's like standing at the edge of a well at night and knowing the well goes all the way through the world and out the other side. Meanas doesn't *fade* near it. It *stops*. There's a hole." She swallows. "I want one card before we go down. One. So I'll know I can still see *something*."`,
       ch:[{t:'Let her draw.', fx:()=>{ S.f.c5_drawn=1; S.card = dealCard(['herald','herald','obelisk','hounds','knight','oponn']); S.f.c5_drawnCard = S.card; }, go:()=>cardSequence(()=>talk('c5_card'))},
-          {t:'"No readings. Not this close to her."', fx:()=>{ S.f.c5_noCard=1; loy('tuft',-1); if (SQUAD().includes('brisk')) loy('brisk',1); }, go:'c5_card_no'}]} : {sp:'The east edge', txt:
+          {t:'"No readings. Not this close to her."', fx:()=>{ S.f.c5_noCard=1; loy('tuft',-1); if (SQUAD().includes('brisk')) loy('brisk',1); }, go:'c5_card_no'},
+          {t:'Not yet.', go:()=>startExplore()}]} : {sp:'The east edge', txt:
 `${S.f.c5_valeSeen ? `The steep brown fall into the vale, and the long barrow, and the smoke.` : `The steep brown fall into the vale. Dusk is coming up out of it like water into a footprint.`}`,
       ch:[{t:'Down into the vale.', go:()=>{ startExplore('barrow_vale'); if (!S.f.c5_valeSeen) talk('c5_vale_arrive'); }},
           {t:'Not yet.'}]},
@@ -549,7 +550,10 @@ ${C5H.wardsPre() ? `That is the whole of the Adjunct's opinion of the Fourth. Yo
       ch:[{t:'Leave her be.'}]}),
 
     /* ---- the T'lan Imass: the wards ---- */
-    c5_tool:()=>({sp:'The long barrow', scene:'hills_dusk', txt:
+    c5_tool:()=>({sp:'The long barrow', txt:
+`The thing from the dig is standing in the ring of stones at the near end of the long barrow, very still, the way a stone stands. The Adjunct is watching it. Whatever it came up to do, it hasn't started.`,
+      ch:[{t:'Down in the grass. Watch.', go:'c5_tool_watch'}, {t:'Not yet.', go:()=>startExplore()}]}),
+    c5_tool_watch:()=>({sp:'The long barrow', scene:'hills_dusk', txt:
 `You don't go to it. You stay where you are among the small barrows, with the squad flat in the grass round you, and you watch, and it begins.
 
 It comes up out of the dig. Slowly, the way a man climbs out of a ditch at the end of a long day, one hand on the lip, then the other. It stands. It's not tall. You'd thought it would be tall. It's shorter than Brisk and broader, and it stands the way a stone stands, with its weight all the way down in the ground. Dun hide stretched over bone. Hair, what's left of it, in a lank dark rope down its back. A face you can see now in the dusk, and would rather not: hide dried to the skull, the lips gone back from the teeth, and where the eyes were, two pits, and in each pit, very small, something that isn't light but is where light would be.
@@ -764,7 +768,8 @@ He looks at the split stones steaming in the dusk.
 
 ${SQUAD().includes('tuft') ? `Tuft, behind you, has gone completely still.` : ''}`,
       ch:[{t:'"You look like a man who\'s been ill, sir."', req:()=>!S.f.c5_paranDied, go:'c5_paran_died'},
-          {t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'}]}),
+          {t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'},
+          {t:'Not yet.', go:()=>startExplore()}]}),
     c5_paran_died:()=>({sp:'Captain Paran', fx:()=>{ S.f.c5_paranDied=1; }, txt:
 `"No," he says. "I've been dead."
 
@@ -778,7 +783,8 @@ He turns back to the barrow.
 
 ${SQUAD().includes('ohl') ? `Ohl has been standing a pace behind you, listening. He looks at Paran for a long time, the way he looks at a wound. "I believe you, sir," he says at last. "You've got the look. I've seen it twice. Both times the man went on to do something the rest of us talked about for years." A pause. "Neither of them enjoyed it."` : `Nobody says anything. There isn't anything to say to that. You find you believe him completely.`}`,
       ch:[{t:'"What is she letting out of that hill, sir?"', req:()=>!S.f.c5_paranHill, go:'c5_paran_hill'},
-          {t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'}]}),
+          {t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'},
+          {t:'Not yet.', go:()=>startExplore()}]}),
     c5_paran_again:()=>({sp:'Captain Paran', txt:
 `He's looking at the barrow. He doesn't turn round. "Sergeant."`,
       ch:[{t:'"We\'ll camp west of the barrows, sir."', fx:()=>{ S.f.c5_night=1; }, go:'c5_nightfall'},
@@ -895,7 +901,8 @@ ${SQUAD().includes('tuft') ? `Behind you, very quietly, Tuft: "Sergeant. Don't l
             near:{t:()=> S.f.c5_digPaid ? 'Yes, but the big man wants something for his trouble: five silver.' : `Yes, but ${NAME(ROLL().who || 'sgt')} had to stand at the lip of that hole to say it, and comes away rattled: −1 on the next check.`,
               fx:()=>{ if (S.silver >= 5) { S.silver -= 5; S.f.c5_digPaid=1; AUDIO.play('coin'); } else { S.rattled ??= {}; S.rattled[ROLL().who || 'sgt'] = 1; } }},
             go:'c5_dig_told', fail:'c5_dig_laugh'},
-          {t:'Stand aside. It\'s their neck.', go:'c5_dig_let'}]} : S.f.c5_night ? {sp:'East · the far hill', scene:'hills_night', txt:
+          {t:'Stand aside. It\'s their neck.', go:'c5_dig_let'},
+          {t:'Not yet.', go:()=>startExplore()}]} : S.f.c5_night ? {sp:'East · the far hill', scene:'hills_night', txt:
 `Past the east end of the long barrow, where the dig is a black mouth breathing frost, and round the flank of the far hill, and down to a fold with a spring in it and a fire. Toc's fire. Paran is sitting by it with his sword across his knees. Toc is seeing to the horses.
 
 The stars are very bright. There's no moon. Somewhere to the west, behind you, under the long barrow, the ground goes *thud*, and a long time later, *thud*.

@@ -763,14 +763,15 @@ Then she walks on up the street to her place at the end of the line, where a sco
     /* ---- the gate: Tuft's draw, the steward, the ring ---- */
     c6_gate:()=> S.f.c6_gateDone ? {sp:'Lady Simtal\'s gate', txt:
 `The gate is behind you now. The Fete is ahead.`,
-      ch:[{t:'On.', go:'c6_terrace_arrive'}]} : (SQUAD().includes('tuft') && !S.f.c6_drawn && !S.f.c6_noCard) ? {sp:'Tuft', scene:'fete_street', txt:
+      ch:[{t:'On.', go:'c6_terrace_arrive'}, {t:'Not yet.', go:()=>startExplore()}]} : (SQUAD().includes('tuft') && !S.f.c6_drawn && !S.f.c6_noCard) ? {sp:'Tuft', scene:'fete_street', txt:
 `At the gate, under a lantern pole hung with paper moons, Tuft stops. She has the Deck out of her sleeve before you've seen her reach for it, face down in both hands.
 
 "One," she says. "For the squad. Before we go in." She isn't looking at the gate. She's looking up at the lanterns, all those candles in all that paper, swinging over a street full of people who have decided not to be afraid tonight. "Quick Ben's right. Everybody's going to be looking at everything. I'd like to look first."
 
 ${S.f.c5_noCard || S.f.c4_noCard ? `She doesn't mention the other times. She's past mentioning them.` : S.f.c5_drawn ? `"The last one was on the ridge," she says, "with the hole in the world at the bottom of the vale. I'd like one with nothing in the way."` : ''}`,
       ch:[{t:'Let her draw.', fx:()=>{ S.f.c6_drawn=1; S.card = dealCard(['chains','chains','knight','hounds','obelisk','oponn']); }, go:()=>cardSequence(()=>talk('c6_card'))},
-          {t:'"Not here. Not in front of the whole Fete."', fx:()=>{ S.f.c6_noCard=1; if (SQUAD().includes('tuft')) loy('tuft',-1); if (SQUAD().includes('brisk')) loy('brisk',1); }, go:'c6_card_no'}]} : {sp:'Lady Simtal\'s gate', txt:
+          {t:'"Not here. Not in front of the whole Fete."', fx:()=>{ S.f.c6_noCard=1; if (SQUAD().includes('tuft')) loy('tuft',-1); if (SQUAD().includes('brisk')) loy('brisk',1); }, go:'c6_card_no'},
+          {t:'Not yet.', go:()=>startExplore()}]} : {sp:'Lady Simtal\'s gate', txt:
 `The iron gate of Lady Simtal's estate, twelve feet high, standing open, with a steward at it holding two lists and the Fete going past him in both directions like a river past a post.`,
       ch:[{t:'Up to the steward.', go:'c6_steward'},
           {t:'Not yet.'}]},
@@ -1442,7 +1443,10 @@ ${S.f.c6_gardenSeen ? `The Adjunct went out through it an hour ago. You can stil
       ch:[{t:'Leave it.'}]}),
 
     /* ---- the Hound ---- */
-    c6_hound:()=>({sp:'The east wall', scene:'fete_garden', txt:
+    c6_hound:()=>({sp:'The east wall', txt:
+`Something is crouched on the top of the east wall, where the lanterns don't reach. Long and low and darker than the wall. It hasn't moved. Nobody on the terrace has looked up.`,
+      ch:[{t:'Go to the wall.', go:'c6_hound_down'}, {t:'Not yet.', go:()=>startExplore()}]}),
+    c6_hound_down:()=>({sp:'The east wall', scene:'fete_garden', txt:
 `It comes down off the wall in one long pour, like ink off the edge of a table, and lands on the lawn without a sound, and stands.
 
 A Hound of Shadow. You saw them at Pale, in the tent lines, with the sky on fire. You saw two of them in the hills, come out of a hole in the air and go past you like weather. This one is smaller than those, or it's hunched, and it's hurt. Something has opened it along the flank, shoulder to haunch, in one long clean cut, and the cut isn't bleeding. It's smoking, faintly, like a wick someone has pinched out.
@@ -1802,7 +1806,10 @@ She hasn't left the squad. She'll walk back to the crossing with you in the morn
       ch:[{t:'Back to the lawn.', go:()=>startExplore()}]}),
 
     /* ---- the Tyrant ---- */
-    c6_tyrant:()=>{ const kn = S.f.c6_mammotKnown, eye = C6H.here(S.f.c6_mammotEye) ? S.f.c6_mammotEye : null, nm = id => C6H.nm(id, 'you');
+    c6_tyrant:()=>({sp:'The old priest', txt:
+`The old priest in the Jaghut mask stands apart from the dancing with his hands folded in his sleeves. He isn't watching the dancers. He's watching the sapling, the way a man watches a pot he has been told not to.`,
+      ch:[{t:'Wait for it.', go:'c6_tyrant_rise'}, {t:'Not yet.', go:()=>startExplore()}]}),
+    c6_tyrant_rise:()=>{ const kn = S.f.c6_mammotKnown, eye = C6H.here(S.f.c6_mammotEye) ? S.f.c6_mammotEye : null, nm = id => C6H.nm(id, 'you');
       return {sp:'The old priest', scene:'garden_storm', fx:()=>{ if (!S.f.c6_tuft) S.f.c6_tuft = S.f.c6_badgeCold ? 'dark' : C6H.here('tuft') ? 'kept' : 'gone'; /* v3.16: 'kept' only if Tuft is alive and here; 'gone' keeps the garden gates shut and matches no fate */ S.f.c6_tyrantUp=1; }, txt:
 `${kn ? `You're watching the white steps when it starts, because of what ${nm(kn)} saw on the terrace; which is why you see the rest.` : `You're looking at the sky when it starts, which is why you miss the rest.`}
 

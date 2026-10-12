@@ -14,6 +14,9 @@ const c2Moreau = () => !!(S.f.garrowWord && !S.f.p_garrowCrossed);
 /* the watch Kettle's bones are played for: Ellis takes the first herself when she is with the Fourth (c2_ridge_arrive) */
 /* Kettle's sharper in the barrow (the engine's opening line, replaced): from the passage mouth, or from the far wall if she went in first alone */
 const c2BarrowPre = () => S.f.c2_barrowMissWho && !S.f.c2_kettleOut ? 'Kettle, against the far wall, lets a sharper go along the floor between their feet and gets her arms over her head. In a stone room it is the loudest thing that has happened in a thousand years.' : 'Kettle rolls a sharper in from the passage mouth. In a stone room it is the loudest thing that has happened in a thousand years.';
+/* Sethand heard and the Deck settled: the light comes when the squad sits down at the fire for the night, never on a plain leave */
+const c2Ready = () => !!((S.f.c2_drawn || S.f.c2_noCard) && S.f.c2_sethNight && !S.f.c2_light);
+const c2Sit = {t:'Sit the night out at the fire.', req:c2Ready, onward:true, go:()=>talk('c2_light')};
 const c2Watch = () => SQUAD().includes('ellis') ? 'second watch' : 'first watch';
 const c2Count = () => SQUAD().includes('ellis') ? 'Fifteen days, six' : 'Eighteen days, five';
 /* the outriders' answers: the talk (Guile), the ✦ song (Wits 16), Sethand's word, shields. Offered again if the song goes wrong. */
@@ -89,7 +92,7 @@ const CH2 = {
             "#,,....,....r,,#",
             "################" ],
       walk:'.,', triggers:{F:'c2_fire', '=':'c2_tent', W:'c2_wagon_night', '>':'c2_to_hills'}, start:{x:5,y:9},
-      quest:()=> S.f.c2_lightDone ? 'Dawn. East, and the hills.' : S.f.c2_light ? 'There is a light in the west.' : !S.f.c2_sethNight ? 'The fourth camp. Sethand is at the fire, which is new.' : !(S.f.c2_drawn || S.f.c2_noCard) ? 'Night. Tuft is at the fire with the Deck in her hand.' : 'Night. Nobody is sleeping yet.',
+      quest:()=> S.f.c2_lightDone ? 'Dawn. East, and the hills.' : S.f.c2_light ? 'There is a light in the west.' : !S.f.c2_sethNight ? 'The fourth camp. Sethand is at the fire, which is new.' : !(S.f.c2_drawn || S.f.c2_noCard) ? 'Night. Tuft is at the fire with the Deck in her hand.' : 'Night. Nobody is sleeping yet. The fire, when the squad is ready.',
       npcs:[ {id:'sethand', name:'Sethand', kind:'rhivi', x:8, y:7, node:()=>S.f.c2_sethNight ? 'c2_ridge_seth_again' : 'c2_ridge_seth', fresh:()=>!S.f.c2_sethNight} ] },
 
     { id:'hills_edge', title:'The edge of the Gadrobi Hills', sub:'The last morning', hint:'Tap ground to move · tap a figure to talk · the hills are east', decor:'plain',
@@ -808,14 +811,14 @@ After a long time he reaches into the sheepskin by his knee and takes out a bow.
 `Sethand stays where he is. He has said what he came to say and will say the rest, if there is a rest, when the plain says it first.
 
 ${S.f.c2_drawn || S.f.c2_noCard ? `Tuft is still at the fire. She has put the Deck away, and her hands are in her lap where you can see them, and she is looking west.` : `Tuft is at the fire with the Deck in her hand. She hasn't drawn. She's waiting for something, and it might be you.`}`,
-      ch:[{t:'The camp.', go:()=>{ if (S.f.c2_drawn || S.f.c2_noCard) talk('c2_light'); else startExplore(); }}]}),
+      ch:[c2Sit, {t:'The camp.', req:()=>!c2Ready(), go:()=>startExplore()}, {t:'Not yet. Walk the camp.', req:c2Ready, go:()=>startExplore()}]}),
     c2_ridge_seth_again:()=> S.f.c2_lightDone ? {sp:'Sethand', txt:
 `He has his horse saddled and his back to the ridge. "The hills, Malazan. Two days. I will not talk on the way. I have talked more on this road than in the year before it, and I would like to stop."`,
       ch:[{t:'Leave him.'}]} : {sp:'Sethand', txt:
 `He hasn't moved from the fire. "Malazan. You have already sat. Sit again or do not."
 
 ${!(S.f.c2_drawn || S.f.c2_noCard) ? `He nods, very slightly, at Tuft, and the Deck in her hand.` : `He is looking west. He has been looking west for some time.`}`,
-      ch:[{t:'Leave him.', go:()=>{ if (S.f.c2_drawn || S.f.c2_noCard) talk('c2_light'); else startExplore(); }}]},
+      ch:[c2Sit, {t:'Leave him.', go:()=>startExplore()}]},
 
     /* ---- the fire: Tuft's Deck ---- */
     c2_fire:()=> S.f.c2_lightDone ? {sp:'The fire', txt:
@@ -827,7 +830,7 @@ ${S.f.c2_noCard ? `Tuft has the Deck in her sleeve and is not touching it. She h
 
 ${SQUAD().includes('kettle') && !S.f.c2_bones ? `Kettle has two knucklebones out and is throwing them against her own knee, left hand against right, keeping score in the dirt with a stick. "Hedge taught me," she says, without looking up. "Well. Hedge took four silver off me and I watched how." She holds them up. "Loser takes ${c2Watch()}, Sergeant?${SQUAD().includes('ellis') ? ` Ellis has the first. She took it before anyone could lose it.` : ''}"` : S.f.c2_bones === 'won' ? (SQUAD().includes('ellis') ? `Kettle is lying by the wagon with her crossbow across her chest, waiting for second watch, counting stars under her breath and losing count on purpose.` : `Kettle is on first watch, out by the stakes, counting stars under her breath and losing count on purpose.`) : S.f.c2_bones === 'lost' ? `Kettle is asleep already, curled round her satchel, with the bones in her fist.` : ''}`,
       ch:[{t:`"Loser takes ${c2Watch()}. Throw."`, tag:'Bones', req:()=>SQUAD().includes('kettle') && !S.f.c2_bones, go:()=>playBones({opp:'kettle', chat:SQUAD().includes('brisk') ? 'brisk' : null, stakes:null, stakeText:c2Watch(), place:'c2', after:r => { if (r.games) S.f.c2_bones = r.last === 'me' ? 'won' : 'lost'; talk('c2_bones_after'); }})},
-          {t:'Leave the fire.'}]} : {sp:'The fire', fx:()=>{S.f.c2_fireSeen=1;}, txt:
+          {...c2Sit, t:'Sit the night out.'}, {t:'Leave the fire.'}]} : {sp:'The fire', fx:()=>{S.f.c2_fireSeen=1;}, txt:
 `Tuft has the Deck out. She has it face-down on her knee, one hand flat on it, the way you'd hold a door shut.
 
 "One card, Sergeant. I don't want to. I think I have to." She doesn't look at Sethand, who is not looking at her with great skill. "Something's happening tonight. I can feel it in the warren like a draught under a door, and the Deck's warm, and it's never warm."
@@ -842,7 +845,7 @@ ${SQUAD().includes('ellis') ? `Ellis, from the dark beyond the stakes, not loudl
       after:`${c.txt}
 
 Sethand has not looked at the card. He has looked at Tuft's face while she looked at it, which is where a Rhivi reads a Deck.`,
-      ch:[{t:'Put the cards away.', go:()=>{ if (S.f.c2_sethNight) talk('c2_light'); else startExplore(); }}]}; },
+      ch:[{t:'Put the cards away.', req:()=>!c2Ready(), go:()=>startExplore()}, {...c2Sit, t:'Put the cards away. Sit the night out.'}, {t:'Put the cards away. Walk the camp.', req:c2Ready, go:()=>startExplore()}]}; },
     c2_bones_after:()=>({sp:'The fire', txt: S.f.c2_bones === 'won' ?
 `Kettle stares at the bones for a while as if they might explain themselves. Then she gets up, picks up her crossbow, and ${SQUAD().includes('ellis') ? 'lies down by the wagon with it across her chest, to be ready for second watch,' : 'goes out to the stakes for first watch'} without a word, which from Kettle is a speech.
 
@@ -858,7 +861,7 @@ The stars over the Rhivi Plain are very large and very many, and there is a long
 "Yes, Sergeant."
 
 ${S.f.noCard && S.f.c1_noCard ? `"That's three times." Not an accusation. An observation, filed.` : S.f.noCard || S.f.c1_noCard ? `"That's twice." Not an accusation. An observation, filed.` : `Kettle, to the fire: "It'd have been the Raven. It's always the Raven out here. You can hear them at night."`}`,
-      ch:[{t:'The camp.', go:()=>{ if (S.f.c2_sethNight) talk('c2_light'); else startExplore(); }}]}),
+      ch:[c2Sit, {t:'The camp.', go:()=>startExplore()}]}),
 
     /* ---- the tents and the wagon at night ---- */
     c2_tent:()=>({sp:'The tents', txt:
