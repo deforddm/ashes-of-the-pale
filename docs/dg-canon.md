@@ -159,3 +159,26 @@ Read for Chapter 3 (the night raid to Gelor Ridge). Sources: the Malazan Wiki pa
 **Open:** whether Nether was on the raid (the wiki says "Nil and another young warlock", unnamed; the game leaves the second warlock unnamed, ungendered and offstage when they die). Whether Nil and Nether are siblings is not checked, so the game never says so. Korbolo Dom's takeover is told by Bult only.
 
 Sources: malazan.fandom.com/wiki/Deadhouse_Gates/Chapter_12, /Chapter_13, /Battle_of_Gelor_Ridge.
+
+## Chapter 4 re-check (Sun Oct 11, 2026 10:34 PM PDT)
+
+Read for Chapter 4 (the Vathar Crossing). Sources: the Malazan Wiki pages *Deadhouse Gates/Chapter 15*, *Chapter 16*, *Sormo E'nath* and *Nethpara*. The *Battle of Vathar Crossing*, *Gesler*, *Mincer* and *Bungle* pages refused the fetch, and the Reactor re-read of chapters 16 and 17 came back with no text. Marks as above.
+
+**Confirmed or added**
+- **Before the river** (ch. 15): Lull inducts a group of servants **bought from the nobles** into the Seventh. Corporal List hurt his foot at Gelor Ridge and has visions of a Jaghut. [1]
+- **Order of the day** (ch. 16): List brings word that Dom's forces are sighted; Duiker rides ahead with the **Foolish Dog** to the river. They find the ***Silanda*** anchored near the shore. **Gesler, Stormy and Truth** row upriver to scout (Nether asks them to), see **archers crossing the river on ropes**, are spotted, and come back to report. [1]
+- **Coltaine arrives** with the main force; the **badly wounded are loaded onto the Silanda** for Aren. Gesler refuses a promotion in a tense exchange with **Lull**, threatens to punch **Bult**, and **Coltaine punches Gesler** instead. Nil says Gesler's blood shows he has nearly ascended. (The summary says "Gesler's fist is shattered", which reads like a slip; the canon sheet has Coltaine breaking his own hand. The game shows the punch and a bound hand on Coltaine at the parley and says no more.) [1]
+- **Dom's offer:** representatives of Dom's army ride in, then nobles; they offer to let the refugees cross; Coltaine refuses over the nobles' objections. **Nethpara and Pullyk Alar** pressed him to accept. [1]
+- **The deal:** a messenger tells Coltaine and Duiker that a secret deal has been made and the refugees have **started crossing** without leave. Coltaine orders **the sappers to disguise themselves and mingle with the refugees**. **Floating bridges** come to the crossing; archers and pikemen on them begin the slaughter. [1]
+- **Sormo E'nath** "fell pierced with arrows while attempting to stop the massacre"; later books add an archer's arrow through his neck. Duiker sees it on **the far bank**. His soul is taken from the water by **an enormous swarm of yellow butterflies**. He carried the spirits of **eight elder warlocks**. [1]
+- **The refugees** climb onto the floating bridges and destroy them. A horde charges into the woods after more archers. [1]
+- **Duiker and Nethpara:** Duiker grabs Nethpara and starts to choke him and has to be **forcibly pulled off** (one summary: he is choked himself and blacks out). Afterwards Nethpara gets fresh horses for the nobles' carriages and the nobles try to leave the other refugees behind, until Duiker stops them. [1]
+- About **20,000 refugees** die. The Council is "ad hoc", "petty and self-centred". [1]
+
+**How the game uses it.** The squad comes down with the main column. The marines' sighting of the ropes is theirs; the squad is one of the squads Lull sends upriver afterwards to cut them. The squad's worst-hurt can go aboard the *Silanda* with the wounded before the parley (the canon order). The squad sees the punch and the envoys and does nothing at either. It finds the deal the night before, through the Council's Hissari servants and the steward's boat, and takes Dom's safe-conducts to Lull; the column is already going into the river by then, so the Fist still hears it from his own messenger in the morning. Mincer's sappers go into the crowd in robes, by Coltaine's order, and Tangle may go with them. The squad holds one bridgehead in the ford and sees a bridge go under to the refugees. Sormo's death and the butterflies are seen from the river; Duiker's hands on Nethpara are told by Duiker afterwards ("they pulled me off"). Coltaine's reason for breaking Mincer is never given; the game says only that he was broken that evening and Bungle has the company.
+
+**Invented here:** Dom watching the parley from the far bank (silent, distant; he says nothing). Dom's safe-conduct papers, one per Council house, "and any who cross in its company". The day's name being given by nobody anyone can remember.
+
+**Open:** why Mincer was broken; whether Coltaine or Gesler broke a hand (the game shows only that Coltaine's is bound); exactly when the *Silanda* sailed (the game has her go before the crossing, with the wounded); who pulled Duiker off Nethpara. Napan skin is blue (Dom is half-Napan), noted in his description.
+
+Sources: malazan.fandom.com/wiki/Deadhouse_Gates/Chapter_15, /Chapter_16, /Sormo_E%27nath, /Nethpara.

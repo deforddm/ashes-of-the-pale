@@ -177,8 +177,11 @@ const BOOKS = {
 };
 const BOOKSNAP = {gotm:{ch:{}, end:{}, tease:{}}, dg:{ch:{}, end:{}, tease:{}}};
 let BOOK = 'gotm';
+const REG_CLASH = []; // ids a chapter registered over another chapter's (the lint fails on any)
 function registerChapter(n, CH, book = 'gotm'){
   CH.book = book;
+  [['areas', AREAS, (CH.areas || []).map(a => a.id)], ['battles', BATTLES, Object.keys(CH.battles || {})], ['foes', FOES, Object.keys(CH.foes || {})], ['dlg', DLG, Object.keys(CH.dlg || {})], ['scenes', SCENES, Object.keys(CH.scenes || {})]]
+    .forEach(([k, have, ids]) => ids.forEach(id => { if (book !== 'gotm' && id in have) REG_CLASH.push(`${book} ch${n} ${k}.${id}`); }));
   if (book !== BOOK) { const b = BOOKSNAP[book]; b.ch[n] = CH; if (CH.end) b.end[n] = CH.end; if (CH.tease) b.tease[n] = CH.tease; } // another book's chapter: kept aside until setBook()
   else CHAPTERS[n] = CH;
   if (CH.areas && !CH.area) CH.area = CH.areas[0];

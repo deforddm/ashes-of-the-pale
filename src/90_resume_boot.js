@@ -50,6 +50,7 @@ function start(){
   if (typeof B2CH1 !== 'undefined') registerChapter(1, B2CH1, 'dg'); // Book Two: Deadhouse Gates (47, 48)
   if (typeof B2CH2 !== 'undefined') registerChapter(2, B2CH2, 'dg'); // Book Two, Chapter 2: The Odhan (49)
   if (typeof B2CH3 !== 'undefined') registerChapter(3, B2CH3, 'dg'); // Book Two, Chapter 3: The Ridge (50)
+  if (typeof B2CH4 !== 'undefined') registerChapter(4, B2CH4, 'dg'); // Book Two, Chapter 4: The Day of Pure Blood (51)
   showTitle();
   requestAnimationFrame(loop);
 }

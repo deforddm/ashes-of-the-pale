@@ -47,6 +47,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.3.0 — Book Two, Chapter Four: The Day of Pure Blood (the Vathar crossing). The *Silanda*; Stormy's Way In. Later chapters can no longer register an id over an earlier chapter's: the lint fails on it.
 - v4.2.0 — Book Two, Chapter Three: The Ridge (the warlocks' tunnel and Gelor Ridge). The Weasels' bait on the Shallows; the Earth's Hand trick.
 - v4.1.0 — Book Two, Chapter Two: The Odhan (Dryj Spring and the Sekala crossing). Ramin the Red Blade can join; fouled warrens make Book Two's healing and sorcery unreliable.
 - v4.0.0 — Book Two begins. The title screen picks a book; each book has its own saves, chapters and squad, and Book Two plays without Book One.

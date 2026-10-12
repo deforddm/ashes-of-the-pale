@@ -127,6 +127,8 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
   for (const [id, vs] of Object.entries(choiceless)) err(`${id}: NO visible choices (soft-lock) in ${vs.length}/${VAR} variants`);
   const dead = Object.entries(deadEnds).map(([id, s]) => `${id}: [${[...s].map(t => t.slice(0, 40)).join(' | ')}]`);
 
+  // ids a later chapter registered over an earlier one's
+  for (const c of (typeof REG_CLASH !== 'undefined' ? REG_CLASH : [])) err(`id clash: ${c} overwrites an earlier chapter's`);
   // areas
   const areaNodes = new Set();
   for (const [aid, a] of Object.entries(AREAS)) {
@@ -166,7 +168,7 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
     b.foes.forEach(f => chkFoe(f, 'start'));
     (b.waves || []).forEach(w => w.foes.forEach(f => chkFoe(f, 'wave' + w.round)));
     (b.allies || []).forEach(f => { if (!FOES[f[0]]) err(`battle ${bid}: ally ${f[0]} missing`); });
-    if (b.style && !['city', 'terrace', 'garden', 'storm', 'cellar', 'roof', 'plain', 'hills', 'estate', 'lake', 'dock', 'street', 'hissar', 'odhan', 'odhan_night', 'river', 'ridge', 'b2tunnel'].includes(b.style)) warn(`battle ${bid}: style ${b.style}`);
+    if (b.style && !['city', 'terrace', 'garden', 'storm', 'cellar', 'roof', 'plain', 'hills', 'estate', 'lake', 'dock', 'street', 'hissar', 'odhan', 'odhan_night', 'river', 'ridge', 'b2tunnel', 'vathar'].includes(b.style)) warn(`battle ${bid}: style ${b.style}`);
   }
   // items, cards
   const itemIds = Object.keys(ITEMS);

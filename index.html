@@ -592,7 +592,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '4.2.0';
+const VERSION = '4.3.0';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -1178,8 +1178,11 @@ const BOOKS = {
 };
 const BOOKSNAP = {gotm:{ch:{}, end:{}, tease:{}}, dg:{ch:{}, end:{}, tease:{}}};
 let BOOK = 'gotm';
+const REG_CLASH = []; // ids a chapter registered over another chapter's (the lint fails on any)
 function registerChapter(n, CH, book = 'gotm'){
   CH.book = book;
+  [['areas', AREAS, (CH.areas || []).map(a => a.id)], ['battles', BATTLES, Object.keys(CH.battles || {})], ['foes', FOES, Object.keys(CH.foes || {})], ['dlg', DLG, Object.keys(CH.dlg || {})], ['scenes', SCENES, Object.keys(CH.scenes || {})]]
+    .forEach(([k, have, ids]) => ids.forEach(id => { if (book !== 'gotm' && id in have) REG_CLASH.push(`${book} ch${n} ${k}.${id}`); }));
   if (book !== BOOK) { const b = BOOKSNAP[book]; b.ch[n] = CH; if (CH.end) b.end[n] = CH.end; if (CH.tease) b.tease[n] = CH.tease; } // another book's chapter: kept aside until setBook()
   else CHAPTERS[n] = CH;
   if (CH.areas && !CH.area) CH.area = CH.areas[0];
@@ -5567,6 +5570,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.3.0', ['Book Two, Chapter Four: The Day of Pure Blood. The Vathar crossing: Dom\'s offer, the nobles\' carriages at night, and the ford at dawn.', 'A burned ship that should not float waits at the ford for the badly wounded. Send your worst-hurt squadmate down the river to Aren on her, or keep them with you and carry the wound.', 'A new trick from a very large Falari marine: Stormy\'s Way In.']],
   ['4.2.0', ['Book Two, Chapter Three: The Ridge. A raid through a tunnel the Wickan warlocks raised out of the earth, and then Gelor Ridge on the P\'atha, where Reloe has cut the whole face of the ridge into cliffs but one sandy ramp.', 'On the Shallows the Weasel Clan means to use the refugees as bait. Herd your people where they are told, or pull them back at a cost to the line. Sathi\'s place in her clan rides on it.', 'A new trick, Wickan spirit-craft: the Earth\'s Hand. Spirit-craft never sputters.', 'Captain Lull of the Sialk Marines, and the Foolish Dog Clan.']],
   ['4.1.0', ['Book Two, Chapter Two: The Odhan. Months of march south and west, the first real thirst, Dryj Spring, and the crossing of the Sekala on a ford the sappers paved under the water.', 'At Dryj Spring, hold the spring with the refugees or ride with the Wickans for water. Each road costs the other.', 'Ramin, a Red Blade of Ehrlitan who lost his horse and his file at the Sekala, can join the squad.', 'The warrens are fouled in Seven Cities this summer: Marrow\'s healing, and the enemy\'s sorcery, can come back thin. Marrow keeps count on her knotted string. Wickan spirit-craft is never touched.', 'A new trick from Captain Mincer: Mincer\'s Drop.', 'Hackle has his own line on the battle bar.']],
   ['4.0.0', ['Book Two: Deadhouse Gates. Pick it on the new-sergeant form. It is its own campaign with a new squad of the Seventh Army, and it plays without Book One.', 'Chapter One, Hissar Burns: the night Hissar rises, a promise in the water-sellers\' quarter, the south gate, Coltaine\'s camp, and the first battle of the march, at Bat\'rol in the Vin\'til Basin.', 'The new squad: Haddat, a Hissari auxiliary with a shield; Sathi, a Wickan outrider of the Weasel Clan, and her cattle-dog Hackle, who fights beside her and smells an ambush coming; Tangle, a sapper whose munitions will never be resupplied; and Marrow, a healer whose warren has gone strange.', 'The Chain: the squad now counts its water and the refugees it walks with. A rest costs a skin of water, and a squad with none fights parched. Choices trade one for the other.', 'A finished Book One sergeant can be brought along. What the Fourth did after the Fete matters late in Book Two.', 'Book One is unchanged.']],
@@ -19403,7 +19407,7 @@ Object.assign(TPL, {
     bio2:`Her family sold water in the quarter where the sergeant once lay sick, and her brother Ilhar rode out of the city two nights before it fell, with a green cloth tied round his arm. She knows what the cloth means. She has not said his name since, and when the Apocalypse rides past the column with green cloths flying, she looks at every face.`,
     traits:['Prays five times a day, to no god she will name', 'Never raises her voice; never needs to', 'Counts the dead in the column, by name when she knows them', 'Will not eat until the squad has eaten'],
     gear:['A blue thread from her mother\'s veil, tied to the shield grip', 'A water-seller\'s cup, tin', 'The auxiliary\'s brass badge, polished every night'],
-    get quest(){ const f = (S && S.f) || {}; return f.b2_ilharSeen ? `Ilhar rides with the rebellion. She has seen him now, across a field, with a green cloth on his arm. He saw her. Neither of them lifted a hand.` : `Her brother rode out of Hissar two nights before it fell, with a green cloth round his arm. She looks at every face that rides past the column.`; },
+    get quest(){ const f = (S && S.f) || {}; return f.b2_ilharSeen ? `Ilhar rides with the rebellion. She has seen him now, across the water at the Vathar, with a green cloth on his arm. He saw her. Neither of them lifted a hand.` : `Her brother rode out of Hissar two nights before it fell, with a green cloth round his arm. She looks at every face that rides past the column.`; },
     banter:[`"Sergeant." She says it in Hissari, which makes it sound like an oath.`, `"The tribes say we are traitors. The officers say we are tribes. I say the column needs water."`, `"Stand behind the shield. That is what it is for. You are welcome."`],
     rel:{sathi:'Answers the girl\'s Wickan insults in Wickan, which delights her.', tangle:'Pulled him out of a riot in the old city. Will not discuss it.', marrow:'Carries her kit when the healer is too tired to. Says nothing about that either.'}},
   marrow:{name:'Marrow', role:'Healer · Denul', sig:'M', col:'#7fb394', hp:15, ac:12, atk:2, dmg:[1,6,0], rng:1, mv:4, init:0, st:{might:0, wits:3, guile:1}, ab:['mend','wash','stanch','salve'], magic:true,
@@ -19596,6 +19600,33 @@ SORC.push('sbolt');
     const sq = S.squad; S.squad = sq.filter(k => !away.includes(k));
     try { return _startBattle(id, opt); }
     finally { S.squad = sq; if (B && B.snap) { const o = JSON.parse(B.snap); o.squad = sq.slice(); B.snap = JSON.stringify(o); } save(); } }; } // a retry starts from the snapshot: it keeps them
+
+/* ---- the Silanda, and a wound that walks (v4.3, Chapter 4: the Vathar) ----
+   b2Aboard(id): a hurt squadmate goes aboard the Silanda for Aren and leaves the squad; their kit is kept for them (S.f.b2_silandaGear).
+   b2Ashore(): Chapter 7 calls it in Aren to bring them back, kit and all (S.f.b2_silandaBack). They miss any level-5+ picks taken while away.
+   S.f.b2_woundWho: a squadmate kept with the squad carries the Vathar wound: −B2_WOUND max health in every fight until S.f.b2_woundHealed (Aren). */
+const b2Mate = id => typeof id === 'string' && id !== 'sgt' && !!TPL[id];
+function b2Aboard(id){ if (!b2Mate(id) || !S.squad.includes(id)) return; S.f.b2_silandaWho = id; S.f.b2_silandaGear = Object.assign({}, S.gear[id] || {});
+  letGo(id, `${NAME(id)} goes aboard the Silanda, for Aren.`); }
+function b2Ashore(){ const id = S.f.b2_silandaWho; if (!b2Mate(id) || S.squad.includes(id)) return false;
+  recruit(id); S.gear[id] = Object.assign({}, S.f.b2_silandaGear || {}); S.f.b2_silandaBack = 1; save(); return true; }
+const B2_WOUND = 6;
+const b2Wounded = id => !!(S && S.book === 'dg' && S.f && S.f.b2_woundWho === id && !S.f.b2_woundHealed);
+{ const _mkParty = mkParty;
+  mkParty = function(id, x, y){ const u = _mkParty(id, x, y); if (b2Wounded(id)) { u.maxhp = Math.max(6, u.maxhp - B2_WOUND); u.hp = Math.min(u.hp, u.maxhp); u.vatharWound = true; } return u; }; }
+{ const _startBattle = startBattle;
+  startBattle = function(id, opt = {}){ const r = _startBattle(id, opt);
+    const w = S && S.book === 'dg' && B && B.units.find(u => u.vatharWound && u.side === 'p' && !u.ally);
+    if (w) blog(`<em>${w.name} fights with the Vathar arrow-wound bound tight under the kit: −${B2_WOUND} health until Aren.</em>`);
+    return r; }; }
+/* after a Book Two fight: how many rounds it took (S.f.b2_lastRounds), and, for a fight marked hurtMost, which squadmate came out of it worst
+   (S.f.b2_hurtMost: lowest health for their size; never the sergeant, never the Red Blade, whom the company keeps) */
+{ const _win = win;
+  win = function(){
+    if (S && S.book === 'dg' && B && B.def) { S.f.b2_lastRounds = B.round;
+      if (B.def.hurtMost) { const c = B.units.filter(u => u.side === 'p' && !u.ally && b2Mate(u.id) && u.id !== 'redblade' && S.squad.includes(u.id)).sort((a, b) => a.hp / a.maxhp - b.hp / b.maxhp);
+        if (c.length) S.f.b2_hurtMost = c[0].id; } }
+    return _win(); }; }
 
 /* Book Two's chapters register in start() (90), after Book One's */
 
@@ -23757,6 +23788,1295 @@ SCENEX.b2_charge = (cv, t) => { const {ctx, W, H} = sceneFit(cv), mo = REDUCE() 
   const sq = marchOrder(sceneSquad()); sq.forEach((id, i) => drawFigure(ctx, id, W*.06 + i*Math.min(30, W*.42/sq.length), H*.96 - (i%2)*3, 2.1, t, {phase:i, dir:1}));
   vign(ctx, W, H, .55, .5); };
 
+/* ============ Book Two, Chapter 4: The Day of Pure Blood ============ */
+/* The Vathar Crossing. The Silanda at the ford and Gesler's marines; Dom's archers crossing upriver on ropes; Dom's envoys and Coltaine's no;
+   the Nobles' Council's secret deal, which the squad finds out and cannot stop; the floating bridges and the slaughter in the ford; Sormo's death;
+   the evening after (Mincer broken to the ranks, Bungle a captain, Marrow at the bottom of her warren).
+   Key (S.f.b2_c4_key): 'silanda' (a hurt squadmate goes aboard the Silanda for Aren: they leave the squad and rejoin in Chapter 7, S.f.b2_silandaWho)
+   or 'keep' (the hurt one stays, carrying the Vathar wound: −max health until Aren, S.f.b2_woundWho). Engine for both in 47 (b2Aboard, b2Ashore, b2Wounded).
+   Nobody dies here: no mortal fights. The day is carried in the column's count, and kept far off. */
+
+/* a squadmate's name from a flag that holds an id, or a plain fallback */
+const b2Nm = (k, d) => b2Mate(S.f[k]) ? NAME(S.f[k]) : d;
+/* he or she, for a squadmate named by id */
+const b2He = id => ['tangle', 'redblade'].includes(id) ? 'he' : 'she', b2His = id => ['tangle', 'redblade'].includes(id) ? 'his' : 'her', b2Him = id => ['tangle', 'redblade'].includes(id) ? 'him' : 'her';
+/* who the Silanda could take: the squad's hurt, never the sergeant, never the Red Blade (the company carries its own) */
+const b2Cands = () => SQUAD().filter(id => b2Mate(id) && id !== 'redblade');
+const b2Worst = () => { const c = b2Cands(), h = S.f.b2_hurtMost; return c.includes(h) ? h : c[0] || null; };
+/* the squad's own people, for a line */
+const b2Ours4 = () => S.f.b2_key === 'daughters' ? B2.elder : S.f.b2_yedda ? B2.widow : null;
+
+/* Stormy's Way In: a marine's way past a pike. Not sorcery: it never sputters. */
+Object.assign(TRICKS, {
+  b2_inside:{name:'Stormy\'s Way In', ch:4, use:'fight', ab:'t_b2_inside', where:'the bank of the Vathar, with Gesler\'s marines',
+    lore:'A pike is a long way of saying *stay over there*. The Falari answer is to disagree with it: hands on the shaft, shoulder down, along the wood and inside the point before the man holding it has finished being sure of himself. Then the shaft is just a stick, and the man is very close.',
+    get fx(){ return `Once a fight: close on an enemy within 3 and strike at +${2 + lvT()} to hit. If it fights with a long weapon, the shaft is broken: no more reach for it this fight. Grows with level.`; }},
+});
+Object.assign(AB, {
+  t_b2_inside:{name:TRICKS.b2_inside.name, trick:'b2_inside', desc:()=>TRICKS.b2_inside.fx,
+    tiles:u=>foes().filter(f => cheb(u, f) <= 3 && sees(u, f) && (cheb(u, f) <= 1 || [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]].some(([dx, dy]) => free(f.x + dx, f.y + dy, u)))),
+    run(u, x, y){ const t = unitAt(x, y); if (!t) return; AUDIO.play('step');
+      if (cheb(u, t) > 1) { const at = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]].map(([dx, dy]) => ({x:t.x + dx, y:t.y + dy})).filter(p => free(p.x, p.y, u)).sort((a, b) => cheb(u, a) - cheb(u, b))[0];
+        if (at) { u.x = at.x; u.y = at.y; sparks(at.x, at.y, 6, '#c8b08a', .3); } }
+      const long = (t.rng || 1) > 1 || (t.sk || []).includes('reach');
+      blog(`${u.name} goes in along the ${long ? 'shaft' : 'blade'}, shoulder down, the Falari way, ${long ? 'inside the point before ' + t.name + ' has finished deciding' : 'too close to be argued with'}.`);
+      attack(u, t, {bonus:2 + lvT(), verb:'comes in under the guard of'});
+      if (long && t.hp > 0) { t.rng = 1; t.sk = (t.sk || []).filter(k => k !== 'reach'); float(t, 'shaft broken', '#c8b08a'); blog(`The shaft goes with a crack. ${t.name} is holding a stick.`); } }},
+});
+
+/* the words this chapter adds to Book Two's glossary */
+GLOSSX.dg.push(
+  [4, 'The Silanda', 'A burned ship with no business floating, rowed by something the marines aboard her do not discuss. She came up the Vathar to the ford and took the Seventh\'s worst wounded down to Aren.', ()=>!!(S.f && S.f.b2_gesler)],
+  [4, 'The Nobles\' Council', 'Lord Nethpara, Pullyk Alar, Lenestro, Tumlit and the others: the rich of Hissar, with their carriages and their servants, who walk with the column and complain to the historian. They do not think of themselves as refugees.', ()=>!!(S.f && S.f.b2_council)],
+  [4, 'The Vathar', 'A river between the Odhan and the old forest. The column crossed it. The day it crossed has a name now, and nobody who was there says it.', ()=>S.chapter >= 4 && !!(S.f && S.f.b2_vathar)]);
+
+const B2CH4 = {
+  title:'The Day of Pure Blood', number:'Four',
+  intro:{loc:'The Odhan', sub:'West of Gelor Ridge · toward the Vathar', scene:'b2_odhan_dusk', cap:'The column strung out across the Odhan at dusk, and behind it, a long way off, dust that does not settle.',
+    paras:[
+`After Gelor Ridge there are no more Tithansi at the tail of the column at night. There is something worse, and it does not need to come close. Korbolo Dom follows a day behind, with Reloe's broken armies put back together and a great many more besides, and he does not waste one of them on a raid.`,
+`He doesn't have to. He was a Fist of the Empire. He knows how the Seventh marches, how far it can go in a day, where it will have to stop. He knows it will have to stop at the Vathar.`,
+`The river is the last thing between the column and the old forest beyond it. The Foolish Dog ride ahead to find the ford. The rest of you walk.`],
+    go:'On', node:'b2_c4_start'},
+
+  areas:[
+    /* 16 x 12.  . mud  , reeds  ~ the river (blocks)  - ford shallows  # steep bank  x drowned tree  W overturned wagon  c cart */
+    { id:'b2_vathar_bank', title:'The Vathar · the near bank', sub:'Afternoon · the column coming down to the water', hint:'Tap ground to move · tap a figure to talk · the drowned tree at the water, the carts, Captain Lull', decor:'vathar',
+      map:[ "################",
+            "#####.##########",
+            "#~~~~-~~~~~~~~~#",
+            "#~~~~--~~~~~~~~#",
+            "#---,.-,---,-x-#",
+            "#.,....,...c...#",
+            "#..W....,......#",
+            "#.,..c.....,.,.#",
+            "#......,..W....#",
+            "#.,.......c..,.#",
+            "#..,........,..#",
+            "################" ],
+      walk:'.,-', triggers:{x:'b2_bank_river', c:'b2_bank_cart', W:'b2_bank_wagon'}, start:{x:7, y:9},
+      quest:()=> !S.f.b2_ropesDone ? (S.f.b2_lull4 ? 'Upriver, where the ropes are. The overturned wagon is the way along the bank.' : 'Captain Lull is looking for squads.') : !S.f.b2_c4_key ? 'The Silanda is taking the wounded.' : !S.f.b2_envoys ? 'Riders on the far bank, under a pale cloth. Go and see.' : 'Dusk. The nobles\' carriages, downstream. The overturned wagon.',
+      npcs:[
+        {id:'gesler', name:'Sergeant Gesler', kind:'gesler', x:6, y:5, node:()=>S.f.b2_gesler ? 'b2_gesler_again' : 'b2_gesler', show:()=>!S.f.b2_silandaGone, fresh:()=>!S.f.b2_gesler},
+        {id:'stormy', name:'Corporal Stormy', kind:'stormy', x:9, y:5, node:()=>'b2_stormy', show:()=>!S.f.b2_silandaGone, fresh:()=>!S.f.b2_stormy},
+        {id:'truth', name:'Truth', kind:'truth', x:4, y:6, node:()=>'b2_truth', show:()=>!S.f.b2_silandaGone, fresh:()=>!S.f.b2_truth},
+        {id:'lull4', name:'Captain Lull', kind:'lull', x:12, y:7, node:()=>S.f.b2_lull4 ? 'b2_lull4_again' : 'b2_lull4', fresh:()=>!S.f.b2_lull4},
+        {id:'duiker5', name:'Duiker', kind:'duiker', x:8, y:8, node:()=>'b2_duiker5', fresh:()=>!S.f.b2_duiker5},
+        {id:'mincer4', name:'Captain Mincer', kind:'mincer', x:2, y:8, node:()=>'b2_mincer4', fresh:()=>!S.f.b2_mincer4},
+        {id:'ours5', name:'The squad\'s people', kind:'hissari_w', x:13, y:9, node:()=>'b2_ours5', fresh:()=>!S.f.b2_ours5},
+        {id:'dom', name:'A rider on the far bank', kind:'dom', x:5, y:1, node:()=>'b2_dom_far', show:()=>!!S.f.b2_envoys, fresh:()=>!!S.f.b2_envoys && !S.f.b2_domSeen} ] },
+
+    /* 16 x 12.  the Council's carriages, downstream, at night */
+    { id:'b2_carriages', title:'The Vathar · the Council\'s carriages', sub:'Night · lamps in the carriages, and harness being put on', hint:'Tap ground to move · tap a figure to talk · the squad\'s carts, when there is nothing more to do', decor:'vathar', dark:true,
+      map:[ "################",
+            "#~~~~~~~~~~~~~~#",
+            "#~~~~~~~~~~~~~~#",
+            "#---,----,---,-#",
+            "#..c..c...c..,.#",
+            "#.,......W.....#",
+            "#..c.,..c...c..#",
+            "#.....,........#",
+            "#.,..W....,..x.#",
+            "#.......c......#",
+            "#..,.......,...#",
+            "################" ],
+      walk:'.,-', triggers:{c:'b2_carriage', W:'b2_night_carts', '-':'b2_night_river'}, start:{x:7, y:10},
+      quest:()=> !S.f.b2_dealKnown ? 'Something is wrong with the carriages tonight.' : !S.f.b2_envoyDone ? 'The steward is going down to the water.' : !S.f.b2_tooLate ? 'Captain Lull, with what you know.' : 'The squad\'s carts. Your own people.',
+      npcs:[
+        {id:'steward4', name:'Lord Nethpara\'s steward', kind:'noble', x:6, y:5, node:()=>S.f.b2_steward4 ? 'b2_steward4_again' : 'b2_steward4', show:()=>!S.f.b2_envoyDone, fresh:()=>!S.f.b2_steward4},
+        {id:'servants', name:'Hissari servants', kind:'hissari_m', x:11, y:7, node:()=>'b2_servants', fresh:()=>!S.f.b2_servants},
+        {id:'nethpara', name:'Lord Nethpara', kind:'nethpara', x:3, y:5, node:()=>'b2_nethpara', fresh:()=>!S.f.b2_nethpara},
+        {id:'pullyk', name:'Pullyk Alar', kind:'pullyk', x:12, y:5, node:()=>'b2_pullyk', fresh:()=>!S.f.b2_pullyk},
+        {id:'lull5', name:'Captain Lull', kind:'lull', x:2, y:9, node:()=>'b2_lull_night', show:()=>!!S.f.b2_envoyDone, fresh:()=>!!S.f.b2_envoyDone && !S.f.b2_tooLate},
+        {id:'ramin4', name:'Ramin', kind:'redblade', x:9, y:9, node:()=>'b2_ramin4', show:()=>b2In('redblade'), fresh:()=>b2In('redblade') && !S.f.b2_ramin4} ] },
+
+    /* 16 x 12.  the ford at first light: the crossing already begun */
+    { id:'b2_vford', title:'The Vathar · the ford', sub:'Dawn · forty thousand people walking into a river', hint:'Tap ground to move · tap a figure to talk · the overturned wagon, when the squad is ready', decor:'vathar',
+      map:[ "################",
+            "#~~~~~~~~~~~~~~#",
+            "#~~~~~~~~~~~~~~#",
+            "#~~-----------~#",
+            "#~~-,--x---,--~#",
+            "#---.---W----,-#",
+            "#..,..c....,...#",
+            "#.,.......c..,.#",
+            "#.....,..W.....#",
+            "#..c.......,...#",
+            "#.,....,....c..#",
+            "################" ],
+      walk:'.,-', triggers:{x:'b2_ford_tree', W:'b2_ford_wagon', c:'b2_ford_cart'}, start:{x:7, y:9},
+      quest:()=> !S.f.b2_robe ? 'Mincer\'s sappers are pulling on refugees\' robes. Tangle is looking at you.' : 'The overturned wagons in the shallows. Then the water.',
+      npcs:[
+        {id:'mincer5', name:'Captain Mincer', kind:'mincer', x:4, y:7, node:()=>'b2_robe', fresh:()=>!S.f.b2_robe},
+        {id:'ours6', name:'The squad\'s people', kind:'hissari_m', x:12, y:8, node:()=>'b2_ours_ford', fresh:()=>!S.f.b2_oursFord},
+        {id:'bult5', name:'Bult', kind:'bult', x:9, y:6, node:()=>'b2_bult_ford', fresh:()=>!S.f.b2_bultFord} ] },
+
+    /* 16 x 12.  the far bank at dusk: the wood behind, the river in front, and what is in it */
+    { id:'b2_farbank', title:'The Vathar · the far bank', sub:'Dusk · the edge of the old forest', hint:'Tap ground to move · tap a figure to talk · Bult, when the squad has counted', decor:'vathar',
+      map:[ "################",
+            "#xx..,xx..x.,xx#",
+            "#.,....,...,...#",
+            "#..c....W....,.#",
+            "#.......,......#",
+            "#.,..c.....c...#",
+            "#......,.......#",
+            "#--,-------,---#",
+            "#~~~~~~bb~~~~~~#",
+            "#~~~~~~~~~~~~~~#",
+            "#~~~~~~~~~~~~~~#",
+            "################" ],
+      walk:'.,-', triggers:{b:'b2_wreck', c:'b2_far_cart', W:'b2_far_wagon'}, start:{x:7, y:6},
+      quest:()=> !S.f.b2_orphans ? 'Children on the bank, with nobody. The carts.' : 'Bult, when the squad has counted.',
+      npcs:[
+        {id:'marrow4', name:'Marrow', kind:'marrow', x:4, y:4, node:()=>'b2_marrow_end', show:()=>b2In('marrow'), fresh:()=>b2In('marrow') && !S.f.b2_marrowEnd},
+        {id:'tangle4', name:'Tangle', kind:'tangle', x:10, y:4, node:()=>'b2_tangle_mincer', show:()=>b2In('tangle'), fresh:()=>b2In('tangle') && !S.f.b2_bungle},
+        {id:'bungle', name:'Captain Bungle', kind:'sapper', x:12, y:2, node:()=>'b2_bungle', show:()=>!b2In('tangle') || !!S.f.b2_bungle, fresh:()=>!S.f.b2_bungleMet},
+        {id:'sathi4', name:'Sathi', kind:'sathi', x:2, y:2, node:()=>'b2_sathi_laugh', show:()=>b2In('sathi'), fresh:()=>b2In('sathi') && !S.f.b2_sathiLaugh},
+        {id:'duiker6', name:'Duiker', kind:'duiker', x:7, y:2, node:()=>'b2_duiker6', fresh:()=>!S.f.b2_duiker6},
+        {id:'ramin5', name:'Ramin', kind:'redblade', x:13, y:6, node:()=>'b2_ramin_count', show:()=>b2In('redblade'), fresh:()=>b2In('redblade') && !S.f.b2_raminCount},
+        {id:'bult6', name:'Bult', kind:'bult', x:5, y:6, node:()=>'b2_bult6', fresh:()=>!!S.f.b2_orphans} ] } ],
+
+  battles:{
+    /* upriver: Dom's archers coming over the Vathar hand over hand on ropes. Kill what is ashore; then hold the stakes while the ropes are cut */
+    b2_ropes:{title:'The ropes', style:'vathar', pitTxt:'the river', warrenText:'Afternoon on the Vathar · Denul fouled, and it may give back mud', warren:{denul:.85, meanas:.85}, music:'battle', hurtMost:true,
+      map:["oooooooo","oooooooo","--.--.--","..,..,..","........",".t....t.","........","..,..,..","........","........"],
+      party:[[3,7],[4,7],[2,8],[5,8],[3,8],[4,8]],
+      foes:[['b2_domarcher',1,2],['b2_domarcher',6,2],['b2_pike',3,3],['b2_pike',4,3]], xp:90, after:'b2_after_ropes',
+      waves:[{round:2, foes:[['b2_domarcher',2,2]], text:'Another archer comes up out of the river on the rope, wet to the chest, bow dry on his back, and is shooting before his feet are under him.'}],
+      stage2:{title:'The stakes', xp:30,
+        text:()=>`The archers who got ashore are down. The ropes are not: four of them, stretched over the Vathar from stakes on this bank to stakes on that one, and on every rope, men, hand over hand, coming.
+${b2In('tangle') ? `
+Tangle has his knife out. "Hemp," he says. "Wet hemp. This'll take a while." He doesn't hum. "Keep them off me."` : `
+Somebody has to cut them, and somebody has to stand over whoever is cutting.`}`,
+        map:["oooooooo","--.--.--","........","..t..t..","........",".,....,.","........","........","........","........"],
+        party:[[3,4],[4,4],[2,5],[5,5],[3,5],[4,5]],
+        foes:[['b2_domarcher',0,1],['b2_pike',4,1],['b2_ropecap',3,2]],
+        objective:{type:'survive', rounds:3, text:'Hold the stakes for three rounds while the ropes are cut.'},
+        waves:[{round:2, foes:[['b2_pike',6,1]], text:'A man drops off the last rope into the shallows with a pike across his back and comes up the bank with it.'}, {round:3, foes:[['b2_domarcher',1,1]], text:'One more, off a rope that is already half cut, swinging.'}]} },
+
+    /* night, below the carriages: Dom's men come over in a boat to settle the Council's deal. The squad gets there late */
+    b2_envoy:{title:'At the water\'s edge', style:'vathar', dark:true, pitTxt:'the river', warrenText:'Night on the Vathar · Denul fouled, and it may give back mud', warren:{denul:.85, meanas:.85}, music:'battle',
+      map:["oooooooo","--------","..,..,..","...t....","........","..t..t..","........",".,....,.","........","........"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+      foes:[['b2_escort',2,2],['b2_escort',5,2],['b2_domarcher',3,1],['b2_envoyoff',4,1]], xp:70, after:'b2_after_envoy',
+      waves:[{round:3, foes:[['b2_escort',7,1]], text:'A second boat grounds in the shallows, and the man in its bow is already over the side.'}] },
+
+    /* the day: the bridges come down the river into the ford. Hold the shallows; then go out onto the bridge */
+    b2_bridge:{title:'The ford', style:'vathar', pitTxt:'the river', warrenText:'Morning in the ford · Denul fouled, and it may give back mud', warren:{denul:.85, meanas:.85}, music:'battle',
+      get away(){ return S && S.f && S.f.b2_robe === 'mincer' ? ['tangle'] : null; },
+      map:["ooobbooo","ooobbooo","---bb---","--------","-,--t---","--------","---t--,-","--------","........","........"],
+      party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+      foes:[['b2_pike',3,2],['b2_pike',4,2],['b2_domarcher',3,0],['b2_domarcher',4,1],['b2_pike',1,3]], xp:160, after:'b2_after_bridge',
+      /* Mincer's people in robes, among the crowd: one beside the squad, two if the squad came to the ford short (the Silanda, or Tangle with Mincer) */
+      get allies(){ const n = S && S.squad ? S.squad.filter(k => k !== 'sgt' && !(this.away || []).includes(k)).length : 4; return [['b2_sapdis',6,7],['b2_sapdis',1,7],['b2_sapdis',7,6]].slice(0, n <= 2 ? 3 : n <= 3 ? 2 : 1); },
+      waves:[{round:2, foes:[['b2_pike',4,1]], text:'More of them come off the bridge into the water, in good order, the way the Seventh would do it. They were taught by somebody who taught the Seventh.'},
+             {round:3, foes:[['b2_domarcher',3,0]], text:'Fresh archers at the bridge\'s end. They are not shooting at the squad. They are shooting past it, into the ford, at whatever is nearest.'}],
+      stage2:{title:'The bridge', xp:80, keepAllies:true,
+        text:()=>`The pikemen in the shallows are down, or back on the planks. The bridge is still there: a long raft of lashed timber with a rail of pikes along it, moored somehow at the head of the ford, and its archers still working.
+
+All down the ford the people in the water have stopped running. ${b2In('haddat') ? `Haddat sees it first. "They are climbing," she says. "Look. They are climbing it."` : 'They are climbing.'} Out of the river onto the floating bridges, hundreds of them, with their hands, with nothing, onto the pikes. Somewhere upriver a bridge tips, and goes over, and does not come up.
+
+The one in front of you has a sergeant on it with a horsetail on his helm, and he is holding it.${S.f.b2_robe === 'mincer' ? ` Somewhere downstream there is a flat hard sound, and then another: Mincer's people, in their borrowed robes, doing something to a bridge.` : ''}${b2In('haddat') ? `
+
+On the next bridge, the one beyond this, among the officers at the rail, there is a man who is not shooting. A green cloth on his arm. He is looking at the ford the way you look at a fire you set. Haddat has stopped moving.` : ''}`,
+        map:["obbbbbbo","obbbbbbo","obbbbbbo","obbttbbo","obbbbbbo","obbbbbbo","obbbbbbo","obbbbbbo","---bb---","--------"],
+        party:[[3,8],[4,8],[2,9],[5,9],[3,9],[4,9]],
+        foes:[['b2_bridgecap',3,1],['b2_pike',2,2],['b2_pike',5,2],['b2_domarcher',4,0]],
+        /* a squad that came to the ford whole gets the pikeman from the far end too */
+        get waves(){ const n = S && S.squad ? S.squad.filter(k => k !== 'sgt' && !(S.f.b2_robe === 'mincer' && k === 'tangle')).length : 4;
+          return n >= 4 ? [{round:2, foes:[['b2_pike',1,3]], text:'A pikeman comes back along the rail from the far end, where the people climbing out of the water have made him unwelcome.'}] : []; }} } },
+
+  foes:{
+    /* Korbolo Dom's soldiers: the rebel army as a Malazan Fist builds one. Drilled, and in no hurry */
+    b2_pike:{name:'Dom\'s pikeman', sig:'p', kind:'pikeman', hp:17, ac:15, atk:4, dmg:[1,10,2], rng:1, mv:3, init:1, sk:['reach'], verb:'drives a pike at'},
+    b2_domarcher:{name:'Dom\'s archer', sig:'a', kind:'rebel_bow', hp:12, ac:12, atk:4, dmg:[1,8,1], rng:6, mv:4, init:2, sk:['pin'], verb:'looses at'},
+    b2_escort:{name:'Dom\'s escort', sig:'e', kind:'pikeman', hp:16, ac:15, atk:4, dmg:[1,8,2], rng:1, mv:4, init:2, sk:['parry'], verb:'cuts at'},
+    /* the bosses: the rope-captain, the envoy's officer, the bridge-sergeant */
+    b2_ropecap:{name:'Rope-captain', sig:'R', kind:'guran_officer', hp:30, ac:15, atk:5, dmg:[1,10,2], rng:1, mv:4, init:2, boss:true, sk:['rally'], verb:'cuts at'},
+    b2_envoyoff:{name:'The envoy\'s officer', sig:'O', kind:'guran_officer', hp:28, ac:16, atk:5, dmg:[1,10,2], rng:1, mv:4, init:3, boss:true, sk:['parry','rally'], verb:'cuts at'},
+    b2_bridgecap:{name:'Bridge-sergeant', sig:'S', kind:'pikeman', hp:32, ac:16, atk:5, dmg:[1,10,3], rng:1, mv:3, init:2, boss:true, sk:['reach','rally'], verb:'brings a pike round on'},
+    /* ally: one of Mincer's sappers in a refugee's robe */
+    b2_sapdis:{name:'Sapper in a robe', sig:'k', kind:'sapper', hp:18, ac:13, atk:4, dmg:[1,8,1], rng:4, mv:4, init:2, verb:'looses a quarrel at'} },
+
+  gear:{
+    b2_conduct:{name:'Dom\'s safe-conduct', slot:'trinket', who:null, stat:{guile:1}, line:'A square of good paper with a seal on it, the seal a Fist\'s seal with the Emperor\'s mark scraped out of it. It promises the bearer safe passage over the Vathar. It is not worth the wax.'},
+    b2_pikehead:{name:'A pike-head from the ford', slot:'trinket', who:null, atk:1, line:'The iron head of a rebel pike, the shaft broken off a hand below the socket. Made in a Malazan pattern. Somebody taught them that.'} },
+
+  scenes:{
+    b2_vathar:{loc:'The Vathar', sub:'The crossing', cap:'A wide brown river at noon, a ford through it, floating bridges coming down it, and the far bank black with men.', amb:'wind'},
+    b2_silanda:{loc:'The Vathar', sub:'The Silanda', cap:'A burned ship that has no business floating, low in the water in a mist of her own, her oars working in the shadow.', amb:'dark'},
+    b2_after:{loc:'The Vathar', sub:'Dusk, after', cap:'The river at dusk, smoke on it, birds over it, and on the far bank a long line of the living walking on into the trees.', amb:'dusk'} },
+
+  end:{
+    silanda:['Aboard the Silanda', 'At the Vathar the Nobles\' Council made its own peace with Korbolo Dom, and in the morning the refugees went into the ford under his word, and his bridges came down the river into them. The squad knew the night before. It could not stop it. It held a piece of the ford, and broke a bridge, and counted. One of the squad was not there to count: they went down the river to Aren the day before, on a burned ship rowed by something nobody looks at, with the Seventh\'s worst hurt. They will be waiting at the end of the road. If the road has an end.'],
+    keep:['Kept', 'At the Vathar the Nobles\' Council made its own peace with Korbolo Dom, and in the morning the refugees went into the ford under his word, and his bridges came down the river into them. The squad knew the night before. It could not stop it. It held a piece of the ford, and broke a bridge, and counted. Everyone in the squad who came to the river walked away from it. One of them walks carefully now, with a wound bound under the kit, and will until Aren.'] },
+  endScene:'b2_after',
+  endCap:()=> S.f.b2_c4_key === 'silanda' ? `Dusk on the far bank of the Vathar. The squad is one short, and the one is somewhere downriver on a ship that should not float, and nobody in the squad says that this is luck.` : `Dusk on the far bank of the Vathar. The whole squad is here. One of them sits down carefully, and gets up carefully, and does not want to talk about it.`,
+  tease:'Next: the Dry March. The old forest beyond the Vathar, the Nenoth Odhan after it, and Dom\'s army growing every day.',
+
+  extras:()=>{ const f = S.f, x = [];
+    x.push(`The squad left the Vathar with ${b2Chain()}.`);
+    if (f.b2_vatharLost) x.push(`The ford kept ${numw(f.b2_vatharLost)} of the squad's stretch. Haddat has their names, or the sergeant does.`);
+    if (f.b2_c4_key === 'silanda' && b2Mate(f.b2_silandaWho)) x.push(`${NAME(f.b2_silandaWho)} went down the Vathar on the Silanda with the Seventh's wounded, to wait in Aren.`);
+    if (f.b2_c4_key === 'keep' && b2Mate(f.b2_woundWho)) x.push(`${NAME(f.b2_woundWho)} stayed with the squad, and carries the wound from the ropes: less to give in a fight, until Aren.`);
+    if (f.b2_dealKnown) x.push('The squad found out the Council\'s deal with Dom the night before the crossing, and took it to Captain Lull. It was already too late. It had been too late since the envoys left.');
+    if (f.b2_conduct === 'kept') x.push('The squad keeps a safe-conduct with Korbolo Dom\'s seal on it, from the envoy\'s boat.');
+    if (f.b2_heldBack === 2) x.push('The squad kept its own people out of the ford until the bridges were broken. All of them.');
+    if (f.b2_heldBack === 1) x.push('The squad held some of its people back from the ford. Not all.');
+    if (f.b2_bridgeCusser) x.push('Tangle put a cusser into a floating bridge\'s moorings. It is gone for good. So is the bridge.');
+    if (f.b2_robe === 'mincer') x.push('Tangle went into the ford in a refugee\'s robe with Mincer\'s sappers, and came out of it with something he will not say.');
+    if (f.b2_ilharSeen) x.push('Haddat saw her brother at the Vathar, at the rail of a floating bridge among Dom\'s officers. He saw her. Neither of them lifted a hand.');
+    if (f.b2_marrowEnd === 'on') x.push('Marrow healed on the far bank until the warren had nothing left to give, and then a little after that.');
+    if (f.b2_orphans === 'took') x.push('At dusk the squad took in children the ford had left with nobody.');
+    if (f.b2_sathiLaugh) x.push('When the butterflies came up off the river, Sathi laughed, the Wickan way, and the Weasels laughed with her.');
+    return x; },
+
+  journal:()=>{ const f = S.f; return [
+    f.b2_vathar && `At the Vathar Crossing Korbolo Dom offered the column safe passage, and Coltaine refused. The Nobles' Council made its own deal with Dom in secret. In the morning the refugees went into the ford, and Dom's archers and pikemen came down the river on floating bridges.`,
+    f.b2_vathar && `About twenty thousand refugees died at the Vathar, and about seven hundred soldiers. The Foolish Dog Clan is fewer than five hundred.`,
+    f.b2_sormoDead && `Sormo E'nath, the Seventh's chief warlock, died at the Vathar on the far bank, trying to stop it.`,
+    f.b2_gesler && `A burned ship, the Silanda, came up the Vathar with three marines aboard: Sergeant Gesler, Corporal Stormy and a recruit called Truth. She took the Seventh's worst wounded down to Aren. Coltaine broke his hand on Gesler's face.`,
+    f.b2_bungle && `After the Vathar Captain Mincer was broken to the ranks, and his company was given to Bungle.`,
+    f.b2_ropesDone && `Dom's archers crossed the Vathar upriver on ropes before the column reached the ford. Some of the ropes were cut.`].filter(Boolean); },
+
+  dlg:{}
+};
+
+/* ---------------- the near bank: the Silanda, the ropes, the envoys ---------------- */
+Object.assign(B2CH4.dlg, {
+  b2_c4_start:()=>({sp:'The Odhan · west of Gelor', scene:'b2_odhan_dusk', fx:()=>{ if (!S.f.b2_c4Start) { S.f.b2_c4Start = 1; chain(-2, -2, 'The days after Gelor'); } }, txt:
+`Days. The ground goes from white to brown, and then, one morning, there is grass in it, thin and yellow, and the cattle that are left put their heads down and will not lift them.
+
+Two of your people sat down this week and did not get up. ${b2In('haddat') ? 'Haddat has their names.' : 'You have their names.'} The rest walk. They have learned how. They walk the way the Seventh walks now, without looking at anything, with their eyes a pace ahead of their feet.
+
+Behind the column, every evening, dust. Not riders on the skyline any more, not Tithansi. Just dust, a long way back, a great deal of it, that does not settle. ${b2In('tangle') ? `"${b2Count()}," Tangle says at the halt, and then, because the dust is there: "Not enough."` : ''}
+
+${b2In('marrow') ? `Marrow has ${b2Knots()}.` : ''}`,
+    html:chainHTML('The Odhan · toward the Vathar'),
+    ch:[{t:'On, to the river.', go:'b2_vathar_arrive'}]}),
+
+  b2_vathar_arrive:()=>({sp:'The Vathar · afternoon', scene:'b2_vathar', fx:()=>{ S.f.b2_vathar = 1; }, txt:
+`The river is wide and brown and slow, and on the far side of it there are trees. Real trees, old ones, a whole dark wall of them, the first in a thousand leagues. The column comes down to the near bank in the afternoon and stops, and looks at them, the way you would look at a coast.
+
+The Foolish Dog are already here, the ones that are left, watering their horses in the shallows. There is a ford, they say: a long pale bar of gravel under the water, waist-deep at the worst.
+
+And there is a ship.
+
+She is moored in the slack water under the near bank, where no ship has any reason to be, a long way from any sea. She is burned. Not scorched: burned, black to the waterline, her rail charred to the shape of teeth, and she floats anyway. There is a mist round her that the sun does not seem to reach. ${b2In('sathi') ? 'Hackle will not go within a stone\'s throw of her, and Sathi does not make him.' : 'The cattle will not go near her.'}
+
+Three marines are sitting on her rail with their boots dangling, as if she were any ship.`,
+    ch:[{t:'Down to the bank.', go:()=>startExplore()}]}),
+
+  /* ---- Gesler, Stormy, Truth ---- */
+  b2_gesler:()=>({sp:'Sergeant Gesler · Coastal Guard', fx:()=>{ S.f.b2_gesler = 1; }, txt:
+`The one in the middle drops off the rail onto the bank and comes up it to meet you, unhurried. A marine sergeant: a compact, weathered man in a salt-stained leather cap, and his skin has a colour to it you have never seen on a man. Gold. Not sunburn. A faint gold, as if there were a lamp lit somewhere under it.
+
+"Gesler," he says. "Sergeant, for the moment. Coastal Guard, once, until the coast went over to the other side." He jerks a thumb at the ship. "That's the Silanda. Don't ask."
+
+${b2In('marrow') ? `Marrow is looking at his face, and at his hands. "Child," she says, "what happened to your skin?" Gesler grins. "Fire," he says. "Long story. I didn't burn. It's in the same story as the ship. I'm not telling it."` : `You look at his skin. He sees you looking. "Fire," he says. "Long story. Same story as the ship."`}`,
+    ch:[{t:'"What\'s she doing here?"', go:'b2_gesler_ship'},
+        {t:'"Can she carry wounded?"', go:'b2_gesler_ship'}]}),
+  b2_gesler_ship:()=>({sp:'Sergeant Gesler', txt:
+`"Floating." He considers the Silanda as if he were seeing her for the first time. "We came up this river out of somewhere I'd sooner not describe, and found your Foolish Dog, and your warlock girl, and now we're a ferry." He scratches his jaw. "She'll take wounded. She'll take a lot of wounded. Your Fist wants the worst of them down to Aren, and she's the fastest thing on this river by a distance, because she doesn't stop to sleep."
+
+He looks at you, sidelong. "Anyone you put aboard: tell them stay on deck. Don't go below. Don't look at the rowers." A pause. "Truth looked at the rowers. Ask him how that went."
+
+${b2In('tangle') ? `Tangle has been looking at the oars. They are moving, very slightly, in the slack water. Nobody is on the benches you can see. "Sergeant," he says quietly, "I'm going to stand over there."` : 'Her oars are moving, very slightly, in the slack water. Nobody is on the benches that you can see.'}`,
+    ch:[{t:'Leave him to his ship.', go:()=>startExplore()}]}),
+  b2_gesler_again:()=>({sp:'Sergeant Gesler', txt: S.f.b2_ropesDone ? `Gesler is on the bank by the Silanda's plank with a slate, chalking up names as the wagons of the wounded come down. He doesn't look up. "Worst first," he says. "If it can walk, it walks."` : `Gesler has gone back to sitting on the rail. "Lull's looking for squads," he says. "I've told him I'm not one."`, ch:[{t:'On.', go:()=>startExplore()}]}),
+
+  b2_stormy:()=>({sp:'Corporal Stormy', fx:()=>{ S.f.b2_stormy = 1; }, txt:
+`The big one. A Falari, by the red of the beard, which comes down to his belt, and the size of him, which comes down to everywhere. He is on the bank with a marine's shortsword and a dented shield, showing the young one something, loudly, and the young one is on his back in the mud.
+
+"*Inside!*" Stormy is roaring. "Not *at* it. Inside it. A pike's a long way of saying stay over there, and you go *inside* it, along the wood, before the fool holding it has finished being sure of himself. Up." The young one gets up. "Again."
+
+He sees you. "Dom's got pikes," he says, as if you'd asked. "We saw 'em from the boat. Upriver. Hundreds." He spits. "Pikes are for people who don't want to meet you. Want to learn how to meet them anyway?"`,
+    ch:[{t:'"Show me." Try the Falari way in, against his shield.', check:['might',16], trick:'b2_inside', req:()=>!S.f.b2_stormyTry, fx:()=>{ S.f.b2_stormyTry = 1; },
+          edges:id=>[id === 'haddat' && ['a shield-fighter knows where a shaft ends', 2], id === 'redblade' && ['a lance-man knows what a pike fears', 2], id === 'marrow' && ['she sits down halfway', -2], id === 'tangle' && ['he is folded wrong for it', -1]],
+          go:'b2_stormy_yes', fail:'b2_stormy_no'},
+        {t:'"Some other time, Corporal."', go:()=>startExplore()}]}),
+  b2_stormy_yes:()=>({sp:'Corporal Stormy', txt:
+`${by({haddat:`Haddat sets her shield and goes in along the haft he holds out, low, the boss turning the point, and is inside it before Stormy has finished the word *again*. He looks down at her. She is very close. "Huh," he says.`, redblade:`Ramin takes the haft in one hand as if it were his own broken lance and goes along it, shoulder down, and stops with his curved sword resting very lightly under the Falari's beard. "In Ehrlitan," he says politely, "we were taught this the other way round."`, _:`{who} goes in along the shaft he holds out, shoulder down, the way he showed the young one, and is inside it before Stormy has finished being sure of himself.`})}
+
+Stormy roars with laughter and hits you on the back hard enough to loosen teeth. "*That's* it. That's the Falari way. Truth, did you see? *That's* how you meet a pike." The young one, Truth, from the mud, says he saw.`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_stormy_no:()=>({sp:'Corporal Stormy', txt:
+`${by({_:`{who} goes in along the shaft and the shaft comes round, and the mud comes up, and the sky is where the river was.`})}
+
+Stormy looks down, beard first. "Close," he says, which is generous. "You went *at* it. Everybody goes at it." He hauls you up one-handed. "Watch Truth. Truth's nearly got it, and Truth's an idiot."`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+
+  b2_truth:()=>({sp:'Truth', fx:()=>{ S.f.b2_truth = 1; }, txt:
+`The young marine, the one Stormy keeps putting in the mud. A boy, nearly: eager, scraped, with the look of somebody who has seen a great deal in a short time and is still deciding which parts to believe.
+
+"Sergeant." He says it properly, the way recruits do. "You're with the Seventh. The real Seventh. The Chain." He says the name the way the column never does, as if it were a thing in a song. "We heard about you. Before. Everyone's heard about the Chain."
+
+He glances back at the Silanda. "She's all right, mostly. You get used to her. Only don't go below." His face does something. "There's nothing down there you need."
+
+${b2In('sathi') ? `Sathi asks him something about the ship, in her bad Malazan, and he answers in a rush, and she listens with her head on one side. Afterwards she says: "He went into the dark under it. He saw them rowing. He says they had no heads." She considers this. "He is not lying. He is too young to lie that well."` : ''}`,
+    ch:[{t:'Leave him to Stormy.', go:()=>startExplore()}]}),
+
+  /* ---- Captain Lull: squads, upriver ---- */
+  b2_lull4:()=>({sp:'Captain Lull', fx:()=>{ S.f.b2_lull4 = 1; S.f.b2_lull = 1; }, txt:
+`Lull, on foot, with a bandage across the middle of his face that has gone the colour of the river, and the one eye looking out over it. He is walking down the bank collecting squads the way a man collects firewood.
+
+"Sergeant. Good. You'll do." He points upriver with his chin. "Those marines on the burned boat went up that way this morning and saw archers coming over the Vathar on ropes. Dom's. Hand over hand, with their bows on their backs. He means to have them on this bank before we're across, in the reeds, to make the crossing interesting." The eye considers you. "Go and make it dull. Cut the ropes. Kill whoever's already over."
+
+${b2In('marrow') ? `Marrow is looking at the bandage. "That wants changing, Captain." "It wants a face under it," Lull says. "Later."` : ''}`,
+    ch:[{t:'"Sir."', go:()=>startExplore()}]}),
+  b2_lull4_again:()=>({sp:'Captain Lull', txt: S.f.b2_ropesDone ? `Lull is by the Silanda's plank, watching the wounded go aboard with the one eye. "Ropes," he says, "dull. Good."` : `"Upriver, Sergeant," Lull says, without turning round. "Along the bank past the wagon. You'll see the ropes. You'll see what's on them."`, ch:[{t:'On.', go:()=>startExplore()}]}),
+
+  b2_bank_wagon:()=>({sp:'An overturned wagon', txt: !S.f.b2_lull4 ?
+`A wagon gone over in the reeds at the bank's edge, wheels up. Beyond it the bank goes on upriver, and the reeds get thick. Captain Lull is down the bank, looking for squads.` : S.f.b2_ropesDone ? (S.f.b2_envoys ? `The overturned wagon, and beyond it the bank going downstream toward the nobles' carriages, where the lamps are being lit. It is nearly dark.` : `The overturned wagon. Upriver the ropes hang slack in the water from their stakes.`) :
+`The overturned wagon, and the bank going on beyond it upriver, the reeds thick and tall. A long way up, over the water, you can see them now: lines across the river, low, dark, sagging, and on the lines, small dark shapes, moving.`,
+    ch:[{t:'Along the bank, quietly.', req:()=>!!S.f.b2_lull4 && !S.f.b2_ropesDone, go:'b2_ropes_go'},
+        {t:'Downstream, to the carriages.', req:()=>!!S.f.b2_envoys, go:'b2_to_night'},
+        {t:'Leave it.', go:()=>startExplore()}]}),
+  b2_ropes_go:()=>({sp:'Upriver', txt:
+`The reeds are taller than a man, and the mud between them is soft, and you go through them in a file with your weapons held up out of it.
+
+Then the reeds thin, and there is a stretch of open bank, and the ropes: four of them, from stakes driven into this bank, sagging across the whole width of the Vathar to stakes on the far one. On the near bank, among the stakes, a dozen archers already over, wet to the waist, stringing their bows. On the ropes, more. ${b2In('sathi') ? 'Sathi has an arrow on the string before you see them.' : ''}`,
+    ch:[{t:'Into them.', go:()=>startBattle('b2_ropes', {})},
+        {t:'Sathi and Hackle through the reeds first, to the archers\' flank.', check:['guile',15], req:()=>b2In('sathi'),
+          edges:id=>[id === 'sathi' && ['Hackle knows reeds', 2], id === 'redblade' && ['spurs', -2]],
+          go:'b2_ropes_quiet', fail:'b2_ropes_loud'},
+        {t:'Tangle\'s sharper into the stakes first.', tag:'uses 1 sharper', req:()=>b2In('tangle') && S.inv.sharper > 0, fx:()=>{ S.inv.sharper--; S.f.b2_ropesSharper = 1; }, go:()=>startBattle('b2_ropes', {pre:'Tangle\'s sharper goes into the stakes in a flat bright crack, and two of the ropes go slack, and the men on them go into the Vathar.', surprise:'p'})}]}),
+  b2_ropes_quiet:()=>({sp:'The reeds', txt:`${by({sathi:`Sathi and the dog go into the reeds and are gone. A breath. Then an archer at the end of the line sits down, and the one beside him turns round into Hackle.`, _:`{who} goes into the reeds with Sathi and the dog. A breath. At the end of the line, an archer sits down without a sound.`})}`, ch:[{t:'Now.', go:()=>startBattle('b2_ropes', {surprise:'p'})}]}),
+  b2_ropes_loud:()=>({sp:'The reeds', txt:`A heron goes up out of the reeds in front of Sathi, enormous, shouting, and every archer on the bank turns round at once. ${b2In('sathi') ? 'Sathi says the word in Wickan that makes Hissari wince.' : ''}`, ch:[{t:'In, before they nock.', go:()=>startBattle('b2_ropes', {})}]}),
+
+  b2_after_ropes:()=>({sp:'Upriver', fx:()=>{ S.f.b2_ropesDone = 1; }, txt:
+`The last rope goes with a sound like a bowstring, and drops into the Vathar, and the men on it go with it. Some of them swim. The current is slow. The far bank is a long way off.
+
+You stand on the near bank among the cut stakes, breathing. Your hands are shaking a little, the way they do after, and you notice it, and they stop.
+
+Then you count the squad, the way you always do${b2Worst() ? `, and you stop counting at ${NAME(b2Worst())}` : ''}.
+
+${b2Worst() ? `An arrow. ${b2He(b2Worst()) === 'he' ? 'He' : 'She'} took it early, from a man on a rope, and went on fighting with it in, the way you're not supposed to, and now ${b2He(b2Worst())} is sitting on the bank with ${b2His(b2Worst())} back against a stake and a face like paper. ${b2In('marrow') && b2Worst() !== 'marrow' ? `Marrow is already there. She looks at the wound, and at you. "I can close the top of it," she says. "Not the bottom. Not with this warren." A pause. "There's a ship."` : `Nobody in the squad can close it. There's a ship.`}` : `Nobody is down. Nobody is unhurt either.`}`,
+    ch:[{t:'Carry them back to the ford.', go:'b2_punch'}]}),
+
+  /* ---- the Silanda takes the wounded; Coltaine and Gesler ---- */
+  b2_punch:()=>({sp:'The Silanda\'s plank', scene:'b2_silanda', txt:
+`At the ford the column has come down to the water, all of it, and the wagons of the wounded are lined up on the bank by the Silanda, and Gesler is at the plank with his slate, and Coltaine is there.
+
+The Fist is on foot, in his black crow-feather cloak, watching the wounded go aboard. Lull is with him, and Bult. Lull is saying something to Gesler. You are close enough to hear it: a captaincy, a company, the Seventh needs officers. Gesler is saying no. He says it several ways. Then he says something about Bult, not loudly, that makes the marines on the plank go very still.
+
+Coltaine hits him.
+
+Once, in the face, without any warning at all, the way you'd swat a fly. Gesler's head goes back and comes forward again and he does not fall down. He blinks. There is a little blood at his nose. Coltaine shakes his hand once and looks at it, with no expression, the way he looks at everything.
+
+"Good," Bult says, to nobody, and laughs.
+
+Gesler wipes his nose with the back of his wrist and goes back to his slate.${b2In('sathi') ? `
+
+Sathi, at your elbow, very low: "The Fist broke his hand on that one's face." She sounds impressed by both of them. "That one is not all a man any more, Sergeant. Nil says so. His blood is old."` : ''}`,
+    ch:[{t:'Your own wounded.', go:'b2_silanda_who'}]}),
+  b2_silanda_who:()=>{ const c = b2Cands(), d = b2Worst();
+    return {sp:'Sergeant Gesler', txt: d ?
+`Gesler looks at ${NAME(d)}, and at the arrow-wound, and at you.
+
+"Room for one more of yours," he says. "Down the river. Aren in a few days, at the rate she goes; a proper healer at the end of it, if Aren's got any left." He makes a mark on his slate and holds the chalk over it. "Or keep ${b2Him(d)}. ${b2He(d) === 'he' ? 'He' : 'She'}'ll walk, likely. Bind it tight and ${b2He(d)}'ll walk all the way to Aren with it, and fight on it too, and it'll take something out of ${b2Him(d)} every day ${b2He(d)} does." He shrugs. "Your call, Sergeant. They always are."
+
+${c.length > 1 ? 'The squad is watching you. Nobody says anything.' : ''}${b2In('marrow') && d !== 'marrow' ? ` Marrow says, very quietly: "The ship, child. If it were mine to say."` : ''}${b2In('haddat') && d !== 'haddat' ? ` Haddat says nothing at all, which is how you know she agrees with whoever is speaking.` : ''}` :
+`Gesler looks at the squad, and at you, and makes no mark on his slate. "Nobody of yours bad enough," he says. "Good. Keep it that way."`,
+      ch: d ? [
+        {t:`Put ${NAME(d)} aboard.`, fx:()=>{ S.f.b2_c4_key = 'silanda'; b2Aboard(d); }, go:'b2_aboard'},
+        {t:'Someone else goes. Not the one with the arrow.', req:()=>c.length > 1, go:'b2_silanda_other'},
+        {t:`Keep ${NAME(d)}. Bind it, and walk.`, fx:()=>{ S.f.b2_c4_key = 'keep'; S.f.b2_woundWho = d; loy(d, 1); }, go:'b2_keep'}] :
+        [{t:'On.', fx:()=>{ S.f.b2_c4_key = 'keep'; }, go:'b2_silanda_off'}]}; },
+  b2_silanda_other:()=>{ const d = b2Worst(), o = b2Cands().filter(k => k !== d);
+    return {sp:'Sergeant Gesler', txt:
+`"Someone else." Gesler doesn't ask why. He has been a sergeant a long time. "Then the one with the arrow walks with it, and someone with something worse that doesn't show goes down the river." He waits.
+
+You know which of them it is. Everybody has something by now. Some of it shows.`,
+      ch:[...o.map(k => ({t:`${NAME(k)}.`, fx:()=>{ S.f.b2_c4_key = 'silanda'; S.f.b2_silandaOther = 1; b2Aboard(k); }, go:'b2_aboard'})),
+          {t:`No. ${d ? NAME(d) : 'The hurt one'} goes.`, req:()=>!!d, fx:()=>{ S.f.b2_c4_key = 'silanda'; b2Aboard(d); }, go:'b2_aboard'},
+          {t:'Back.', req:()=>!d && !o.length, go:'b2_silanda_who'}]}; },
+  b2_aboard:()=>{ const w = S.f.b2_silandaWho, n = b2Nm('b2_silandaWho', 'They');
+    return {sp:'The Silanda', scene:'b2_silanda', txt:
+`${n} goes up the plank on ${S.f.b2_silandaOther ? 'their own feet' : 'two marines\' shoulders'}, and turns at the top, on the burned deck, in the mist, and looks back at the squad.
+
+${w === 'haddat' ? `Haddat stands very straight, the way she stands to report. "Sergeant." In Hissari, so it sounds like an oath. Then, in Malazan, because it matters: "The names. The column's names. You have them. Say them at night." She does not look away until the mist takes her.` :
+  w === 'sathi' ? `Sathi does not want to go. She says so, in Wickan, at length, to Gesler, who does not understand a word and nods at all of it. Hackle goes up the plank after her without being called, and lies down across her feet on the black deck, and the marines let him. "Tell the clan," she says to you, last of all, in Malazan. "Tell them I did not ride away. Tell them I was carried."` :
+  w === 'tangle' ? `Tangle unbuckles the satchel and holds it out to you. "${b2Count()}," he says. "Count it out loud. Every halt. I'll know." Then, quieter: "Don't let anyone throw it who doesn't know how." He looks down the deck, at the oars, and away again, fast. "I'm going to stand very still the whole way."` :
+  w === 'marrow' ? `Marrow lowers herself onto a coil of charred rope on the deck, because Marrow sits down whenever she can. "Child," she says. "You'll be without a healer. Don't be stupid." She holds up the knotted string. "I'll keep count from Aren. Bring me some knots."` :
+  `${n} lifts a hand. That's all.`}
+
+Gesler pulls in the plank. Nobody casts off. The oars go into the water by themselves, slow, all together, and the Silanda turns out into the Vathar with her mist round her and goes away down the river faster than the current, and nobody on the bank says anything until she is out of sight.${w === 'sathi' && b2In('haddat') ? `
+
+Haddat says, after a while: "The dog will look after her." It is the kindest thing you have heard her say about the dog.` : ''}`,
+      ch:[{t:'Back to the bank.', go:'b2_silanda_off'}]}; },
+  b2_keep:()=>{ const w = b2Mate(S.f.b2_woundWho) ? S.f.b2_woundWho : null, n = b2Nm('b2_woundWho', 'The hurt one');
+    return {sp:'The bank', txt:
+`"Keep ${w ? b2Him(w) : 'them'}," you say, and Gesler shrugs and turns to the next wagon.
+
+${w === 'marrow' ? `Marrow binds her own wound, sitting down, with her teeth and one hand, and will not let anyone help. "A healer who goes down the river leaves her squad without one," she says. "I've seen what you lot do to yourselves." She ties the bandage off. She does not tie a knot in the string.` :
+  b2In('marrow') ? `Marrow binds it. She does it slowly, and tightly, and reaches into the warren once, and gets back something thin, and closes the top of the wound with it and no more. "It'll hold," she says. "It'll hurt every day. ${w ? `${NAME(w)} will be less in a fight, until somebody with a clean warren gets at the bottom of it.` : ''}" She doesn't tie a knot.` :
+  `You bind it yourself, tight, the way the field kit says. It will hold. It will hurt every day.`}
+
+${w === 'haddat' ? `Haddat stands up on it as soon as it is bound, and picks up her shield, and says nothing about it, then or ever.` : w === 'sathi' ? `Sathi laughs at it, the Wickan way, high and short, and then has to sit down again. Hackle licks the bandage until she pushes his nose away.` : w === 'tangle' ? `Tangle gets up, and sits down, and gets up. "Right," he says. "${b2Count()}. And one hole in me. Count it."` : w === 'marrow' ? '' : `${n} gets up on it. That will have to do.`}
+
+The Silanda goes away down the river with her mist round her and her oars working by themselves, and nobody on the bank watches her go for long.`,
+      ch:[{t:'Back to the bank.', go:'b2_silanda_off'}]}; },
+  b2_silanda_off:()=>({sp:'The Vathar · late afternoon', fx:()=>{ S.f.b2_silandaGone = 1; }, txt:
+`Where the burned ship was moored there is only slack water, and a little mist on it that takes a long time to go.
+
+The rest of the column is coming down to the bank behind you, all of it, forty thousand people and what cattle are left and the nobles' carriages, and spreading out along the river to look at the far side. Nobody is crossing. The Fist has not said cross.
+
+${b2In('haddat') ? `Haddat is looking across the water. "Riders," she says. "On the far bank. Under a pale cloth." She frowns. "They want to talk."` : 'On the far bank, riders are coming down to the water under a pale cloth.'}`,
+    ch:[{t:'Go and see.', go:'b2_envoys'}]}),
+
+  /* ---- Dom's envoys, and the Fist's answer ---- */
+  b2_envoys:()=>({sp:'The ford · dusk', scene:'b2_vathar', fx:()=>{ S.f.b2_envoys = 1; S.f.b2_council = 1; }, txt:
+`They come over the ford in the last of the light, a handful of riders with the pale cloth on a lance, and stop in the shallows on this side: officers of Dom's, in good armour, very correct. One of them speaks for the rest. In Malazan. Good Malazan, a Quon accent under it.
+
+You cannot hear all of it from where the squad stands. You hear enough. Korbolo Dom offers the column safe passage over the Vathar. The refugees may cross unharmed. The army must stay on this bank and surrender its arms.
+
+Then the nobles are there. You did not see them come down: a knot of them, out of the carriages, in silk gone grey with the march, pushing through to the Fist. A fat man sweating through his collar, talking fast. A thin one beside him, talking less. They want it. They want the safe passage. You can hear the fat one from here: *civilised*, he keeps saying. *A civilised offer.*
+
+Coltaine listens to all of it. His hand is bound up in a strip of cloth.
+
+Then he says one word, and turns his back on the envoys, and walks away up the bank. You don't need to hear the word.
+
+${b2In('haddat') ? `"No," Haddat says, very quietly, translating nothing.` : ''}${b2In('redblade') ? ` Ramin lets out a breath. "Good," he says. "In Ehrlitan, men who offer that much are selling something else."` : ''}`,
+    ch:[{t:'Watch the envoys go.', go:()=>startExplore()}]}),
+  b2_dom_far:()=>({sp:'The far bank', fx:()=>{ S.f.b2_domSeen = 1; }, txt:
+`You wade out into the ford to the knees, as far as the pickets let anyone go, and look.
+
+The envoys have gone back over. On the far bank, at the edge of the trees, a rider sits a big horse and watches them come. A broad man, dark, with a blue cast to the dark that is the Napan in him, in Malazan-cut armour with every badge taken off it, so that the leather is paler in patches where the Empire used to be. He does not have the look of a man waiting for an answer. He has the look of a man who already has one, and is not offended by it.
+
+${b2In('sathi') ? `"Who is that?" Sathi says.` : ''} Bult, on the bank behind you, answers without being asked. "Korbolo Dom." He spits in the river. "Look at him. Sitting a horse like a Fist. He was a good one." He turns away. "That's the worst of it."`,
+    ch:[{t:'Back to the bank.', go:()=>startExplore()}]}),
+  b2_to_night:()=>({sp:'The bank · night', txt:
+`Night comes down over the Vathar. The column camps along the near bank in a line leagues long, and lights its fires, and looks at the far bank, where there are more fires than there are stars.
+
+Downstream, the nobles' carriages have drawn up in a ring by the water, with their lamps lit. ${b2In('haddat') ? 'Haddat is looking at them. "They are harnessing the mules," she says. "At night. Why harness mules at night?"' : 'Somebody down there is harnessing mules. At night.'}`,
+    ch:[{t:'Down to the carriages.', go:()=>{ startExplore('b2_carriages'); talk('b2_carriages_arrive'); }}]}),
+
+  /* ---- the bank, the cart, the squad's people ---- */
+  b2_bank_river:()=>({sp:'The Vathar', txt: S.f.b2_vatharWater ?
+`The river, wide and brown and slow, and full of the column: cattle to their bellies, children to their knees, women filling every pot they have. ${S.f.b2_envoys ? 'On the far bank, fires.' : 'On the far bank, the trees.'}` :
+`A whole river. After the Odhan it is hard to look at. It just goes on being there, wide and brown and slow, and nobody is standing over it with a stave.
+
+Your people go down into it to the knees and fill everything.`,
+    ch:[{t:'Fill the skins.', req:()=>!S.f.b2_vatharWater, fx:()=>{ S.f.b2_vatharWater = 1; chain(4, 0, 'The Vathar'); }, go:()=>startExplore()},
+        {t:'Leave it.', go:()=>startExplore()}]}),
+  b2_bank_cart:()=>({sp:'The squad\'s cart', txt: S.f.b2_bankRest ? `The squad's cart. ${chainW() > 0 ? `The skins hang on it: ${numw(chainW())}.` : 'The skins hang on it, flat.'}` :
+`The squad's cart, in the reeds, with the stretch round it. ${chainW() > 0 ? `${numw(chainW(), true)} skin${chainW() === 1 ? '' : 's'} on the tailboard.` : 'No water at all, with a river ten paces off.'} ${chainC()} people, some of them already asleep where they stopped.`,
+    html:chainHTML('The Vathar · the near bank'),
+    ch:[{t:'Drink, and rest an hour.', tag:'1 water', req:()=>chainW() > 0 && !S.f.b2_bankRest, fx:()=>{ S.f.b2_bankRest = 1; dgRest('The squad drinks river water, as much as it wants, for the first time since the P\'atha, and sleeps an hour in the reeds. Wounds close, mostly.'); }, go:()=>startExplore()},
+        {t:'Leave it.', go:()=>startExplore()}]}),
+  b2_ours5:()=>({sp:b2Ours4() || 'The squad\'s people', fx:()=>{ S.f.b2_ours5 = 1; }, txt: S.f.b2_key === 'daughters' ?
+`${B2.younger} is standing in the shallows up to her knees holding the jar, looking at the trees on the far side as if they might be a trick. ${B2.elder} is watching her from the bank.
+
+"She has never seen a tree," ${B2.elder} says. "Not one like that. Not a whole wall of them." She smiles, which you do not see her do often. "She asked me if there would be water in the forest. I said yes. I don't know." She looks at you. "Is there?"` : S.f.b2_yedda ?
+`${B2.widow} is sitting on her rope by the water with her feet in it and her eyes shut, and her grandsons are throwing mud at each other in the shallows, and she is letting them.
+
+"Forty years in Hissar," she says, without opening her eyes, "I never once put my feet in a river." She wriggles her toes. "If the gods want me tomorrow, soldier, they can have me with clean feet."` :
+`A family from the weavers' street, sitting on the bank with their feet in the water, not talking. The youngest is asleep across her mother's knees. "Tomorrow," the mother says. "Over there. Into the trees. And then?" You don't have an answer. She doesn't seem to need one.`,
+    ch:[{t:'Leave them be.', go:()=>startExplore()}]}),
+
+  /* ---- Duiker and Mincer, before ---- */
+  b2_duiker5:()=>({sp:'Duiker', fx:()=>{ S.f.b2_duiker5 = 1; S.f.b2_duiker = 1; }, txt:
+`The historian rode ahead with the Foolish Dog and has been here since morning. He is sitting on a stone by the water with his notebook on his knee, writing nothing.
+
+"I counted them," he says, before you can say anything. "The Foolish Dog. Coming down to the river. Five thousand went up the ramp at Gelor." He closes the notebook. "Don't ask me what I counted."
+
+He looks at the far bank, at the trees. "Dom will be over there by now. Some of him. He'll have read the same maps we have. Every map in Seven Cities says the column must cross at this ford." He takes his spectacles off and rubs his eyes. "Sergeant, I have read a great many histories of armies at rivers. They are not, on the whole, cheerful reading."`,
+    ch:[{t:'"Then don\'t read them, sir."', go:'b2_duiker5b'},
+        {t:'Leave him.', go:()=>startExplore()}]}),
+  b2_duiker5b:()=>({sp:'Duiker', txt:`He laughs, a short tired bark. "I'm writing one, Sergeant. That's worse." He puts the spectacles back on. "${S.f.b2_duikerTold3 ? 'Your column\'s in it. Every name. I keep it in the front, where I can find it.' : 'You still owe me a column.'}"`, ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_mincer4:()=>({sp:'Captain Mincer', fx:()=>{ S.f.b2_mincer4 = 1; }, txt:
+`Mincer is sitting on an upturned bucket with his slate, as he always is, and his company round him, what is left of it after the ramp, mending shields.
+
+"Sergeant." He makes a mark. "${b2In('tangle') ? `I've your man's name on here twice. Once for Sekala, once for Gelor. Don't make me write it a third time.` : `Your sapper's on the ship. I heard. Good. One I don't have to count.`}" He looks at the river. "Fords. I hate fords. You can't pave this one, and there's nothing left to blow it with."
+
+${b2In('tangle') ? `Tangle squats beside him. They do not talk. After a while Mincer holds out the slate and Tangle reads it, and hands it back, and says, "You're short," and Mincer says, "I'm always short," and that is the whole of it.` : ''}`,
+    ch:[{t:'Leave him to his slate.', go:()=>startExplore()}]}),
+});
+
+/* ---------------- night: the Council's carriages, and the deal ---------------- */
+Object.assign(B2CH4.dlg, {
+  b2_carriages_arrive:()=>({sp:'The Council\'s carriages · night', scene:'b2_vathar', txt:
+`The nobles' carriages stand in a ring on the bank below the ford, gilt gone dull, wheels caked to the hubs, with lamps lit in the windows. Inside the ring there are more servants than the Seventh has cooks, and every one of them is working.
+
+They are packing. Not the way the column packs in the morning, slow and half-asleep. Fast, and quiet, in the dark, with the lamps turned low: chests roped, mules harnessed, the good horses brought in from the lines and put to the traces.
+
+${b2In('haddat') ? `Haddat watches the servants a long while. "They are Hissari," she says. "From the old families' houses. I know how they work when the master is afraid." A pause. "This is how they work when the master is afraid."` : 'You have seen people pack like that before. In Hissar, the night it burned.'}`,
+    ch:[{t:'Look round.', go:()=>startExplore()}]}),
+
+  /* ---- the steward, who wrote the sergeant's name down at Dryj ---- */
+  b2_steward4:()=>({sp:'Lord Nethpara\'s steward', fx:()=>{ S.f.b2_steward4 = 1; }, txt:
+`A man in a good coat gone grey, with a ledger under his arm and a lantern in his hand, going from carriage to carriage with a list. ${S.f.b2_stewardWon ? `You know him. Dryj Spring, the deep water, the line of men with staves.
+
+He knows you too. He stops. "Sergeant." He opens the ledger, without looking down, to a page he does not need to find, and turns it so that you can see a name written very carefully near the top. Yours. "I said the Council would hear of it. The Council has heard of a great many things, Sergeant. It is about to stop hearing of them."` : `Lord Nethpara's steward: you have heard of him, the man who stood over Dryj Spring with a ledger.
+
+He looks at you the way he looks at mules. "The Council's affairs are the Council's," he says. "Good night, soldier."`}
+
+He is sweating. It is not a warm night.`,
+    ch:[{t:'"Where is the Council going in the dark?"', check:['wits',14], edges:id=>[id === 'haddat' && ['she has watched men like him lie for years', 2], id === 'sgt' && ['six years of garrison paperwork', 1], id === 'redblade' && ['Ehrlitan merchants sweat the same way', 1]],
+          go:'b2_steward4_slip', fail:'b2_steward4_shut'},
+        {t:'Let him go about his business. Watch where it takes him.', go:'b2_steward4_watch'}]}),
+  b2_steward4_slip:()=>({sp:'Lord Nethpara\'s steward', fx:()=>{ S.f.b2_dealHint = 1; }, txt:
+`"Going?" He laughs, too high. "The Council is going nowhere, Sergeant. The Council is going exactly where the Fist goes. Over the river." His eyes go, once, all on their own, to the water below the carriages, where it is very dark, and back. "At first light. Like everyone. Under..." He stops.
+
+"Under what?" you say.
+
+He closes the ledger. "Good night, Sergeant." He goes off between the carriages with the lantern, quickly, toward the river.`,
+    ch:[{t:'Let him go. Follow the lantern.', go:()=>startExplore()}]}),
+  b2_steward4_shut:()=>({sp:'Lord Nethpara\'s steward', txt:`"Where the Fist goes, Sergeant. Where else?" He is already walking away. He takes the lantern with him, between the carriages, toward the river, not toward the Fist's tent.`, ch:[{t:'Watch the lantern.', go:()=>startExplore()}]}),
+  b2_steward4_watch:()=>({sp:'The carriages', txt:`You let him go. He goes from carriage to carriage with the list, and at the last one he turns the lantern down to a thread and goes out of the ring, not toward the Fist's tent, but down the bank, toward the water.`, ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_steward4_again:()=>({sp:'The carriages', txt:`The steward is gone from the ring. Down by the water, below the carriages, a lantern turned low.`, ch:[{t:'On.', go:()=>startExplore()}]}),
+
+  /* ---- the servants, in Hissari ---- */
+  b2_servants:()=>({sp:'Hissari servants', fx:()=>{ S.f.b2_servants = 1; }, txt:
+`Three of the Council's servants are roping a chest by a carriage wheel: a grey woman and two young men, Hissari, talking low in the old families' dialect while they work, the way servants talk when they think nobody who matters can understand them.
+
+${b2In('haddat') ? `Haddat goes and helps with the rope. She doesn't say anything. After a while, in the same dialect, she says something about the weather, and the grey woman answers, and then they are talking, all four of them, quietly, with the rope going round and round the chest.` : `You speak gutter Hissari. Not this Hissari. But near enough to follow.`}`,
+    ch:[{t:b2In('haddat') ? 'Let Haddat talk to them.' : 'Talk to them in their own tongue.', check:['guile',13], edges:id=>[id === 'haddat' && ['their own dialect', 3], id === 'sgt' && ['gutter Hissari', 1], id === 'redblade' && ['they hate a Red Blade more than a Malazan', -2]],
+          go:'b2_servants_talk', fail:'b2_servants_shut'},
+        {t:'Leave them to their rope.', go:()=>startExplore()}]}),
+  b2_servants_talk:()=>({sp:'Hissari servants', fx:()=>{ S.f.b2_dealKnown = 1; if (b2In('haddat')) loy('haddat', 1); }, txt:
+`${b2In('haddat') ? `Haddat comes back to you with her face very still, and tells it in Malazan, flatly, the way she reports.` : 'It comes out a piece at a time, under the noise of the rope.'}
+
+"The masters have made a peace. Their own. With the one across the river." The grey woman had said it like a woman telling a price. "Their people go over at first light, under his word, and nobody touches them. The steward has the papers. He went down to the boat for the last of them." A pause. "Anyone may follow, the masters say. Dom's word covers anyone who crosses with the Council. They are proud of that. They think it is generous."
+
+${b2In('haddat') ? `"I asked her if she believed it," Haddat says. "She said she was a servant. She said servants believe what they are told until they are drowned."` : 'The grey woman looks at you as you go. She does not say whether she believes it.'}`,
+    ch:[{t:'The boat. Down to the water.', go:()=>startExplore()}]}),
+  b2_servants_shut:()=>({sp:'Hissari servants', txt:`The talk stops when you come near, and the rope goes round the chest in silence, and the grey woman looks at you with no expression whatsoever, the way the old families' servants have looked at soldiers for three hundred years. But one of the young men glances at the water, below the carriages, before he can stop himself.`, ch:[{t:'On.', go:()=>startExplore()}]}),
+
+  /* ---- Nethpara and Pullyk Alar ---- */
+  b2_nethpara:()=>({sp:'Lord Nethpara', fx:()=>{ S.f.b2_nethpara = 1; S.f.b2_council = 1; }, txt:
+`The fat one from the parley, on a folding stool by his carriage step, with a servant fanning him though it is night. Lord Nethpara. He is sweating through good silk, and he has a cup of something in his hand, and he looks at you as if you were weather.
+
+"A soldier." He sighs. "Another one. Have you come to tell me how brave the Fist is? I know how brave the Fist is. He is so brave he will march forty thousand civilised people into the grave for his pride, and call it war." He drinks. "Korbolo Dom was a Fist of the Empire, soldier. A man of breeding, of a kind. He offered terms. Terms. Do you know how rare that is, in this country?"
+
+${b2In('haddat') ? `Haddat, very quietly, in Hissari: "He is drunk with fear." Then, in Malazan, louder: "My lord." Only that. Nethpara does not understand why it frightens him.` : ''}`,
+    ch:[{t:'"Is there a deal, my lord?"', go:'b2_nethpara2'},
+        {t:'Say nothing. Walk away.', go:()=>startExplore()}]}),
+  b2_nethpara2:()=>({sp:'Lord Nethpara', fx:()=>{ S.f.b2_dealHint = 1; }, txt:
+`"A *deal*." He goes red, and then very pale, and the cup shakes. "How dare you. I am a member of the Council. I do not make *deals* with rebels, I..." He stops. He looks past you, at the river. "Go away, soldier. Go and die for the Fist. Somebody should."
+
+${b2In('redblade') ? `Ramin, as you go: "In Ehrlitan, Sergeant, when a rich man says *how dare you*, it means *yes*." He says it without heat. He has seen this before.` : 'It is the most honest thing he has said.'}
+
+You do not touch him. You are a soldier of the Seventh, and he is what the Seventh is marching for, and both of you know it.`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_pullyk:()=>({sp:'Pullyk Alar', fx:()=>{ S.f.b2_pullyk = 1; S.f.b2_council = 1; }, txt:
+`The thin one. He is standing by his own carriage, watching his servants rope a chest, with his hands folded behind him. He is the only man in the ring who is not sweating.
+
+"Sergeant." He has a cool, precise voice, a clerk's voice. "${S.f.b2_stewardWon ? `The squad from Dryj Spring. Nethpara's man has your name. He is very proud of having it.` : `Of the Seventh. One of the Fist's.`}" He considers you. "You will want to say something to me about duty. Please don't. Soldiers are paid to die, Sergeant. That is the arrangement. We are not, and we have decided not to." He smiles, thinly. "If you lay a hand on a member of the Council, the Fist will hang you himself. He needs us more than he knows. Somebody has to be grateful to him in Aren."`,
+    ch:[{t:'"Somebody will be, my lord. It won\'t be you."', go:'b2_pullyk2'},
+        {t:'Turn your back on him.', go:()=>startExplore()}]}),
+  b2_pullyk2:()=>({sp:'Pullyk Alar', txt:`He inclines his head, as if you had made a point in a debate he had already won. "Good night, Sergeant." He turns back to his chest. Over his shoulder, mildly: "Do try to be on the near bank in the morning."`, ch:[{t:'On.', go:()=>startExplore()}]}),
+
+  /* ---- Ramin, by the carriages ---- */
+  b2_ramin4:()=>({sp:'Ramin', fx:()=>{ S.f.b2_ramin4 = 1; loy('redblade', 1); }, txt:
+`Ramin is standing at the edge of the ring very straight, looking at the carriages the way you'd look at a tavern you once lost a fight in.
+
+"In Ehrlitan," he says, "the winter the company cleared the market, there were men like these. In carriages. They watched from the hill." He doesn't go on about the market. He never does. "They had paid for it, you understand. They were watching what they had paid for."
+
+He turns his back on the carriages, deliberately, as a Red Blade turns his back on a thing beneath notice. "These ones have paid for something tonight, Sergeant. I would like very much to know what."`,
+    ch:[{t:'"So would I."', go:()=>startExplore()}]}),
+
+  b2_carriage:()=>({sp:'A carriage', txt: S.f.b2_tooLate ?
+`An empty carriage, its door swinging. Its owners are already down at the ford in the dark, with everyone who would follow them.` :
+`A noble's carriage, gilt, mud to the windows, with a lamp burning low inside and a child's face at the glass looking out at you. A servant pulls the curtain. ${b2In('sathi') ? 'Sathi makes a face at the curtain, a Weasel face, all points. "They are going somewhere," she says. "Horses know. Look at the horses."' : 'The horses in the traces are stamping. They know something.'}`,
+    ch:[{t:'Leave it.', go:()=>startExplore()}]}),
+
+  /* ---- the water's edge: Dom's boat ---- */
+  b2_night_river:()=>({sp:'The water\'s edge', txt: S.f.b2_envoyDone ?
+`The shallows below the carriages, black, with the bodies of Dom's men in them, and the boat drifting a little way out, empty. On the far bank, fires.` : (S.f.b2_steward4 || S.f.b2_dealKnown) ?
+`Down the bank below the carriages, where the reeds open: a lantern turned to a thread, and the steward beside it, and out on the black water, coming, the dark shape of a boat. Then another behind it.
+
+Men in the bow. Pikes, upright. They ground in the shallows and get out, quietly, and the one in front, an officer, goes up to the steward with something under his arm. A satchel. The steward holds out his hand for it.
+
+${b2In('sathi') ? 'Sathi has an arrow on the string. "Now?"' : 'They have not seen you.'}` :
+`The river, black, below the carriages. On the far bank, fires, more than there are stars. Nothing moves on the water that you can see.`,
+    ch:[{t:'Now. Into them.', req:()=>!S.f.b2_envoyDone && !!(S.f.b2_steward4 || S.f.b2_dealKnown), go:()=>startBattle('b2_envoy', {})},
+        {t:'Closer first, through the reeds.', check:['guile',14], req:()=>!S.f.b2_envoyDone && !!(S.f.b2_steward4 || S.f.b2_dealKnown),
+          edges:id=>[id === 'sathi' && ['Hackle knows reeds', 2], id === 'tangle' && ['sappers go quiet', 1], id === 'redblade' && ['spurs', -2]],
+          go:'b2_envoy_close', fail:'b2_envoy_seen'},
+        {t:'Leave it.', go:()=>startExplore()}]}),
+  b2_envoy_close:()=>({sp:'The reeds', txt:`Through the reeds on your bellies, in the mud, until you can hear them: the officer's good Malazan, the steward's thin voice. "...all of them, every house of the Council, and anyone who walks with them..." Then the officer looks up.`, ch:[{t:'Up.', go:()=>startBattle('b2_envoy', {surprise:'p'})}]}),
+  b2_envoy_seen:()=>({sp:'The reeds', txt:`A bird goes up out of the reeds, or a frog goes into the water, or a knee goes into the mud too loud. The officer's head comes round. "Steward," he says, quite calmly, "you've been followed." The pikes come down.`, ch:[{t:'Into them.', go:()=>startBattle('b2_envoy', {surprise:'e'})}]}),
+  b2_after_envoy:()=>({sp:'The water\'s edge', fx:()=>{ S.f.b2_envoyDone = 1; S.f.b2_dealKnown = 1; }, txt:
+`The steward is gone. He ran at the first blow, back up the bank toward the carriages with his lantern swinging, and nobody went after him; he is not who you came for.
+
+The officer is down in the shallows. The satchel is in the mud beside him. You open it by the light of the boat's lamp.
+
+Papers. A stack of them, each the same, each sealed with a Fist's seal with the Emperor's mark scraped out of it, each with the name of a house of the Council written at the top in a clerk's hand: Nethpara, Pullyk Alar, Lenestro, Tumlit, a dozen more. Safe passage over the Vathar, at first light, for the bearer's household and any who cross in its company. Signed: Korbolo Dom, Fist.
+
+${b2In('haddat') ? `Haddat reads one over your shoulder. She reads it twice. "Any who cross in its company," she says. "Sergeant, he means everyone. He means the whole column. He means them to walk into the river behind the Council." She puts it down very carefully, as if it might go off.` : `*And any who cross in its company.* You read it twice. He means the whole column. He means them to walk into the river behind the Council.`}`,
+    ch:[{t:'Take them all to Captain Lull.', fx:()=>{ S.f.b2_conduct = 'given'; }, go:()=>startExplore()},
+        {t:'Take them to Lull. Keep one.', fx:()=>{ S.f.b2_conduct = 'kept'; gain('b2_conduct'); }, go:()=>startExplore()}]}),
+
+  /* ---- Lull, and too late ---- */
+  b2_lull_night:()=>({sp:'Captain Lull', txt:
+`Lull is on the bank above the carriages with two of his marines, as if he had been waiting there for some time to see what the carriages would do. He reads the paper by firelight with the one eye, slowly, all of it.
+
+"Hood's breath." He says it without any heat at all. He folds the paper and puts it inside his jerkin. "With me. Now. The Fist will want to see your face when he hears it."`,
+    ch:[{t:'With him.', go:'b2_too_late'}]}),
+  b2_too_late:()=>({sp:'The bank · the dark before dawn', fx:()=>{ S.f.b2_tooLate = 1; }, txt:
+`You never get to the Fist's tent.
+
+Halfway along the bank Lull stops, and you stop with him, because behind you the carriages are moving. All of them, lamps out, the good horses in the traces, going down the bank in a line toward the ford, in the dark, quietly. And behind the carriages, the column is getting up.
+
+Word goes up the bank faster than a horse. You hear it go: from fire to fire, a whisper and then not a whisper. *Safe passage. The Council has it. Dom's word. Anyone who crosses with the Council.* People are getting up. Picking up children, bundles, pots, and going down to the water after the carriages, in the dark, without anyone telling them to, because somebody rich has promised them something and they have walked eight hundred leagues and they are so tired.
+
+Thousands. You can hear them going into the river. The splashing. The children.
+
+Lull watches it with the one eye. Then he says, quite gently: "There it is, Sergeant. You can't stop that. Not without killing it." He turns toward the Fist's tent, at a run now. "Get your own people. If you still can."`,
+    ch:[{t:'Your own people.', go:'b2_hold'}]}),
+  b2_hold:()=>({sp:'The squad\'s carts', txt:
+`Your stretch is on its feet when you get there. ${chainC()} of them, bundles on their backs, children up on the carts, and their faces turned toward the ford, where the sound of it is, people going into water in the dark.
+
+They turn and look at you. They have learned to look at you. ${S.f.b2_key === 'daughters' ? `${B2.elder} has ${B2.younger} by the hand and the jar under her arm, and she is looking at you, waiting.` : S.f.b2_yedda ? `${B2.widow} has her grandsons by the collars and her rope over her shoulder, and she is looking at you, waiting.` : 'A mother from the weavers\' street has her baby on her hip and is looking at you, waiting.'}
+
+"Safe passage," somebody says. "Sergeant. They say there's safe passage."`,
+    html:chainHTML('The Vathar · before dawn'),
+    ch:[{t:'"Sit down. Nobody goes into that river until I say." Hold them.', check:['might',15], edges:id=>[id === 'haddat' && ['they are her street', 2], id === 'sgt' && ['they are yours', 1], id === 'redblade' && ['they hate the red', -1], id === 'marrow' && ['she sits down first, and they follow her', 1]],
+          go:'b2_hold_ok', fail:'b2_hold_some'},
+        {t:'"Then we go with them, and keep them together in the water."', fx:()=>{ S.f.b2_heldBack = 0; if (b2In('marrow')) loy('marrow', -1); if (b2In('sathi')) loy('sathi', 1); }, go:'b2_hold_go'}]}),
+  b2_hold_ok:()=>({sp:'The squad\'s carts', fx:()=>{ S.f.b2_heldBack = 2; if (b2In('haddat')) loy('haddat', 1); }, txt:
+`They sit.
+
+Not all at once. One, and then another, the way the stretch sat on the Shallows if it sat at all, because you have told them to and because you have kept them alive since Hissar and they have nothing else to go on. ${b2In('haddat') ? 'Haddat goes along the carts in the dark saying it again in the quarter\'s own Hissari, low, the same words, and they sit.' : ''}${b2In('marrow') ? ' Marrow sits down first, on the tailboard, as if she had all night, and the old people sit round her.' : ''}
+
+Down at the ford the noise goes on. People going into water. Some of your people put their hands over their children's ears. You don't stop them.`,
+    ch:[{t:'Wait for the light.', go:'b2_dawn'}]}),
+  b2_hold_some:()=>({sp:'The squad\'s carts', fx:()=>{ S.f.b2_heldBack = 1; }, txt:
+`Most of them sit. Not all. A family from the end of the stretch is already gone, down the bank in the dark toward the water, and two more after them, and when you shout they walk faster. ${b2In('haddat') ? 'Haddat goes after them and comes back alone, and says nothing, and sits down with the rest.' : 'You let them go. You have the rest to hold.'}
+
+Down at the ford the noise goes on.`,
+    ch:[{t:'Wait for the light.', go:'b2_dawn'}]}),
+  b2_hold_go:()=>({sp:'The squad\'s carts', txt:
+`"Together," you say. "In a file. Hand on the shoulder in front. Nobody lets go." They do it, because you said it. The squad goes in front, and at the sides, and at the back. ${b2In('sathi') ? 'Sathi says, "Good. If they go, we go with them. That is the Wickan way."' : ''}${b2In('marrow') ? ' Marrow says nothing at all, which from Marrow is a speech.' : ''}
+
+You go down to the ford in the dark with the rest of the column, into the cold water, and wait there, in the river to the waist, for the light.`,
+    ch:[{t:'The light.', go:'b2_dawn'}]}),
+  b2_night_carts:()=>({sp:'The squad\'s carts', txt: S.f.b2_tooLate ? `Your people, and the carts.` :
+`The squad's carts and the squad's people, ${chainC()} of them, asleep or trying to be. On the far bank, fires. Down by the carriages, harness. ${!S.f.b2_dealKnown ? 'Something is wrong down there, and you do not know what yet.' : 'You know what. They don\'t, yet.'}`,
+    ch:[{t:'Your people.', req:()=>!!S.f.b2_tooLate && S.f.b2_heldBack == null, go:'b2_hold'},
+        {t:'Wait for the light.', req:()=>S.f.b2_heldBack != null, go:'b2_dawn'},
+        {t:'Leave them sleep while they can.', go:()=>startExplore()}]}),
+});
+
+/* ---------------- the ford: the day ---------------- */
+Object.assign(B2CH4.dlg, {
+  b2_dawn:()=>({sp:'The Vathar · first light', scene:'b2_vathar', txt:
+`The light comes up grey over the old forest, and you can see it.
+
+The ford is full. From bank to bank, the long pale bar of it under the brown water, and on it, in it, to the waist, to the chest, people: the column, tens of thousands, walking into the river in a crowd as wide as the river, the nobles' carriages at the head of it already halfway, lurching, the horses swimming where the gravel drops. Nobody is guarding them. Nobody is shooting at them. On the far bank, at the edge of the trees, nothing moves at all.
+
+Behind them the Seventh is coming down to the water at a run, in no order, because the Fist has given the only order there is: cross. Cross now, behind them, and be on the far bank before whatever is going to happen happens.
+
+${S.f.b2_heldBack === 2 ? 'Your stretch is still on the bank, sitting, all of it, where you told it to sit. They are watching the river.' : S.f.b2_heldBack === 1 ? 'Most of your stretch is still on the bank, where you told it to sit. Some of it is out there in the water.' : 'Your stretch is in the river with you, in a file, hand on shoulder, to the waist, shivering.'}`,
+    ch:[{t:'To the ford.', go:()=>{ startExplore('b2_vford'); }}]}),
+
+  /* ---- Mincer's sappers, in robes ---- */
+  b2_robe:()=>({sp:'Captain Mincer', txt:
+`Mincer's company is pulling on robes. Refugees' robes, head-cloths, women's shawls, whatever the column will give them, over the leather aprons and the munitions. Mincer is in a farmer's coat that comes to his knees, writing on his slate.
+
+"The Fist's order," he says, without looking up. "Sappers into the crowd, dressed like the crowd. If Dom's got something waiting in that river, we're in the middle of it when it comes." He looks up. ${b2In('tangle') && !b2Mate(S.f.b2_silandaWho) ? `At Tangle. "You're mine today, if your sergeant can spare you. I'm short."
+
+Tangle looks at you. He has a shawl in his hands already, somebody's grandmother's, blue.` : b2In('tangle') ? `At Tangle, and at the squad, and at the gap in it where ${b2Nm('b2_silandaWho', 'someone')} was. "I'd ask for him," he says. "You're short already. Keep him. Put a robe on him." He tosses Tangle a shawl, somebody's grandmother's, blue.` : `"Your sapper's on the burned boat. Pity. I could have used him." He goes back to the slate.`}`,
+    ch: b2In('tangle') && !b2Mate(S.f.b2_silandaWho) ? [
+        {t:'"Go with your captain, Tangle."', fx:()=>{ S.f.b2_robe = 'mincer'; loy('tangle', 1); }, go:'b2_robe_go'},
+        {t:'"He stays with us. In the robe, with our own people."', fx:()=>{ S.f.b2_robe = 'squad'; }, go:'b2_robe_stay'}] :
+      b2In('tangle') ? [{t:'"Thank you, Captain."', fx:()=>{ S.f.b2_robe = 'squad'; }, go:'b2_robe_stay'}] :
+      [{t:'Leave him to it.', fx:()=>{ S.f.b2_robe = 'none'; }, go:()=>startExplore()}]}),
+  b2_robe_go:()=>({sp:'Tangle', txt:
+`Tangle puts the shawl over his head, and is at once, horribly, somebody's grandmother. He buckles the satchel and holds it out to you. "${b2Count()}," he says. "Keep it dry." Then he goes off into the crowd with Mincer's people, stooping, and you lose him in the first twenty paces. ${b2In('sathi') ? 'Hackle whines after him once.' : ''}`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_robe_stay:()=>({sp:'Tangle', txt:
+`Mincer shrugs and goes back to the slate. Tangle puts the shawl on anyway, over the apron, and stands among your people in it, and is at once, horribly, somebody's grandmother. "If there's something in that river," he says, "it's coming at them, not at Mincer." He pats the satchel. "${b2Count()}. Point me at it."`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+
+  b2_ours_ford:()=>({sp:b2Ours4() || 'The squad\'s people', fx:()=>{ S.f.b2_oursFord = 1; }, txt: S.f.b2_heldBack ?
+`${S.f.b2_key === 'daughters' ? `${B2.elder} is sitting on the bank with ${B2.younger} in her lap and the jar between them. "Why are we not going?" ${B2.younger} asks you. ${B2.elder} answers before you can. "Because the sergeant said." She doesn't take her eyes off the river.` : S.f.b2_yedda ? `${B2.widow} is sitting on her rope with her grandsons pressed against her. "Everyone else is going, soldier." She looks at the river. "I hope you're right." She doesn't move.` : 'Your people, sitting on the bank where you told them, watching everyone else go into the river. Nobody says anything.'}` :
+`${S.f.b2_key === 'daughters' ? `${B2.elder} is in the water to her waist with ${B2.younger} on her back and the jar held up out of the river in both hands, like an offering.` : S.f.b2_yedda ? `${B2.widow} is in the water to her chest with a grandson on each hip, and the rope floating out behind her.` : 'Your people, in the river to the waist, in a file, hand on shoulder.'} Nobody lets go.`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_bult_ford:()=>({sp:'Bult', fx:()=>{ S.f.b2_bultFord = 1; }, txt:
+`Bult is on a horse at the water's edge, watching the crossing with his jaw working on nothing.
+
+"The Fist says cross," he says. "So we cross. Behind them. What else is there?" He spits. "Sormo's over already, with the young warlocks. On the far bank, where the trees start. He didn't like the look of the trees." He gathers the reins. "Neither do I. Nothing in them. Not one bird."`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_ford_tree:()=>({sp:'A drowned tree', txt:
+`A dead tree in the shallows, roots up, white, with the river pulling at it. From here you can see the far bank, and the edge of the forest, and at the water's edge among the first trees, small figures: Wickans. ${b2In('sathi') ? `Sathi shades her eyes. "Sormo," she says. "And the young ones. On the bank. He has his hands in the water." She frowns. "He is listening to the river. Why is he listening to the river?"` : 'One of them, older, is kneeling with his hands in the water, as if he were listening to it.'}
+
+Upriver, round the bend, something is coming down on the current. Long, low, dark. More than one.`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_ford_cart:()=>({sp:'A cart in the shallows', txt:`A cart gone over in the shallows, somebody's, with its bundles floating off it one by one and nobody stopping to pick them up. ${chainW() > 0 ? `Your skins, at least, are on your backs: ${numw(chainW())}.` : 'Your skins are empty. There is a whole river.'}`, ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_ford_wagon:()=>({sp:'The shallows', txt: !S.f.b2_robe ?
+`The overturned wagons at the edge of the ford, and the water beyond them full of people. Mincer's sappers are pulling on robes, back on the bank. ${b2In('tangle') ? 'Tangle is looking at you.' : ''}` :
+`The overturned wagons at the edge of the ford, and the water beyond them full of people, and coming round the bend upriver on the current, low and long and dark: rafts. No. Bridges. Lashed timber, wide as a road, floating, with men on them. A rail of pikes along each one. Archers behind the pikes.
+
+They are not coming to the bank. They are coming to the ford.`,
+    ch:[{t:'Into the water.', req:()=>!!S.f.b2_robe, go:'b2_bridges'},
+        {t:'Not yet.', go:()=>startExplore()}]}),
+
+  b2_bridges:()=>({sp:'The ford', scene:'b2_vathar', txt:
+`The bridges come down the Vathar into the ford, one after another, and swing across the current, and stop. Somebody has moored them. Somebody knew exactly where to moor them.
+
+Then the archers begin.
+
+They do not aim. They do not need to. The ford is full from bank to bank. People go down under it the way grass goes down under rain, and the ones who are not hit try to run, in water to the chest, and cannot, and the pikemen step down off the bridges into the shallows in good order and go to work.
+
+You do not look at it for long. You do not need to. You will be able to see it later whenever you like.
+
+The nearest bridge has swung in at the head of your stretch of the ford. Its pikemen are stepping down into the water.${S.f.b2_heldBack === 0 ? ' Your people are behind you in the river, hand on shoulder, and nobody has let go.' : ''}`,
+    ch:[{t:'Hold the shallows.', go:()=>startBattle('b2_bridge', {})},
+        {t:'Tangle: a cusser into the bridge\'s moorings, first.', tag:'uses 1 cusser', req:()=>b2In('tangle') && S.f.b2_robe !== 'mincer' && S.inv.cusser > 0, fx:()=>{ S.inv.cusser--; S.f.b2_bridgeCusser = 1; loy('tangle', 1); }, go:()=>startBattle('b2_bridge', {pre:'Tangle wades out to the chest in his grandmother\'s shawl and sets the cusser on the bridge\'s mooring-line, and comes back faster than he went. The end of the bridge goes up in a flat white roar, and swings, and half the archers on it go into the Vathar.', surprise:'p'})}]}),
+
+  b2_after_bridge:()=>({sp:'The ford', scene:'b2_vathar', fx:()=>{ if (!S.f.b2_fordDone) { S.f.b2_fordDone = 1; S.f.b2_vathar = 1;
+      const c = chainC(), r = S.f.b2_lastRounds || 7; let p = .4 - (S.f.b2_heldBack || 0) * .12 - (S.f.b2_bridgeCusser ? .06 : 0) - (S.f.b2_robe === 'mincer' ? .04 : 0) + (r <= 4 ? -.05 : r >= 9 ? .05 : 0);
+      p = clamp(p, .08, .5); const loss = c ? Math.max(1, Math.round(c * p)) : 0; S.f.b2_vatharLost = loss; chain(0, -loss, 'The Vathar'); gain('b2_pikehead'); } }, txt:
+`The bridge sergeant goes into the river with his horsetail, and does not come up, and the bridge is yours.
+
+Then it is not anybody's. The people in the water have reached it. They come up over the edge of the planks out of the Vathar, hundreds of them, unarmed, with their hands, the way they came up out of the Odhan: they have walked eight hundred leagues and they have stopped being afraid of anything. They come up onto the bridge and over the archers and the bridge tips, slowly, all along its length, and goes over, and the river closes on it.
+
+All down the ford it is happening. The bridges are going under.
+
+${S.f.b2_robe === 'mincer' ? `Downstream there is a long flat roar, and a column of white water, and a bridge comes apart in the middle. Somebody's grandmother in a blue shawl is standing in the shallows beside it, very still.` : ''}
+
+You stand in the river to the waist, and count. ${S.f.b2_vatharLost ? `The ford has kept ${numw(S.f.b2_vatharLost)} of your stretch. ${b2In('haddat') ? 'Haddat says the names.' : 'You have the names.'}` : 'Nobody of yours is in the water that you can find.'} ${S.f.b2_heldBack === 2 ? 'The rest are on the bank, where you sat them. They are alive because you sat them there, and they will never, any of them, thank you for it, and that is right.' : ''}`,
+    html:chainHTML('The Vathar · the ford'),
+    ch:[{t:'The far bank.', go:'b2_butterflies'}]}),
+  b2_butterflies:()=>({sp:'The ford', fx:()=>{ S.f.b2_sormoDead = 1; }, txt:
+`On the far bank, where the trees begin, something is rising off the water.
+
+At first you think it is smoke. It is not smoke. It is yellow. A cloud of yellow, rising off the river by the bank where the Wickans were, thousands on thousands of small bright wings, butterflies, a great slow column of them going up into the grey morning over the Vathar, over the bridges and the dead and the living, as if something were being carried.
+
+${b2In('sathi') ? `Sathi stops. She stands in the river with her bow in her hand and watches them go up, and her face does a thing you have never seen it do. "Sormo," she says. Only that.` : `Nobody around you says anything. Nobody needs to. Somebody on the far bank is dead, and it is somebody the land knew.`}
+
+The word comes down the river an hour later. Sormo E'nath went into the water when the bridges came, on the far bank, and stood in it, and tried to stop them. The archers on the nearest bridge found him. ${b2In('marrow') ? (S.f.b2_sormo ? `Marrow, beside you in the river, says very quietly: "He told me the warrens were sick. At Hissar. The first night. He was the only one who'd say it." She does not say anything else for a long time.` : `Marrow, beside you in the river, says nothing at all for a long time.`) : ''}`,
+    ch:[{t:'On.', go:()=>talk(b2In('haddat') ? 'b2_ilhar' : 'b2_vcross')}]}),
+  b2_ilhar:()=>({sp:'Haddat', fx:()=>{ S.f.b2_ilharSeen = 1; }, txt:
+`Haddat has not moved since the bridge.
+
+She is standing in the shallows with her shield on her arm, the auxiliary's faded blue, looking upriver, at the next bridge. It is still afloat. It is drifting now, its moorings cut, turning slowly in the current, with a knot of Dom's officers at its rail who have not yet decided whether to jump.
+
+One of them is not in armour. A city coat, a green cloth on the arm. A man about her age with her shoulders. He is looking at the ford the way you look at a fire you set. Then he is looking at the shield. Then at her.
+
+The bridge turns in the current. Nobody on it lifts a bow toward the blue shield. Nobody on it lifts a bow toward anything near it. Whether anyone on it was ever told to, you will never know.
+
+He does not lift a hand. Neither does she.`,
+    ch:[{t:'Let her be.', fx:()=>{ S.f.b2_ilharSign = 'silent'; }, go:'b2_ilhar_silent'},
+        {t:'"Haddat." Only that.', fx:()=>{ S.f.b2_ilharSign = 'named'; loy('haddat', 1); }, go:'b2_ilhar_named'}]}),
+  b2_ilhar_silent:()=>({sp:'Haddat', txt:`The bridge goes on turning, and drifts away round the bend with the current, and he goes with it. Haddat watches until there is nothing to watch. Then she turns round and walks back through the water to the squad, and says, in Malazan, reporting: "My brother is with Dom, Sergeant. On the bridges. I have seen him." She picks up a child out of the shallows who has lost its mother, and carries it to the bank, and does not say anything else all day.`, ch:[{t:'On.', go:'b2_vcross'}]}),
+  b2_ilhar_named:()=>({sp:'Haddat', txt:`She hears you. She does not turn round. In Hissari, very low, too low for the water to carry, she says a name. His. The second time you have heard her say it. The bridge drifts away round the bend with him on it, and he does not hear, or he does not show it.
+
+When she turns round her face is the face she wears to count the dead. "Thank you, Sergeant," she says. "I needed somebody to have heard me say it."`, ch:[{t:'On.', go:'b2_vcross'}]}),
+  b2_vcross:()=>({sp:'The Vathar · afternoon', scene:'b2_after', txt:
+`The Seventh crosses the Vathar in the afternoon, behind what is left of the column, over the ford, between the drifting wreckage of the bridges. Nobody shoots at it. Dom's archers on the far bank have gone back into the trees. The Foolish Dog went in after them, Bult says, and came out again, fewer.
+
+${S.f.b2_heldBack ? 'Your stretch crosses with the army, last, through water that is not brown any more. You tell them not to look down. Most of them manage it.' : 'Your stretch is already over, the ones the ford left you, sitting on the far bank in a heap, soaked, holding on to each other.'}
+
+On the far bank, at the edge of the old forest, the column stops, because it cannot go any further today, and sits down where it stops.`,
+    ch:[{t:'The far bank.', go:()=>{ startExplore('b2_farbank'); talk('b2_farbank_arrive'); }}]}),
+});
+
+/* ---------------- the far bank: dusk, after ---------------- */
+Object.assign(B2CH4.dlg, {
+  b2_farbank_arrive:()=>({sp:'The far bank · dusk', scene:'b2_after', txt:
+`Dusk on the far bank of the Vathar.
+
+The river goes on behind you, slow and brown, as if nothing had happened in it. There is smoke on it from somewhere. There are birds over it, a great many birds, and you do not look at what they are doing.
+
+Up the bank, where the trees begin, the living are sitting down in the leaf-litter in their thousands, and not talking, and not lighting fires. Somebody has already given the day a name. By the time the stars are out, everybody is using it.
+
+${b2In('marrow') ? 'Marrow is already among the wounded, under the first trees.' : 'There is no healer with the squad. There is a great deal for a healer to do.'}`,
+    html:chainHTML('The Vathar · the far bank'),
+    ch:[{t:'Look round.', go:()=>startExplore()}]}),
+
+  /* ---- Marrow, at the bottom of the warren ---- */
+  b2_marrow_end:()=>({sp:'Marrow', txt: S.f.b2_marrowEnd ?
+`Marrow is sitting against a tree with her eyes shut and the string in her lap. ${S.f.b2_marrowEnd === 'on' ? 'She is not asleep. She is just empty.' : 'She is asleep, or pretending to be, for your sake.'}` :
+`Marrow is on her knees under the first trees with the wounded laid out in front of her in a row that goes back into the dark further than you can see. She is doing it the slow way: needle, gut, salve, a hand on the forehead. Every so often she reaches into the warren, and you can see it in her face, the reach, and what comes back.
+
+She has done a great many. She is still going. When she looks up at you her eyes are wrong, the way a well's water is wrong when somebody has been drawing too long.
+
+"It's nearly gone, child," she says. "Not mud. Not tonight. Nothing. I put my hand in and there's a bottom to it, and it's dry, and there's something sitting on the bottom." She looks at the row. "There are four more I could reach. I think. If I go on."`,
+    ch:[{t:'"Go on, then. I\'ll hold you up."', req:()=>!S.f.b2_marrowEnd, fx:()=>{ S.f.b2_marrowEnd = 'on'; S.f.b2_warrenFloor = 1; S.f.b2_knots = (S.f.b2_knots || 0) + 3; S.f.b2_sputters = (S.f.b2_sputters || 0) + 1; chain(0, 2, 'Marrow\'s last'); loy('marrow', 1); }, go:'b2_marrow_on'},
+        {t:'"Stop. You\'ll be no use to anyone tomorrow."', req:()=>!S.f.b2_marrowEnd, fx:()=>{ S.f.b2_marrowEnd = 'stopped'; }, go:'b2_marrow_stop'},
+        {t:'Leave her.', req:()=>!!S.f.b2_marrowEnd, go:()=>startExplore()}]}),
+  b2_marrow_on:()=>({sp:'Marrow', txt:
+`You kneel behind her and hold her up by the shoulders, and she goes on.
+
+Three of them take. You can see them take: the colour coming back, the breath going deep. She ties a knot in the string after each, with fingers that are shaking. The fourth does not. She reaches, and there is nothing, and she reaches again, deeper, past where it is safe to go, and something comes back up with her hand that is not Denul, and the man in front of her goes very still, and then breathes, badly, and lives. She does not tie a knot for that one. She counts it on her fingers.
+
+Then she sits back against you, all her weight, and does not get up for a long time.
+
+"Something's sitting in it," she says, at last, into your shoulder. "In the warren. Down at the bottom, where the water should be. Something big, and patient, and it moved when I touched it." She is quiet a while. "Don't tell Sormo's boy. He's ten."`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_marrow_stop:()=>({sp:'Marrow', txt:
+`She looks at you for a long moment. Then she puts the needle down.
+
+"You're right," she says. "I hate it when you're right." She lets you help her up, and walks with you away from the row, and does not look back at it, which costs her more than you will ever know. "Tomorrow," she says. "There'll be a little in the well tomorrow. There always is."
+
+There are four more in the row who will not see tomorrow. She knows exactly which four. So do you.`,
+    ch:[{t:'On.', go:()=>startExplore()}]}),
+
+  /* ---- Tangle, and Mincer's fall ---- */
+  b2_tangle_mincer:()=>({sp:'Tangle', fx:()=>{ S.f.b2_bungle = 1; }, txt:
+`Tangle is sitting on a root with the shawl still round his shoulders, blue, somebody's grandmother's, and his crossbow across his knees, and he is not counting anything.
+
+"They've broken Mincer," he says. "To the ranks. An hour ago, in front of the company." He turns the crossbow over. "Captain this morning. Sapper tonight. Same as me." He laughs, not much. "He'll be better at it than me."
+
+${S.f.b2_robe === 'mincer' ? `He doesn't say why. You were not there, and he was, in the robe, with the company, all day in the river. "Don't ask me, Sergeant," he says, before you can. "He won't say. I won't either. It was a bad day in the water. Everybody did things." He looks at the river. "Some of us did the wrong ones for the right reasons, and some the other way. Somebody up there knows which. That's what Fists are for."` : `"Nobody's saying why," he says. "Not in the hearing of anyone below a captain." He looks at the river. "It was a bad day in the water. Everybody did things."`}
+
+He takes the shawl off at last, and folds it, carefully, and puts it in the satchel. "${b2Count()}," he says. "And a shawl."`,
+    ch:[{t:'"Who has the company?"', go:'b2_tangle_bungle'}]}),
+  b2_tangle_bungle:()=>({sp:'Tangle', txt:`"Bungle." He says it the way you would say the name of a horse you were not sure of. "Captain Bungle, now. He's over there, wearing it." He nods up the bank. "He'll be all right. He's sensible. That's the worst thing you can say about a sapper and the best thing about a captain."`, ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_bungle:()=>({sp:'Captain Bungle', fx:()=>{ S.f.b2_bungleMet = 1; S.f.b2_bungle = 1; }, txt:
+`A sapper in a scorched apron with a captain's badge pinned on crooked over it, by somebody in a hurry, sitting on an ammunition chest with Mincer's slate in his hands, looking at it as if it might go off.
+
+"Sergeant." He doesn't get up. Sappers never get up. "Bungle. Captain, apparently." He holds up the slate. "Mincer's. He gave it me himself. Said I'd need it." He looks at the names on it, a long time. "He's down there. With the company. Digging latrines. He offered."
+
+He puts the slate away inside his apron, very carefully, the way Lull put away the Claw star. "Don't call me *sir*," he says. "Not tonight."`,
+    ch:[{t:'"Captain."', go:()=>startExplore()}]}),
+
+  /* ---- Sathi, and the Wickan manners ---- */
+  b2_sathi_laugh:()=>({sp:'Sathi', fx:()=>{ S.f.b2_sathiLaugh = 1; loy('sathi', 1); }, txt:
+`Down by the water the Wickans are singing over their dead. The Foolish Dog, mostly: what is left of them. There are not many voices.
+
+Sathi is sitting at the edge of the trees with Hackle across her knees, listening. When the song gets to a place you can feel coming, a long falling place, she laughs. Out loud, high and short, the Wickan way, the way the Weasels laugh at funerals. It goes out over the water in the dusk.
+
+Somebody down by the water laughs back.
+
+Then more of them. A Weasel, two, a handful, the clan's riders sitting their tired horses at the river's edge, laughing in the dark between the verses, and one of them turns in the saddle and looks up the bank at the girl who laughed first. ${S.f.b2_sathiShamed ? `It is the first time a Weasel has looked at her since the Shallows.` : S.f.b2_sathiTeeth ? `He grins at her, all points, and she grins back, all points.` : ''}
+
+${S.f.b2_sathiShamed ? `Sathi doesn't move. She doesn't look back at him. But she doesn't stop laughing either, until the song does.` : `"For Sormo," she says to you, when it is over, wiping her eyes. "He would want it loud. The old ones carry him now. Eight of them, the clan says, inside him. Now nine."`}`,
+    ch:[{t:'Let her be.', go:()=>startExplore()}]}),
+
+  /* ---- Duiker, hoarse ---- */
+  b2_duiker6:()=>({sp:'Duiker', fx:()=>{ S.f.b2_duiker6 = 1; }, txt:
+`The historian is sitting against a tree with his notebook shut on his knee. His voice, when he speaks, is a croak, and there are marks on his throat, dark ones, in the shape of fingers.
+
+"Nethpara," he says. "At the water's edge. After." He touches his throat. "I put my hands on him. I had them round his neck. I was going to kill him, Sergeant, there in front of the column. A member of the Council." He is quiet a moment. "They pulled me off. I don't know who. I woke up in the mud."
+
+He opens the notebook, and looks at it, and shuts it again. "I'll write it down. All of it. The bridges, the Council, the deal." He looks at the river. "And then somebody in Unta will read it, and say *how dreadful*, and turn the page." He closes his eyes. "I would have killed him. I want that in the history too."`,
+    ch:[{t:'"I\'d have helped, sir."', go:'b2_duiker6b'},
+        {t:'Sit with him a while.', go:()=>startExplore()}]}),
+  b2_duiker6b:()=>({sp:'Duiker', txt:`He opens his eyes and looks at you, and almost laughs, and it hurts his throat. "No you wouldn't, Sergeant. You'd have pulled me off. That's why they give you the stripes." He shuts his eyes again. "Thank you, though."`, ch:[{t:'On.', go:()=>startExplore()}]}),
+
+  /* ---- Ramin counts the company ---- */
+  b2_ramin_count:()=>({sp:'Ramin', fx:()=>{ S.f.b2_raminCount = 1; loy('redblade', 1); }, txt:
+`Ramin is standing at the edge of the trees facing the river, very straight, counting the company's dead out loud, by name, the way he does every dusk. It takes longer tonight.
+
+When he has finished he stays where he is. "They were in the ford," he says, without turning round. "The company. Between the bridges and the people, on foot, the horses gone. Holding." He says it in the present tense, as he says everything about the company, and then hears himself, and stops. "Held."
+
+He turns round. "In Ehrlitan, Sergeant, the rich men watched from the hill. Today they went first, in the water, with the paper Dom gave them." His voice does not change. "And they lived. Most of them. I asked." He goes back to looking at the river. "I am lent. I will be given back. I would like the company to be there when I am."`,
+    ch:[{t:'"It will be."', go:()=>startExplore()}]}),
+
+  /* ---- the wreck of a bridge ---- */
+  b2_wreck:()=>({sp:'The wreck', txt:`Planks of a floating bridge, washed up against the bank, still lashed together with rope that has been cut and knotted and cut again. A pike's broken shaft is wedged between two of them. ${b2In('tangle') ? 'Tangle looks at the lashing. "Good work," he says, and hates that he said it.' : 'Somebody built it well.'}`, ch:[{t:'Leave it.', go:()=>startExplore()}]}),
+
+  /* ---- the Chain at dusk: the children nobody has ---- */
+  b2_far_cart:()=>({sp:'The squad\'s cart', txt: S.f.b2_orphans ?
+`The squad's cart, under the first trees. ${S.f.b2_orphans === 'took' ? 'The children are asleep on it, in a heap, under the squad\'s blankets.' : 'The children are gone where you sent them.'} ${chainW() > 0 ? `${numw(chainW(), true)} skin${chainW() === 1 ? '' : 's'} hang${chainW() === 1 ? 's' : ''} on the tailboard.` : 'No water. There is a river behind you, and nobody will go down to it tonight.'}` :
+`The squad's cart, under the first trees, with what is left of your stretch round it.
+
+And round the stretch, at the edge of the firelight that nobody has lit, children. Five of them. Six. Soaked, silent, with nobody, from somewhere in the ford. They have come up the bank to the nearest people who look as if they know what they are doing, and sat down, and they are watching the skins on your cart.
+
+${b2In('haddat') ? 'Haddat looks at them, and at you, and does not say anything. She does not have to.' : 'Nobody in the squad says anything.'}`,
+    html:chainHTML('The far bank of the Vathar'),
+    ch:[{t:'Take them into the stretch.', tag:'2 water', req:()=>!S.f.b2_orphans && chainW() >= 2, fx:()=>{ S.f.b2_orphans = 'took'; chain(-2, 5, 'Children from the ford'); if (b2In('haddat')) loy('haddat', 1); if (b2In('marrow')) loy('marrow', 1); }, go:'b2_orphans_took'},
+        {t:'Give them a skin, and walk them to the Wickan wagons.', tag:'1 water', req:()=>!S.f.b2_orphans && chainW() >= 1, fx:()=>{ S.f.b2_orphans = 'sent'; chain(-1, 0, 'A skin for the children'); }, go:'b2_orphans_sent'},
+        {t:'There is no water for them. Not and keep the stretch alive.', req:()=>!S.f.b2_orphans, fx:()=>{ S.f.b2_orphans = 'left'; if (b2In('haddat')) loy('haddat', -1); }, go:'b2_orphans_left'},
+        {t:'Leave it.', req:()=>!!S.f.b2_orphans, go:()=>startExplore()}]}),
+  b2_orphans_took:()=>({sp:'The squad\'s cart', txt:`You give them the skin. They drink the way the stretch has learned to drink, slowly, holding it, because somebody in the stretch shows them how. ${S.f.b2_key === 'daughters' ? `${B2.younger} gives the smallest one a turn with the jar.` : S.f.b2_yedda ? `${B2.widow} counts them, out loud, and says, "Well. Six more," as if she had been expecting it.` : 'A woman from the weavers\' street takes the smallest one into her lap without a word.'} The stretch is longer. It is lighter by two skins. That is the arithmetic of the Chain, and everybody on it knows it.`, ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_orphans_sent:()=>({sp:'The squad\'s cart', txt:`A skin, and a walk up the bank in the dark to where the Wickans have their wagons. A Wickan grandmother looks at them, and at you, and takes them in under her cart without a word, as if children were a thing that came up out of rivers every evening. Perhaps today they were.`, ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_orphans_left:()=>({sp:'The squad\'s cart', txt:`You don't give them anything. You can't. The skins are for the stretch, and the stretch is already more than the skins. After a while the children get up, one by one, and go away up the bank to the next fire nobody has lit. ${b2In('haddat') ? 'Haddat watches them go. She counts them. She does not look at you for the rest of the night.' : 'You count them as they go. Six.'}`, ch:[{t:'On.', go:()=>startExplore()}]}),
+  b2_far_wagon:()=>({sp:'Under the trees', txt: S.f.b2_farRest ? `The squad's blankets, in the leaf-litter, under the first trees.` :
+`The leaf-litter under the first trees is soft and damp, and smells of rot and green, and after the Odhan it is like lying down in a bed. Nobody in the column has lit a fire. Nobody wants to be seen.`,
+    ch:[{t:'Drink, and sleep.', tag:'1 water', req:()=>!S.f.b2_farRest && chainW() > 0, fx:()=>{ S.f.b2_farRest = 1; dgRest('The squad lies down under the trees with the river at its back, and sleeps, or lies still with its eyes shut, which on the Chain counts. Wounds close, mostly.'); }, go:()=>startExplore()},
+        {t:'Leave it.', go:()=>startExplore()}]}),
+
+  /* ---- Bult, and the count ---- */
+  b2_bult6:()=>({sp:'Bult', txt:
+`Bult is sitting on a dead log at the edge of the trees with no wine and no grin, looking at the river.
+
+"Sergeant." He doesn't look round. "Duiker has the count. Do you want it?" He doesn't wait. "Twenty thousand of the column. Near enough. Seven hundred of ours. The Foolish Dog are fewer than five hundred, and they were five thousand at Gelor. And Sormo." He is quiet a moment. "Sormo, who was older than he looked, and younger than he should have been, and carried his teachers inside him like a man carries his dead. He went into the water to stop it. With his hands."
+
+He picks up a stone and turns it over. "The Council lived. Most of it. Nethpara. Pullyk. The ones who made the deal walked over on Dom's paper and his archers let them by." He puts the stone down. "The Fist knows. He will do nothing, because there is nothing to do that does not lose us the rest of the column, and he is a Fist, and that is what a Fist is for." He looks at you at last. "I'm his uncle. I'm allowed to hate it."
+
+"Count your own, Sergeant. Then sleep. The forest tomorrow. Dom won't come into the trees after us tonight. He doesn't need to."`,
+    ch:[{t:'Count them.', go:'b2_c4_end'}]}),
+  b2_c4_end:()=>({sp:'The far bank of the Vathar · night', scene:'b2_after', txt:
+`You count them.
+
+${chainC()} in the squad's stretch, on the far bank of the Vathar, under the first trees of the old forest, in the dark. ${S.f.b2_vatharLost ? `${numw(S.f.b2_vatharLost, true)} fewer than came to the river. You have their names. Somebody should.` : 'All of the ones who came to the river.'}${S.f.b2_orphans === 'took' ? ' And six who were not yours this morning.' : ''} ${chainW() > 0 ? `${numw(chainW(), true)} skin${chainW() === 1 ? '' : 's'} of the Vathar on the cart.` : 'No water.'}
+
+${S.f.b2_c4_key === 'silanda' && b2Mate(S.f.b2_silandaWho) ? `And the squad: one short. ${NAME(S.f.b2_silandaWho)} is somewhere down the river tonight, on a burned ship, going to Aren. You find yourself counting ${b2Him(S.f.b2_silandaWho)} anyway. You will for a while.` : S.f.b2_c4_key === 'keep' && b2Mate(S.f.b2_woundWho) && b2In(S.f.b2_woundWho) ? `And the squad: all of it. ${NAME(S.f.b2_woundWho)} is asleep with the wound bound tight under the kit, and wakes when ${b2He(S.f.b2_woundWho)} turns over, every time.` : 'And the squad: all of it.'}${b2In('haddat') && S.f.b2_ilharSeen ? `
+
+Haddat sits with her shield across her knees and looks at the river, black under the stars, where a bridge went round the bend this morning with a man on it from the water-sellers' quarter.` : ''}
+
+Somebody has named the day. It is a Wickan name, or a soldier's, or both; by midnight nobody can remember who said it first. The Day of Pure Blood. Nobody who was in the river says it out loud.`,
+    html:chainHTML('The far bank of the Vathar'),
+    ch:[{t:'Sleep.', go:()=>chapterEnd(4, S.f.b2_c4_key || 'keep')}]}),
+});
+
+/* ============ Book Two, Chapter 4 art: The Day of Pure Blood — the Vathar Crossing, the Silanda, the evening after ============ */
+/* Figures (FIGX), the crossing (TILEX) and three backdrops (SCENEX), drawn the way 47b, 49b and 50b draw: lantern low on the left,
+   glare by day, blue-black by night, dust over everything. What happened at the Vathar is kept far off: smoke, birds, a dark far bank, things left in the mud. */
+
+/* ---------------- figures: FIGX[kind](ctx, h, t, o), the same ~32px frame as 47b ---------------- */
+/* sweat or a sheen of gold on skin: a few bright points that come and go */
+const b2Beads = (ctx, t, pts, col, still) => pts.forEach(([x, y], i) => { const a = still ? .7 : .35 + .45*(Math.sin(t/380 + i*1.9) + 1)/2; ctx.fillStyle = col.replace('A', a.toFixed(2)); ctx.fillRect(x, y, .7, .8); });
+Object.assign(FIGX, {
+  /* Nethpara of the Nobles' Council: fat, soft, sweating through good silk gone grey with the march; a chain of office, a kerchief to his brow, rings */
+  nethpara(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, 1.12, 1.02);
+    h.legs('#2a2018'); ctx.fillStyle = '#4a3020'; ctx.fillRect(-4.8, 11, 3.8, 2); ctx.fillRect(1, 11, 3.8, 2); // soft slippers, ruined
+    ctx.fillStyle = h.armor('#7a5a6a', '#2a1a24'); ctx.beginPath(); ctx.moveTo(-6.4, -6.4); ctx.lineTo(6.4, -6.4); ctx.quadraticCurveTo(11.6, 1, 8.8, 12); ctx.lineTo(-8.8, 12); ctx.quadraticCurveTo(-11.6, 1, -6.4, -6.4); ctx.fill(); // the robe, and the belly in it
+    ctx.fillStyle = 'rgba(160,140,110,.28)'; ctx.fillRect(-8.6, 9, 17.2, 3); ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(1.6, 3.4, 6, 4.6, 0, -.4, Math.PI*.8); ctx.fill(); // dust to the knee; the belly's shadow
+    ell(ctx, -3.6, -.8, 2.4, 3.4, 'rgba(255,240,230,.1)'); ctx.fillStyle = '#c9a44a'; ctx.fillRect(-.5, -6, 1, 18); ctx.fillStyle = '#6a2a3a'; ctx.beginPath(); ctx.ellipse(0, 4.2, 9.4, 1.4, 0, 0, 7); ctx.fill(); // the silk's shine, gold trim, a sash pulled under the paunch
+    ctx.strokeStyle = '#c9a44a'; ctx.lineWidth = .7; ctx.beginPath(); ctx.moveTo(-4.8, -6); ctx.quadraticCurveTo(0, -1.2, 4.8, -6); ctx.stroke(); ell(ctx, 0, -2, 1.5, 1.5, '#d8b860'); ell(ctx, -.4, -2.4, .5, .5, 'rgba(255,250,220,.8)'); // the chain of office and its medallion
+    h.head('#c09a7a', 5.2, -11); ell(ctx, 0, -6.8, 4.4, 1.8, '#b08a6a'); ell(ctx, 3.2, -9, 1.6, 1.4, 'rgba(200,110,90,.35)'); // jowls, a flushed cheek
+    h.look('rgba(24,14,10,.82)', -11.6); ctx.fillStyle = 'rgba(40,24,16,.4)'; ctx.fillRect(-1.2, -10.4, 1.8, .6); ctx.fillRect(1.8, -10.4, 1.8, .6); // small eyes, pouched
+    ctx.fillStyle = '#2a1a12'; ctx.beginPath(); ctx.arc(0, -12.4, 5.2, Math.PI*.96, Math.PI*1.22); ctx.lineTo(-3.4, -13); ctx.fill(); ctx.fillRect(-5.2, -12.6, 1.4, 3.4); // a fringe of oiled hair round the ears, the crown bald
+    ctx.fillStyle = 'rgba(255,245,230,.22)'; ctx.fillRect(-2.6, -15.8, 3.2, 1.2); b2Beads(ctx, t, [[-1.6,-14.4],[1.4,-14.8],[3.4,-13.4],[-3.4,-12.8],[4,-10.6]], 'rgba(240,250,255,A)', o.still); // the pate, and the sweat on it
+    ctx.fillStyle = '#1a1210'; ctx.fillRect(-1.4, -8.6, 4.8, 1); // a thin moustache, oiled
+    B2F.line(ctx, '#7a5a6a', 2, [[5.4, -4], [7.4, -9], [5.6, -12.4]]); ell(ctx, 5, -13, 1.6, 1.4, '#c09a7a'); poly(ctx, [[3.4,-14.8],[6.8,-14.2],[6.2,-11.2],[3.6,-12]], '#e8e0d0'); // the kerchief to his brow
+    ell(ctx, -8.4, 2, 1.5, 1.5, '#c09a7a'); ctx.fillStyle = '#e8c073'; ctx.fillRect(-9, 1.6, 1.4, .6); ell(ctx, -7.8, 2.8, .5, .5, '#c84a5a'); // a ringed hand, a ruby
+    ctx.restore(); },
+
+  /* Pullyk Alar: thin, upright, sharp; a narrow dark coat buttoned to the throat, a pointed beard, a hooked nose, a folded paper held close */
+  pullyk(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, .9, 1.1);
+    h.legs('#1a1614'); ctx.fillStyle = '#2a1e16'; ctx.fillRect(-4.6, 10.6, 3.6, 2.4); ctx.fillRect(1, 10.6, 3.6, 2.4); // good boots, kept clean somehow
+    poly(ctx, [[-5.6,-6.4],[5.6,-6.4],[6.6,11.6],[-6.6,11.6]], h.armor('#3a3a4a', '#0e0e16')); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(-.4, -6, .8, 17.4); // the long coat, close-cut
+    ctx.fillStyle = '#b8a070'; for (let i=0;i<6;i++) ctx.fillRect(.8, -5 + i*2.2, .8, .8); ctx.fillStyle = '#5a2a3a'; ctx.fillRect(-5.8, -6.6, 11.6, 1.2); // a row of small brass buttons, a wine-dark collar
+    ctx.fillStyle = 'rgba(200,210,240,.1)'; ctx.fillRect(-5.2, -5.6, 1.8, 15); // the cloth's sheen
+    ctx.save(); ctx.translate(-5.4, 1.2); ctx.rotate(-.25); ctx.fillStyle = '#e4dcc4'; ctx.fillRect(-1.6, -2.6, 3.4, 4.4); ctx.fillStyle = '#8a2a1e'; ctx.fillRect(-.6, -.6, 1.4, 1.2); ctx.fillStyle = 'rgba(40,30,20,.4)'; ctx.fillRect(-1.2, -1.8, 2.6, .3); ctx.fillRect(-1.2, .9, 2.4, .3); ctx.restore(); // a folded paper, a seal of red wax
+    B2F.line(ctx, '#3a3a4a', 1.6, [[-5.2, -4.6], [-5.6, 1.4]]); ell(ctx, -5, 1.6, 1, 1, '#a8826a'); // the hand that holds it
+    h.head('#a8826a', 3.9, -11.6); ctx.fillStyle = 'rgba(40,24,16,.3)'; ctx.fillRect(-3, -9.4, 6, .5); // a narrow face, hollow under the cheekbones
+    h.look('rgba(20,12,8,.9)', -12); ctx.fillStyle = '#1a1210'; ctx.fillRect(-1.4, -13.4, 2.2, .5); ctx.fillRect(1.8, -13.6, 2.2, .5); // eyes close-set under level brows
+    poly(ctx, [[3,-12],[5.6,-9.6],[4.6,-9],[3.4,-9.4]], '#a07a62'); // the nose, hooked
+    poly(ctx, [[-1.4,-8.6],[3.4,-8.6],[2.2,-5.4],[1,-3.2],[-.2,-5.4]], '#1a1210'); ctx.fillStyle = 'rgba(160,150,140,.4)'; ctx.fillRect(.6, -6, .5, 2); // a pointed beard, a thread of grey
+    ctx.fillStyle = '#1a1210'; ctx.beginPath(); ctx.arc(0, -12.6, 4.2, Math.PI, Math.PI*2); ctx.fill(); ctx.fillRect(-4.2, -12.8, 1.2, 2.6); ctx.fillStyle = 'rgba(255,250,240,.16)'; ctx.fillRect(-2.6, -16.4, 2.6, .8); // black hair combed flat, a widow's peak
+    ctx.restore(); },
+
+  /* Sergeant Gesler of the marines: short, broad, bow-legged; the fire left his skin gold; a cut-down leather coat, a cutlass, a cheerful bad look */
+  gesler(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, 1.04, .98); const sk = '#c8a050';
+    ctx.fillStyle = '#3a2e22'; ctx.fillRect(-5.2, 5, 3.4, 8); ctx.fillRect(1.8, 5, 3.4, 8); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-5.2, 11, 3.4, 2); ctx.fillRect(1.8, 11, 3.4, 2); // bow-legged
+    poly(ctx, [[-7,-6.4],[7,-6.4],[7.4,7.6],[-7.4,7.6]], h.armor('#7a5e3e', '#241a10')); ctx.strokeStyle = 'rgba(20,12,6,.5)'; ctx.lineWidth = .5; ctx.beginPath(); for (let i=0;i<3;i++){ ctx.moveTo(-7, -2 + i*3.2); ctx.lineTo(7.2, -2 + i*3.2); } ctx.stroke(); // a leather coat, cut short, banded
+    ctx.fillStyle = 'rgba(10,6,4,.4)'; ell(ctx, 4, 4, 2, 1.4, ctx.fillStyle); ell(ctx, -4.6, -3, 1.4, 1.2, ctx.fillStyle); // scorched through in places
+    ctx.fillStyle = '#2a1e12'; ctx.fillRect(-7.2, 2.6, 14.4, 1.6); ctx.fillStyle = '#9a968c'; ctx.fillRect(-1, 2.6, 2, 1.6); // belt, an iron buckle
+    ctx.fillStyle = '#5a6a8a'; ctx.fillRect(2.4, -5.4, 1.6, 1.6); ctx.fillStyle = '#c8b890'; ctx.fillRect(4.6, -5.4, .6, 1.6); ctx.fillRect(5.6, -5.4, .6, 1.6); // a marine's blue tab, a sergeant's two bars
+    ell(ctx, -7.6, 2.6, 1.8, 1.8, sk); B2F.line(ctx, sk, 2, [[-6.6, -4.8], [-7.8, 1.6]]); // a bare forearm, gold
+    h.head(sk, 4.6, -11); ell(ctx, -2, -13, 2.6, 1.6, 'rgba(255,240,180,.35)'); h.look('rgba(30,20,8,.9)', -11.4); // a broad face, gold, the light skating on it
+    ctx.fillStyle = 'rgba(90,60,20,.45)'; ctx.fillRect(-2.4, -8.6, 5.6, 1.8); ctx.fillStyle = '#4a2e14'; ctx.fillRect(.2, -7.6, 3, .5); ctx.fillRect(3, -8, .6, .5); // stubble, a crooked grin
+    ctx.fillStyle = '#7a5a2a'; ctx.beginPath(); ctx.arc(0, -12.2, 4.8, Math.PI*1.02, Math.PI*1.98); ctx.fill(); ctx.fillStyle = 'rgba(255,230,160,.25)'; ctx.fillRect(-3, -16.2, 2.6, .8); // hair cropped to the skull, gone gold as well
+    poly(ctx, [[3.6,-11.2],[5.4,-9.4],[3.8,-9]], sk); ctx.fillStyle = 'rgba(60,30,10,.4)'; ctx.fillRect(4, -9.2, 1.4, .4); // a nose broken more than once
+    b2Beads(ctx, t, [[-3.6,-13],[1.6,-14.6],[-6.6,-2],[-8.4,2]], 'rgba(255,240,170,A)', o.still); // the gold, catching
+    B2F.curved(ctx, '#d0c8b4', 1); ctx.fillStyle = '#c9a44a'; ctx.fillRect(5.4, .8, 3.8, 1.1); ctx.restore(); }, // the cutlass, a brass guard
+
+  /* Corporal Stormy: a huge Falari, red beard and red hair wild, gold-skinned from the fire; mail over a burned shirt, a heavy sword over his shoulder */
+  stormy(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, 1.22, 1.18); const sk = '#c49a52';
+    B2F.line(ctx, '#5a3e22', 1.8, [[5.4, -2], [7.4, -7]]); B2F.line(ctx, '#d4ccbc', 2.2, [[7.2, -6.8], [12.4, -22]], 'butt'); poly(ctx, [[11.4,-22.6],[13.6,-21.8],[13,-24.4]], '#d4ccbc'); ctx.fillStyle = '#8a7a5a'; ctx.fillRect(4.6, -6.4, 5, 1.2); // the big sword, laid back on his shoulder
+    h.legs('#2a2420'); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(-4.8, 9.4, 3.8, 3.6); ctx.fillRect(1, 9.4, 3.8, 3.6);
+    poly(ctx, [[-7.6,-6.6],[7.6,-6.6],[8,8.6],[-8,8.6]], h.armor('#7e7a70', '#1e1c18')); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = .5; ctx.beginPath(); for (let i=0;i<7;i++){ ctx.moveTo(-7.8, -5 + i*2); ctx.lineTo(7.8, -5 + i*2); } ctx.stroke(); // mail
+    ctx.fillStyle = '#6a4a2e'; ctx.fillRect(-8, 6.8, 16, 2.4); ctx.fillStyle = 'rgba(0,0,0,.35)'; for (let i=0;i<4;i++) ctx.fillRect(-7 + i*4, 7.6, 2.4, 1.6); // a scorched shirt-tail, ragged
+    ctx.fillStyle = 'rgba(255,250,236,.1)'; ctx.fillRect(-7.2, -6, 2.2, 13); ctx.fillStyle = '#2a1e12'; ctx.fillRect(-8, 2.6, 16, 1.7); ctx.fillStyle = '#5a6a8a'; ctx.fillRect(2.6, -5.6, 1.6, 1.6); // belt; the blue tab
+    ell(ctx, -8.6, 3, 2, 2, sk); B2F.line(ctx, sk, 2.4, [[-7.4, -5], [-8.8, 2.4]]); // a fist like a stone
+    h.head(sk, 4.6, -11.6); ell(ctx, -2.2, -13.4, 2.4, 1.4, 'rgba(255,240,180,.3)'); h.look('rgba(30,20,8,.9)', -12);
+    ctx.fillStyle = '#b0381e'; ctx.beginPath(); ctx.moveTo(-4.4, -10); ctx.quadraticCurveTo(-5.6, -4, -2, -1.6); ctx.lineTo(.6, -.2); ctx.lineTo(3, -1.8); ctx.quadraticCurveTo(6, -4.6, 4.8, -10); ctx.lineTo(3.4, -9); ctx.lineTo(-3, -9); ctx.closePath(); ctx.fill(); // the red beard, to the chest
+    ctx.strokeStyle = 'rgba(240,120,70,.6)'; ctx.lineWidth = .5; ctx.beginPath(); for (let i=0;i<5;i++){ ctx.moveTo(-3 + i*1.6, -8.6); ctx.quadraticCurveTo(-2.6 + i*1.6, -5, -1.6 + i*1.2, -2.4); } ctx.stroke(); ctx.fillStyle = '#5a1608'; ctx.fillRect(-.6, -8.4, 3.4, .7); // its curls; the mouth in it
+    ctx.fillStyle = '#b0381e'; ctx.beginPath(); ctx.arc(0, -12.8, 5.2, Math.PI*.9, Math.PI*2.06); ctx.fill(); for (let i=0;i<6;i++){ poly(ctx, [[-5 + i*2, -16.4 + Math.abs(i - 2.5)*.6],[-4.4 + i*2, -19 + Math.abs(i - 2.5)*.7 + (i%2)],[-3.2 + i*2, -16.6 + Math.abs(i - 2.5)*.6]], '#b0381e'); } // a red mane, never combed
+    ctx.fillStyle = '#e0683a'; ctx.fillRect(-4.6, -16, 3.4, .8); ctx.fillRect(-5.6, -12.8, 1.4, 4); // the light in it
+    b2Beads(ctx, t, [[-3.4,-13.6],[2.4,-11],[-8.8,1.6]], 'rgba(255,240,170,A)', o.still);
+    ctx.restore(); },
+
+  /* Truth: a young marine, hardly more than a boy, gold-skinned like the others; a helm too big for him, a spear held too tight, wide eyes */
+  truth(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, .94, 1.02); const sk = '#d0aa62';
+    B2F.line(ctx, '#5a4026', 1.3, [[7.6, 12.4], [9, -22]], 'butt'); poly(ctx, [[9.1,-27],[8,-21.6],[10.2,-21.6]], '#c8c4b8'); // a spear
+    h.legs('#2e2a24'); ctx.fillStyle = '#3a2e22'; ctx.fillRect(-4.5, 10, 3.4, 3); ctx.fillRect(1.1, 10, 3.4, 3);
+    h.torso('#8a7a56', '#3a321e', 6); ctx.strokeStyle = 'rgba(0,0,0,.22)'; ctx.lineWidth = .5; ctx.beginPath(); for (let i=0;i<4;i++){ ctx.moveTo(-6, -3 + i*2.6); ctx.lineTo(6, -3 + i*2.6); } ctx.stroke(); // a padded jerkin, new, already ruined
+    ctx.fillStyle = 'rgba(20,12,6,.35)'; ell(ctx, -2, 3.4, 2.4, 1.2, ctx.fillStyle); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(-6, 3, 12, 1.3); ctx.fillStyle = '#5a6a8a'; ctx.fillRect(2.2, -5.4, 1.4, 1.4); // a scorch; belt; the blue tab
+    B2F.line(ctx, sk, 1.8, [[5, -3.6], [8.4, -1.6]]); ell(ctx, 8.6, -1.4, 1.3, 1.3, sk); ell(ctx, 8.4, 3, 1.2, 1.2, sk); // both hands on the spear
+    h.head(sk, 4.2, -11); ell(ctx, -1.8, -12.4, 2, 1.2, 'rgba(255,245,200,.3)'); ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.fillRect(-1.2, -11.6, 1.6, 1.3); ctx.fillRect(1.8, -11.6, 1.6, 1.3); h.look('rgba(30,20,8,.95)', -11.4); // eyes too wide
+    ctx.fillStyle = '#5a3a1a'; ctx.fillRect(.6, -8, 2, .5); // a mouth pressed shut
+    ctx.fillStyle = h.armor('#76726a', '#24221e'); ctx.beginPath(); ctx.arc(0, -12.6, 5.8, Math.PI, 0); ctx.fill(); ctx.fillRect(-6.2, -13, 12.4, 1.6); ctx.fillStyle = 'rgba(255,250,240,.2)'; ctx.fillRect(-4, -17.6, 3, 1); // a helm a size too big, down to his brows
+    B2F.line(ctx, '#4a3a26', .6, [[-5, -11.6], [-3.6, -6.4]]);
+    b2Beads(ctx, t, [[-3,-12],[2,-9.4]], 'rgba(255,245,190,A)', o.still);
+    ctx.restore(); },
+
+  /* one of Dom's pikemen: a rebel regular, drilled — quilted coat, iron cap, the green on the arm, a pike as long as three men, a little round buckler */
+  pikeman(ctx, h, t, o){ const sk = b2Pick(o, ['#8a6448', '#7a5a40', '#946c4c', '#6a4a32']), coat = b2Pick(o, [['#9a8a62','#3a3220'], ['#8a7a5a','#30281a'], ['#a08e66','#3e3422']]), sway = o.still ? 0 : Math.sin(t/700 + (o.phase||0))*.4;
+    B2F.line(ctx, '#5a4428', 1.4, [[7.8, 12.6], [10.8 + sway, -34]], 'butt'); poly(ctx, [[11 + sway,-40],[10 + sway,-33.4],[11.8 + sway,-33.4]], '#c4c0b4'); ctx.fillStyle = '#3e8a3a'; ctx.fillRect(10 + sway, -32.6, 1.8, 1.4); // the pike, a green rag below the head
+    h.legs('#2a2420'); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(-4.6, 9.6, 3.6, 3.4); ctx.fillRect(1, 9.6, 3.6, 3.4);
+    poly(ctx, [[-6.4,-6.2],[6.4,-6.2],[7,8.6],[-7,8.6]], h.armor(coat[0], coat[1])); ctx.strokeStyle = 'rgba(40,30,16,.4)'; ctx.lineWidth = .5; ctx.beginPath(); for (let i=0;i<5;i++){ ctx.moveTo(-6.6, -4 + i*2.6); ctx.lineTo(6.8, -4 + i*2.6); } for (let i=0;i<4;i++){ ctx.moveTo(-4.6 + i*3, -6); ctx.lineTo(-4.8 + i*3.2, 8.4); } ctx.stroke(); // the quilted coat, stitched in squares
+    ctx.fillStyle = '#2a1e12'; ctx.fillRect(-6.8, 2.2, 13.6, 1.5); ctx.fillStyle = '#4a3a24'; ctx.fillRect(-7.6, 3, 2, 5); B2F.green(ctx, -8.4, -4); // belt, a long knife, the green on the arm
+    B2F.line(ctx, coat[0], 1.8, [[4.6, -4], [8.6, -6]]); ell(ctx, 9, -6.2, 1.1, 1.1, sk); ell(ctx, 8.4, 3.6, 1.1, 1.1, sk); // two hands on the pike
+    h.head(sk, 4.4, -11.2); h.look('rgba(255,190,140,.5)', -11.6); ctx.fillStyle = 'rgba(20,12,8,.5)'; ctx.fillRect(-2.6, -8.6, 5.6, 1.6); // a stubbled jaw
+    ctx.fillStyle = h.armor('#8a867c', '#1e1d1a'); ctx.beginPath(); ctx.arc(0, -12.6, 5.2, Math.PI, 0); ctx.fill(); ctx.fillRect(-6, -13, 12, 1.2); ctx.fillStyle = 'rgba(255,250,240,.2)'; ctx.fillRect(-3.4, -16.8, 2.8, .9); B2F.line(ctx, '#2a2420', .8, [[0, -17.8], [0, -19.4]]); // the iron cap, a knob on top
+    ctx.fillStyle = b2Pick(o, ['#c8bca4', '#a89a7c', '#8a7e66']); ctx.fillRect(-5.6, -12, 2, 5); // a neck-cloth under the cap
+    ctx.save(); ctx.translate(-7.4, -1); ctx.fillStyle = h.armor('#6a5a40', '#1e160c'); ctx.beginPath(); ctx.arc(0, 0, 3.6, 0, 7); ctx.fill(); ctx.strokeStyle = '#8a867c'; ctx.lineWidth = .8; ctx.stroke(); ell(ctx, 0, 0, 1, 1, '#9a968c'); ctx.restore(); }, // a small buckler on the forearm
+
+  /* Korbolo Dom: half-Napan, the blue-grey skin of the isles, shaven head; a Fist's Malazan-cut armour with every badge cut away — the cloth paler where they were */
+  dom(ctx, h, t, o){ ctx.save(); B2F.grow(ctx, 1.08, 1.1); const sk = '#6e7480', sw = o.still ? 0 : Math.sin(t/650 + (o.phase||0))*.6;
+    poly(ctx, [[-6.6,-6.6],[6.4,-6.6],[8.4 + sw*.4,12.6],[-9.4 + sw,12.6]], h.armor('#2a2a30', '#08080a')); ctx.fillStyle = 'rgba(60,62,72,.5)'; ctx.fillRect(-9, 11, 17, 1.6); // a black cloak behind, dusty at the hem
+    h.legs('#1e1c1a'); ctx.fillStyle = h.armor('#6a6a6e', '#1e1e22'); ctx.fillRect(-4.6, 6, 3.6, 5.6); ctx.fillRect(1, 6, 3.6, 5.6); ctx.fillStyle = '#2a2018'; ctx.fillRect(-4.8, 11, 3.8, 2); ctx.fillRect(1, 11, 3.8, 2); // greaves, boots
+    poly(ctx, [[-7,-6.6],[7,-6.6],[7.6,7.8],[-7.6,7.8]], h.armor('#8a8a8e', '#1e1e24')); // the cuirass, Malazan cut
+    ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = .5; ctx.beginPath(); ctx.moveTo(0, -6.4); ctx.lineTo(0, 7.6); for (let i=0;i<3;i++){ ctx.moveTo(-7.2, 4 + i*1.4); ctx.lineTo(7.4, 4 + i*1.4); } ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(-6.4, -6, 2, 9); // the ridge, the lames at the waist, the lantern's line
+    ctx.fillStyle = '#9e9ea4'; ctx.fillRect(-4.6, -3.8, 3.2, 3.2); ctx.fillRect(2.2, -6.6, 2.4, 2); ctx.strokeStyle = 'rgba(40,30,20,.6)'; ctx.lineWidth = .35; ctx.strokeRect(-4.6, -3.8, 3.2, 3.2); ctx.beginPath(); for (let i=0;i<4;i++){ ctx.moveTo(-4.8 + i*1.1, -4); ctx.lineTo(-4.4 + i*1.1, -3.4); } ctx.stroke(); // bright where the Empire's badge and his Fist's rank were, the rivets cut out
+    ell(ctx, -7.4, -5.6, 2.8, 2, h.armor('#8a8a8e', '#2a2a30')); ell(ctx, 7.2, -5.6, 2.6, 1.9, h.armor('#6a6a70', '#1a1a20')); // pauldrons
+    ctx.fillStyle = '#3e8a3a'; ctx.fillRect(-7.4, 2.4, 14.8, 1.6); ctx.fillStyle = '#2a5e28'; ctx.fillRect(-7.4, 3.4, 14.8, .6); poly(ctx, [[-6,3.6],[-7.4,8.4],[-5.2,8]], '#3e8a3a'); // the rising's green, as a sash
+    h.head(sk, 4.6, -11.4); ell(ctx, -2.2, -13.6, 2.4, 1.4, 'rgba(220,226,240,.25)'); // the shaven head, blue-grey
+    h.look('rgba(230,210,170,.85)', -11.8); ctx.fillStyle = '#1a1c22'; ctx.fillRect(-1.6, -13, 2.4, .6); ctx.fillRect(1.6, -13.2, 2.4, .6); // pale eyes under heavy brows
+    ctx.strokeStyle = 'rgba(180,186,200,.6)'; ctx.lineWidth = .5; ctx.beginPath(); ctx.moveTo(-3.6, -14.4); ctx.lineTo(-1, -8.4); ctx.stroke(); // an old scar, brow to jaw
+    ctx.fillStyle = '#3a3e48'; ctx.fillRect(.2, -8.4, 3.2, .6); ctx.fillStyle = 'rgba(30,32,40,.4)'; ctx.fillRect(-3.2, -9, 7.4, 1.8); // a flat mouth, a heavy jaw
+    ctx.fillStyle = '#c9a44a'; ell(ctx, -4.4, -9.8, .5, .6, '#c9a44a'); // a gold ring in the ear
+    h.sword('#c8c4ba'); ctx.fillStyle = '#4a3a26'; ctx.fillRect(5.6, 3.2, 2.6, 1); ctx.restore(); },
+});
+
+/* ---------------- ground: the Vathar Crossing ---------------- */
+/* The river at noon: brown, slow, wide; the near bank trodden to soup by forty thousand feet, things dropped in it, arrows standing in it.
+   '.' mud  ',' reeds  '~' deep  '-' ford shallows  'b' floating bridge  '#' steep bank  'x' drowned tree  'W' overturned wagon  'c' cart */
+const b2VW = c => c === '~' || c === '-' || c === 'b' || c === 'x', b2VDep = c => c === '~' || c === 'b' ? 2 : c === 'x' ? 1.3 : c === '-' ? 1 : 0;
+const b2VP = N => N ? {mud:'#2a2a30', mudD:'#1c1c22', lit:'170,180,220', wetRGB:'8,8,12', wet:'#19191e', reed:'#2a3230', reedL:'#3e4844', head:'#1e1a16', top:'#2c2e2e', face:'#1c1a1c', faceD:'#0c0b0c', w0:'#343a42', w1:'#1e282e', w2:'#0e161a', glint:'rgba(170,190,230,.2)', lip:'rgba(160,170,210,.16)',
+                         plank:'#2c2a28', plankL:'#3a3836', plankD:'#141210', rope:'#4a4438', tree:'#4a4c50', treeD:'#1a1a1e', wood:'#2a2018', woodL:'#3a3028', cloth:'#3a3632', clothD:'#24221e', shaft:'#4a4438', fl:'#5a5a62'}
+                     : {mud:'#6e5a44', mudD:'#4e3e2c', lit:'255,244,220', wetRGB:'50,38,24', wet:'#4e3e2c', reed:'#76744a', reedL:'#aaa274', head:'#5a3a1e', top:'#8e8458', face:'#6a5038', faceD:'#2a1c10', w0:'#8a7c5a', w1:'#6a6a4c', w2:'#36423a', glint:'rgba(240,244,232,.36)', lip:'rgba(240,232,210,.34)',
+                         plank:'#8a7454', plankL:'#b09a74', plankD:'#2a2014', rope:'#a08c64', tree:'#a49a88', treeD:'#4a4236', wood:'#5a4028', woodL:'#7a5a3a', cloth:'#c8b894', clothD:'#8a7a5a', shaft:'#8a7048', fl:'#d8d0c0'};
+function b2Vathar(ctx, ch, x, y, T, N){
+  const px = x*T, py = y*T, h = hash(x, y), P = b2VP(N), fill = c => { ctx.fillStyle = c; ctx.fillRect(px, py, T, T); };
+  const wcol = v => v <= 1 ? b2Mix(P.w0, P.w1, v) : b2Mix(P.w1, P.w2, v - 1);
+  const flowH = (() => { let hz = 0, vt = 0; for (let k=-3;k<=3;k++){ if (b2VW(b2Tile(x + k, y))) hz++; if (b2VW(b2Tile(x, y + k))) vt++; } return hz >= vt; })();
+  const mud = () => { fill(shade(P.mud, (h - .5)*.05)); b2Mottle(ctx, x, y, T, N ? .025 : .07, N ? .2 : .18, P.lit, 1.2);
+    ctx.fillStyle = N ? 'rgba(0,0,0,.22)' : 'rgba(40,28,16,.25)'; for (let i=0;i<3;i++){ const sx = px + hash(x,y,i+30)*T, sy = py + hash(y,x,i+31)*T; ell(ctx, sx, sy, T*(.12 + hash(x,y,i+32)*.12), T*.05, ctx.fillStyle, (hash(x,y,i+33) - .5)); } // churned, puddled
+    if (!N) { ctx.fillStyle = 'rgba(255,240,210,.12)'; for (let i=0;i<2;i++) ell(ctx, px + hash(x,y,i+34)*T, py + hash(y,x,i+35)*T, T*.06, T*.02, ctx.fillStyle); } // the sky in a puddle
+    if (!b2VW(ch)) b2WetEdges(ctx, x, y, T, c => c === '~' || c === '-' || c === 'b', P.wetRGB, N ? .5 : .6, .4); };
+  const water = (K = 1.3) => { mud(); ctx.fillStyle = `rgba(${P.wetRGB},${N ? .5 : .6})`; ctx.fillRect(px, py, T, T);
+    const S = b2WaterShape(x, y, T, b2VW, K); ctx.save(); S.path(ctx); ctx.clip(); b2WaterFill(ctx, x, y, T, b2VDep, wcol);
+    const deep = b2VDep(ch) >= 2; ctx.lineCap = 'round';
+    for (let i=0;i<(deep ? 4 : 3);i++){ const sx = px + hash(x,y,i+40)*T, sy = py + hash(y,x,i+41)*T, len = T*(deep ? .3 + hash(x,y,i+42)*.35 : .12 + hash(x,y,i+42)*.16), wob = T*.025*(hash(x,y,i+43) - .5);
+      ctx.strokeStyle = deep ? (N ? 'rgba(120,140,180,.12)' : 'rgba(220,226,210,.2)') : P.glint; ctx.lineWidth = Math.max(1, T*.02); ctx.beginPath();
+      if (flowH) { ctx.moveTo(sx, sy); ctx.quadraticCurveTo(sx + len/2, sy + wob, sx + len, sy); } else { ctx.moveTo(sx, sy); ctx.quadraticCurveTo(sx + wob, sy + len/2, sx, sy + len); } ctx.stroke(); }
+    if (ch === '-') for (let i=0;i<2;i++){ const cx = px + T*(.2 + hash(x,y,i+60)*.6), cy = py + T*(.2 + hash(y,x,i+61)*.6), r = T*(.04 + hash(x,y,i+62)*.04); ell(ctx, cx, cy, r*1.3, r, N ? 'rgba(60,64,74,.6)' : 'rgba(104,92,70,.6)'); ctx.strokeStyle = P.glint; ctx.lineWidth = 1; ctx.beginPath(); if (flowH) { ctx.moveTo(cx - r*1.6, cy - r*1.2); ctx.quadraticCurveTo(cx + r, cy - r*1.6, cx + r*3.4, cy - r*.6); } else { ctx.moveTo(cx - r*1.2, cy - r*1.6); ctx.quadraticCurveTo(cx - r*1.6, cy + r, cx - r*.6, cy + r*3.4); } ctx.stroke(); }
+    if (ch === '~' && h > .72) { const cx = px + T*(.25 + hash(x,y,70)*.5), cy = py + T*(.25 + hash(y,x,71)*.5); ctx.save(); ctx.translate(cx, cy); ctx.rotate(hash(x,y,72)*3); ctx.fillStyle = N ? 'rgba(60,58,54,.5)' : 'rgba(150,130,100,.55)'; ctx.fillRect(-T*.16, -T*.03, T*.32, T*.06); ctx.fillStyle = N ? 'rgba(0,0,0,.25)' : 'rgba(40,40,30,.25)'; ctx.fillRect(-T*.16, T*.03, T*.32, T*.02); ctx.restore(); } // a plank, adrift
+    if (ch === '~' && h < .14) { const cx = px + T*(.3 + hash(x,y,73)*.4), cy = py + T*(.3 + hash(y,x,74)*.4); ell(ctx, cx, cy, T*.1, T*.05, N ? 'rgba(54,52,50,.5)' : 'rgba(170,154,120,.45)', hash(x,y,75)*3); ell(ctx, cx - T*.03, cy - T*.01, T*.05, T*.02, N ? 'rgba(80,80,90,.3)' : 'rgba(220,206,170,.35)', hash(x,y,75)*3); } // a cloth, floating
+    ctx.lineCap = 'butt'; b2Mottle(ctx, x, y, T, N ? .03 : .07, .08, N ? '150,170,220' : '240,250,255', 1); ctx.restore();
+    b2Lip(ctx, S, T, N ? 'rgba(0,0,0,.4)' : 'rgba(40,30,18,.45)', P.lip); b2BankCorners(ctx, x, y, T, b2VW, P.wet, K); return S; };
+  if (ch === '~' || ch === '-') { water(); return; }
+  if (ch === 'b') { water(); b2Bridge(ctx, x, y, T, N, P, flowH); return; }
+  if (ch === 'x') { const wet = [[0,-1],[1,0],[0,1],[-1,0]].some(([dx, dy]) => { const c = b2Tile(x + dx, y + dy); return c === '~' || c === '-' || c === 'b'; }); // in the river it stands in water; up on the bank it is only dead
+    if (wet) water(); else mud(); b2Drowned(ctx, x, y, T, N, P, wet); return; }
+  if (ch === '#') { // the steep bank: a lip of trampled grass, then a raw face of clay scored by everything that slid down it
+    const face = b2Tile(x, y + 1) !== '#', fy = py + (face ? T*.34 : T);
+    fill(shade(P.top, (h - .5)*.05)); b2Mottle(ctx, x, y, T, N ? .015 : .04, .16, P.lit, 1);
+    ctx.strokeStyle = N ? 'rgba(70,80,76,.45)' : 'rgba(160,150,96,.55)'; ctx.lineWidth = 1; for (let i=0;i<7;i++){ const gx = px + hash(x,y,i+70)*T, gy = py + T*.08 + hash(y,x,i+71)*(fy - py - T*.06); ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + T*.08, gy - T*.04); ctx.stroke(); } // grass, flattened all one way
+    b2Prints(ctx, x, y, T, 3, N, 9);
+    if (b2Tile(x, y - 1) !== '#') { ctx.fillStyle = N ? 'rgba(150,160,200,.08)' : 'rgba(255,246,220,.2)'; ctx.fillRect(px, py, T, T*.05); }
+    if (b2Tile(x - 1, y) !== '#') { ctx.fillStyle = N ? 'rgba(150,160,200,.05)' : 'rgba(255,246,220,.14)'; ctx.fillRect(px, py, T*.05, fy - py); } if (b2Tile(x + 1, y) !== '#') { ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(px + T*.95, py, T*.05, fy - py); }
+    if (face) { const wv = s => T*.04*Math.sin((x + s)*6.3) + T*.025*Math.sin((x + s)*15.1); ctx.beginPath(); ctx.moveTo(px, fy + wv(0)); for (let i=1;i<=8;i++) ctx.lineTo(px + i*T/8, fy + wv(i/8)); ctx.lineTo(px + T, py + T); ctx.lineTo(px, py + T); ctx.closePath();
+      ctx.fillStyle = vgrad(ctx, fy, py + T, [[0, P.face], [.7, shade(P.face, -.15)], [1, P.faceD]]); ctx.fill(); ctx.save(); ctx.clip();
+      for (let i=0;i<4;i++){ const yy = fy + T*(.08 + i*.13); ctx.fillStyle = N ? 'rgba(0,0,0,.22)' : `rgba(${i%2 ? '40,26,14' : '150,120,80'},.26)`; ctx.fillRect(px, yy + Math.sin(x*3 + i)*T*.02, T, Math.max(1, T*.03)); } // clay in courses
+      ctx.strokeStyle = N ? 'rgba(0,0,0,.4)' : 'rgba(40,26,14,.4)'; ctx.lineWidth = Math.max(1, T*.025); for (let i=0;i<4;i++){ const sx = px + T*(.1 + hash(x,y,i+80)*.8); ctx.beginPath(); ctx.moveTo(sx, fy + T*.04); ctx.lineTo(sx + T*(hash(x,y,i+81) - .5)*.08, py + T*.98); ctx.stroke(); } // slide-marks, heel and hand, straight down
+      ctx.strokeStyle = N ? '#0e0c0c' : '#2a1c10'; ctx.lineWidth = 1; for (let i=0;i<2;i++){ const rx = px + T*(.2 + hash(x,y,i+84)*.6); ctx.beginPath(); ctx.moveTo(rx, fy + T*.03); ctx.quadraticCurveTo(rx + T*.06, fy + T*.14, rx + T*.02, fy + T*.24); ctx.stroke(); } ctx.restore(); // roots
+      ctx.strokeStyle = N ? 'rgba(150,160,200,.12)' : 'rgba(255,240,200,.3)'; ctx.lineWidth = Math.max(1, T*.025); ctx.beginPath(); ctx.moveTo(px, fy + wv(0)); for (let i=1;i<=8;i++) ctx.lineTo(px + i*T/8, fy + wv(i/8)); ctx.stroke(); }
+    return; }
+  mud();
+  if (ch === '.') { b2Prints(ctx, x, y, T, 5 + Math.floor(hash(x,y,9)*6), N, 2); // feet, hooves, wheels, everything that went down to the water
+    if (h > .82) { ctx.strokeStyle = N ? 'rgba(0,0,0,.3)' : 'rgba(40,28,16,.35)'; ctx.lineWidth = Math.max(1, T*.05); ctx.beginPath(); const a = hash(x,y,12)*.6 - .3; ctx.moveTo(px, py + T*(.3 + a)); ctx.lineTo(px + T, py + T*(.3 - a)); ctx.moveTo(px, py + T*(.62 + a)); ctx.lineTo(px + T, py + T*(.62 - a)); ctx.stroke(); } // ruts
+    const k = hash(x, y, 13); if (k < .12) b2Arrows(ctx, x, y, T, N, P); else if (k < .22) b2Dropped(ctx, x, y, T, N, P, Math.floor(hash(x,y,14)*4)); }
+  else if (ch === ',') { // reeds, half of them trodden flat
+    const clumps = 2 + Math.floor(h*2); for (let c=0;c<clumps;c++){ const bx = px + T*(.18 + hash(x,y,c+100)*.64), by = py + T*(.35 + hash(y,x,c+101)*.55), flat = hash(x,y,c+103) > .55, lean = flat ? 1.25*(hash(x,y,c+104) > .5 ? 1 : -1) : (hash(x,y,c+102) - .5)*.5 + (N ? 0 : .1);
+      ell(ctx, bx + T*.06, by + T*.02, T*.12, T*.04, N ? 'rgba(0,0,0,.35)' : 'rgba(50,36,20,.3)');
+      for (let i=0;i<8;i++){ const a = lean + (i/7 - .5)*(flat ? .3 : .7), l = T*(.26 + hash(x, y, c*10 + i + 110)*.22), ex = bx + Math.sin(a)*l + (i - 3.5)*T*.012, ey = by - Math.cos(a)*l;
+        ctx.strokeStyle = i%3 === 0 ? P.reedL : P.reed; ctx.lineWidth = Math.max(1, T*.022); ctx.beginPath(); ctx.moveTo(bx + (i - 3.5)*T*.012, by); ctx.quadraticCurveTo(bx + Math.sin(a)*l*.4, by - Math.cos(a)*l*.6, ex, ey); ctx.stroke();
+        if (i%3 === 1 && !flat) ell(ctx, bx + Math.sin(a)*l*.86, by - Math.cos(a)*l*.86, T*.018, T*.05, P.head, a); } } }
+  else if (ch === 'W') b2Overturned(ctx, x, y, T, N, P);
+  else if (ch === 'c') b2Cart(ctx, x, y, T, N, P);
+  else if (ch === 't' || ch === 'o') drawFeature(ctx, ch, x, y, T, N, 'vathar', tileMap);
+  else exitArrow(ctx, ch, px, py, T);
+}
+/* a floating bridge: planks lashed across boats and barrels, a rope rail, the river sliding under it */
+function b2Bridge(ctx, x, y, T, N, P, flowH){
+  const px = x*T, py = y*T, isB = c => c === 'b', land = c => c && !b2VW(c);
+  const nb = (dx, dy) => b2Tile(x + dx, y + dy);
+  const run = (dx, dy) => { let n = 0; for (let k=1;k<=5 && isB(nb(dx*k, dy*k));k++) n++; return n; }, rv = run(0,-1) + run(0,1), rh = run(-1,0) + run(1,0);
+  const vs = (isB(nb(0,-1)) || land(nb(0,-1)) ? 1 : 0) + (isB(nb(0,1)) || land(nb(0,1)) ? 1 : 0), hs = (isB(nb(-1,0)) || land(nb(-1,0)) ? 1 : 0) + (isB(nb(1,0)) || land(nb(1,0)) ? 1 : 0);
+  const vert = rv !== rh ? rv > rh : vs !== hs ? vs > hs : !flowH; // the bridge runs the long way of its own planks, else across the river
+  ctx.save(); if (!vert) { ctx.translate(px + T/2, py + T/2); ctx.rotate(Math.PI/2); ctx.translate(-px - T/2, -py - T/2); } // draw it running up the screen; turn it if it runs across
+  const eL = vert ? !isB(nb(-1,0)) : !isB(nb(0,-1)), eR = vert ? !isB(nb(1,0)) : !isB(nb(0,1)); // open sides
+  const x0 = px + (eL ? T*.14 : 0), x1 = px + T - (eR ? T*.14 : 0);
+  ctx.fillStyle = N ? 'rgba(0,0,0,.5)' : 'rgba(20,24,18,.45)'; ctx.fillRect(x0 + T*.05, py, x1 - x0, T); // its shadow on the water
+  for (let i=0;i<2;i++){ const by = py + T*(.25 + i*.5); [[eL, x0 - T*.06], [eR, x1 + T*.06]].forEach(([e, bx]) => { if (!e) return; ell(ctx, bx, by, T*.08, T*.16, N ? '#1a1612' : P.wood); ell(ctx, bx - T*.02, by - T*.05, T*.04, T*.06, N ? '#2a241e' : P.woodL); ctx.fillStyle = N ? 'rgba(0,0,0,.4)' : 'rgba(30,22,12,.5)'; ctx.fillRect(bx - T*.08, by - T*.01, T*.16, Math.max(1, T*.02)); }); } // barrels and boats under it, at the sides
+  const n = 6, pw = T/n; for (let i=0;i<n;i++){ const wy = y*n + i, k = hash(x, wy, 7), gone = hash(x, wy, 8) < .05, xe = gone ? lerp(x0, x1, .35 + hash(x, wy, 13)*.3) : x1 + T*.02; // the planks, laid across, one here and there broken short
+    const yy = py + i*pw, skew = (hash(x, wy, 9) - .5)*T*.04; ctx.fillStyle = shade(P.plank, (k - .5)*.2); ctx.beginPath(); ctx.moveTo(x0 - T*.02, yy + .6 + skew); ctx.lineTo(xe, yy + .6 - skew); ctx.lineTo(xe - (gone ? T*.05 : 0), yy + pw - .6 - skew); ctx.lineTo(x0 - T*.02, yy + pw - .6 + skew); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = N ? 'rgba(150,160,200,.06)' : 'rgba(255,246,220,.2)'; ctx.fillRect(x0, yy + .6 + skew, x1 - x0, Math.max(1, pw*.18)); // its lit edge
+    ctx.fillStyle = N ? 'rgba(0,0,0,.25)' : 'rgba(60,44,26,.3)'; ctx.fillRect(x0 + (x1 - x0)*hash(x, wy, 10), yy + pw*.4, (x1 - x0)*.2, 1); // grain
+    if (hash(x, wy, 11) > .7) { ctx.fillStyle = N ? 'rgba(0,0,0,.25)' : 'rgba(60,44,26,.35)'; ell(ctx, x0 + (x1 - x0)*(.2 + hash(x, wy, 12)*.6), yy + pw*.5, T*.08, pw*.3, ctx.fillStyle); } } // wet where the river came over
+  ctx.fillStyle = N ? 'rgba(0,0,0,.35)' : 'rgba(30,22,12,.4)'; ctx.fillRect(x0 + (x1 - x0)*.3, py, Math.max(1, T*.03), T); ctx.fillRect(x0 + (x1 - x0)*.7, py, Math.max(1, T*.03), T); // the stringers' nail-lines
+  [[eL, x0 + T*.03], [eR, x1 - T*.03]].forEach(([e, rx]) => { if (!e) return; ctx.fillStyle = N ? '#1a1612' : P.plankD; ctx.fillRect(rx - T*.03, py + T*.3, T*.06, T*.1); ctx.fillRect(rx - T*.03, py + T*.8, T*.06, T*.1); // posts
+    ctx.strokeStyle = P.rope; ctx.lineWidth = Math.max(1, T*.025); ctx.beginPath(); ctx.moveTo(rx, py - T*.05); ctx.quadraticCurveTo(rx + (rx < px + T/2 ? -1 : 1)*T*.03, py + T*.6, rx, py + T*1.05); ctx.stroke(); }); // the rope rail, sagging
+  ctx.restore(); }
+/* a drowned tree, standing in the river: bleached, bare, the current parting round it; a crow sometimes */
+function b2Drowned(ctx, x, y, T, N, P, wet){ const px = x*T, py = y*T, cx = px + T*(.42 + hash(x,y,20)*.16), cy = py + T*.84, lean = (hash(x,y,21) - .5)*.5;
+  if (wet) { ctx.strokeStyle = P.glint; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(cx, cy, T*.16, T*.05, 0, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.ellipse(cx + T*.1, cy, T*.26, T*.08, 0, -1.2, 1.2); ctx.stroke(); } // the water round its foot
+  ctx.strokeStyle = N ? 'rgba(0,0,0,.35)' : 'rgba(30,36,28,.3)'; ctx.lineWidth = Math.max(1.4, T*.06); ctx.beginPath(); ctx.moveTo(cx + T*.04, cy + T*.03); ctx.lineTo(cx + T*.42, cy + T*.16); ctx.stroke(); // its shadow on the water
+  const br = (x0, y0, a, len, w, d) => { const x1 = x0 + Math.cos(a)*len, y1 = y0 + Math.sin(a)*len; ctx.strokeStyle = P.tree; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.strokeStyle = N ? 'rgba(0,0,0,.4)' : 'rgba(70,60,44,.5)'; ctx.lineWidth = w*.4; ctx.beginPath(); ctx.moveTo(x0 + w*.3, y0); ctx.lineTo(x1 + w*.3, y1); ctx.stroke();
+    if (d > 0) { br(x1, y1, a - .5 - hash(x, y, d*3)*.3, len*.62, w*.62, d - 1); br(x1, y1, a + .45 + hash(y, x, d*3)*.3, len*.55, w*.58, d - 1); } };
+  ctx.strokeStyle = P.treeD; ctx.lineWidth = Math.max(1, T*.03); ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(cx - T*.04, cy - T*.02); ctx.quadraticCurveTo(cx - T*.14, cy - T*.04, cx - T*.18, cy + T*.03); ctx.moveTo(cx + T*.04, cy - T*.02); ctx.quadraticCurveTo(cx + T*.14, cy - T*.05, cx + T*.2, cy + T*.02); ctx.stroke(); // roots, out of the water
+  br(cx, cy, -Math.PI/2 + lean, T*.36, Math.max(2, T*.1), 2); ctx.lineCap = 'butt';
+  ctx.fillStyle = N ? 'rgba(20,20,24,.5)' : 'rgba(110,96,70,.45)'; ctx.fillRect(cx - T*.055, cy - T*.14, T*.11, T*.05); // the flood-line, a band of silt on the bark
+  if (hash(x, y, 22) > .45) { const bx = cx + Math.cos(-Math.PI/2 + lean)*T*.36, by = cy + Math.sin(-Math.PI/2 + lean)*T*.36 - T*.02; ell(ctx, bx, by - T*.03, T*.045, T*.035, '#0c0a0a'); ell(ctx, bx + T*.035, by - T*.06, T*.022, T*.02, '#0c0a0a'); poly(ctx, [[bx + T*.05, by - T*.065],[bx + T*.08, by - T*.055],[bx + T*.05, by - T*.05]], '#1e1a18'); poly(ctx, [[bx - T*.04, by - T*.03],[bx - T*.09, by - T*.01],[bx - T*.04, by - T*.005]], '#0c0a0a'); } } // a crow, waiting
+/* arrows standing in the mud, all leaning the one way: they came from the bridges */
+function b2Arrows(ctx, x, y, T, N, P){ const px = x*T, py = y*T, n = 2 + Math.floor(hash(x, y, 40)*3);
+  for (let i=0;i<n;i++){ const ax = px + T*(.15 + hash(x,y,i+41)*.7), ay = py + T*(.4 + hash(y,x,i+42)*.5), a = -.5 - hash(x,y,i+43)*.25, l = T*(.22 + hash(x,y,i+44)*.08), ex = ax + Math.sin(a)*l, ey = ay - Math.cos(a)*l;
+    ell(ctx, ax, ay, T*.03, T*.012, N ? 'rgba(0,0,0,.4)' : 'rgba(40,28,16,.45)'); ctx.strokeStyle = N ? 'rgba(0,0,0,.3)' : 'rgba(40,28,16,.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + l*.5, ay + l*.15); ctx.stroke(); // its hole, its shadow
+    B2F.line(ctx, P.shaft, Math.max(1, T*.022), [[ax, ay], [ex, ey]]); poly(ctx, [[ex, ey],[ex - T*.05, ey + T*.01],[ex - T*.02, ey + T*.05]], P.fl); poly(ctx, [[ex + T*.012, ey + T*.012],[ex + T*.03, ey + T*.07],[ex - T*.004, ey + T*.05]], shade(P.fl, -.2)); } } // the fletching
+/* what people drop when they run: a sandal, a bundle come undone, a smashed jar, a shawl */
+function b2Dropped(ctx, x, y, T, N, P, k){ const px = x*T, py = y*T, cx = px + T*(.3 + hash(x,y,50)*.4), cy = py + T*(.35 + hash(y,x,51)*.4), r = hash(x,y,52)*3;
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(r); ell(ctx, T*.03, T*.04, T*.16, T*.07, N ? 'rgba(0,0,0,.35)' : 'rgba(40,28,16,.3)');
+  if (k === 0) { ell(ctx, 0, 0, T*.1, T*.04, N ? '#2a2018' : '#6a4a2a'); ctx.strokeStyle = N ? '#3a3028' : '#8a6a40'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-T*.04, -T*.04); ctx.lineTo(T*.02, T*.05); ctx.moveTo(T*.03, -T*.04); ctx.lineTo(T*.06, T*.05); ctx.stroke(); } // a sandal
+  else if (k === 1) { ell(ctx, 0, 0, T*.14, T*.09, P.cloth); ell(ctx, -T*.03, -T*.03, T*.08, T*.04, N ? 'rgba(150,160,200,.06)' : 'rgba(255,250,236,.3)'); ctx.fillStyle = P.clothD; ctx.fillRect(-T*.02, -T*.1, T*.05, T*.06); ell(ctx, T*.16, T*.06, T*.05, T*.03, N ? '#2a2620' : '#7a6a50'); ell(ctx, T*.2, -T*.02, T*.03, T*.02, N ? '#2a2620' : '#9a8a6a'); } // a bundle, undone
+  else if (k === 2) { const c = N ? '#3a3028' : '#a0603a'; poly(ctx, [[-T*.1,-T*.02],[-T*.02,-T*.06],[0,T*.02],[-T*.08,T*.04]], c); poly(ctx, [[T*.02,-T*.04],[T*.1,-T*.02],[T*.08,T*.05],[T*.03,T*.02]], shade(c, -.15)); ell(ctx, T*.13, T*.08, T*.03, T*.02, c); ell(ctx, -T*.03, T*.09, T*.02, T*.015, c); } // a jar, smashed
+  else { ctx.fillStyle = N ? '#2a2a34' : b2Pick({phase:x + y}, ['#6a3a4a', '#3a4a6a', '#7a5a2a']); ctx.beginPath(); ctx.moveTo(-T*.16, -T*.04); ctx.quadraticCurveTo(-T*.02, -T*.12, T*.14, -T*.02); ctx.quadraticCurveTo(T*.04, T*.04, T*.12, T*.1); ctx.quadraticCurveTo(-T*.04, T*.06, -T*.16, -T*.04); ctx.fill(); ctx.fillStyle = N ? 'rgba(0,0,0,.25)' : 'rgba(60,40,24,.35)'; ctx.fillRect(-T*.1, 0, T*.18, T*.03); } // a shawl, trodden in
+  ctx.restore(); }
+/* a wagon over on its back in the mud: the bed's underside and axles toward the sky, the wheels in the air, the canvas crushed out from under it */
+function b2Overturned(ctx, x, y, T, N, P){ const px = x*T, py = y*T;
+  ell(ctx, px + T*.54, py + T*.82, T*.5, T*.12, N ? 'rgba(0,0,0,.45)' : 'rgba(40,28,16,.4)');
+  ctx.fillStyle = P.cloth; ctx.beginPath(); ctx.moveTo(px + T*.04, py + T*.8); ctx.quadraticCurveTo(px + T*.2, py + T*.96, px + T*.5, py + T*.92); ctx.quadraticCurveTo(px + T*.8, py + T*.98, px + T*.98, py + T*.84); ctx.lineTo(px + T*.9, py + T*.72); ctx.lineTo(px + T*.1, py + T*.72); ctx.closePath(); ctx.fill(); // the canvas, flattened out under it
+  ctx.strokeStyle = N ? 'rgba(0,0,0,.35)' : 'rgba(90,70,44,.45)'; ctx.lineWidth = 1; ctx.beginPath(); for (let i=0;i<3;i++){ ctx.moveTo(px + T*(.2 + i*.28), py + T*.74); ctx.lineTo(px + T*(.16 + i*.3), py + T*.92); } ctx.stroke(); // a broken hoop poking through
+  ctx.fillStyle = N ? '#1e1610' : P.wood; ctx.fillRect(px + T*.1, py + T*.5, T*.8, T*.24); ctx.fillStyle = N ? 'rgba(0,0,0,.35)' : 'rgba(30,20,10,.4)'; ctx.fillRect(px + T*.1, py + T*.66, T*.8, T*.08); // the bed, upside down: its side
+  ctx.fillStyle = N ? '#2a2018' : P.woodL; ctx.fillRect(px + T*.1, py + T*.44, T*.8, T*.08); ctx.fillStyle = N ? 'rgba(150,160,200,.06)' : 'rgba(255,246,220,.22)'; ctx.fillRect(px + T*.1, py + T*.44, T*.8, T*.025); // its floor, now its top
+  ctx.fillStyle = N ? '#120c08' : P.plankD; ctx.fillRect(px + T*.2, py + T*.4, T*.06, T*.1); ctx.fillRect(px + T*.74, py + T*.4, T*.06, T*.1); // the axle-blocks
+  [[.23, 1], [.77, 0]].forEach(([k, ok]) => { const wx = px + T*k, wy = py + T*.28, r = T*.17; ctx.strokeStyle = N ? '#3a3028' : P.woodL; ctx.lineWidth = Math.max(1.4, T*.045); ctx.beginPath(); ctx.arc(wx, wy, r, ok ? 0 : .9, ok ? 7 : 6.6); ctx.stroke(); // a wheel in the air (one with a bite out of its rim)
+    ctx.strokeStyle = N ? 'rgba(0,0,0,.4)' : 'rgba(40,26,12,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(wx + 1, wy + 1, r, 0, 7); ctx.stroke();
+    ctx.strokeStyle = N ? '#3a3028' : P.woodL; ctx.lineWidth = Math.max(1, T*.022); ctx.beginPath(); for (let i=0;i<4;i++){ const a = i*Math.PI/4 + .2; if (!ok && i === 1) continue; ctx.moveTo(wx - Math.cos(a)*r, wy - Math.sin(a)*r); ctx.lineTo(wx + Math.cos(a)*r, wy + Math.sin(a)*r); } ctx.stroke(); ell(ctx, wx, wy, T*.035, T*.035, N ? '#120c08' : '#2a1c10'); });
+  ctx.strokeStyle = N ? '#2a2018' : P.wood; ctx.lineWidth = Math.max(1, T*.035); ctx.beginPath(); ctx.moveTo(px + T*.9, py + T*.62); ctx.lineTo(px + T*1.02, py + T*.5); ctx.stroke(); // the tongue, up at an angle
+  ell(ctx, px + T*.06, py + T*.9, T*.06, T*.035, N ? '#2a2620' : '#7a6a50'); ell(ctx, px + T*.92, py + T*.94, T*.05, T*.03, N ? '#2a2620' : '#9a8460'); } // a sack, a bundle
+/* a handcart, left: two wheels, shafts down in the mud, the load still roped on, a pot hanging */
+function b2Cart(ctx, x, y, T, N, P){ const px = x*T, py = y*T;
+  ell(ctx, px + T*.52, py + T*.82, T*.42, T*.1, N ? 'rgba(0,0,0,.45)' : 'rgba(40,28,16,.38)');
+  ctx.strokeStyle = N ? '#2a2018' : P.wood; ctx.lineWidth = Math.max(1, T*.035); ctx.beginPath(); ctx.moveTo(px + T*.24, py + T*.6); ctx.lineTo(px + T*.02, py + T*.86); ctx.moveTo(px + T*.24, py + T*.68); ctx.lineTo(px + T*.06, py + T*.94); ctx.stroke(); // the shafts, down
+  ctx.fillStyle = N ? '#2a2018' : P.wood; ctx.fillRect(px + T*.22, py + T*.48, T*.6, T*.2); ctx.fillStyle = N ? 'rgba(0,0,0,.35)' : 'rgba(30,20,10,.4)'; ctx.fillRect(px + T*.22, py + T*.62, T*.6, T*.06); // the bed
+  ell(ctx, px + T*.44, py + T*.4, T*.17, T*.12, P.cloth); ell(ctx, px + T*.64, py + T*.42, T*.14, T*.1, N ? '#2e2a26' : '#9a8460'); ell(ctx, px + T*.38, py + T*.34, T*.08, T*.04, N ? 'rgba(150,160,200,.06)' : 'rgba(255,250,236,.3)'); // the load, under a cloth
+  ctx.strokeStyle = N ? '#3a3028' : P.rope; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px + T*.3, py + T*.5); ctx.lineTo(px + T*.5, py + T*.28); ctx.lineTo(px + T*.74, py + T*.5); ctx.stroke(); // roped on
+  ell(ctx, px + T*.84, py + T*.6, T*.05, T*.05, N ? '#1a1612' : '#3a3230'); ctx.strokeStyle = N ? '#3a3028' : P.rope; ctx.beginPath(); ctx.moveTo(px + T*.82, py + T*.5); ctx.lineTo(px + T*.84, py + T*.56); ctx.stroke(); // a pot hung off the back
+  const wx = px + T*.52, wy = py + T*.72; ctx.strokeStyle = N ? '#3a3028' : P.woodL; ctx.lineWidth = Math.max(1.2, T*.04); ctx.beginPath(); ctx.arc(wx, wy, T*.15, 0, 7); ctx.stroke(); ctx.lineWidth = 1; ctx.beginPath(); for (let i=0;i<4;i++){ const a = i*Math.PI/4; ctx.moveTo(wx - Math.cos(a)*T*.15, wy - Math.sin(a)*T*.15); ctx.lineTo(wx + Math.cos(a)*T*.15, wy + Math.sin(a)*T*.15); } ctx.stroke(); ell(ctx, wx, wy, T*.03, T*.03, N ? '#120c08' : '#2a1c10'); } // the near wheel
+TILEX.vathar = (ctx, ch, x, y, T, dark) => b2Clip(ctx, x, y, T, () => b2Vathar(ctx, ch, x, y, T, !!dark));
+
+/* ---------------- backdrops: the crossing at noon, the Silanda in the mist, the evening after ---------------- */
+/* a bird, far off: two bent strokes; f is the beat, -1..1 */
+function b2Bird(x, cx, cy, s, f, col){ x.strokeStyle = col; x.lineWidth = Math.max(.8, s*.5); x.lineCap = 'round'; x.beginPath(); x.moveTo(cx - 4*s, cy - f*2*s); x.quadraticCurveTo(cx - 1.6*s, cy - (1 + f)*1.2*s, cx, cy); x.quadraticCurveTo(cx + 1.6*s, cy - (1 + f)*1.2*s, cx + 4*s, cy - f*2*s); x.stroke(); x.lineCap = 'butt'; }
+/* birds wheeling over a place: n of them on slow tilted circles, beating now and then */
+function b2Wheel(ctx, t, cx, cy, rx, ry, n, s, col, seed){ for (let i=0;i<n;i++){ const sp = (hash(i, seed)*.5 + .5)*(i%2 ? 1 : -1), a = t/(5200 + hash(i, seed + 1)*3000)*sp*6.28 + hash(i, seed + 2)*6.28, r = .45 + hash(i, seed + 3)*.55;
+  b2Bird(ctx, cx + Math.cos(a)*rx*r, cy + Math.sin(a)*ry*r - hash(i, seed + 4)*ry*.6, s*(.7 + hash(i, seed + 5)*.5), Math.sin(t/(160 + hash(i, seed + 6)*90) + i)*(Math.sin(t/1500 + i) > .2 ? 1 : .15), col); } }
+/* smoke going up from a place and leaning off on the wind */
+function b2Smoke(ctx, t, bx, by, hgt, w, col, a, seed, lean = 1){ for (let i=0;i<16;i++){ const k = ((t/(11000 + hash(seed, 1)*4000) + i/16) % 1), r = w*(.3 + k*1.4), sx = bx + k*k*hgt*.7*lean + Math.sin(t/2400 + i*1.7 + seed)*(2 + k*6); glow(ctx, sx, by - k*hgt, r, col, a*(1 - k*.7)); } }
+/* a floating bridge in the distance, from (x0, y0) on the near bank to (x1, y1) on the far: pale deck, dark boats under it, a file of men on it */
+function b2FarBridge(x, x0, y0, x1, y1, w0, w1, men, seed){
+  const at = k => [lerp(x0, x1, k), lerp(y0, y1, k), lerp(w0, w1, k)];
+  for (let i=0;i<=24;i++){ const [px, py, w] = at(i/24); x.fillStyle = 'rgba(30,26,20,.75)'; x.beginPath(); x.ellipse(px, py + w*.25, w*.9, w*.32, 0, 0, 7); x.fill(); } // the boats under it, nose to tail
+  x.fillStyle = 'rgba(30,24,16,.35)'; x.beginPath(); { const a = at(0), b = at(1); x.moveTo(a[0] - a[2]*.7, a[1] + a[2]*.6); x.lineTo(b[0] - b[2]*.7, b[1] + b[2]*.6); x.lineTo(b[0] + b[2]*.9, b[1] + b[2]*.6); x.lineTo(a[0] + a[2]*.9, a[1] + a[2]*.6); x.fill(); } // its shadow
+  x.fillStyle = '#b8a07a'; x.beginPath(); { const a = at(0), b = at(1); x.moveTo(a[0] - a[2]*.62, a[1]); x.lineTo(b[0] - b[2]*.62, b[1]); x.lineTo(b[0] + b[2]*.62, b[1]); x.lineTo(a[0] + a[2]*.62, a[1]); x.fill(); } // the deck
+  x.strokeStyle = 'rgba(70,52,30,.45)'; x.lineWidth = .7; x.beginPath(); for (let i=1;i<30;i++){ const [px, py, w] = at(i/30); x.moveTo(px - w*.62, py); x.lineTo(px + w*.62, py); } x.stroke(); // planks
+  for (let i=0;i<men;i++){ const k = .42 + Math.pow(hash(i, seed), .7)*.56, [px, py, w] = at(k), s = w*.13, ox = (hash(i, seed + 1) - .5)*w*.9, hh = 5.6*s; x.fillStyle = '#14100e'; x.fillRect(px + ox - s*.9, py - hh, s*1.8, hh); x.beginPath(); x.arc(px + ox, py - hh - s*.8, s*.85, 0, 7); x.fill(); // Dom's men, in file
+    if (hash(i, seed + 2) > .4) { x.fillRect(px + ox + s*.5, py - hh - 9*s, Math.max(.5, s*.35), 9*s + hh*.6); } }
+  for (let i=0;i<men*.6;i++){ const k = .02 + hash(i, seed + 3)*.3, [px, py, w] = at(k), s = w*.11, ox = (hash(i, seed + 4) - .5)*w*1.1, hh = (4.4 + hash(i, seed + 5)*1.4)*s; x.fillStyle = hash(i, seed + 6) > .5 ? '#3a2e26' : '#2a2226'; x.fillRect(px + ox - s*.9, py - hh, s*1.8, hh); x.beginPath(); x.arc(px + ox, py - hh - s*.8, s*.85, 0, 7); x.fill(); } } // and at the near end, the people who went out onto it // pikes, up
+
+SCENEX.b2_vathar = (cv, t) => { const {ctx, W, H} = sceneFit(cv), mo = REDUCE() ? 0 : 1, hz = H*.3, r0 = H*.4, r1 = H*.74;
+  ctx.drawImage(sceneLayer('b2:vathar', W, H, (x, W, H) => {
+    x.fillStyle = vgrad(x, 0, hz, [[0,'#8a9aa6'],[.5,'#c8c8b8'],[1,'#ece0c0']]); x.fillRect(0, 0, W, hz + 2); glow(x, W*.58, 0, W*.5, '#fffaf0', .55); // noon, the sky white with heat
+    for (let i=0;i<4;i++) cloud(x, W*(.1 + i*.27), hz*(.35 + (i%2)*.25), W*.3, 3, '#f4ecd8', .1);
+    x.fillStyle = '#9a9078'; x.beginPath(); x.moveTo(0, hz + 4); for (let px=0;px<=W + 10;px+=10) x.lineTo(px, hz - Math.max(0, Math.sin(px/90 + 1))*7); x.lineTo(W, r0); x.lineTo(0, r0); x.fill(); // the far country, bleached
+    x.fillStyle = '#6a5e48'; x.fillRect(0, r0 - 10, W, 10); x.fillStyle = '#3a3226'; x.fillRect(0, r0 - 3, W, 4); // the far bank, its cut face
+    // the far bank black with men: a long dark mass, pikes over it like reeds, the green here and there
+    for (let i=0;i<900;i++){ const px = hash(i, 11)*W, py = r0 - 6 - hash(i, 12)*16; x.fillStyle = `rgba(22,18,16,${.55 + hash(i, 13)*.45})`; x.fillRect(px, py - 2.4, 1.6, 3.4); if (hash(i, 14) > .55) x.fillRect(px + .5, py - 11 - hash(i, 15)*3, .5, 9); }
+    x.fillStyle = 'rgba(22,18,16,.85)'; x.fillRect(0, r0 - 10, W, 5);
+    for (let i=0;i<12;i++){ const px = W*(.04 + i*.083 + hash(i, 16)*.03), py = r0 - 26 - hash(i, 17)*5; x.fillStyle = '#14100e'; x.fillRect(px, py - 4, .8, 16); x.fillStyle = i%4 ? '#2e5a2a' : '#5a1a14'; x.fillRect(px + .8, py - 4, 5, 3); } // standards
+    // the river: wide, brown, glaring
+    x.fillStyle = vgrad(x, r0, r1, [[0,'#a89a7a'],[.25,'#8a7e62'],[.7,'#5e5a46'],[1,'#3a3a2e']]); x.fillRect(0, r0, W, r1 - r0);
+    glow(x, W*.58, r0 + 14, W*.3, '#fff8e0', .35); for (let i=0;i<60;i++){ const yy = r0 + 3 + Math.pow(hash(i, 21), .8)*(r1 - r0 - 6), px = hash(i, 22)*W, l = 6 + hash(i, 23)*30*(yy - r0)/(r1 - r0); x.fillStyle = `rgba(255,248,226,${.08 + hash(i, 24)*.14})`; x.fillRect(px, yy, l, 1); } // the glare in streaks
+    // three floating bridges, out from under our feet to the far bank; Dom's files on them
+    b2FarBridge(x, W*.16, r1 + 2, W*.36, r0 - 1, 22, 5, 46, 30); b2FarBridge(x, W*.6, r1 + 2, W*.55, r0 - 1, 26, 5, 54, 40); b2FarBridge(x, W*.97, r1 + 2, W*.84, r0 - 1, 20, 4.4, 40, 50);
+    // the near bank: the column pressed down to the water between the bridges, more of them than the bank will hold; some already in the shallows
+    x.fillStyle = vgrad(x, r1 - 4, H, [[0,'#8a7658'],[.3,'#6a5840'],[.7,'#3e3022'],[1,'#1a140e']]); x.beginPath(); x.moveTo(0, H); x.lineTo(0, r1); for (let px=0;px<=W + 10;px+=12) x.lineTo(px, r1 - 1 + Math.sin(px/36)*2.4); x.lineTo(W, H); x.fill();
+    x.fillStyle = 'rgba(255,240,210,.2)'; x.fillRect(0, r1 - 2, W, 1.2);
+    b2Crowd(x, 220, i => { const cx = W*hash(i, 61), cy = r1 - 1 - Math.pow(hash(i, 62), 1.6)*24; return [cx, cy, .6 + (cy - r1 + 24)/24*.45]; }, 'rgba(40,32,26,.75)', 63, ['rgba(70,60,50,.8)', 'rgba(84,70,60,.8)', 'rgba(60,54,60,.8)']); // in the shallows, wading out toward nothing
+    b2Crowd(x, 640, i => { const cx = W*hash(i, 71), cy = r1 + 4 + Math.pow(hash(i, 72), 1.9)*(H*.17); return [cx, cy, 1 + (cy - r1)/H*7]; }, 'rgba(30,24,18,.92)', 73, ['#4a3a2a', '#5a4a34', '#4a3434', '#3a3e48', '#6a5a40', '#5a4450']); // and packed on the bank behind them
+    for (let i=0;i<14;i++){ const cx = W*hash(i, 81), cy = r1 + 8 + hash(i, 82)*H*.12, s = .7 + hash(i, 83)*.5; x.fillStyle = 'rgba(30,24,18,.9)'; x.fillRect(cx - 6*s, cy - 6*s, 12*s, 4*s); x.beginPath(); x.ellipse(cx, cy - 6*s, 6*s, 4.4*s, 0, Math.PI, 0); x.fill(); } // carts, left where they stood
+    glow(x, W*.5, r1 + H*.06, W*.6, '#d8c8a0', .22); // the dust they raise
+    x.fillStyle = 'rgba(20,16,12,.55)'; x.beginPath(); x.moveTo(0, H); x.lineTo(0, H*.86); x.quadraticCurveTo(W*.35, H*.82, W*.6, H*.87); x.quadraticCurveTo(W*.85, H*.9, W, H*.86); x.lineTo(W, H); x.fill(); // the rise we stand on
+  }), 0, 0, W, H);
+  if (mo) { const L = sceneLayer('b2:vathar', W, H, () => {}), dpr = L.width / W; for (let y=Math.floor(r0 - 30); y<r0 + 4; y+=2){ const off = Math.sin(t/160 + y*.8)*1.4*Math.sin((y - r0 + 30)/34*Math.PI); ctx.drawImage(L, 0, y*dpr, L.width, 2*dpr, off, y, W, 2); } } // heat over the far bank
+  // the volleys: thin dark flecks rising off the bridges and the far bank and coming down on the near one, again and again
+  ctx.lineCap = 'round'; for (let v=0;v<3;v++){ const sx = W*[.28, .52, .76][v], sy = r0 + 10, ex = W*[.18, .48, .86][v], ey = r1 + 8, k0 = ((t*mo/2600 + v*.37) % 1);
+    for (let i=0;i<22;i++){ const k = (k0 + hash(i, v + 5)*.18) % 1, ax = lerp(sx, ex, k) + (hash(i, v + 6) - .5)*W*.12, ay = lerp(sy, ey, k) - Math.sin(k*Math.PI)*H*.22 + (hash(i, v + 7) - .5)*8, dy = Math.cos(k*Math.PI); ctx.strokeStyle = `rgba(26,20,18,${.6*Math.sin(k*Math.PI) + .15})`; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax - (ex - sx)/W*6 - 2, ay + dy*5); ctx.stroke(); } }
+  ctx.lineCap = 'butt';
+  for (let i=0;i<4;i++) b2Smoke(ctx, t*mo, W*(.16 + i*.24 + hash(i, 91)*.06), r1 + 6, H*.36, 14, i%2 ? '#5a4e42' : '#7a6e5a', .3, i, -1); // dust and smoke off the bank, going up into the white
+  b2Wheel(ctx, t*mo, W*.5, H*.14, W*.36, H*.08, 14, 1, 'rgba(30,26,24,.7)', 7); // and the birds, already
+  ctx.globalCompositeOperation = 'lighter'; glow(ctx, W*.58, 0, W*.7, '#fffbe8', .12); ctx.globalCompositeOperation = 'source-over';
+  const sq = marchOrder(sceneSquad()); sq.forEach((id, i) => drawFigure(ctx, id, W*.06 + i*Math.min(32, W*.45/sq.length), H*.95 - (i%2)*3, 2.1, t, {phase:i, dir:1}));
+  vign(ctx, W, H, .5, .5); };
+
+SCENEX.b2_silanda = (cv, t) => { const {ctx, W, H} = sceneFit(cv), mo = REDUCE() ? 0 : 1, hz = H*.46, sx = W*.6, sy = H*.62, k = H/240, row = t*mo/1400;
+  ctx.drawImage(sceneLayer('b2:silanda', W, H, (x, W, H) => {
+    x.fillStyle = vgrad(x, 0, hz, [[0,'#3a403e'],[.6,'#6a706a'],[1,'#8a8e86']]); x.fillRect(0, 0, W, hz + 2); glow(x, W*.3, hz*.3, W*.4, '#c8ccc0', .18); // a white-grey day, the sun a smear
+    x.fillStyle = 'rgba(70,74,70,.6)'; x.beginPath(); x.moveTo(0, hz); for (let px=0;px<=W + 10;px+=10) x.lineTo(px, hz - 3 - Math.max(0, Math.sin(px/60 + 3))*5); x.lineTo(W, hz + 3); x.lineTo(0, hz + 3); x.fill(); // the far bank, lost in it
+    x.fillStyle = vgrad(x, hz, H, [[0,'#7a7e78'],[.3,'#4a524e'],[1,'#1a201e']]); x.fillRect(0, hz + 2, W, H); // the river, flat and grey
+    for (let i=0;i<40;i++){ const yy = hz + 4 + Math.pow(hash(i, 21), .8)*(H*.4), px = hash(i, 22)*W, l = 10 + hash(i, 23)*40*(yy - hz)/H; x.fillStyle = `rgba(200,206,200,${.05 + hash(i, 24)*.08})`; x.fillRect(px, yy, l, 1); }
+    x.fillStyle = 'rgba(20,24,22,.85)'; x.beginPath(); x.moveTo(0, H); x.lineTo(0, H*.8); x.quadraticCurveTo(W*.2, H*.76, W*.36, H*.84); x.quadraticCurveTo(W*.44, H*.9, W*.48, H); x.fill(); // the near bank, reeds on it
+    x.strokeStyle = 'rgba(20,24,22,.9)'; x.lineWidth = 1.2; for (let i=0;i<40;i++){ const px = hash(i, 31)*W*.42, py = H*.8 + hash(i, 32)*12, l = 12 + hash(i, 33)*18, a = (hash(i, 34) - .5)*.5; x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + a*6, py - l*.6, px + a*14, py - l); x.stroke(); }
+  }), 0, 0, W, H);
+  // the ship: long, low, burned to the waterline and floating anyway; no sail, a stump of mast; the dark that came with it clinging round it
+  const bob = Math.sin(t*mo/1800)*1.2*k, L = 150*k, hh = 15*k; ctx.save(); ctx.translate(sx, sy + bob);
+  ctx.fillStyle = 'rgba(10,12,12,.35)'; ctx.beginPath(); ctx.ellipse(0, hh*.4, L*.62, hh*.7, 0, 0, 7); ctx.fill(); // its reflection, dark
+  for (let i=0;i<10;i++){ const a = t*mo/3000 + i*.8; glow(ctx, Math.cos(a)*L*.5, -hh*.8 + Math.sin(a*1.3)*hh*.9, 26*k, '#060808', .32); } // shadow, moving about it like breath
+  const hull = () => { ctx.beginPath(); ctx.moveTo(-L*.52, -hh*1.1); ctx.quadraticCurveTo(-L*.46, hh*.5, -L*.3, hh*.55); ctx.lineTo(L*.34, hh*.55); ctx.quadraticCurveTo(L*.5, hh*.3, L*.56, -hh*1.5); ctx.lineTo(L*.48, -hh*.9); ctx.lineTo(-L*.44, -hh*.75); ctx.closePath(); };
+  hull(); ctx.fillStyle = vgrad(ctx, -hh*1.5, hh*.6, [[0,'#2a2624'],[.5,'#141210'],[1,'#060606']]); ctx.fill(); ctx.save(); hull(); ctx.clip();
+  ctx.strokeStyle = 'rgba(70,64,58,.5)'; ctx.lineWidth = .8; for (let i=0;i<4;i++){ ctx.beginPath(); ctx.moveTo(-L*.5, -hh*.6 + i*hh*.32); ctx.quadraticCurveTo(0, -hh*.4 + i*hh*.3, L*.54, -hh*.9 + i*hh*.34); ctx.stroke(); } // the strakes, charred
+  ctx.fillStyle = 'rgba(0,0,0,.6)'; for (let i=0;i<9;i++){ const px = -L*.4 + i*L*.1 + hash(i, 3)*8, py = -hh*.2 + hash(i, 4)*hh*.5; ctx.beginPath(); ctx.ellipse(px, py, 3*k + hash(i, 5)*3*k, 1.4*k, 0, 0, 7); ctx.fill(); } // burned through, here and there
+  ctx.fillStyle = 'rgba(110,100,90,.25)'; for (let i=0;i<40;i++) ctx.fillRect(-L*.48 + hash(i, 6)*L, -hh + hash(i, 7)*hh*1.4, 1.2, .8); // ash, flaking
+  ctx.restore();
+  ctx.fillStyle = '#100e0c'; ctx.fillRect(-L*.44, -hh*.95, L*.9, 1.6*k); for (let i=0;i<16;i++){ const px = -L*.4 + i*L*.055; if (hash(i, 8) > .3) ctx.fillRect(px, -hh*.95 - (2 + hash(i, 9)*3)*k, 1*k, (2 + hash(i, 9)*3)*k); } // the rail, burned to stubs
+  poly(ctx, [[-L*.06, -hh*.9],[-L*.06 + 3*k, -hh*.9],[-L*.06 + 5*k, -hh*.9 - 22*k],[-L*.06 + 3.4*k, -hh*.9 - 27*k],[-L*.06 + 2.6*k, -hh*.9 - 21*k],[-L*.06 + 1*k, -hh*.9 - 25*k]], '#0c0a0a'); B2F.line(ctx, '#0c0a0a', 1.4*k, [[-L*.06 + 3*k, -hh*.9 - 14*k], [L*.12, -hh*.9 - 2*k]], 'butt'); // the mast, snapped off jagged; its yard fallen across the deck
+  // the rowers: a row of bent backs behind the rail, black on black, all of them moving as one; nothing above the shoulders that the eye will settle on
+  const ph = Math.sin(row*6.28); for (let i=0;i<11;i++){ const px = -L*.36 + i*L*.068; ctx.fillStyle = 'rgba(4,4,6,.7)'; ctx.beginPath(); ctx.ellipse(px + ph*1.4*k, -hh*.98, 3*k, 2*k, -.3 + ph*.25, Math.PI, 0); ctx.fill(); }
+  ctx.strokeStyle = 'rgba(30,28,26,.95)'; ctx.lineWidth = 1.2*k; ctx.lineCap = 'round'; for (let i=0;i<11;i++){ const px = -L*.36 + i*L*.068, a = .5 + ph*.35; ctx.beginPath(); ctx.moveTo(px, -hh*.3); ctx.lineTo(px - Math.cos(a)*22*k, -hh*.3 + Math.sin(a)*26*k); ctx.stroke(); } ctx.lineCap = 'butt'; // the oars, together
+  for (let i=0;i<11;i++){ const px = -L*.36 + i*L*.068 - Math.cos(.5 + ph*.35)*22*k, py = -hh*.3 + Math.sin(.5 + ph*.35)*26*k; if (ph > 0) ell(ctx, px, py, 3*k, .8*k, 'rgba(200,206,200,.25)'); } // where they bite
+  // three on the deck aft, small, catching what light there is: gold
+  [[L*.32, 1.15], [L*.38, .9], [L*.42, .8]].forEach(([px, s], i) => { const fy = -hh*.95, w = 2.4*k*s, hgt = 8*k*s; ctx.fillStyle = '#1a1612'; ctx.fillRect(px - w/2, fy - hgt, w, hgt); ctx.beginPath(); ctx.arc(px, fy - hgt - 1.4*k*s, 1.4*k*s, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(230,190,90,.7)'; ctx.fillRect(px - w/2, fy - hgt - 2*k*s, w*.4, 1.6*k*s); ell(ctx, px - .6*k, fy - hgt - 1.8*k*s, .6*k*s, .7*k*s, 'rgba(255,220,130,.8)'); if (i === 0) { ctx.fillStyle = 'rgba(176,56,30,.8)'; ctx.fillRect(px - w/2, fy - hgt + .4*k, w, 2*k); } }); // Stormy's red beard, the biggest of them
+  ctx.restore();
+  for (let i=0;i<3;i++){ const kk = ((t*mo/4000 + i/3) % 1); ctx.strokeStyle = `rgba(200,206,200,${.18*(1 - kk)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(sx + L*.56, sy + bob + 2); ctx.quadraticCurveTo(sx + L*.6 + kk*40, sy + 6 + kk*10, sx + L*.66 + kk*70, sy + 4 + kk*18); ctx.stroke(); } // the wake, off the bow
+  for (let i=0;i<7;i++){ const kk = ((t*mo/24000 + i/7) % 1); ell(ctx, (kk*1.5 - .25)*W, hz + 6 + (i%4)*H*.08, W*.3, 6 + (i%3)*4, `rgba(200,204,198,${.2*Math.sin(kk*Math.PI)})`); } // mist on the water, crossing in front of it
+  glow(ctx, W*.5, hz, W*.6, '#b8bcb4', .14);
+  const sq = marchOrder(sceneSquad()); sq.forEach((id, i) => drawFigure(ctx, id, W*.06 + i*Math.min(30, W*.38/sq.length), H*.95 - (i%2)*3, 2.1, t, {phase:i, dir:1}));
+  ctx.fillStyle = 'rgba(160,166,160,.12)'; ctx.fillRect(0, 0, W, H); // the mist, on everything
+  vign(ctx, W, H, .7, .5); };
+
+SCENEX.b2_after = (cv, t) => { const {ctx, W, H} = sceneFit(cv), mo = REDUCE() ? 0 : 1, hz = H*.42, r0 = H*.5, r1 = H*.7;
+  const road = k => k < .55 ? [lerp(W*1.04, W*.38, k/.55), lerp(H*.8, r1 + 3, Math.pow(k/.55, .8))] : [lerp(W*.38, W*.04, (k - .55)/.45), lerp(r1 + 3, hz + 2, Math.pow((k - .55)/.45, .6))]; // the line of the living, along the near bank and up over the rise, away
+  ctx.drawImage(sceneLayer('b2:after', W, H, (x, W, H) => {
+    x.fillStyle = vgrad(x, 0, hz, [[0,'#1a1426'],[.4,'#4a2632'],[.75,'#a0482e'],[1,'#e08a48']]); x.fillRect(0, 0, W, hz + 2); glow(x, W*.64, hz, W*.45, '#ffa860', .4); ell(x, W*.64, hz - 2, 10, 7, '#ffd8a0'); // dusk, the sun going down red into the smoke
+    for (let i=0;i<5;i++) cloud(x, W*(.1 + i*.22), hz*(.3 + (i%3)*.18), W*.35, 3, i%2 ? '#6a2a2a' : '#2a1a24', .22);
+    x.fillStyle = '#2a1a1c'; x.beginPath(); x.moveTo(0, hz + 2); for (let px=0;px<=W + 10;px+=10) x.lineTo(px, hz - 1 - Math.max(0, Math.sin(px/80 + 2))*8); x.lineTo(W, r0); x.lineTo(0, r0); x.fill(); // the far bank, empty now, black
+    x.fillStyle = '#140c0e'; x.fillRect(0, r0 - 4, W, 5); for (let i=0;i<160;i++){ const px = hash(i, 11)*W, py = r0 - 4 - hash(i, 12)*5; x.fillStyle = `rgba(12,8,10,${.5 + hash(i, 13)*.5})`; x.fillRect(px, py, 2 + hash(i, 14)*3, 1.4); } // what is left along it: low shapes, not looked at
+    for (let i=0;i<5;i++){ const fx = W*(.3 + i*.14 + hash(i, 15)*.05), fy = r0 - 6; glow(x, fx, fy, 9, '#ff7030', .45); x.fillStyle = '#ffb060'; x.fillRect(fx - .6, fy - 1.2, 1.4, 1.4); } // Dom's fires, over there
+    x.fillStyle = vgrad(x, r0, r1, [[0,'#6a3a30'],[.2,'#a0583a'],[.55,'#3a2a2e'],[1,'#141218']]); x.fillRect(0, r0, W, r1 - r0); // the river, holding the sky
+    glow(x, W*.64, r0 + 6, W*.25, '#ffa860', .35); x.fillStyle = 'rgba(255,190,130,.25)'; for (let i=0;i<9;i++) x.fillRect(W*.64 - 14 + hash(i, 25)*10 - i*.6, r0 + 4 + i*4, 18 - i*1.2 + hash(i, 26)*8, 1.2); // the sun's road on the water for (let i=0;i<46;i++){ const yy = r0 + 3 + Math.pow(hash(i, 21), .8)*(r1 - r0 - 6), px = hash(i, 22)*W, l = 8 + hash(i, 23)*28*(yy - r0)/(r1 - r0); x.fillStyle = `rgba(${yy < r0 + 18 ? '255,190,130' : '200,170,170'},${.06 + hash(i, 24)*.1})`; x.fillRect(px, yy, l, 1); }
+    // the bridges, cut loose: pieces of them swung round on the current, a line of boats with nothing on them
+    [[W*.32, r0 + 14, 70, .2], [W*.62, r0 + 30, 90, -.12], [W*.86, r0 + 10, 40, .3]].forEach(([cx, cy, l, a], j) => { x.save(); x.translate(cx, cy); x.rotate(a); for (let i=0;i<9;i++){ x.fillStyle = 'rgba(16,10,10,.85)'; x.beginPath(); x.ellipse(-l/2 + i*l/8, 1.6, 4.4, 1.8, 0, 0, 7); x.fill(); } x.fillStyle = '#2a1a16'; x.fillRect(-l/2, -1.4, l, 2.2); if (j === 1) { x.fillStyle = '#140c0c'; x.fillRect(l*.2, -1.4, 4, 2.2); } x.fillStyle = 'rgba(255,170,110,.2)'; x.fillRect(-l/2, -1.4, l, .6); x.restore(); });
+    for (let i=0;i<10;i++){ const px = hash(i, 41)*W, py = r0 + 8 + hash(i, 42)*(r1 - r0 - 14); x.fillStyle = 'rgba(16,10,12,.6)'; x.fillRect(px, py, 3 + hash(i, 43)*5, 1.2); } // things in the water, drifting; too far to say what
+    // the near bank, and the road up it
+    x.fillStyle = vgrad(x, r1 - 4, H, [[0,'#4a2e28'],[.35,'#2a1c1a'],[1,'#080606']]); x.beginPath(); x.moveTo(0, H); x.lineTo(0, r1); for (let px=0;px<=W + 10;px+=12) x.lineTo(px, r1 - 1 + Math.sin(px/40)*2.4); x.lineTo(W, H); x.fill();
+    x.fillStyle = 'rgba(255,170,110,.14)'; x.fillRect(0, r1 - 2, W, 1.2);
+    x.fillStyle = vgrad(x, hz, r1, [[0,'#24181a'],[1,'#1a1214']]); x.beginPath(); x.moveTo(0, hz + 4); x.quadraticCurveTo(W*.1, hz - 2, W*.2, hz + 10); x.quadraticCurveTo(W*.3, hz + 22, W*.42, r1 - 2); x.lineTo(0, r1); x.fill(); x.fillStyle = 'rgba(255,170,110,.14)'; x.beginPath(); x.moveTo(0, hz + 4); x.quadraticCurveTo(W*.1, hz - 2, W*.2, hz + 10); x.lineTo(W*.2, hz + 12); x.quadraticCurveTo(W*.1, hz, 0, hz + 6); x.fill(); // the rise on this side, upriver, where the road goes; the last light on its back
+    for (let i=0;i<8;i++){ const cx = W*(.5 + hash(i, 51)*.46), cy = r1 + 10 + hash(i, 52)*H*.1, s = .8 + hash(i, 53)*.4; x.fillStyle = '#0e0a0a'; x.strokeStyle = '#0e0a0a'; x.lineWidth = 1.2*s; x.save(); x.translate(cx, cy); x.rotate((hash(i, 54) - .5)*.5); x.fillRect(-7*s, -3.4*s, 14*s, 3.4*s); x.beginPath(); x.arc(-4*s, -6*s, 3.2*s, 0, 7); x.moveTo(-4*s, -9.2*s); x.lineTo(-4*s, -2.8*s); x.stroke(); x.restore(); } // carts, over on their sides
+    b2Column(x, W, H, k => road(k), 170, '#060404', null); // the living, walking on
+    for (let i=0;i<5;i++){ const [px, py] = road(.08 + i*.2), s = 1 - i*.17; x.fillStyle = '#0a0606'; x.fillRect(px + 5*s, py - 18*s, .8, 16*s); x.fillStyle = i%2 ? '#3a2a24' : '#4a1a14'; x.fillRect(px + 5.8*s, py - 18*s, 4.6*s, 2.4*s); } // a few standards still up
+  }), 0, 0, W, H);
+  for (let i=0;i<4;i++) b2Smoke(ctx, t*mo, W*(.34 + i*.17 + hash(i, 61)*.04), r0 - 6, H*.42, 10, i%2 ? '#1a1012' : '#2a1a1a', .38, i + 3, -.8); // smoke off the far bank, going over
+  b2Smoke(ctx, t*mo, W*.72, r1 + 12, H*.5, 12, '#1a1212', .3, 9, -.8); // and off a cart burning on this side
+  ctx.globalCompositeOperation = 'lighter'; for (let i=0;i<8;i++){ const kk = ((t*mo/(3600 + hash(i, 71)*2000) + hash(i, 72)) % 1), px = hash(i, 73)*W + kk*16, py = r0 + 6 + hash(i, 74)*(r1 - r0 - 10); ctx.fillStyle = `rgba(255,180,120,${.2*Math.sin(kk*Math.PI)})`; ctx.fillRect(px, py, 6 + hash(i, 75)*10, 1); } ctx.globalCompositeOperation = 'source-over'; // the light moving on the water
+  b2Wheel(ctx, t*mo, W*.6, H*.3, W*.28, H*.1, 22, 1.1, 'rgba(14,8,10,.85)', 3); b2Wheel(ctx, t*mo, W*.84, H*.36, W*.14, H*.06, 9, .8, 'rgba(14,8,10,.7)', 11); // crows, in their hundreds, coming down
+  for (let i=0;i<16;i++){ const px = W*(.28 + hash(i, 81)*.7), py = r0 - 5 - hash(i, 82)*3, hop = mo && hash(i, 83) > .7 ? Math.max(0, Math.sin(t/300 + i*2))*1.6 : 0; ctx.fillStyle = '#0a0608'; ctx.beginPath(); ctx.ellipse(px, py - hop, 1.4, .9, 0, 0, 7); ctx.fill(); ctx.fillRect(px + .8, py - 1.6 - hop, .9, .9); } // and on the far bank, already down
+  const sq = marchOrder(sceneSquad()); sq.forEach((id, i) => drawFigure(ctx, id, W*.08 + i*Math.min(32, W*.45/sq.length), H*.95 - (i%2)*3, 2.1, t, {phase:i, dir:1}));
+  ctx.fillStyle = 'rgba(30,10,14,.3)'; ctx.fillRect(0, H*.72, W, H*.28); // the dusk, on their backs
+  ctx.globalCompositeOperation = 'lighter'; glow(ctx, W*.6, H*.8, W*.4, '#ff8040', .06); ctx.globalCompositeOperation = 'source-over';
+  vign(ctx, W, H, .75, .5); };
+
 /* ============ resume & boot ============ */
 function resume(){
   $('#sheet').hidden = true; $('#modal').hidden = true; notes = []; titleAnim = null;
@@ -23809,6 +25129,7 @@ function start(){
   if (typeof B2CH1 !== 'undefined') registerChapter(1, B2CH1, 'dg'); // Book Two: Deadhouse Gates (47, 48)
   if (typeof B2CH2 !== 'undefined') registerChapter(2, B2CH2, 'dg'); // Book Two, Chapter 2: The Odhan (49)
   if (typeof B2CH3 !== 'undefined') registerChapter(3, B2CH3, 'dg'); // Book Two, Chapter 3: The Ridge (50)
+  if (typeof B2CH4 !== 'undefined') registerChapter(4, B2CH4, 'dg'); // Book Two, Chapter 4: The Day of Pure Blood (51)
   showTitle();
   requestAnimationFrame(loop);
 }

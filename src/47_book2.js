@@ -46,7 +46,7 @@ Object.assign(TPL, {
     bio2:`Her family sold water in the quarter where the sergeant once lay sick, and her brother Ilhar rode out of the city two nights before it fell, with a green cloth tied round his arm. She knows what the cloth means. She has not said his name since, and when the Apocalypse rides past the column with green cloths flying, she looks at every face.`,
     traits:['Prays five times a day, to no god she will name', 'Never raises her voice; never needs to', 'Counts the dead in the column, by name when she knows them', 'Will not eat until the squad has eaten'],
     gear:['A blue thread from her mother\'s veil, tied to the shield grip', 'A water-seller\'s cup, tin', 'The auxiliary\'s brass badge, polished every night'],
-    get quest(){ const f = (S && S.f) || {}; return f.b2_ilharSeen ? `Ilhar rides with the rebellion. She has seen him now, across a field, with a green cloth on his arm. He saw her. Neither of them lifted a hand.` : `Her brother rode out of Hissar two nights before it fell, with a green cloth round his arm. She looks at every face that rides past the column.`; },
+    get quest(){ const f = (S && S.f) || {}; return f.b2_ilharSeen ? `Ilhar rides with the rebellion. She has seen him now, across the water at the Vathar, with a green cloth on his arm. He saw her. Neither of them lifted a hand.` : `Her brother rode out of Hissar two nights before it fell, with a green cloth round his arm. She looks at every face that rides past the column.`; },
     banter:[`"Sergeant." She says it in Hissari, which makes it sound like an oath.`, `"The tribes say we are traitors. The officers say we are tribes. I say the column needs water."`, `"Stand behind the shield. That is what it is for. You are welcome."`],
     rel:{sathi:'Answers the girl\'s Wickan insults in Wickan, which delights her.', tangle:'Pulled him out of a riot in the old city. Will not discuss it.', marrow:'Carries her kit when the healer is too tired to. Says nothing about that either.'}},
   marrow:{name:'Marrow', role:'Healer · Denul', sig:'M', col:'#7fb394', hp:15, ac:12, atk:2, dmg:[1,6,0], rng:1, mv:4, init:0, st:{might:0, wits:3, guile:1}, ab:['mend','wash','stanch','salve'], magic:true,
@@ -239,5 +239,32 @@ SORC.push('sbolt');
     const sq = S.squad; S.squad = sq.filter(k => !away.includes(k));
     try { return _startBattle(id, opt); }
     finally { S.squad = sq; if (B && B.snap) { const o = JSON.parse(B.snap); o.squad = sq.slice(); B.snap = JSON.stringify(o); } save(); } }; } // a retry starts from the snapshot: it keeps them
+
+/* ---- the Silanda, and a wound that walks (v4.3, Chapter 4: the Vathar) ----
+   b2Aboard(id): a hurt squadmate goes aboard the Silanda for Aren and leaves the squad; their kit is kept for them (S.f.b2_silandaGear).
+   b2Ashore(): Chapter 7 calls it in Aren to bring them back, kit and all (S.f.b2_silandaBack). They miss any level-5+ picks taken while away.
+   S.f.b2_woundWho: a squadmate kept with the squad carries the Vathar wound: −B2_WOUND max health in every fight until S.f.b2_woundHealed (Aren). */
+const b2Mate = id => typeof id === 'string' && id !== 'sgt' && !!TPL[id];
+function b2Aboard(id){ if (!b2Mate(id) || !S.squad.includes(id)) return; S.f.b2_silandaWho = id; S.f.b2_silandaGear = Object.assign({}, S.gear[id] || {});
+  letGo(id, `${NAME(id)} goes aboard the Silanda, for Aren.`); }
+function b2Ashore(){ const id = S.f.b2_silandaWho; if (!b2Mate(id) || S.squad.includes(id)) return false;
+  recruit(id); S.gear[id] = Object.assign({}, S.f.b2_silandaGear || {}); S.f.b2_silandaBack = 1; save(); return true; }
+const B2_WOUND = 6;
+const b2Wounded = id => !!(S && S.book === 'dg' && S.f && S.f.b2_woundWho === id && !S.f.b2_woundHealed);
+{ const _mkParty = mkParty;
+  mkParty = function(id, x, y){ const u = _mkParty(id, x, y); if (b2Wounded(id)) { u.maxhp = Math.max(6, u.maxhp - B2_WOUND); u.hp = Math.min(u.hp, u.maxhp); u.vatharWound = true; } return u; }; }
+{ const _startBattle = startBattle;
+  startBattle = function(id, opt = {}){ const r = _startBattle(id, opt);
+    const w = S && S.book === 'dg' && B && B.units.find(u => u.vatharWound && u.side === 'p' && !u.ally);
+    if (w) blog(`<em>${w.name} fights with the Vathar arrow-wound bound tight under the kit: −${B2_WOUND} health until Aren.</em>`);
+    return r; }; }
+/* after a Book Two fight: how many rounds it took (S.f.b2_lastRounds), and, for a fight marked hurtMost, which squadmate came out of it worst
+   (S.f.b2_hurtMost: lowest health for their size; never the sergeant, never the Red Blade, whom the company keeps) */
+{ const _win = win;
+  win = function(){
+    if (S && S.book === 'dg' && B && B.def) { S.f.b2_lastRounds = B.round;
+      if (B.def.hurtMost) { const c = B.units.filter(u => u.side === 'p' && !u.ally && b2Mate(u.id) && u.id !== 'redblade' && S.squad.includes(u.id)).sort((a, b) => a.hp / a.maxhp - b.hp / b.maxhp);
+        if (c.length) S.f.b2_hurtMost = c[0].id; } }
+    return _win(); }; }
 
 /* Book Two's chapters register in start() (90), after Book One's */
