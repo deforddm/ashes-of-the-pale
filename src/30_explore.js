@@ -87,9 +87,9 @@ function goWay(w){
   if (G.cam) G.cam.pan = false;
   walk(pathFrom(m, t.x, t.y), () => talk(w.node));
 }
-/* the beacon on the map: a slow brass ring on the ground and the way's name above it */
+/* the beacon on the map: a slow brass ring on the ground and a small marker above it */
 function drawWays(ctx, T, t){
-  const ws = WAYS || [], mo = REDUCE() ? 0 : 1, placed = [], W = G.cols*T;
+  const ws = WAYS || [], mo = REDUCE() ? 0 : 1;
   ws.forEach(w => {
     const p = (Math.sin(t/420 + w.at.x) + 1) * .5 * mo, cx = w.at.x*T + T/2, cy = w.at.y*T + T*.62;
     w.tiles.forEach(q => { if (!onCam(q.x, q.y, 1)) return; ctx.fillStyle = `rgba(232,192,115,${.05 + p*.05})`; ctx.fillRect(q.x*T + 2, q.y*T + 2, T - 4, T - 4); });
@@ -97,13 +97,7 @@ function drawWays(ctx, T, t){
     glow(ctx, cx, cy, T*(w.lead ? 1.3 : .9), '#e8c073', (w.lead ? .2 : .12) + p*.1);
     ctx.strokeStyle = `rgba(232,192,115,${.45 + p*.4})`; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(cx, cy, T*.36 + p*2, T*.15 + p*.8, 0, 0, 7); ctx.stroke();
     const by = cy - T*.95 - p*2; ctx.fillStyle = '#e8c073'; ctx.beginPath(); ctx.moveTo(cx - T*.12, by); ctx.lineTo(cx + T*.12, by); ctx.lineTo(cx, by + T*.16); ctx.closePath(); ctx.fill();
-    const fs = Math.max(9, Math.round(T*.32)); ctx.font = `600 ${fs}px "Alegreya Sans SC", "Alegreya Sans", sans-serif`; const tw = ctx.measureText(w.label).width, bw = tw + 10, bh = fs*1.2;
-    const c0 = G.pannable && G.cam ? G.cam.x : 0, c1 = G.pannable && G.cam ? G.cam.x + G.vw : W, r0 = G.pannable && G.cam ? G.cam.y : 0;
-    let lx = clamp(cx, c0 + bw/2 + 2, c1 - bw/2 - 2), ly = by - fs*.5 - 3; // kept inside the map, and lifted clear of any name already drawn
-    for (let k = 0; k < 4 && placed.some(r => Math.abs(r.x - lx) < (r.w + bw)/2 && Math.abs(r.y - ly) < bh); k++) ly -= bh + 2;
-    if (ly - fs*.8 < r0 + 2) ly = r0 + fs*.8 + 2; placed.push({x:lx, y:ly, w:bw});
-    ctx.fillStyle = w.lead ? 'rgba(40,28,10,.85)' : 'rgba(10,8,6,.72)'; ctx.fillRect(lx - bw/2, ly - fs*.8, bw, bh); ctx.strokeStyle = w.lead ? 'rgba(255,214,140,.9)' : 'rgba(232,192,115,.5)'; ctx.lineWidth = 1; ctx.strokeRect(lx - bw/2 + .5, ly - fs*.8 + .5, bw - 1, bh - 1);
-    ctx.fillStyle = w.lead ? '#ffe7b0' : '#f1dfb4'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(w.label, lx, ly - fs*.2); ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+    // (v4.7.3: no floating name over the beacon; the Ways on buttons under the map carry the names)
   });
 }
 function updExplore(){
