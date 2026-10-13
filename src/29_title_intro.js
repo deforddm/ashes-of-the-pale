@@ -31,17 +31,23 @@ const agoText = t => { if (!t) return ''; const d = Math.floor((new Date().setHo
 const bookCh = (b, n) => ((b || 'gotm') === BOOK ? CHAPTERS : (BOOKSNAP[b] || BOOKSNAP.gotm).ch)[n];
 const chLabel = e => (e.book && BOOKS[e.book] ? `Book ${BOOKS[e.book].word} · ` : '') + (e.done ? 'Finished' : e.ch === 0 ? (e.book ? 'Starting out' : 'The prologue') : `Chapter ${bookCh(e.book, e.ch) ? bookCh(e.book, e.ch).number : e.ch}`) + (e.diff && DIFFS[e.diff] ? ` (${DIFFS[e.diff].name})` : '');
 /* Book One sergeants who have finished the book: Book Two can bring their road along (47: dgImport) */
+/* the title wears the book played last (the roster's first row), Book One on a new device */
+const titleBookOf = list => { const b = list[0] && list[0].book; return b && BOOKS[b] ? b : 'gotm'; };
+function titleDress(b){ const B = BOOKS[b] || BOOKS.gotm;
+  if (ARTON()) { const el = $('.titleart'); if (el && el.dataset.book !== b) { el.dataset.book = b; el.innerHTML = art(B.titleArt || 'title/key'); } }
+  else { const old = $('#titlecv'); if (old && old.dataset.book !== b) { const cv = document.createElement('canvas'); cv.id = 'titlecv'; cv.setAttribute('aria-hidden', 'true'); cv.dataset.book = b; old.replaceWith(cv); startTitleBackdrop(cv, b); } }
+  const tg = $('#tTag'); if (tg) tg.textContent = B.tag; }
 const finishedGotm = () => roster().list.filter(e => (!e.book || e.book === 'gotm') && e.done);
 function showTitle(fresh){
   if (S) save(); view = 'title'; B = null; S = null; AUDIO.setScene('title');
-  const list = roster().list, form = fresh || !list.length;
+  const list = roster().list, form = fresh || !list.length, tb = titleBookOf(list), TB = BOOKS[tb];
   const rows = list.map((e, i) => `<div class="sgtrow"><button class="btn load ${i ? '' : 'primary'}" data-id="${e.id}" ${i ? '' : 'id="bCont"'}><b>${i ? '' : 'Continue as '}Sergeant ${esc(e.name)}</b><small>${[chLabel(e), e.done ? '' : e.where, `level ${e.lvl}`, agoText(e.upd)].filter(Boolean).map(esc).join(' · ')}</small></button><button class="btn icon del" data-id="${e.id}" aria-label="Erase Sergeant ${esc(e.name)}">×</button></div>`).join('');
   const taken = n => list.find(e => sameName(e.name, n));
-  toTop(); $('#app').innerHTML = `${ARTON() ? `<div class="titleart" aria-hidden="true">${art('title/key')}</div>` : ''}<canvas id="titlecv" aria-hidden="true" ${ARTON() ? 'hidden' : ''}></canvas>${fullBtn('bFullT').replace('class="btn icon"', 'class="btn icon tfull"')}<div id="title" class="title">
+  toTop(); $('#app').innerHTML = `${ARTON() ? `<div class="titleart" aria-hidden="true" data-book="${tb}">${art(TB.titleArt || 'title/key')}</div>` : ''}<canvas id="titlecv" aria-hidden="true" data-book="${tb}" ${ARTON() ? 'hidden' : ''}></canvas>${fullBtn('bFullT').replace('class="btn icon"', 'class="btn icon tfull"')}<div id="title" class="title">
     ${art('insignia/patch', 'tpatch')}<h1>Ashes<span>of the Pale</span></h1>
-    <p class="tag" id="tTag">${form ? BOOKS.gotm.tag : 'Two books of the Malazan Empire, told from the ranks.'}</p>
-    ${form ? `<div class="field"><label>Book</label><div class="seg bseg">${Object.values(BOOKS).map(b => `<button class="btn ${b.id === 'gotm' ? 'on' : ''}" data-book="${b.id}">Book ${b.word}<small>${b.title}</small></button>`).join('')}</div><small class="fine" id="bBlurb">${BOOKS.gotm.blurb}</small></div>
-    <div class="field" id="impField" hidden><label for="impSel">Bring a Book One sergeant's road</label><select id="impSel"><option value="">No: a fresh start</option>${finishedGotm().map(e => `<option value="${e.id}">Sergeant ${esc(e.name)}</option>`).join('')}</select><small class="fine">Only a finished Book One counts. What the Fourth did after the Fete can matter late in this book.</small></div>
+    <p class="tag" id="tTag">${TB.tag}</p>
+    ${form ? `<div class="field"><label>Book</label><div class="seg bseg">${Object.values(BOOKS).map(b => `<button class="btn ${b.id === tb ? 'on' : ''}" data-book="${b.id}">Book ${b.word}<small>${b.title}</small></button>`).join('')}</div><small class="fine" id="bBlurb">${TB.blurb}</small></div>
+    <div class="field" id="impField" ${tb === 'dg' && finishedGotm().length ? '' : 'hidden'}><label for="impSel">Bring a Book One sergeant's road</label><select id="impSel"><option value="">No: a fresh start</option>${finishedGotm().map(e => `<option value="${e.id}">Sergeant ${esc(e.name)}</option>`).join('')}</select><small class="fine">Only a finished Book One counts. What the Fourth did after the Fete can matter late in this book.</small></div>
     <div class="field"><label for="nm">${list.length ? 'Your new sergeant’s name' : 'Your sergeant’s name'}</label><input type="text" id="nm" maxlength="18" value="${taken('Hask') ? '' : 'Hask'}" placeholder="Name your sergeant" autocomplete="off" autocapitalize="words" spellcheck="false"></div>
     <div class="field"><label>Difficulty</label><div class="seg dseg">${Object.entries(DIFFS).map(([k, d]) => `<button class="btn ${k === 'soldier' ? 'on' : ''}" data-diff="${k}">${d.name}</button>`).join('')}</div><small class="fine" id="dBlurb">${DIFFS.soldier.blurb} You can change it later in Settings.</small></div>
     <p class="fine tmsg" id="nmMsg" role="status"></p>
@@ -52,7 +58,7 @@ function showTitle(fresh){
       <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button></div></div>`}
     <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. Book One, Gardens of the Moon: the prologue and all seven chapters. Book Two, Deadhouse Gates: ${typeof dgChCount === 'function' && dgChCount() >= 7 ? 'all seven chapters' : typeof dgChCount === 'function' && dgChCount() > 1 ? ['', '', 'Chapters One and Two', 'Chapters One to Three', 'Chapters One to Four', 'Chapters One to Five', 'Chapters One to Six'][dgChCount()] : 'Chapter One'}. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
-  if (!ARTON()) startTitleBackdrop($('#titlecv')); else titleAnim = null;
+  if (!ARTON()) startTitleBackdrop($('#titlecv'), tb); else titleAnim = null;
   $('#bSet').onclick = () => { AUDIO.play('click'); openSettings(); };
   $('#bVer').onclick = () => { AUDIO.play('click'); openNotes(null); };
   if ($('#bFullT')) $('#bFullT').onclick = () => { AUDIO.play('click'); toggleFull(); };
@@ -66,9 +72,9 @@ function showTitle(fresh){
       if (t && b.dataset.arm !== n.toLowerCase()) { b.dataset.arm = n.toLowerCase(); b.classList.add('warn'); b.classList.remove('primary'); b.textContent = `Start Sergeant ${t.name} over`; msg(tapWord(`Sergeant ${t.name} already has a save here. Tap again to start over; that save is erased. Or go back and pick them to carry on.`)); return; }
       if (book === 'dg') { S = newStateDG(n, $('#impSel') ? $('#impSel').value : ''); S.diff = diff; save(); return startChapter(1); }
       S = newState(n); S.diff = diff; save(); showIntro(); };
-    let diff = 'soldier', book = 'gotm';
+    let diff = 'soldier', book = tb;
     document.querySelectorAll('[data-book]').forEach(x => x.onclick = () => { AUDIO.play('click'); book = x.dataset.book; document.querySelectorAll('[data-book]').forEach(y => y.classList.toggle('on', y === x));
-      $('#bBlurb').textContent = BOOKS[book].blurb; $('#tTag').textContent = BOOKS[book].tag; $('#impField').hidden = book !== 'dg' || !finishedGotm().length; });
+      $('#bBlurb').textContent = BOOKS[book].blurb; titleDress(book); $('#impField').hidden = book !== 'dg' || !finishedGotm().length; });
     document.querySelectorAll('[data-diff]').forEach(x => x.onclick = () => { AUDIO.play('click'); diff = x.dataset.diff; document.querySelectorAll('[data-diff]').forEach(y => y.classList.toggle('on', y === x)); $('#dBlurb').textContent = `${DIFFS[diff].blurb} You can change it later in Settings.`; });
     nm.oninput = () => { if (b.dataset.arm) { delete b.dataset.arm; b.classList.remove('warn'); b.classList.add('primary'); b.textContent = 'Begin'; msg(''); } };
     nm.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); b.click(); } };

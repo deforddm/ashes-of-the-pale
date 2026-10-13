@@ -27,7 +27,8 @@ function paintTitleSkyline(x, W, H){
     i++; }
   x.fillRect(0, base, W, H - base); return lits;
 }
-function startTitleBackdrop(cv){
+function startTitleBackdrop(cv, book){
+  if (book && BOOKS[book] && BOOKS[book].titleScene === 'chain' && typeof startTitleChain === 'function') return startTitleChain(cv); // Book Two (47d)
   const ctx = cv.getContext('2d'); const dpr = Math.min(2, window.devicePixelRatio || 1);
   let spawn = null, sky = null, lits = [];
   const fit = () => { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; ctx.setTransform(dpr,0,0,dpr,0,0); spawn = sky = null; }; fit(); window.addEventListener('resize', fit);

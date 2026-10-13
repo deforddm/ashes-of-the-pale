@@ -172,6 +172,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.8.0', ['The title screen now wears the book you played last. Book Two has its own painted title: the Chain at dusk, Hissar burning behind, the column across the Odhan, Wickan riders under the crows, and the squad on the ridge.', 'Each book has its own line on the title. On the New sergeant screen the picture and the line change when you tap Book One or Book Two.', 'With Artwork off in Settings, Book Two has its own moving scene too: the column walks, the crows wheel and Hissar smokes.']],
   ['4.7.6', ['A squadmate standing on the map to be talked to is no longer also walking in the line behind the sergeant. The line closes up without them.']],
   ['4.7.5', ['Nothing on a map moves the story on by surprise any more. Every way into the next place, the next fight or the next chapter now offers "Not yet." (or a way to stay), in both books, and opening it changes nothing until you choose to go on.', 'If someone on the map still has something to say when you are about to leave, one of the squad mentions it.']],
   ['4.7.4', ['The Ways on buttons under the map are gone too. What stays: a brass ring on the ground under anything you can walk to and use, and an arrow at the edge of the view when it is off screen.']],

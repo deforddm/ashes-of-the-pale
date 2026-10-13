@@ -468,7 +468,14 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 .art{display:inline-block;line-height:0;flex-shrink:0}
 .art svg{display:block;width:100%;height:auto}
 .titleart{position:fixed;inset:0;z-index:0;overflow:hidden;background:#07070d}
-.titleart .art{position:absolute;inset:0}
+.titleart .art{position:absolute;inset:0;animation:tfade .7s ease}
+@keyframes tfade{from{opacity:0}to{opacity:1}}
+@keyframes k2-wheel{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes k2-flap{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.45)}}
+.k2-wheel{animation:k2-wheel 26s ease-in-out infinite;transform-box:view-box;transform-origin:630px 360px}
+.k2-wheel2{animation:k2-wheel 19s ease-in-out infinite reverse;transform-box:view-box;transform-origin:980px 300px}
+.k2-flap{animation:k2-flap .9s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@media (prefers-reduced-motion: reduce){.titleart .art,.k2-wheel,.k2-wheel2,.k2-flap{animation:none}}
 .titleart .art svg{position:absolute;top:50%;left:66%;width:max(100vw,177.78vh);height:max(56.25vw,100vh);transform:translate(-66%,-50%)}
 .titleart::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(4,4,8,.78),rgba(4,4,8,.2) 38%,rgba(4,4,8,0) 60%)}
 @media (max-width:519px) and (orientation:portrait){ /* phones: the whole key art across the top, so the squad and the Pale sit above the form, not behind it */
