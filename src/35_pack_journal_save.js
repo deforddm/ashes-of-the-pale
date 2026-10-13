@@ -173,6 +173,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.9.2', ['On an iPhone or iPad the title shows the way on to From the Ranks in three steps: copy a sergeant\'s save code right there (Book Two sergeants too), open From the Ranks in Safari and add it to the home screen, and load the code. iPhone home-screen apps keep their saves apart, so this is how your sergeants come with you.']],
   ['4.9.1', ['The link to From the Ranks now works from the installed app on Android: it opens From the Ranks if it is installed, or your browser, where Install works. Before, it opened a small in-app page that could not install it.']],
   ['4.9.0', ['This is the final version of Ashes of the Pale: Book One, finished, with every fix up to now. It will not change again.', 'The series goes on as From the Ranks (deforddm.github.io/from-the-ranks): Book One is there too, under its own name, beside Book Two, The Chain of Dogs, and the books to come. Your sergeants go with you the first time you open it.', 'Any Book Two sergeant on this device lives on in From the Ranks with its save; the title here says how many.']],
   ['4.8.1', ['Each book has its own shoulder patch on the title. Book Two\'s is the Third Squad\'s: III over a Crow Clan feather, the Chain\'s links above and five strokes for five soldiers, on sun-faded cloth.']],

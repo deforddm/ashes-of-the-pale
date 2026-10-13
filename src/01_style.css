@@ -481,6 +481,9 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 @media (max-width:519px) and (orientation:portrait){ /* phones: the whole key art across the top, so the squad and the Pale sit above the form, not behind it */
   .titleart .art svg{top:-44px;left:0;width:100vw;height:auto;transform:none;-webkit-mask-image:linear-gradient(#000 72%,transparent);mask-image:linear-gradient(#000 72%,transparent)}
   .titleart::after{background:linear-gradient(0deg,rgba(4,4,8,.6),rgba(4,4,8,0) 70%)}}
+.title .iosteps{margin:6px 0 0;padding-left:20px;font-size:.88rem;line-height:1.45;color:var(--ink)}
+.title .iosteps li{margin:3px 0}
+.title .iosteps .btn.small{padding:3px 9px;font-size:.8rem;margin:2px 2px 0 0}
 .title .onward{margin:12px 0 0;display:grid;gap:2px}
 .title .onward a{font-family:var(--label);letter-spacing:.05em;color:var(--brass2);text-decoration:none;border-bottom:1px solid rgba(201,151,63,.4);justify-self:start}
 .title .onward small{color:var(--mute,#a89a82);font-size:.86rem;line-height:1.35}

@@ -9,6 +9,19 @@ const FTR_URL = 'https://deforddm.github.io/from-the-ranks/';
    the installed From the Ranks opens if it is there, otherwise the phone's browser does, where Install works. Anywhere else, the plain link. */
 const ftrHref = (android = /Android/i.test(navigator.userAgent), app = asApp()) => android && app
   ? 'intent://deforddm.github.io/from-the-ranks/#Intent;scheme=https;S.browser_fallback_url=' + encodeURIComponent(FTR_URL) + ';end' : FTR_URL;
+/* iPhone and iPad: every home-screen app keeps its own saves, and links out of one cannot add another to the home screen. So the way on
+   is three steps: copy a sergeant's save code here (Book Two sergeants too: this is the only place left to get theirs), open From the
+   Ranks in Safari and add it to the home screen, load the code there. */
+const IOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const codeOf = id => { const s = loadSlot(id); return s ? btoa(unescape(encodeURIComponent(JSON.stringify(s)))) : ''; };
+function copyText(text, b, okWord){ AUDIO.play('click'); const was = b.dataset.was || (b.dataset.was = b.textContent);
+  const done = ok => { b.textContent = ok ? okWord : 'Copy failed: open the sergeant, Squad › Save'; setTimeout(() => { if (b.isConnected) b.textContent = was; }, 2500); };
+  const old = () => { try { const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;top:0'; document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length); const ok = document.execCommand('copy'); ta.remove(); done(ok); } catch(e) { done(false); } };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => done(true), old); else old(); }
+const iosOnward = all => `<div class="onward ios"><a href="${FTR_URL}" target="_blank" rel="noopener">The story goes on in From the Ranks ›</a><small>Book Two, The Chain of Dogs, and every book after it. On an iPhone your sergeants go with you by save code:</small>
+  <ol class="iosteps">${all.length ? `<li>Copy a sergeant's code: ${all.map(e => `<button class="btn small" data-code="${e.id}">${esc(e.name)}${e.book && e.book !== 'gotm' ? ' (Book Two)' : ''}</button>`).join(' ')}</li>` : ''}
+  <li>Open <b>deforddm.github.io/from-the-ranks</b> in Safari <button class="btn small" id="bFtrAddr">Copy address</button>, then Share › Add to Home Screen.</li>
+  <li>There, tap Load a save code and paste it.</li></ol></div>`;
 let installEvt = null;
 const asApp = () => { try { return window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui)').matches || navigator.standalone === true; } catch(e) { return false; } };
 const macSafari = () => { const u = navigator.userAgent; return /Macintosh/.test(u) && /Version\/(1[7-9]|[2-9]\d)\b.*Safari\//.test(u) && !/Chrome|Chromium|Edg|OPR|Firefox/.test(u) && !('ontouchend' in document); };
@@ -61,7 +74,7 @@ function showTitle(fresh){
     : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
     <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
       <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button></div></div>`}
-    <p class="onward"><a href="${ftrHref()}" rel="noopener">The story goes on in From the Ranks ›</a><small>Book Two, The Chain of Dogs, and every book after it.${moved ? ` ${moved === 1 ? 'Your Book Two sergeant lives' : `Your ${moved} Book Two sergeants live`} on there, with ${moved === 1 ? 'its save' : 'their saves'}.` : ''}</small></p>
+    ${IOS() ? iosOnward(all) : `<p class="onward"><a href="${ftrHref()}" rel="noopener">The story goes on in From the Ranks ›</a><small>Book Two, The Chain of Dogs, and every book after it.${moved ? ` ${moved === 1 ? 'Your Book Two sergeant lives' : `Your ${moved} Book Two sergeants live`} on there, with ${moved === 1 ? 'its save' : 'their saves'}.` : ''}</small></p>`}
     <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. The first edition, finished: Book One, beside Gardens of the Moon, the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
   if (!ARTON()) startTitleBackdrop($('#titlecv'), tb); else titleAnim = null;
@@ -94,6 +107,8 @@ function showTitle(fresh){
       el.dataset.arm = 1; el.classList.add('warn'); ld.classList.add('warn'); const was = ld.innerHTML; ld.innerHTML = `<b>${tapWord('Tap')} × again to erase Sergeant ${esc(e.name)}</b><small>Their save on this device is gone for good. A save code brings them back.</small>`; ld.disabled = true;
       setTimeout(() => { if (el.isConnected) { delete el.dataset.arm; el.classList.remove('warn'); ld.classList.remove('warn'); ld.innerHTML = was; ld.disabled = false; } }, 4000); });
   }
+  document.querySelectorAll('[data-code]').forEach(b => b.onclick = () => copyText(codeOf(b.dataset.code), b, 'Code copied'));
+  if ($('#bFtrAddr')) $('#bFtrAddr').onclick = () => copyText(FTR_URL, $('#bFtrAddr'), 'Address copied');
   maybeNotes(list.length > 0); offerInstall();
 }
 function showIntro(){
