@@ -172,10 +172,8 @@ const PICKS = {
 const BOOKS = {
   gotm:{id:'gotm', n:1, word:'One', title:'Gardens of the Moon', unit:'the Fourth', tag:'Onearm\'s Host holds the ruins of Pale. Five marines are sent below them, and then south.', titleArt:'title/key', patch:'insignia/patch',
     blurb:'Genabackis. The Fourth Squad under Onearm\'s Host, from the Pale to the Fete in Darujhistan. The prologue and seven chapters.'},
-  dg:{id:'dg', n:2, word:'Two', title:'Deadhouse Gates', unit:'the squad', tag:'Hissar burns. Coltaine\'s Seventh turns for Aren with forty thousand refugees at its back. Five soldiers walk the Chain.', titleArt:'title/dg', titleScene:'chain', patch:'insignia/dg',
-    blurb:'Seven Cities. A new squad of the Seventh on the Chain of Dogs, from the fall of Hissar toward Aren. Plays on its own. Seven chapters.'},
 };
-const BOOKSNAP = {gotm:{ch:{}, end:{}, tease:{}}, dg:{ch:{}, end:{}, tease:{}}};
+const BOOKSNAP = {gotm:{ch:{}, end:{}, tease:{}}}; // v4.9.0, the final edition: Book One only (Book Two lives on in From the Ranks)
 let BOOK = 'gotm';
 const REG_CLASH = []; // ids a chapter registered over another chapter's (the lint fails on any)
 function registerChapter(n, CH, book = 'gotm'){

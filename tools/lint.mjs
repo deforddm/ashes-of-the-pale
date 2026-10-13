@@ -212,7 +212,7 @@ const res = await page.evaluate(({ flags, flagVals, spriteKinds, portraitSrc, ob
     }
   }
   // Book Two's chapters: the end screen and the journal, built only from S.f.b2_*, under Book Two states
-  for (const [n, CH] of Object.entries(BOOKSNAP.dg.ch || {})) {
+  for (const [n, CH] of Object.entries((BOOKSNAP.dg && BOOKSNAP.dg.ch) || {})) {
     for (let v = 0; v < VAR; v++) { mkDG(v);
       const C = CHAPTERS[n] || CH;
       for (const k of ['extras', 'journal', 'endCap']) { if (!C[k]) { if (k !== 'endCap' && v === 0) warn(`dg chapter ${n}: no ${k}`); continue; }

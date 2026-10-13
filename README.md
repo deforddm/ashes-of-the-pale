@@ -1,8 +1,12 @@
 # Ashes of the Pale
 
-A non-commercial Malazan Book of the Fallen fan RPG for personal play, told from the ranks in books that each play on their own. **Book One** follows an original marine squad, the Fourth, beside the events of *Gardens of the Moon* in the aftermath of the Pale. **Book Two**, complete, follows a new squad of the Seventh Army on the Chain of Dogs in *Deadhouse Gates*. Turn-based tactical combat, dialogue skill checks, warren strain, Moranth munitions and a Deck of Dragons reading.
+**Finished: the first edition, v4.9.0. It no longer changes.** The series goes on as **[From the Ranks](https://deforddm.github.io/from-the-ranks/)** ([source](https://github.com/deforddm/from-the-ranks)), which carries Book One under this name, Book Two (*The Chain of Dogs*, beside *Deadhouse Gates*) and the books to come. Sergeants on a device go across to From the Ranks the first time it is opened there.
+
+A non-commercial Malazan Book of the Fallen fan RPG for personal play, told from the ranks. An original marine squad, the Fourth, beside the events of *Gardens of the Moon* in the aftermath of the Pale. Turn-based tactical combat, dialogue skill checks, warren strain, Moranth munitions and a Deck of Dragons reading.
 
 Play: https://deforddm.github.io/ashes-of-the-pale/ (installable as an app).
+
+Book Two was built here from v4.0 to v4.8.1 and moved to From the Ranks with v4.9.0; this edition keeps every Book One fix made up to then. A Book Two sergeant left on a device is kept, not listed, and pointed on to From the Ranks.
 
 ## Credits
 

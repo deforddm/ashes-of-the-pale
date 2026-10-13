@@ -47,13 +47,6 @@ function start(){
   if (typeof CH5 !== 'undefined') registerChapter(5, CH5);
   if (typeof CH6 !== 'undefined') registerChapter(6, CH6);
   if (typeof CH7 !== 'undefined') registerChapter(7, CH7);
-  if (typeof B2CH1 !== 'undefined') registerChapter(1, B2CH1, 'dg'); // Book Two: Deadhouse Gates (47, 48)
-  if (typeof B2CH2 !== 'undefined') registerChapter(2, B2CH2, 'dg'); // Book Two, Chapter 2: The Odhan (49)
-  if (typeof B2CH3 !== 'undefined') registerChapter(3, B2CH3, 'dg'); // Book Two, Chapter 3: The Ridge (50)
-  if (typeof B2CH4 !== 'undefined') registerChapter(4, B2CH4, 'dg'); // Book Two, Chapter 4: The Day of Pure Blood (51)
-  if (typeof B2CH5 !== 'undefined') registerChapter(5, B2CH5, 'dg'); // Book Two, Chapter 5: The Dry March (52)
-  if (typeof B2CH6 !== 'undefined') registerChapter(6, B2CH6, 'dg'); // Book Two, Chapter 6: Sanimon (53)
-  if (typeof B2CH7 !== 'undefined') registerChapter(7, B2CH7, 'dg'); // Book Two, Chapter 7: Aren Way, and the end of Book Two (54)
   showTitle();
   requestAnimationFrame(loop);
 }

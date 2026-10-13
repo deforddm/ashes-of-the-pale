@@ -7,7 +7,7 @@ const { page, errors } = await openGame(br, srv.url, {});
 const res = await page.evaluate(() => {
   const bad = []; let checked = 0, hidden = 0;
   const areaBook = {};
-  for (const [book, CHS] of [['gotm', BOOK === 'gotm' ? CHAPTERS : BOOKSNAP.gotm.ch], ['dg', BOOKSNAP.dg.ch]])
+  for (const [book, CHS] of [['gotm', BOOK === 'gotm' ? CHAPTERS : BOOKSNAP.gotm.ch], ...(BOOKSNAP.dg ? [['dg', BOOKSNAP.dg.ch]] : [])])
     for (const CH of Object.values(CHS)) (CH.areas || (CH.area ? [CH.area] : [])).forEach(a => { areaBook[a.id] = book; });
   const real = drawFigure;
   for (const [aid, book] of Object.entries(areaBook)) {

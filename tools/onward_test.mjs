@@ -31,7 +31,7 @@ const res0 = await page.evaluate(() => {
   const flags = [...new Set([...all.matchAll(/S\.f\.([A-Za-z0-9_]+)/g)].map(m => m[1]))];
   /* area -> [book, chapter] */
   const chOf = {}; chOf.pale = ['gotm', 0];
-  for (const [book, CHS] of [['gotm', BOOK === 'gotm' ? CHAPTERS : BOOKSNAP.gotm.ch], ['dg', BOOKSNAP.dg.ch]])
+  for (const [book, CHS] of [['gotm', BOOK === 'gotm' ? CHAPTERS : BOOKSNAP.gotm.ch], ...(BOOKSNAP.dg ? [['dg', BOOKSNAP.dg.ch]] : [])])
     for (const [n, CH] of Object.entries(CHS)) (CH.areas || (CH.area ? [CH.area] : [])).forEach(a => { chOf[a.id] = [book, +n]; });
   const gating = {};
   for (const [aid, a] of Object.entries(AREAS)) { const t = (a.npcs || []).map(n => String(n.show || '') + String(n.node) + String(n.fresh || '')).join(' ') + Object.values(a.triggers || {}).map(id => String(DLG[id] || '')).join(' ') + String(a.quest || '');

@@ -41,6 +41,7 @@ function openModal(tab){
     $('#imp').oninput = unarm;
     bl.onclick = () => { let s = null; try { s = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim())))); } catch(e) {}
       if (!s || s.v !== 1) { unarm(); $('#impMsg').textContent = 'That code didn\'t load. Check that it was copied in full.'; return; }
+      if (s.book && s.book !== 'gotm') { unarm(); $('#impMsg').textContent = 'That sergeant is from Book Two, which lives on in From the Ranks. Load the code there: deforddm.github.io/from-the-ranks'; return; }
       s.name = String(s.name || 'Hask').slice(0, 18); const ex = roster().list.find(e => sameName(e.name, s.name));
       if (ex && !bl.dataset.arm) { bl.dataset.arm = 1; bl.classList.add('warn'); bl.textContent = `Replace Sergeant ${ex.name}`; $('#impMsg').textContent = tapWord(`Sergeant ${ex.name} already has a save on this device. Tap again to replace it with the one in this code.`); return; }
       AUDIO.play('click'); s.sid = ex ? ex.id : newSid(); S = migrate(s); save(); m.hidden = true; resume(); };
@@ -172,6 +173,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.9.0', ['This is the final version of Ashes of the Pale: Book One, finished, with every fix up to now. It will not change again.', 'The series goes on as From the Ranks (deforddm.github.io/from-the-ranks): Book One is there too, under its own name, beside Book Two, The Chain of Dogs, and the books to come. Your sergeants go with you the first time you open it.', 'Any Book Two sergeant on this device lives on in From the Ranks with its save; the title here says how many.']],
   ['4.8.1', ['Each book has its own shoulder patch on the title. Book Two\'s is the Third Squad\'s: III over a Crow Clan feather, the Chain\'s links above and five strokes for five soldiers, on sun-faded cloth.']],
   ['4.8.0', ['The title screen now wears the book you played last. Book Two has its own painted title: the Chain at dusk, Hissar burning behind, the column across the Odhan, Wickan riders under the crows, and the squad on the ridge.', 'Each book has its own line on the title. On the New sergeant screen the picture and the line change when you tap Book One or Book Two.', 'With Artwork off in Settings, Book Two has its own moving scene too: the column walks, the crows wheel and Hissar smokes.']],
   ['4.7.6', ['A squadmate standing on the map to be talked to is no longer also walking in the line behind the sergeant. The line closes up without them.']],
