@@ -4,6 +4,11 @@
    the directions. Firefox on a PC can't install web apps, so it gets nothing. Never offered inside the installed app itself. */
 const INSTKEY = 'ashes-of-the-pale-install';
 const FTR_URL = 'https://deforddm.github.io/from-the-ranks/';
+/* the onward link. Inside the installed app on Android, a link to another site opens in Chrome's in-app tab, which cannot install
+   From the Ranks (it says "already installed" and "could not open app"). There the link goes out to Android as an intent instead:
+   the installed From the Ranks opens if it is there, otherwise the phone's browser does, where Install works. Anywhere else, the plain link. */
+const ftrHref = (android = /Android/i.test(navigator.userAgent), app = asApp()) => android && app
+  ? 'intent://deforddm.github.io/from-the-ranks/#Intent;scheme=https;S.browser_fallback_url=' + encodeURIComponent(FTR_URL) + ';end' : FTR_URL;
 let installEvt = null;
 const asApp = () => { try { return window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui)').matches || navigator.standalone === true; } catch(e) { return false; } };
 const macSafari = () => { const u = navigator.userAgent; return /Macintosh/.test(u) && /Version\/(1[7-9]|[2-9]\d)\b.*Safari\//.test(u) && !/Chrome|Chromium|Edg|OPR|Firefox/.test(u) && !('ontouchend' in document); };
@@ -56,7 +61,7 @@ function showTitle(fresh){
     : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
     <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
       <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button></div></div>`}
-    <p class="onward"><a href="${FTR_URL}" rel="noopener">The story goes on in From the Ranks ›</a><small>Book Two, The Chain of Dogs, and every book after it.${moved ? ` ${moved === 1 ? 'Your Book Two sergeant lives' : `Your ${moved} Book Two sergeants live`} on there, with ${moved === 1 ? 'its save' : 'their saves'}.` : ''}</small></p>
+    <p class="onward"><a href="${ftrHref()}" rel="noopener">The story goes on in From the Ranks ›</a><small>Book Two, The Chain of Dogs, and every book after it.${moved ? ` ${moved === 1 ? 'Your Book Two sergeant lives' : `Your ${moved} Book Two sergeants live`} on there, with ${moved === 1 ? 'its save' : 'their saves'}.` : ''}</small></p>
     <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. The first edition, finished: Book One, beside Gardens of the Moon, the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
   if (!ARTON()) startTitleBackdrop($('#titlecv'), tb); else titleAnim = null;

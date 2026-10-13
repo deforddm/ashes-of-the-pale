@@ -608,7 +608,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 <div class="flash" id="flash"></div>
 <div class="red" id="red"></div>
 <script>
-const VERSION = '4.9.0';
+const VERSION = '4.9.1';
 
 /* ============ utilities ============ */
 const $ = s => document.querySelector(s);
@@ -3881,6 +3881,11 @@ let fullTried = false;
    the directions. Firefox on a PC can't install web apps, so it gets nothing. Never offered inside the installed app itself. */
 const INSTKEY = 'ashes-of-the-pale-install';
 const FTR_URL = 'https://deforddm.github.io/from-the-ranks/';
+/* the onward link. Inside the installed app on Android, a link to another site opens in Chrome's in-app tab, which cannot install
+   From the Ranks (it says "already installed" and "could not open app"). There the link goes out to Android as an intent instead:
+   the installed From the Ranks opens if it is there, otherwise the phone's browser does, where Install works. Anywhere else, the plain link. */
+const ftrHref = (android = /Android/i.test(navigator.userAgent), app = asApp()) => android && app
+  ? 'intent://deforddm.github.io/from-the-ranks/#Intent;scheme=https;S.browser_fallback_url=' + encodeURIComponent(FTR_URL) + ';end' : FTR_URL;
 let installEvt = null;
 const asApp = () => { try { return window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay), (display-mode: minimal-ui)').matches || navigator.standalone === true; } catch(e) { return false; } };
 const macSafari = () => { const u = navigator.userAgent; return /Macintosh/.test(u) && /Version\/(1[7-9]|[2-9]\d)\b.*Safari\//.test(u) && !/Chrome|Chromium|Edg|OPR|Firefox/.test(u) && !('ontouchend' in document); };
@@ -3933,7 +3938,7 @@ function showTitle(fresh){
     : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
     <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
       <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button></div></div>`}
-    <p class="onward"><a href="${FTR_URL}" rel="noopener">The story goes on in From the Ranks ›</a><small>Book Two, The Chain of Dogs, and every book after it.${moved ? ` ${moved === 1 ? 'Your Book Two sergeant lives' : `Your ${moved} Book Two sergeants live`} on there, with ${moved === 1 ? 'its save' : 'their saves'}.` : ''}</small></p>
+    <p class="onward"><a href="${ftrHref()}" rel="noopener">The story goes on in From the Ranks ›</a><small>Book Two, The Chain of Dogs, and every book after it.${moved ? ` ${moved === 1 ? 'Your Book Two sergeant lives' : `Your ${moved} Book Two sergeants live`} on there, with ${moved === 1 ? 'its save' : 'their saves'}.` : ''}</small></p>
     <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. The first edition, finished: Book One, beside Gardens of the Moon, the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
   if (!ARTON()) startTitleBackdrop($('#titlecv'), tb); else titleAnim = null;
@@ -5687,6 +5692,7 @@ function glossHTML(){
 
 /* what's new: shown once after an update (to a player with a save), and again from the version number on the title */
 const NOTES = [
+  ['4.9.1', ['The link to From the Ranks now works from the installed app on Android: it opens From the Ranks if it is installed, or your browser, where Install works. Before, it opened a small in-app page that could not install it.']],
   ['4.9.0', ['This is the final version of Ashes of the Pale: Book One, finished, with every fix up to now. It will not change again.', 'The series goes on as From the Ranks (deforddm.github.io/from-the-ranks): Book One is there too, under its own name, beside Book Two, The Chain of Dogs, and the books to come. Your sergeants go with you the first time you open it.', 'Any Book Two sergeant on this device lives on in From the Ranks with its save; the title here says how many.']],
   ['4.8.1', ['Each book has its own shoulder patch on the title. Book Two\'s is the Third Squad\'s: III over a Crow Clan feather, the Chain\'s links above and five strokes for five soldiers, on sun-faded cloth.']],
   ['4.8.0', ['The title screen now wears the book you played last. Book Two has its own painted title: the Chain at dusk, Hissar burning behind, the column across the Odhan, Wickan riders under the crows, and the squad on the ridge.', 'Each book has its own line on the title. On the New sergeant screen the picture and the line change when you tap Book One or Book Two.', 'With Artwork off in Settings, Book Two has its own moving scene too: the column walks, the crows wheel and Hissar smokes.']],

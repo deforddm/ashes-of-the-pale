@@ -21,6 +21,10 @@ r.href === 'https://deforddm.github.io/from-the-ranks/' ? ok('the title links to
 r.kept ? ok('the Book Two save is kept') : no('the Book Two save was lost');
 !r.picker ? ok('no book picker') : no('a book picker is shown');
 !r.dgFns.length ? ok('no Book Two code in the page') : no('Book Two code present: ' + r.dgFns.join());
+// the onward link: plain in a browser; an Android intent inside the installed app on Android (Chrome's in-app tab can't install)
+const hrefs = await page.evaluate(() => ({ web: ftrHref(false, false), androidWeb: ftrHref(true, false), androidApp: ftrHref(true, true), desktopApp: ftrHref(false, true) }));
+hrefs.web === hrefs.androidWeb && hrefs.web === hrefs.desktopApp && hrefs.web === 'https://deforddm.github.io/from-the-ranks/' ? ok('plain link in a browser and on a PC') : no('plain hrefs: ' + JSON.stringify(hrefs));
+/^intent:\/\/deforddm\.github\.io\/from-the-ranks\/#Intent;scheme=https;S\.browser_fallback_url=https%3A%2F%2Fdeforddm\.github\.io%2Ffrom-the-ranks%2F;end$/.test(hrefs.androidApp) ? ok('an Android intent inside the installed app') : no('app href: ' + hrefs.androidApp);
 // a Book Two save code
 const msg = await page.evaluate(async () => {
   openModal('save'); await new Promise(f => setTimeout(f, 200));
@@ -31,4 +35,4 @@ const msg = await page.evaluate(async () => {
 await br.close(); srv.kill();
 if (errors.length) { console.log('page errors:', errors); process.exit(1); }
 if (bad.length) { console.log(`final: FAIL (${bad.length})`); process.exit(1); }
-console.log('final: 8 ok, 0 FAIL');
+console.log('final: 10 ok, 0 FAIL');
