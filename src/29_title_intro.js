@@ -70,10 +70,11 @@ function showTitle(fresh){
     <div class="field"><label>Difficulty</label><div class="seg dseg">${Object.entries(DIFFS).map(([k, d]) => `<button class="btn ${k === 'soldier' ? 'on' : ''}" data-diff="${k}">${d.name}</button>`).join('')}</div><small class="fine" id="dBlurb">${DIFFS.soldier.blurb} You can change it later in Settings.</small></div>
     <p class="fine tmsg" id="nmMsg" role="status"></p>
     <div class="tbtns"><button class="btn primary" id="bNew">Begin</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
-      <div class="row2">${list.length ? '<button class="btn" id="bBack">Back to your sergeants</button>' : '<button class="btn" id="bImp">Load a save code</button>'}</div></div>`
+      <div class="row2">${list.length ? '<button class="btn" id="bBack">Back to your sergeants</button>' : '<button class="btn" id="bImp">Load a backup or save code</button>'}</div></div>`
     : `<div class="roster"><div class="rh">${list.length > 1 ? 'Sergeants on this device' : 'Your sergeant'}</div>${rows}</div>
+    ${backupLine()}
     <div class="tbtns"><button class="btn" id="bNewSgt">New sergeant</button><button class="btn icon" id="bSet" aria-label="Settings">${GEAR}</button>
-      <div class="row2"><button class="btn" id="bImp">Load a save code</button><button class="btn" id="bDeeds">Deeds</button></div></div>`}
+      <div class="row2"><button class="btn" id="bImp">Backups and save codes</button><button class="btn" id="bDeeds">Deeds</button></div></div>`}
     ${IOS() ? iosOnward(all) : `<p class="onward"><a href="${ftrHref()}" rel="noopener">The story goes on in From the Ranks ›</a><small>Book Two, The Chain of Dogs, and every book after it.${moved ? ` ${moved === 1 ? 'Your Book Two sergeant lives' : `Your ${moved} Book Two sergeants live`} on there, with ${moved === 1 ? 'its save' : 'their saves'}.` : ''}</small></p>`}
     <div id="instSlot"></div>
     <p class="fine">A Malazan fan tale for personal play. The world was created by Steven Erikson and Ian C. Esslemont, and it and its canon characters belong to them. The first edition, finished: Book One, beside Gardens of the Moon, the prologue and all seven chapters. Sound on for the full effect. <button class="ver" id="bVer" aria-label="What's new in this version">v${VERSION}</button></p></div>`;
@@ -82,6 +83,7 @@ function showTitle(fresh){
   $('#bVer').onclick = () => { AUDIO.play('click'); openNotes(null); };
   if ($('#bFullT')) $('#bFullT').onclick = () => { AUDIO.play('click'); toggleFull(); };
   if ($('#bImp')) $('#bImp').onclick = () => { AUDIO.play('click'); openModal('save'); };
+  bindBackupLine(); // v4.10: the backup reminder under the roster (35b)
   if (form) {
     const msg = t => { $('#nmMsg').textContent = t; }, b = $('#bNew'), nm = $('#nm');
     // a name already on the roster asks twice: the second tap starts that sergeant over

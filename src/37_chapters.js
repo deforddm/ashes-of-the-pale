@@ -111,7 +111,8 @@ function showChapterEnd(){
       <span>Squad level</span><span>${S.lvl} (${S.xp} xp)</span>${S.card ? `<span>Card drawn</span><span>${CARDS[S.card].name}</span>` : ''}</div>
     <p class="fine">${CHTEASE[n] || ''}</p>
     <div class="row" style="margin-top:14px">${epi ? `<button class="btn primary" id="bEpi">Epilogue</button>` : next ? `<button class="btn primary" id="bNext">Chapter ${next.number}: ${next.title}</button>` : ''}<button class="btn" id="bSq">Squad</button><button class="btn" id="bReplay">Play this ${n === 0 ? 'prologue' : 'chapter'} again</button><button class="btn" id="bSet2">Settings</button><button class="btn" id="bAgain">Title</button></div>
-    <p class="fine">Playing it again starts a new save, ${esc(replayName(n))}, from the start of the ${n === 0 ? 'prologue' : 'chapter'}; this one stays as it is. Every finished chapter is also on the Deeds page.</p></div>`);
+    <p class="fine">Playing it again starts a new save, ${esc(replayName(n))}, from the start of the ${n === 0 ? 'prologue' : 'chapter'}; this one stays as it is. Every finished chapter is also on the Deeds page.</p>
+    ${backupLine()}</div>`);
   G.sceneKind = (CH && CH.endScene) || (n === 6 ? 'fete_garden' : n === 7 ? 'quorl_hill' : 'camp');
   if (epi) $('#bEpi').onclick = () => { AUDIO.play('click'); showFinale(0); };
   else if (next) $('#bNext').onclick = () => { AUDIO.play('click'); startChapter(n + 1); };
@@ -119,6 +120,7 @@ function showChapterEnd(){
   $('#bReplay').onclick = e => replayFromEnd(e.currentTarget, n);
   $('#bSet2').onclick = () => { AUDIO.play('click'); openSettings(); };
   $('#bAgain').onclick = () => { AUDIO.play('click'); showTitle(); };
+  bindBackupLine(); // v4.10: a backup reminder at every chapter's end (35b)
 }
 function startChapter(n){
   const CH = CHAPTERS[n]; if (!CH) return showTitle();

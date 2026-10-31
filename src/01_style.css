@@ -575,3 +575,7 @@ body.vision #sheet .choice{border-left-color:rgba(154,134,224,.6)}
 .wayrow .wk{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brass2);opacity:.8;flex:0 0 auto}
 .wayrow .way{flex:0 0 auto;min-height:36px;border-color:rgba(201,151,63,.6);color:#f1dfb4}
 .wayrow .way.lead{background:linear-gradient(180deg,rgba(201,151,63,.32),rgba(120,84,30,.28));border-color:var(--brass);color:#ffe7b0;box-shadow:0 0 10px rgba(232,192,115,.25)}
+/* v4.10: the backup reminder (35b), on the title and at a chapter's end */
+.bkline{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:12px 0 4px;padding:8px 10px;border:1px solid var(--line2);border-radius:2px;background:rgba(20,16,13,.55)}
+.bkline.due{border-color:var(--brass)}
+.bkline .fine{flex:1 1 180px}

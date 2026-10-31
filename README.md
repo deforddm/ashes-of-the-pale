@@ -51,6 +51,7 @@ Chapters are content modules (`src/40_chapter1.js`, …) registered at boot; eac
 
 Newest first.
 
+- v4.10.0 — Backups (David, Oct 30, 2026: players who cleared their browser lost every save). The one change allowed to the frozen first edition besides links onward, ported from From the Ranks v8.2.0: src/35b_backup.js, a backup file with every sergeant and the settings (download, or the phone's share sheet), Load a backup file with a two-tap guard on name clashes, a reminder on the title and at every chapter end, navigator.storage.persist() on the first save. tools/backup_test.mjs. Save codes unchanged.
 - v4.7.6 — A squadmate shown on the map to talk to is not also drawn in the party line; the line closes up. New tools/trail_test.mjs checks every area of both books.
 - v4.7.5 — Every onward step from a map can be declined ("Not yet."), in both books, and a squadmate mentions anyone still waiting to talk. New tools/onward_test.mjs audits it.
 - v4.7.4 — The Ways on button row is removed; the brass rings on the map and the edge arrows stay.
